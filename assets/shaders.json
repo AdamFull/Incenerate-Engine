@@ -1,0 +1,15 @@
+{
+    "test_shader": {
+        "bind_point": "graphics",
+        "cull_mode": "front",
+        "front_face": "ccw",
+        "depth_test": false,
+        "stages": [
+            "shaders/test.vert",
+            "shaders/test.frag"
+        ],
+        "defines": {
+            "TEST": "5"
+        }
+    }
+}

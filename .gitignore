@@ -1,0 +1,6 @@
+bin/
+build/
+out/
+*.spv
+.vs/
+.vscode/
