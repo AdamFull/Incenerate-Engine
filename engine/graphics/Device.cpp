@@ -480,6 +480,338 @@ void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk:
     cmdBuf.submitIdle();
 }
 
+void CDevice::createImage(vk::Image& image, vk::DeviceMemory& memory, vk::ImageCreateInfo createInfo, vk::MemoryPropertyFlags properties)
+{
+    vk::Result res;
+    assert(vkDevice && "Trying to create image, byt logical device is not valid.");
+
+    res = create(createInfo, &image);
+    assert(res == vk::Result::eSuccess && "Image was not created");
+
+    vk::MemoryRequirements memReq{};
+    vkDevice.getImageMemoryRequirements(image, &memReq);
+
+    vk::MemoryAllocateInfo allocInfo{};
+    allocInfo.allocationSize = memReq.size;
+    allocInfo.memoryTypeIndex = findMemoryType(memReq.memoryTypeBits, properties);
+
+    res = create(allocInfo, &memory);
+    assert(res == vk::Result::eSuccess && "Image memory was not allocated");
+
+    vkDevice.bindImageMemory(image, memory, 0);
+}
+
+void CDevice::transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
+{
+    auto cmdBuf = CCommandBuffer(this);
+    cmdBuf.create(true, vk::QueueFlagBits::eTransfer);
+    auto commandBuffer = cmdBuf.getCommandBuffer();
+
+    transitionImageLayout(commandBuffer, image, vBarriers, oldLayout, newLayout);
+
+    cmdBuf.submitIdle();
+}
+
+void CDevice::transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
+{
+    vk::PipelineStageFlags sourceStage;
+    vk::PipelineStageFlags destinationStage;
+
+    for (auto& barrier : vBarriers)
+    {
+        barrier.oldLayout = oldLayout;
+        barrier.newLayout = newLayout;
+        barrier.image = image;
+
+        if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal)
+        {
+            barrier.srcAccessMask = (vk::AccessFlagBits)0;
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+
+            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+        }
+        else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eGeneral)
+        {
+            barrier.srcAccessMask = (vk::AccessFlagBits)0;
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+
+            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+        }
+        else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eColorAttachmentOptimal)
+        {
+            barrier.srcAccessMask = (vk::AccessFlagBits)0;
+            barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+
+            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+            destinationStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        }
+        else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
+        {
+            barrier.srcAccessMask = (vk::AccessFlagBits)0;
+            barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+
+            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+            destinationStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
+        }
+        else if (oldLayout == vk::ImageLayout::eColorAttachmentOptimal && newLayout == vk::ImageLayout::eTransferSrcOptimal)
+        {
+            barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+
+            sourceStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+        }
+        else if (oldLayout == vk::ImageLayout::eTransferSrcOptimal && newLayout == vk::ImageLayout::eColorAttachmentOptimal)
+        {
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+
+            sourceStage = vk::PipelineStageFlagBits::eTransfer;
+            destinationStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        }
+        else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eTransferSrcOptimal)
+        {
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
+
+            sourceStage = vk::PipelineStageFlagBits::eTransfer;
+            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+        }
+        else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+        {
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+            sourceStage = vk::PipelineStageFlagBits::eTransfer;
+            destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+        }
+        else if (oldLayout == vk::ImageLayout::eTransferSrcOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+        {
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+            sourceStage = vk::PipelineStageFlagBits::eTransfer;
+            destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+        }
+        else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+        {
+            barrier.srcAccessMask = (vk::AccessFlagBits)0;
+            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+            destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+        }
+        else
+        {
+            throw std::invalid_argument("Unsupported layout transition!");
+        }
+    }
+
+    internalBuffer.pipelineBarrier(
+        sourceStage,
+        destinationStage,
+        vk::DependencyFlags(),
+        0, nullptr, 0, nullptr,
+        static_cast<uint32_t>(vBarriers.size()), vBarriers.data());
+}
+
+void CDevice::copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions)
+{
+    auto cmdBuf = CCommandBuffer(this);
+    cmdBuf.create(true, vk::QueueFlagBits::eTransfer);
+    auto commandBuffer = cmdBuf.getCommandBuffer();
+    commandBuffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, static_cast<uint32_t>(vRegions.size()), vRegions.data());
+    cmdBuf.submitIdle();
+}
+
+void CDevice::copyTo(vk::CommandBuffer& commandBuffer, vk::Image& src, vk::Image& dst, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout, vk::ImageCopy& region)
+{
+    commandBuffer.copyImage(src, srcLayout, dst, dstLayout, 1, &region);
+}
+
+void CDevice::createSampler(vk::Sampler& sampler, vk::Filter magFilter, vk::SamplerAddressMode eAddressMode, bool anisotropy, bool compareOp, uint32_t mipLevels)
+{
+    assert(vkPhysical && "Trying to create sampler, but physical device is invalid.");
+    vk::SamplerCreateInfo samplerInfo{};
+    samplerInfo.magFilter = magFilter;
+    samplerInfo.minFilter = magFilter;
+    samplerInfo.addressModeU = eAddressMode;
+    samplerInfo.addressModeV = eAddressMode;
+    samplerInfo.addressModeW = eAddressMode;
+
+    vk::PhysicalDeviceProperties properties{};
+    properties = vkPhysical.getProperties();
+
+    samplerInfo.anisotropyEnable = static_cast<vk::Bool32>(anisotropy);
+    samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+    samplerInfo.borderColor = vk::BorderColor::eIntOpaqueWhite;
+    samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+    samplerInfo.compareEnable = static_cast<vk::Bool32>(compareOp);
+    samplerInfo.compareOp = vk::CompareOp::eLess;
+
+    samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
+    samplerInfo.mipLodBias = 0.0f;
+    samplerInfo.minLod = 0.0f;
+    samplerInfo.maxLod = static_cast<float>(mipLevels);
+
+    // TODO: Result handle
+    vk::Result res = create(samplerInfo, &sampler);
+    assert(res == vk::Result::eSuccess && "Texture sampler was not created");
+}
+
+vk::Format CDevice::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
+{
+    assert(vkPhysical && "Trying to find supported format, but physical device is invalid.");
+    for (vk::Format format : candidates)
+    {
+        vk::FormatProperties props;
+        vkPhysical.getFormatProperties(format, &props);
+
+        if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features)
+        {
+            return format;
+        }
+        else if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features)
+        {
+            return format;
+        }
+    }
+
+    // TODO: Handle null result
+    throw std::runtime_error("Failed to find supported format!");
+}
+
+std::vector<vk::Format> CDevice::findSupportedFormats(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
+{
+    std::vector<vk::Format> vFormats;
+    assert(vkPhysical && "Trying to find supported format, but physical device is invalid.");
+    for (vk::Format format : candidates)
+    {
+        vk::FormatProperties props;
+        vkPhysical.getFormatProperties(format, &props);
+
+        if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features)
+            vFormats.emplace_back(format);
+        else if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features)
+            vFormats.emplace_back(format);
+    }
+
+    return vFormats;
+}
+
+vk::Format CDevice::getDepthFormat()
+{
+    return findSupportedFormat
+    (
+        {
+            vk::Format::eD32Sfloat,
+            vk::Format::eD32SfloatS8Uint,
+            vk::Format::eD24UnormS8Uint
+        },
+        vk::ImageTiling::eOptimal,
+        vk::FormatFeatureFlagBits::eDepthStencilAttachment
+    );
+}
+
+std::vector<vk::Format> CDevice::getTextureCompressionFormats()
+{
+    std::vector<vk::Format> vFormats;
+
+    assert(vkPhysical && "Trying to create image, byt logical device is not valid.");
+    vk::PhysicalDeviceFeatures supportedFeatures = vkPhysical.getFeatures();
+
+    if (supportedFeatures.textureCompressionBC)
+    {
+        auto supportedCBC = findSupportedFormats
+        (
+            {
+                vk::Format::eBc1RgbUnormBlock,
+                vk::Format::eBc1RgbSrgbBlock,
+                vk::Format::eBc1RgbaUnormBlock,
+                vk::Format::eBc1RgbaSrgbBlock,
+                vk::Format::eBc2UnormBlock,
+                vk::Format::eBc2SrgbBlock,
+                vk::Format::eBc3UnormBlock,
+                vk::Format::eBc3SrgbBlock,
+                vk::Format::eBc4UnormBlock,
+                vk::Format::eBc4SnormBlock,
+                vk::Format::eBc5UnormBlock,
+                vk::Format::eBc5SnormBlock,
+                vk::Format::eBc6HUfloatBlock,
+                vk::Format::eBc6HSfloatBlock,
+                vk::Format::eBc7UnormBlock,
+                vk::Format::eBc7SrgbBlock
+            },
+            vk::ImageTiling::eOptimal,
+            vk::FormatFeatureFlagBits::eSampledImage | vk::FormatFeatureFlagBits::eTransferDst
+        );
+        vFormats.insert(vFormats.end(), supportedCBC.begin(), supportedCBC.end());
+    }
+
+    if (supportedFeatures.textureCompressionASTC_LDR)
+    {
+        auto supportedCBC = findSupportedFormats
+        (
+            {
+                vk::Format::eAstc4x4UnormBlock,
+                vk::Format::eAstc4x4SrgbBlock,
+                vk::Format::eAstc5x4UnormBlock,
+                vk::Format::eAstc5x4SrgbBlock,
+                vk::Format::eAstc5x5UnormBlock,
+                vk::Format::eAstc5x5SrgbBlock,
+                vk::Format::eAstc6x5UnormBlock,
+                vk::Format::eAstc6x5SrgbBlock,
+                vk::Format::eAstc6x6UnormBlock,
+                vk::Format::eAstc6x6SrgbBlock,
+                vk::Format::eAstc8x5UnormBlock,
+                vk::Format::eAstc8x5SrgbBlock,
+                vk::Format::eAstc8x6UnormBlock,
+                vk::Format::eAstc8x6SrgbBlock,
+                vk::Format::eAstc8x8UnormBlock,
+                vk::Format::eAstc8x8SrgbBlock,
+                vk::Format::eAstc10x5UnormBlock,
+                vk::Format::eAstc10x5SrgbBlock,
+                vk::Format::eAstc10x6UnormBlock,
+                vk::Format::eAstc10x6SrgbBlock,
+                vk::Format::eAstc10x8UnormBlock,
+                vk::Format::eAstc10x8SrgbBlock,
+                vk::Format::eAstc10x10UnormBlock,
+                vk::Format::eAstc10x10SrgbBlock,
+                vk::Format::eAstc12x10UnormBlock,
+                vk::Format::eAstc12x10SrgbBlock,
+                vk::Format::eAstc12x12UnormBlock,
+                vk::Format::eAstc12x12SrgbBlock
+            },
+            vk::ImageTiling::eOptimal,
+            vk::FormatFeatureFlagBits::eSampledImage | vk::FormatFeatureFlagBits::eTransferDst
+        );
+        vFormats.insert(vFormats.end(), supportedCBC.begin(), supportedCBC.end());
+    }
+
+    if (supportedFeatures.textureCompressionETC2)
+    {
+        auto supportedCBC = findSupportedFormats
+        (
+            {
+                vk::Format::eEtc2R8G8B8UnormBlock,
+                vk::Format::eEtc2R8G8B8SrgbBlock,
+                vk::Format::eEtc2R8G8B8A1UnormBlock,
+                vk::Format::eEtc2R8G8B8A1SrgbBlock,
+                vk::Format::eEtc2R8G8B8A8UnormBlock,
+                vk::Format::eEtc2R8G8B8A8SrgbBlock
+            },
+            vk::ImageTiling::eOptimal,
+            vk::FormatFeatureFlagBits::eSampledImage | vk::FormatFeatureFlagBits::eTransferDst
+        );
+        vFormats.insert(vFormats.end(), supportedCBC.begin(), supportedCBC.end());
+    }
+
+    return vFormats;
+}
+
 vk::Result CDevice::acquireNextImage(uint32_t* imageIndex)
 {
     vk::Result res = vkDevice.waitForFences(1, &vInFlightFences[currentFrame], VK_TRUE, (std::numeric_limits<uint64_t>::max)());

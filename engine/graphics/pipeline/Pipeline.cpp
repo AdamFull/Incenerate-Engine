@@ -1,6 +1,7 @@
 #include "Pipeline.h"
 
 #include "Device.h"
+#include "shader/ShaderObject.h"
 
 using namespace engine::graphics;
 
@@ -23,21 +24,21 @@ CPipeline::~CPipeline()
     pDevice = nullptr;
 }
 
-void CPipeline::create(const std::unique_ptr<CShaderObject>& pShader)
+void CPipeline::create(CShaderObject* pShader)
 {
     createDescriptorPool(pShader);
     createDescriptorSetLayout(pShader);
     createPipelineLayout(pShader);
 }
 
-void CPipeline::create(const std::unique_ptr<CShaderObject>& pShader, vk::RenderPass& renderPass, uint32_t subpass)
+void CPipeline::create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass)
 {
     this->renderPass = renderPass;
     this->subpass = subpass;
     create(pShader);
 }
 
-void CPipeline::reCreate(const std::unique_ptr<CShaderObject>& pShader, vk::RenderPass& renderPass, uint32_t subpass)
+void CPipeline::reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass)
 {
     this->renderPass = renderPass;
     this->subpass = subpass;
@@ -49,7 +50,7 @@ void CPipeline::bind(vk::CommandBuffer& commandBuffer)
     commandBuffer.bindPipeline(getBindPoint(), pipeline);
 }
 
-void CPipeline::createDescriptorSetLayout(const std::unique_ptr<CShaderObject>& pShader)
+void CPipeline::createDescriptorSetLayout(CShaderObject* pShader)
 {
     auto& shader = pShader->getShader();
 
@@ -63,7 +64,7 @@ void CPipeline::createDescriptorSetLayout(const std::unique_ptr<CShaderObject>& 
     assert(res == vk::Result::eSuccess && "Cannot create descriptor set layout.");
 }
 
-void CPipeline::createDescriptorPool(const std::unique_ptr<CShaderObject>& pShader)
+void CPipeline::createDescriptorPool(CShaderObject* pShader)
 {
     auto& shader = pShader->getShader();
     auto& descriptorPools = shader->getDescriptorPools();
@@ -77,7 +78,7 @@ void CPipeline::createDescriptorPool(const std::unique_ptr<CShaderObject>& pShad
     assert(res == vk::Result::eSuccess && "Cannot create descriptor pool.");
 }
 
-void CPipeline::createPipelineLayout(const std::unique_ptr<CShaderObject>& pShader)
+void CPipeline::createPipelineLayout(CShaderObject* pShader)
 {
     auto& shader = pShader->getShader();
     auto pushConstantRanges = shader->getPushConstantRanges();

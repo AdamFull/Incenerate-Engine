@@ -1,6 +1,7 @@
 #include "GraphicsPipeline.h"
 
 #include "Device.h"
+#include "shader/ShaderObject.h"
 
 using namespace engine::graphics;
 
@@ -9,13 +10,13 @@ CGraphicsPipeline::CGraphicsPipeline(CDevice* device)
 	pDevice = device;
 }
 
-void CGraphicsPipeline::create(const std::unique_ptr<CShaderObject>& pShader, vk::RenderPass& renderPass, uint32_t subpass)
+void CGraphicsPipeline::create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass)
 {
 	CPipeline::create(pShader, renderPass, subpass);
 	createPipeline(pShader);
 }
 
-void CGraphicsPipeline::createPipeline(const std::unique_ptr<CShaderObject>& pShader)
+void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
 {
     auto& shader = pShader->getShader();
     auto culling = pShader->getCullMode();

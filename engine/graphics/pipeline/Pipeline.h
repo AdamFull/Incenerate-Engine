@@ -2,34 +2,34 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "shader/ShaderObject.h"
-
 namespace engine
 {
 	namespace graphics
 	{
 		class CDevice;
+		class CShaderObject;
 
 		class CPipeline
 		{
 		public:
+			CPipeline();
 			CPipeline(CDevice* device);
 			virtual ~CPipeline();
 
-			virtual void create(const std::unique_ptr<CShaderObject>& pShader);
-			virtual void create(const std::unique_ptr<CShaderObject>& pShader, vk::RenderPass& renderPass, uint32_t subpass);
-			virtual void reCreate(const std::unique_ptr<CShaderObject>& pShader, vk::RenderPass& renderPass, uint32_t _subpass);
+			virtual void create(CShaderObject* pShader);
+			virtual void create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass);
+			virtual void reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t _subpass);
 
 			void bind(vk::CommandBuffer& commandBuffer);
 
 			virtual vk::PipelineBindPoint getBindPoint() { return vk::PipelineBindPoint::eCompute; }
 
 		protected:
-			void createDescriptorSetLayout(const std::unique_ptr<CShaderObject>& pShader);
-			void createDescriptorPool(const std::unique_ptr<CShaderObject>& pShader);
-			void createPipelineLayout(const std::unique_ptr<CShaderObject>& pShader);
+			void createDescriptorSetLayout(CShaderObject* pShader);
+			void createDescriptorPool(CShaderObject* pShader);
+			void createPipelineLayout(CShaderObject* pShader);
 
-			virtual void createPipeline(const std::unique_ptr<CShaderObject>& pShader) {}
+			virtual void createPipeline(CShaderObject* pShader) {}
 
 		protected:
 			CDevice* pDevice{ nullptr };

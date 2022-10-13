@@ -13,3 +13,6 @@
 [submodule "engine/external/glslanglib"]
 	path = engine/external/glslanglib
 	url = https://github.com/KhronosGroup/glslang.git
+[submodule "engine/external/ktx"]
+	path = engine/external/ktx
+	url = https://github.com/KhronosGroup/KTX-Software.git

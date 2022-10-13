@@ -150,7 +150,7 @@ namespace engine
 			utl::parse_to("front_face", json, type.frontFace);
 			utl::parse_to("depth_test", json, type.depthTest);
 			utl::parse_to("dynamic_states", json, type.dynamicStates);
-			utl::parse_to("tesselation", json, type.dynamicStatesselationtes);
+			utl::parse_to("tesselation", json, type.tesselation);
 			utl::parse_to("stages", json, type.stages);
 			utl::parse_to("defines", json, type.defines);
 		}

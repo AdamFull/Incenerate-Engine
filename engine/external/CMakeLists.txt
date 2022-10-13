@@ -18,6 +18,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC spirv-cross-core spirv-cross-glsl)
 add_subdirectory(glslanglib)
 target_link_libraries(${PROJECT_NAME} PUBLIC glslang SPIRV)
 
+add_subdirectory(ktx)
+target_link_libraries(${PROJECT_NAME} PUBLIC ktx)
+
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${Vulkan_LIBRARIES})
 

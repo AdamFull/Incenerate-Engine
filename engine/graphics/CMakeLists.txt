@@ -10,6 +10,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${EXTERNALS_PATH}"
     PUBLIC "${EXTERNALS_PATH}/glm"
     PUBLIC "${EXTERNALS_PATH}/SDL/include"
+    PUBLIC "${EXTERNALS_PATH}/ktx/include"
     PUBLIC "${Vulkan_INCLUDE_DIR}"
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
 )

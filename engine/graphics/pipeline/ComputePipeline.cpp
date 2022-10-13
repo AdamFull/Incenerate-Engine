@@ -1,6 +1,7 @@
 #include "ComputePipeline.h"
 
 #include "Device.h"
+#include "shader/ShaderObject.h"
 
 using namespace engine::graphics;
 
@@ -9,12 +10,12 @@ CComputePipeline::CComputePipeline(CDevice* device)
 	pDevice = device;
 }
 
-void CComputePipeline::create(const std::unique_ptr<CShaderObject>& pShader, vk::RenderPass& renderPass, uint32_t subpass)
+void CComputePipeline::create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass)
 {
 
 }
 
-void CComputePipeline::createPipeline(const std::unique_ptr<CShaderObject>& pShader)
+void CComputePipeline::createPipeline(CShaderObject* pShader)
 {
     auto& shader = pShader->getShader();
     auto shaderStages = shader->getStageCreateInfo();
