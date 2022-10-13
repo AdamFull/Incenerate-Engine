@@ -1,0 +1,135 @@
+#pragma once
+
+#include <vulkan/vulkan.hpp>
+
+#include <spirvcross/spirv_cross.hpp>
+#include <spirvcross/spirv_glsl.hpp>
+
+#include <string>
+#include <map>
+#include <unordered_map>
+#include <optional>
+
+namespace engine
+{
+	namespace graphics
+	{
+		class CUniform
+		{
+		public:
+			friend class CShaderReflect;
+			CUniform() = default;
+
+			uint32_t getSet() const { return set; }
+			uint32_t getBinding() const { return binding; }
+			std::size_t getOffset() const { return offset; }
+			std::size_t getSize() const { return size; }
+			vk::DescriptorType getDescriptorType() const { return descriptorType; }
+			vk::ShaderStageFlags getStageFlags() const { return stageFlags; }
+
+		private:
+			uint32_t set{ 0 };
+			uint32_t binding{ 0 };
+			std::size_t offset{ 0 };
+			std::size_t size{ 0 };
+			vk::DescriptorType descriptorType;
+			vk::ShaderStageFlags stageFlags{ vk::ShaderStageFlagBits::eAll };
+		};
+
+		class CUniformBlock
+		{
+		public:
+			friend class CShaderReflect;
+			CUniformBlock() = default;
+
+			uint32_t getSet() const { return set; }
+			uint32_t getBinding() const { return binding; }
+			std::size_t getSize() const { return size; }
+			vk::ShaderStageFlags getStageFlags() const { return stageFlags; }
+			vk::DescriptorType getDescriptorType() const { return descriptorType; }
+			const std::map<std::string, CUniform>& GetUniforms() const { return mUniforms; }
+
+			std::optional<CUniform> getUniform(const std::string& name) const
+			{
+				auto it = mUniforms.find(name);
+
+				if (it == mUniforms.end())
+					return std::nullopt;
+
+				return it->second;
+			}
+
+		private:
+			uint32_t set{ 0 };
+			uint32_t binding{ 0 };
+			std::size_t size{ 0 };
+			vk::ShaderStageFlags stageFlags{ vk::ShaderStageFlagBits::eAll };
+			vk::DescriptorType descriptorType;
+			std::map<std::string, CUniform> mUniforms{};
+		};
+
+		class CPushConstBlock
+		{
+		public:
+			friend class CShaderReflect;
+			CPushConstBlock() = default;
+
+			std::size_t getSize() const { return size; }
+			vk::ShaderStageFlags getStageFlags() const { return stageFlags; }
+			const std::map<std::string, CUniform>& GetUniforms() const { return mUniforms; }
+			std::optional<CUniform> getUniform(const std::string& name) const
+			{
+				auto it = mUniforms.find(name);
+
+				if (it == mUniforms.end())
+					return std::nullopt;
+
+				return it->second;
+			}
+
+		private:
+			std::size_t size{ 0 };
+			vk::ShaderStageFlags stageFlags{ vk::ShaderStageFlagBits::eAll };
+			std::map<std::string, CUniform> mUniforms{};
+		};
+
+		class CShaderReflect
+		{
+		public:
+			CShaderReflect() = default;
+			virtual ~CShaderReflect() = default;
+
+			virtual void addStage(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stage);
+			virtual void buildReflection() {}
+
+			void setDescriptorMultiplier(uint32_t multiplier) { descriptorMultiplier = multiplier; }
+
+			//Getters
+			std::optional<CUniform> getUniform(const std::string& name) const;
+			std::optional<CUniformBlock> getUniformBlock(const std::string& name) const;
+			std::optional<CPushConstBlock> getPushBlock(const std::string& name) const;
+
+			const std::array<std::optional<uint32_t>, 3>& getLocalSizes() const { return localSizes; }
+			const std::unordered_map<std::string, CUniform>& getUniforms() const { return mUniforms; }
+			const std::unordered_map<std::string, CUniformBlock>& getUniformBlocks() const { return mUniformBlocks; }
+			const std::unordered_map<std::string, CPushConstBlock>& getPushBlocks() const { return mPushBlocks; }
+
+		protected:
+			void processReflection(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stageFlag);
+
+			static CUniformBlock buildUniformBlock(spirv_cross::CompilerGLSL* compiler, const spirv_cross::Resource& res, vk::ShaderStageFlagBits stageFlag, vk::DescriptorType descriptorType);
+			static CUniform buildUnifrom(spirv_cross::CompilerGLSL* compiler, const spirv_cross::Resource& res, vk::ShaderStageFlagBits stageFlag, vk::DescriptorType descriptorType);
+			static CPushConstBlock buildPushBlock(spirv_cross::CompilerGLSL* compiler, const spirv_cross::Resource& res, vk::ShaderStageFlagBits stageFlag);
+		protected:
+			uint32_t descriptorMultiplier{ 1 };
+
+			std::array<std::optional<uint32_t>, 3> localSizes;
+			uint32_t executionModeInvocations{ 0 };
+			uint32_t executionModeOutputVertices{ 0 };
+
+			std::unordered_map<std::string, CUniform> mUniforms;
+			std::unordered_map<std::string, CUniformBlock> mUniformBlocks;
+			std::unordered_map<std::string, CPushConstBlock> mPushBlocks;
+		};
+	}
+}

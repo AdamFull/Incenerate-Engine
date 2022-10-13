@@ -11,22 +11,15 @@ CWindowHandle::~CWindowHandle()
     destroy();
 }
 
-void CWindowHandle::create(const FEngineCreateInfo& createInfo)
+void CWindowHandle::create(const FWindowCreateInfo& createInfo)
 {
-    uint32_t flags = SDL_WINDOW_SHOWN;
+    uint32_t flags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN;
 
-    switch (createInfo.eAPI)
-    {
-    case ERenderApi::eOpenGL: flags |= SDL_WINDOW_OPENGL; break;
-    case ERenderApi::eVulkan: flags |= SDL_WINDOW_VULKAN; break;
-    case ERenderApi::eOpenGLES: flags |= SDL_WINDOW_OPENGL; break;
-    }
-
-    iWidth = createInfo.window.width;
-    iHeight = createInfo.window.height;
+    iWidth = createInfo.width;
+    iHeight = createInfo.height;
     
     SDL_Init(SDL_INIT_VIDEO);
-    pWindow = SDL_CreateWindow(createInfo.window.srName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, iWidth, iHeight, flags);
+    pWindow = SDL_CreateWindow(createInfo.srName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, iWidth, iHeight, flags);
 }
 
 void CWindowHandle::destroy()

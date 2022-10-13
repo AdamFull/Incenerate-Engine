@@ -18,7 +18,7 @@ namespace engine
                 CWindowHandle() = default;
                 ~CWindowHandle();
 
-                void create(const FEngineCreateInfo& createInfo);
+                void create(const FWindowCreateInfo& createInfo);
                 void destroy();
 
                 bool begin();

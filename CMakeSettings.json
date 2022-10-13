@@ -1,0 +1,224 @@
+﻿{
+  "configurations": [
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_3DNOW",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_ALTIVEC",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_ASSEMBLY",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_ATOMIC",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_AUDIO",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_CPUINFO",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_DIRECTX",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_DISKAUDIO",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_DUMMYAUDIO",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_DUMMYVIDEO",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_FILE",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_FILESYSTEM",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_HAPTIC",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_LOCALE",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_MISC",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_MMX",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_OFFSCREEN",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_OPENGLES",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_POWER",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_RENDER",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_RENDER_D3D",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_SENSOR",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_SHARED",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_SSE",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_SSE2",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_SSE3",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_SSEMATH",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_SYSTEM_ICONV",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_TEST",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_TIMERS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SDL_WASAPI",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "MI_OSX_INTERPOSE",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "MI_OSX_ZONE",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "MI_BUILD_TESTS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "MI_OVERRIDE",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "OPTION_BUILD_EXAMPLES",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "OPTION_BUILD_TOOLS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "OPTION_USE_GIT_INFORMATION",
+          "value": "False",
+          "type": "BOOL"
+        }
+      ]
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": []
+    }
+  ]
+}
