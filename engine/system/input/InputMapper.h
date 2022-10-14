@@ -3,6 +3,7 @@
 #include "KeycodeHelper.hpp"
 
 #include <utility/ufunction.hpp>
+#include <glm/glm/glm.hpp>
 
 #include <map>
 #include <vector>
@@ -23,11 +24,6 @@ namespace engine
             struct FInputAxis
             {
                 std::vector<utl::function<void(float, float)>> vListeners;
-            };
-
-            struct FAxixValue
-            {
-                float x{ 0.f }, y{ 0.f };
             };
 
             class CInputMapper
@@ -92,7 +88,7 @@ namespace engine
                 void cursorMove(float xpos, float ypos);
 
                 void handleActions(const std::string& srActionName, EKeyCode eKey, const EKeyState& eKeyState);
-                void handleAxis(const std::string& srAxisName, const FAxixValue& fValue);
+                void handleAxis(const std::string& srAxisName, const glm::vec2& fValue);
 
                 FInputAction makeBindAction(EKeyState eState, utl::function<void(EKeyCode, EKeyState)>&& dCallback);
                 FInputAxis makeBindAxis(utl::function<void(float, float)>&& dCallback);
@@ -104,8 +100,9 @@ namespace engine
                 std::multimap<std::string, FInputAxis> mInputAxis;
 
                 std::map<EKeyCode, EKeyState> mKeyStates;
-                std::map<EKeyCode, FAxixValue> mAxisStates;
+                std::map<EKeyCode, glm::vec2> mAxisStates;
 
+                glm::vec2 fPosOld{ 0.f, 0.f };
                 float fDeltaTime{ 0 };
             };
         }

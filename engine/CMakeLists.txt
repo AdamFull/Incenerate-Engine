@@ -21,4 +21,5 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE "${ENGINE_ROOT}/graphics"
     PRIVATE "${ENGINE_ROOT}/system"
     PUBLIC "${EXTERNALS_PATH}/utility"
+    PUBLIC "${EXTERNALS_PATH}/glm"
 )

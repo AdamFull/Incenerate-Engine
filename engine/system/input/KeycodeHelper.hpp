@@ -322,8 +322,10 @@ namespace engine
                 eButtonPaddle3,
                 eButtonPaddle4,
                 eButtonTouchpad,
-
+                   
+                eCursorOriginal,
                 eCursorPosition,
+                eCursorDelta,
                 eCursorMove
             };
 

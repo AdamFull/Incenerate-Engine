@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility/uparse.hpp>
+
 namespace engine
 {
 	enum class ERenderApi

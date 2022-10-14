@@ -29,7 +29,7 @@ void FWindowCallback::OnCursorMove(float dx, float dy)
 
 void FWindowCallback::OnCursorInput(float x, float y)
 {
-    for (auto& functor : cursorMoveCallbacks)
+    for (auto& functor : cursorInputCallbacks)
         functor(x, y);
 }
 

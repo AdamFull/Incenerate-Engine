@@ -321,7 +321,7 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 		auto client = getClient(eAPI);
 		shader.setEnvInput(glslang::EShSourceGlsl, language, client, 110);
 		shader.setEnvClient(client, clientVersion);
-		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0); //glslang::EShTargetSpv_1_3
+		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3); //glslang::EShTargetSpv_1_3
 
 		std::string str{};
 		CShaderIncluder includer;

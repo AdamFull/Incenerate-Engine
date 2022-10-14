@@ -6,6 +6,13 @@
 using namespace engine::system::window;
 using namespace engine::system::input;
 
+
+template<class _Ty>
+_Ty rangeToRange(_Ty input, _Ty in_min, _Ty in_max, _Ty out_min, _Ty out_max)
+{
+    return (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 CInputMapper::CInputMapper()
 {
     FWindowCallback::SubscribeKeyStateChange(this, &CInputMapper::keyInput);
@@ -46,7 +53,8 @@ void CInputMapper::update(float fDeltaTime)
             for (auto range_it = range.first; range_it != range.second; ++range_it)
                 handleAxis(range_it->second, keyAxis->second);
 
-            mAxisStates[key] = {}; // Reset axis
+            if (key != EKeyCode::eCursorOriginal)
+                mAxisStates[key] = {};
         }
     }
 }
@@ -58,12 +66,24 @@ void CInputMapper::keyInput(EKeyCode code, EKeyState state)
 
 void CInputMapper::cursorInput(float xpos, float ypos)
 {
-    mAxisStates[EKeyCode::eCursorPosition] = FAxixValue{xpos, ypos};
+    
 }
 
 void CInputMapper::cursorMove(float xpos, float ypos)
 {
-    mAxisStates[EKeyCode::eCursorMove] = FAxixValue{xpos, ypos};
+    float xmax = static_cast<float>(CWindowHandle::iWidth);
+    float ymax = static_cast<float>(CWindowHandle::iHeight);
+
+    mAxisStates[EKeyCode::eCursorOriginal] = { xpos, ypos };
+
+    fPosOld = mAxisStates[EKeyCode::eCursorPosition];
+    mAxisStates[EKeyCode::eCursorPosition] =
+    {
+        rangeToRange<float>(xpos, 0.0, xmax, -1.0, 1.0),
+        rangeToRange<float>(ypos, 0.0, ymax, -1.0, 1.0)
+    };
+
+    mAxisStates[EKeyCode::eCursorDelta] = (mAxisStates[EKeyCode::eCursorPosition] - fPosOld) * fDeltaTime;
 }
 
 void CInputMapper::handleActions(const std::string& srActionName, EKeyCode eKey, const EKeyState& eKeyState)
@@ -84,7 +104,7 @@ void CInputMapper::handleActions(const std::string& srActionName, EKeyCode eKey,
     }
 }
 
-void CInputMapper::handleAxis(const std::string& srAxisName, const FAxixValue& fValue)
+void CInputMapper::handleAxis(const std::string& srAxisName, const glm::vec2& fValue)
 {
     auto it = mInputAxis.find(srAxisName);
     if (it != mInputAxis.end())
