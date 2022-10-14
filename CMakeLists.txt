@@ -24,9 +24,7 @@ else()
 endif()
 
 add_compile_definitions(
-    GLBINDING_STATIC_DEFINE
-    GLBINDING_AUX_STATIC_DEFINE
-    GLM_FORCE_SSE2 
+
     GLM_FORCE_INLINE 
     GLM_FORCE_XYZW_ONLY
     GLM_CORCE_PURE

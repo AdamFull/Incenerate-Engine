@@ -2,6 +2,7 @@
 
 #include "Device.h"
 #include "shader/ShaderObject.h"
+#include "APIStructures.h"
 
 using namespace engine::graphics;
 
@@ -25,13 +26,16 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     auto dynamicStateEnables = pShader->getDynamicStateEnables();
     auto enableTesselation = pShader->getTesselationFlag();
 
+    auto attributeDescription = FVertex::getAttributeDescriptions();
+    auto bindingDescription = FVertex::getBindingDescription();
+
     vk::PipelineVertexInputStateCreateInfo vertexInputCI{};
     vertexInputCI.vertexBindingDescriptionCount = 0;
     vertexInputCI.vertexAttributeDescriptionCount = 0;
-    //vertexInputCI.vertexBindingDescriptionCount = attributeDescription.size() > 0 ? 1 : 0;
-    //vertexInputCI.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());
-    //vertexInputCI.pVertexBindingDescriptions = &bindingDescription;
-    //vertexInputCI.pVertexAttributeDescriptions = attributeDescription.data();
+    vertexInputCI.vertexBindingDescriptionCount = attributeDescription.size() > 0 ? 1 : 0;
+    vertexInputCI.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());
+    vertexInputCI.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputCI.pVertexAttributeDescriptions = attributeDescription.data();
 
     auto attachmentCount = 1;
     bool isDepthOnly = attachmentCount == 0;

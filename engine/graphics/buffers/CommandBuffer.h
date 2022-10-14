@@ -14,6 +14,7 @@ namespace engine
         class CCommandBuffer
         {
         public:
+            CCommandBuffer() = default;
             CCommandBuffer(CDevice* device);
             ~CCommandBuffer();
 

@@ -12,7 +12,7 @@ namespace engine
 		class CPipeline
 		{
 		public:
-			CPipeline();
+			CPipeline() = default;
 			CPipeline(CDevice* device);
 			virtual ~CPipeline();
 
@@ -21,6 +21,11 @@ namespace engine
 			virtual void reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t _subpass);
 
 			void bind(vk::CommandBuffer& commandBuffer);
+
+			vk::Pipeline& getPSO() { return pipeline; }
+			vk::DescriptorSetLayout& getDescriptorSetLayout() { return descriptorSetLayout; }
+			vk::DescriptorPool& getDescriptorPool() { return descriptorPool; }
+			vk::PipelineLayout& getPipelineLayout() { return pipelineLayout; }
 
 			virtual vk::PipelineBindPoint getBindPoint() { return vk::PipelineBindPoint::eCompute; }
 

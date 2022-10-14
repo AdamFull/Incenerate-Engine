@@ -5,6 +5,7 @@ using namespace engine::system::input;
 using namespace engine::system::window;
 
 int32_t CWindowHandle::iWidth{ 0 }, CWindowHandle::iHeight{ 0 };
+bool CWindowHandle::bWasResized{ false };
 
 CWindowHandle::~CWindowHandle()
 {
@@ -97,12 +98,7 @@ bool CWindowHandle::begin()
 
         case SDL_MOUSEMOTION:
         {
-            static float mouse_xold{ 0.f }, mouse_yold{ 0.f };
-
-            FWindowCallback::OnCursorMove(mouse_xold - static_cast<float>(event.motion.x), mouse_yold - static_cast<float>(event.motion.y));
-
-            mouse_xold = event.motion.x;
-            mouse_yold = event.motion.y;
+            FWindowCallback::OnCursorMove(static_cast<float>(event.motion.x), static_cast<float>(event.motion.y));
         } break;
 
         case SDL_FINGERDOWN:
@@ -127,6 +123,11 @@ bool CWindowHandle::begin()
             Uint8 window_event = event.window.event;
 
 
+        } break;
+        case SDL_WINDOWEVENT_RESIZED:
+        {
+            bWasResized = true;
+            SDL_GetWindowSize(pWindow, &iWidth, &iHeight);
         } break;
         }
 
@@ -161,4 +162,9 @@ void CWindowHandle::createContext(void*& pContext)
 {
     pContext = SDL_GL_CreateContext(pWindow);
     SDL_GL_MakeCurrent(pWindow, pContext);
+}
+
+float CWindowHandle::getAspect()
+{
+    return static_cast<float>(iWidth) / static_cast<float>(iHeight);
 }

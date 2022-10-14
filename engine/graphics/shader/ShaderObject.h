@@ -1,9 +1,13 @@
 #pragma once
 
+#include "buffers/VertexBufferObject.h"
 #include "handlers/Handler.h"
 #include "pipeline/Pipeline.h"
+#include "Framebuffer.h"
 #include "descriptors/DescriptorHandler.h"
 #include "APIStructures.h"
+
+#include <utility/ufunction.hpp>
 
 namespace engine
 {
@@ -22,10 +26,12 @@ namespace engine
 		public:
 			friend class CShaderLoader;
 			CShaderObject() = default;
+			CShaderObject(CDevice* device);
 
 			void create();
 			void reCreate();
-			void update();
+			void setRenderFunc(utl::function<void(CShaderObject*, vk::CommandBuffer&)>&& rf);
+			void render(vk::CommandBuffer& commandBuffer);
 
 			void bind(vk::CommandBuffer& commandBuffer);
 
@@ -40,7 +46,9 @@ namespace engine
 			utl::scope_ptr<CDescriptorHandler>& getDescriptorSet();
 
 			std::unique_ptr<CPipeline>& getPipeline() { return pPipeline; }
+			const std::unique_ptr<CVertexBufferObject>& getVBO() { return pVBO; }
 
+			vk::PipelineBindPoint getBindPoint() { return programCI.bindPoint; }
 			vk::CullModeFlagBits getCullMode() { return programCI.cullMode; }
 			vk::FrontFace getFrontFace() { return programCI.frontFace; }
 			bool getDepthTestFlag() { return programCI.depthTest; }
@@ -49,8 +57,14 @@ namespace engine
 
 			const std::unique_ptr<CShader>& getShader();
 		private:
+			CDevice* pDevice{ nullptr };
+
+			utl::function<void(CShaderObject*, vk::CommandBuffer&)> pRenderFunc;
+
 			std::unique_ptr<CShader> pShader;
 			std::unique_ptr<CPipeline> pPipeline;
+			std::unique_ptr<CFramebuffer> pFramebuffer;
+			std::unique_ptr<CVertexBufferObject> pVBO;
 
 			uint32_t currentInstance{ 0 }, instances{ 1 };
 			bool bIsCreated{ false }, bIsReCreated{ false };

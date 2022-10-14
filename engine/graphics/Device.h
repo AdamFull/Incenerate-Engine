@@ -24,6 +24,8 @@ namespace engine
 
 			void updateCommandPools();
 
+            void tryRebuildSwapchain();
+
             inline void GPUWait() { vkDevice.waitIdle(); }
 
             uint32_t getVulkanVersion(ERenderApi pAPI);

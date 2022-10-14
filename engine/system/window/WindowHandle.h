@@ -31,12 +31,16 @@ namespace engine
                 SDL_Window* getWindowPointer();
                 void createContext(void*& pContext);
 
+                float getAspect();
+
                 static int32_t iWidth, iHeight;
+                static bool bWasResized;
 
             private:
                 SDL_Window* pWindow{ nullptr };
                 std::vector<SDL_Event> vWinEvents;
                 bool bRunning{ true };
+                
             };
 		}
 	}

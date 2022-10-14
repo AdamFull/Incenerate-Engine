@@ -90,6 +90,7 @@ void CBuffer::map(vk::DeviceSize size, vk::DeviceSize offset)
     {
         auto res = vkDevice.mapMemory(deviceMemory, 0, bufferSize, vk::MemoryMapFlags{}, &mappedMemory);
         assert(res == vk::Result::eSuccess && "Can't map memory.");
+        return;
     }
     auto res = vkDevice.mapMemory(deviceMemory, offset, size, vk::MemoryMapFlags{}, &mappedMemory);
     assert(res == vk::Result::eSuccess && "Can't map memory.");
@@ -143,4 +144,13 @@ vk::Result CBuffer::flush(vk::DeviceSize size, vk::DeviceSize offset)
     mappedRange.offset = offset;
     mappedRange.size = size;
     return vkDevice.flushMappedMemoryRanges(1, &mappedRange);
+}
+
+vk::DeviceSize CBuffer::getAlignment(vk::DeviceSize instanceSize, vk::DeviceSize minOffsetAlignment)
+{
+    if (minOffsetAlignment > 0)
+    {
+        return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
+    }
+    return instanceSize;
 }

@@ -393,6 +393,20 @@ void CDevice::updateCommandPools()
     }
 }
 
+void CDevice::tryRebuildSwapchain()
+{
+    if (bSwapChainRebuild)
+    {
+        vkDevice.waitIdle();
+        commandPools.clear();
+        cleanupSwapchain();
+        createSwapchain();
+        currentFrame = 0;
+        viewportExtent = swapchainExtent;
+        bSwapChainRebuild = false;
+    }
+}
+
 uint32_t CDevice::getVulkanVersion(ERenderApi eAPI)
 {
     switch (eAPI)
@@ -878,6 +892,11 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
     currentFrame = (currentFrame + 1) % framesInFlight;
 
     return res;
+}
+
+vk::Extent2D CDevice::getExtent(bool automatic)
+{
+    return swapchainExtent;
 }
 
 const std::shared_ptr<CCommandPool>& CDevice::getCommandPool(const std::thread::id& threadId)

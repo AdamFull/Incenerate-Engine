@@ -3,7 +3,7 @@
     "bind_point": "graphics",
     "cull_mode": "front",
     "front_face": "ccw",
-    "depth_test": false,
+    "depth_test": true,
     "dynamic_states": ["Viewport", "Scissor"],
     "stages": [
       "shaders/test.vert",

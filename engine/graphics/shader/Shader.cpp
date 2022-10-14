@@ -4,6 +4,17 @@
 
 using namespace engine::graphics;
 
+CShader::CShader(CDevice* device)
+{
+    pDevice = device;
+}
+
+CShader::~CShader()
+{
+    for (auto& stage : vShaderModules)
+        pDevice->destroy(&stage.module);
+}
+
 void CShader::addStage(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stage)
 {
 	CShaderReflect::addStage(spirv, stage);
