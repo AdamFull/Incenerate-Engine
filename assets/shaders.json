@@ -1,10 +1,10 @@
 {
   "test_shader": {
-    "bind_point": "graphics",
-    "cull_mode": "front",
+    "bind_point": "Graphics",
+    "cull_mode": "Front",
     "front_face": "ccw",
     "depth_test": true,
-    "dynamic_states": ["Viewport", "Scissor"],
+    "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
       "shaders/test.vert",
       "shaders/test.frag"
@@ -12,5 +12,17 @@
     "defines": {
       "TEST": "5"
     }
+  },
+  "voxel_shader": {
+    "bind_point": "Graphics",
+    "cull_mode": "Back",
+    "front_face": "ccw",
+    "depth_test": true,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "shaders/voxel.vert",
+      "shaders/voxel.geom",
+      "shaders/voxel.frag"
+    ]
   }
 }

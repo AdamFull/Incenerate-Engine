@@ -1,47 +1,50 @@
 #include "engine/engine.h"
 
+#include <random>
+#include <PerlinNoise.hpp>
 
 using namespace engine;
 using namespace engine::graphics;
 
+uint32_t ConvertToRGBA(const glm::vec4& color)
+{
+    auto r = (uint8_t)(color.x * 255.f);
+    auto g = (uint8_t)(color.y * 255.f);
+    auto b = (uint8_t)(color.z * 255.f);
+    auto a = (uint8_t)(color.w * 255.f);
+
+    return (a << 24) | (b << 16) | (g << 8) | r;
+}
+
 int main()
 {
+    std::random_device r;
+
     std::vector<FVertex> vVertices{};
-    vVertices.emplace_back(FVertex(glm::vec3(-1.f, -1.f, 0.5f), 0xFF0000FF));
-    vVertices.emplace_back(FVertex(glm::vec3(1.f, -1.f, 0.5f), 0x00FF00FF ));
-    vVertices.emplace_back(FVertex(glm::vec3(-1.f, 1.f, 0.5f), 0x0000FFFF ));
-    vVertices.emplace_back(FVertex(glm::vec3(1.f, 1.f, 0.5f), 0xFF00FFFF ));
-    vVertices.emplace_back(FVertex(glm::vec3(-1.f, -1.f, -0.5f), 0xFF00FFFF ));
-    vVertices.emplace_back(FVertex(glm::vec3(1.f, -1.f, -0.5f), 0xFF00FFFF ));
-    vVertices.emplace_back(FVertex(glm::vec3(-1.f, 1.f, -0.5f), 0xFF00FFFF ));
-    vVertices.emplace_back(FVertex(glm::vec3(1.f, 1.f, -0.5f), 0xFF00FFFF ));
+    std::default_random_engine e1(r());
+    std::uniform_real_distribution<float> _col(0.f, 1.f);
 
-    std::vector<uint32_t> vIndices {
-        //Top
-        2, 6, 7,
-        2, 3, 7,
+    siv::PerlinNoise noise{ std::random_device{} };
+    noise.reseed(std::mt19937{ 67890u });
 
-        //Bottom
-        0, 4, 5,
-        0, 1, 5,
+    for (uint32_t z = 0; z < 100; ++z)
+    {
+        for (uint32_t y = 0; y < 100; ++y)
+        {
+            for (uint32_t x = 0; x < 100; ++x)
+            {
+                auto xc = (double)x * 0.1;
+                auto yc = (double)y * 0.1;
+                auto zc = (double)z * 0.1;
+                auto res = noise.octave3D_01(xc, yc, zc, 1);
 
-        //Left
-        0, 2, 6,
-        0, 4, 6,
+                auto colvec = glm::vec4(1.f, 0.f, 0.f, 1.f);
 
-        //Right
-        1, 3, 7,
-        1, 5, 7,
-
-        //Front
-        0, 2, 3,
-        0, 1, 3,
-
-        //Back
-        4, 6, 7,
-        4, 5, 7 
-    };
-
+                if (res > 0.5)
+                    vVertices.emplace_back(FVertex(glm::vec3(xc, yc, zc), ConvertToRGBA(colvec)));
+            }
+        }
+    }
 
     FEngineCreateInfo ci;
     ci.eAPI = ERenderApi::eVulkan_1_1;
@@ -56,11 +59,10 @@ int main()
     auto& cameractrl = CEngine::getInstance()->getCameraController();
 
 
-    auto& program = graphics->addStage("test_shader");
+    auto& program = graphics->addStage("voxel_shader");
 
     auto& vbo = program->getVBO();
     vbo->addVertices(std::move(vVertices));
-    vbo->addIndices(std::move(vIndices));
 
     program->setRenderFunc([&](CShaderObject* pso, vk::CommandBuffer& cb) 
         {
@@ -68,8 +70,8 @@ int main()
             auto projection = camera->getProjection();
             auto view = camera->getView();
 
-            auto& ubo = pso->getUniformBuffer("FUniformData");
-            ubo->set("projection", projection);
+            auto& ubo = pso->getUniformBuffer("MatricesBlock");
+            ubo->set("proj", projection);
             ubo->set("view", view);
         });
 

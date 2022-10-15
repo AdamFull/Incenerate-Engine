@@ -205,6 +205,46 @@
           "name": "OPTION_USE_GIT_INFORMATION",
           "value": "False",
           "type": "BOOL"
+        },
+        {
+          "name": "BUILD_TESTING",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "ENABLE_CTEST",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "KTX_FEATURE_TESTS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "KTX_FEATURE_TOOLS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SPIRV_CROSS_CLI",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SPIRV_CROSS_C_API",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SPIRV_CROSS_ENABLE_TESTS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "SPIRV_CROSS_ENABLE_UTIL",
+          "value": "False",
+          "type": "BOOL"
         }
       ]
     },
@@ -217,8 +257,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
+      "inheritEnvironments": [ "msvc_x64_x64" ]
     }
   ]
 }

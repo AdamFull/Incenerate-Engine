@@ -19,6 +19,7 @@ namespace engine
 
 		glm::mat4 getProjection(bool flipY = false) const;
 		glm::mat4 getView(bool flipY = false) const;
+		glm::vec4& getViewPos();
 
 		glm::vec3 getForwardVector() const;
 		glm::vec3 getUpVector() const;
@@ -39,7 +40,7 @@ namespace engine
 	private:
 		glm::vec4 viewPos{};
 		FTransform transform;
-		float dt{ 0.0 }, aspect{1.7f}, fieldOfView{45.f}, nearPlane{0.5f}, farPlane{200.f}, sensitivity{15.f};
+		float dt{ 0.0 }, aspect{1.7f}, fieldOfView{45.f}, nearPlane{0.1f}, farPlane{60.f}, sensitivity{15.f};
 		float angleH{ 0.f }, angleV{ 0.f };
 	};
 }

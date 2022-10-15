@@ -11,10 +11,10 @@ void CCamera::create()
 void CCamera::update(float fDT)
 {
     dt = fDT;
-    viewPos = glm::vec4(transform.pos, 0.0);
+    viewPos = glm::vec4(transform.pos, 1.0);
 
-    auto view = getView();
-    auto projection = getProjection();
+    //auto view = getView();
+    //auto projection = getProjection();
     //frustum.update(view, projection);
 }
 
@@ -71,6 +71,11 @@ glm::mat4 CCamera::getView(bool flipY) const
         position.y *= -1.f;
 
     return glm::lookAt(position, position + transform.rot, getUpVector());
+}
+
+glm::vec4& CCamera::getViewPos()
+{
+    return viewPos;
 }
 
 glm::vec3 CCamera::getForwardVector() const

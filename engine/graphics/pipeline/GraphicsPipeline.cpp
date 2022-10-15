@@ -41,7 +41,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     bool isDepthOnly = attachmentCount == 0;
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
-    inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
+    inputAssembly.topology = vk::PrimitiveTopology::ePointList;
     inputAssembly.flags = vk::PipelineInputAssemblyStateCreateFlags{};
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 
@@ -62,7 +62,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     {
         vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-        colorBlendAttachment.blendEnable = VK_FALSE;
+        colorBlendAttachment.blendEnable = VK_TRUE;
         colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
         colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
         colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
@@ -74,7 +74,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     }
 
     vk::PipelineColorBlendStateCreateInfo colorBlending{};
-    colorBlending.logicOpEnable = VK_FALSE;
+    colorBlending.logicOpEnable = VK_TRUE;
     colorBlending.logicOp = vk::LogicOp::eCopy;
     colorBlending.attachmentCount = static_cast<uint32_t>(colorBlendAttachments.size());
     colorBlending.pAttachments = colorBlendAttachments.data();

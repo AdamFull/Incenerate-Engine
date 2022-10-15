@@ -312,7 +312,8 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 
 		auto messages = static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules | EShMsgDefault);
 
-		auto shaderName = path.string().c_str();
+		auto srShaderName = path.string();
+		auto shaderName = srShaderName.c_str();
 		auto shaderSource = data.c_str();
 		shader.setStringsWithLengthsAndNames(&shaderSource, nullptr, &shaderName, 1);
 		shader.setPreamble(preamble.c_str());
@@ -427,13 +428,13 @@ void CShaderCompiler::load_cache()
 	auto tmp = fs::read_file(cache_file_name);
 	if (!tmp.empty())
 	{
-		auto bson = nlohmann::json::from_bson(tmp);
+		auto bson = nlohmann::json::parse(tmp);
 		bson.get_to(cache);
 	}
 }
 
 void CShaderCompiler::save_cache()
 {
-	auto binary = nlohmann::json::to_bson(cache);
+	auto binary = nlohmann::json(cache).dump();
 	fs::write_file(cache_file_name, binary);
 }
