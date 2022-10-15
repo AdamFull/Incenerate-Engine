@@ -33,7 +33,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL CDevice::validationCallback(VkDebugUtilsMessageSe
 {
     switch (messageSeverity)
     {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: utl::log<utl::level::eVerbose>(pCallbackData->pMessage); break;
+    //case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: utl::log<utl::level::eVerbose>(pCallbackData->pMessage); break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: utl::log<utl::level::eInfo>(pCallbackData->pMessage); break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: utl::log<utl::level::eWarning>(pCallbackData->pMessage); break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:  utl::log<utl::level::eError>(pCallbackData->pMessage); break;
@@ -395,16 +395,11 @@ void CDevice::updateCommandPools()
 
 void CDevice::tryRebuildSwapchain()
 {
-    if (bSwapChainRebuild)
-    {
-        vkDevice.waitIdle();
-        commandPools.clear();
-        cleanupSwapchain();
-        createSwapchain();
-        currentFrame = 0;
-        viewportExtent = swapchainExtent;
-        bSwapChainRebuild = false;
-    }
+    commandPools.clear();
+    cleanupSwapchain();
+    createSwapchain();
+    currentFrame = 0;
+    viewportExtent = swapchainExtent;
 }
 
 uint32_t CDevice::getVulkanVersion(ERenderApi eAPI)
@@ -887,7 +882,6 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
 
     auto& present = m_qPresentQueue;
     res = present.presentKHR(presentInfo);
-    assert(res == vk::Result::eSuccess && "Failed to present KHR.");
 
     currentFrame = (currentFrame + 1) % framesInFlight;
 

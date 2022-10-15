@@ -32,8 +32,9 @@ namespace engine
 			void reCreate();
 			void setRenderFunc(utl::function<void(CShaderObject*, vk::CommandBuffer&)>&& rf);
 			void render(vk::CommandBuffer& commandBuffer);
+			void dispatch(size_t size);
 
-			void bind(vk::CommandBuffer& commandBuffer);
+			void bind(vk::CommandBuffer& commandBuffer, bool drawcall = true);
 
 			void addTexture(const std::string& attachment, vk::DescriptorImageInfo& descriptor);
 			void addTexture(const std::string& attachment, std::shared_ptr<CImage>& pTexture);

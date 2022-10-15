@@ -13,6 +13,8 @@ CShader::~CShader()
 {
     for (auto& stage : vShaderModules)
         pDevice->destroy(&stage.module);
+
+    pDevice = nullptr;
 }
 
 void CShader::addStage(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stage)

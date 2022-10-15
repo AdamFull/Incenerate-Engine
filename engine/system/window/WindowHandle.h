@@ -24,6 +24,8 @@ namespace engine
                 bool begin();
                 void end();
 
+                bool isMinimized();
+
                 const std::vector<SDL_Event>& getWinEvents();
 
                 void getWindowSize(int32_t* width, int32_t* height);

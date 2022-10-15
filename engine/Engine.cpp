@@ -20,7 +20,7 @@ void CEngine::create(const FEngineCreateInfo& createInfo)
 	auto& camera = pCameraController->getCamera();
 	camera->setAspect(pWindow->getAspect());
 
-	pGraphics = std::make_unique<CAPIHandle>();
+	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
 	pGraphics->create(createInfo);
 }
 
@@ -41,6 +41,8 @@ void CEngine::begin_render_loop()
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		delta_time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 	}
+
+	pGraphics->shutdown();
 }
 
 const winptr_t& CEngine::getWindow() const

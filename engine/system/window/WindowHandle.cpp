@@ -14,7 +14,7 @@ CWindowHandle::~CWindowHandle()
 
 void CWindowHandle::create(const FWindowCreateInfo& createInfo)
 {
-    uint32_t flags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN;
+    uint32_t flags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
 
     iWidth = createInfo.width;
     iHeight = createInfo.height;
@@ -139,7 +139,13 @@ bool CWindowHandle::begin()
 
 void CWindowHandle::end()
 {
-    SDL_GL_SwapWindow(pWindow);
+    //SDL_GL_SwapWindow(pWindow);
+}
+
+bool CWindowHandle::isMinimized()
+{
+    auto flags = SDL_GetWindowFlags(pWindow);
+    return flags & SDL_WINDOW_MINIMIZED;
 }
 
 const std::vector<SDL_Event>& CWindowHandle::getWinEvents()

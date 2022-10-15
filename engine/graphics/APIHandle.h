@@ -8,13 +8,23 @@
 
 namespace engine
 {
+	namespace system {
+		namespace window {
+			class CWindowHandle;
+		}
+	}
+
 	namespace graphics
 	{
+		using winhandle_t = system::window::CWindowHandle*;
 		class CAPIHandle
 		{
 		public:
+			CAPIHandle(winhandle_t window);
+
 			void create(const FEngineCreateInfo& createInfo);
 			void reCreate();
+			void shutdown();
 			void render();
 
 			const std::unique_ptr<CShaderObject>& addStage(const std::string& shader_name);
@@ -30,6 +40,8 @@ namespace engine
 			vk::Result endFrame();
 
 		protected:
+			winhandle_t pWindow{ nullptr };
+
 			ERenderApi eAPI;
 			std::unique_ptr<CDevice> pDevice;
 			std::unique_ptr<CShaderLoader> pLoader;

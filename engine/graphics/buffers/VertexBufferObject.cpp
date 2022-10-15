@@ -36,7 +36,7 @@ void CVertexBufferObject::bind(vk::CommandBuffer commandBuffer)
 		commandBuffer.drawIndexed(vIndices.size(), 1, 0, 0, 0);
 	}
 	else
-		commandBuffer.draw(vVertices.size(), 1, 0, 0);
+		commandBuffer.draw(static_cast<uint32_t>(vVertices.size()), 1, 0, 0);
 }
 
 void CVertexBufferObject::addVertices(std::vector<FVertex>&& vertices)

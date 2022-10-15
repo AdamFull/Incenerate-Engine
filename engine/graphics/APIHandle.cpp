@@ -5,6 +5,11 @@
 using namespace engine::graphics;
 using namespace engine::system::window;
 
+CAPIHandle::CAPIHandle(winhandle_t window)
+{
+    pWindow = window;
+}
+
 void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 {
 	eAPI = createInfo.eAPI;
@@ -21,25 +26,48 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
 void CAPIHandle::reCreate()
 {
+    //ReCreation guide
+    // 
+    // re create viewport only:
+    // 1. gpu wait
+    // 2. re create viewport framebuffer
+
+    // re create swapchain
+    // 1. gpu wait
+    // 2. destroy swapchain (destroy all images)
+    // 3. create swapchain (with images)
+    // 4. re create framebuffers
+
+    while (pWindow->isMinimized())
+        pWindow->begin();
+
     pDevice->GPUWait();
+
     pDevice->tryRebuildSwapchain();
     screenExtent = pDevice->getExtent();
-    commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
     imageIndex = 0;
     CWindowHandle::bWasResized = false;
+
+    for (auto& stage : vStages)
+        stage->reCreate();
+}
+
+void CAPIHandle::shutdown()
+{
+    pDevice->GPUWait();
 }
 
 void CAPIHandle::render()
 {
-    if (pDevice->getReduildFlag() || pDevice->isNeedToRebuildViewport()) { reCreate(); }
     vk::CommandBuffer commandBuffer{};
     try { commandBuffer = beginFrame(); }
-    catch (vk::OutOfDateKHRError err) { pDevice->setRebuildFlag(); }
+    catch (vk::OutOfDateKHRError err) { reCreate(); }
     catch (vk::SystemError err) { throw std::runtime_error("Failed to acquire swap chain image!"); }
 
     if (!commandBuffer)
         return;
-
+    
+    //TODO: select between drawcall and dispatch
     for (auto& stage : vStages)
         stage->render(commandBuffer);
 
@@ -49,9 +77,7 @@ void CAPIHandle::render()
     catch (vk::SystemError err) { throw std::runtime_error("failed to present swap chain image!"); }
 
     if (resultPresent == vk::Result::eSuboptimalKHR || resultPresent == vk::Result::eErrorOutOfDateKHR || CWindowHandle::bWasResized)
-    {
-        pDevice->setRebuildFlag();
-    }
+        reCreate();
 
     pDevice->updateCommandPools();
 }
@@ -81,11 +107,15 @@ vk::CommandBuffer CAPIHandle::beginFrame()
 {
     assert(!frameStarted && "Can't call beginFrame while already in progress");
     vk::Result res = pDevice->acquireNextImage(&imageIndex);
-    if (res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR)
+    if (res == vk::Result::eErrorOutOfDateKHR)
     {
-        pDevice->setRebuildFlag();
+        reCreate();
         return nullptr;
     }
+    else if (res == vk::Result::eSuboptimalKHR) {
+        throw std::runtime_error("Failed to acquire swap chain image!");
+    }
+
     frameStarted = true;
 
     commandBuffers->begin(vk::CommandBufferUsageFlagBits::eRenderPassContinue, imageIndex);

@@ -20,9 +20,12 @@ CFramebuffer::~CFramebuffer()
 
     for (auto& framebuffer : vFramebuffers)
         pDevice->destroy(&framebuffer);
+
     vFramebuffers.clear();
     mFramebufferImages.clear();
     vFramebufferDepth.clear();
+
+    pDevice = nullptr;
 }
 
 void CFramebuffer::create()
@@ -33,8 +36,8 @@ void CFramebuffer::create()
 
 void CFramebuffer::reCreate()
 {
-    pDevice->destroy(&renderPass);
-    createRenderPass();
+    for (auto& fb : vFramebuffers)
+        pDevice->destroy(&fb);
 
     vFramebuffers.clear();
     mFramebufferImages.clear();

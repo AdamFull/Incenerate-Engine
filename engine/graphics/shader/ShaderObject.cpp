@@ -2,6 +2,7 @@
 
 #include "Device.h"
 #include "image/Image.h"
+#include "buffers/CommandBuffer.h"
 #include "pipeline/GraphicsPipeline.h"
 #include "pipeline/ComputePipeline.h"
 #include "handlers/StorageHandler.h"
@@ -40,6 +41,7 @@ void CShaderObject::create()
         pFramebuffer->addSubpassDependency(0, VK_SUBPASS_EXTERNAL, vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
             vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite, vk::AccessFlagBits::eColorAttachmentWrite);
 
+        pFramebuffer->setFlipViewport(true);
         pFramebuffer->create();
 
         //Creating pipeline
@@ -89,8 +91,8 @@ void CShaderObject::reCreate()
 {
     if (!bIsReCreated)
     {
+        pFramebuffer->setRenderArea(vk::Offset2D{ 0, 0 }, pDevice->getExtent());
         pFramebuffer->reCreate();
-        pPipeline->reCreate(this, pFramebuffer->getRenderPass(), 0);
         bIsReCreated = true;
     }
 }
@@ -108,11 +110,27 @@ void CShaderObject::render(vk::CommandBuffer& commandBuffer)
         pRenderFunc(this, commandBuffer);
 
     bind(commandBuffer);
-    pVBO->bind(commandBuffer);
     pFramebuffer->end(commandBuffer);
 }
 
-void CShaderObject::bind(vk::CommandBuffer& commandBuffer)
+void CShaderObject::dispatch(size_t size)
+{
+    auto cmdBuf = CCommandBuffer(pDevice);
+    cmdBuf.create(true, vk::QueueFlagBits::eCompute);
+    auto& commandBuffer = cmdBuf.getCommandBuffer();
+
+    if (pRenderFunc)
+        pRenderFunc(this, commandBuffer);
+
+    bind(commandBuffer, false);
+
+    auto groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(size) / static_cast<float>(*pShader->getLocalSizes()[0])));
+    auto groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(size) / static_cast<float>(*pShader->getLocalSizes()[1])));
+    commandBuffer.dispatch(groupCountX, groupCountY, 1);
+    cmdBuf.submitIdle();
+}
+
+void CShaderObject::bind(vk::CommandBuffer& commandBuffer, bool drawcall)
 {
     auto& pDescriptorSet = getDescriptorSet();
     auto& mBuffers = getUniformBuffers();
@@ -133,6 +151,9 @@ void CShaderObject::bind(vk::CommandBuffer& commandBuffer)
     pPipeline->bind(commandBuffer);
     bIsReCreated = false;
     currentInstance = (currentInstance + 1) % instances;
+
+    if (drawcall)
+        pVBO->bind(commandBuffer);
 }
 
 void CShaderObject::addTexture(const std::string& attachment, vk::DescriptorImageInfo& descriptor)
