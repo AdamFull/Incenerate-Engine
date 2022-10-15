@@ -13,9 +13,9 @@ void CCamera::update(float fDT)
     dt = fDT;
     viewPos = glm::vec4(transform.pos, 1.0);
 
-    //auto view = getView();
-    //auto projection = getProjection();
-    //frustum.update(view, projection);
+    auto view = getView();
+    auto projection = getProjection();
+    frustum.update(view, projection);
 }
 
 void CCamera::moveForward(bool bInv)

@@ -31,6 +31,10 @@ void CEngine::begin_render_loop()
 	{
 		auto startTime = std::chrono::high_resolution_clock::now();
 
+		//TODO: change after adding scene system
+		auto& camera = pCameraController->getCamera();
+		camera->setAspect(pWindow->getAspect());
+
 		pInputMapper->update(delta_time);
 		pCameraController->update(delta_time);
 

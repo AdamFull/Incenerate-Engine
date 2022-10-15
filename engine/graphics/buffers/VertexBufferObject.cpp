@@ -24,19 +24,26 @@ void CVertexBufferObject::bind(vk::CommandBuffer commandBuffer)
 	if (!bBuffersCreated)
 		create();
 
-	auto hasIndex = !vIndices.empty();
+	auto hasVertices = !vVertices.empty();
 
-	vk::DeviceSize offsets[] = { 0 };
-	auto buffer = vertexBuffer->getBuffer();
-	commandBuffer.bindVertexBuffers(0, 1, &buffer, offsets);
-
-	if (hasIndex)
+	if (hasVertices)
 	{
-		commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
-		commandBuffer.drawIndexed(vIndices.size(), 1, 0, 0, 0);
+		auto hasIndex = !vIndices.empty();
+
+		vk::DeviceSize offsets[] = { 0 };
+		auto buffer = vertexBuffer->getBuffer();
+		commandBuffer.bindVertexBuffers(0, 1, &buffer, offsets);
+
+		if (hasIndex)
+		{
+			commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
+			commandBuffer.drawIndexed(vIndices.size(), 1, 0, 0, 0);
+		}
+		else
+			commandBuffer.draw(static_cast<uint32_t>(vVertices.size()), 1, 0, 0);
 	}
 	else
-		commandBuffer.draw(static_cast<uint32_t>(vVertices.size()), 1, 0, 0);
+		commandBuffer.draw(3, 1, 0, 0);
 }
 
 void CVertexBufferObject::addVertices(std::vector<FVertex>&& vertices)

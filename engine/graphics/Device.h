@@ -14,6 +14,7 @@ namespace engine
 		class CDevice
 		{
 		public:
+            CDevice();
 			~CDevice();
 
 			void create(const FEngineCreateInfo& createInfo);
@@ -24,7 +25,7 @@ namespace engine
 
 			void updateCommandPools();
 
-            void tryRebuildSwapchain();
+            void recreateSwapchain();
 
             inline void GPUWait() { vkDevice.waitIdle(); }
 
@@ -65,36 +66,26 @@ namespace engine
 
             inline vk::PhysicalDevice& getPhysical() { return vkPhysical; }
             inline vk::Device& getLogical() { return vkDevice; }
-            inline vk::Queue& getGraphicsQueue() { return m_qGraphicsQueue; }
-            inline vk::Queue& getPresentQueue() { return m_qPresentQueue; }
-            inline vk::Queue& getComputeQueue() { return m_qComputeQueue; }
-            inline vk::Queue& getTransferQueue() { return m_qTransferQueue; }
+            inline vk::Queue& getGraphicsQueue() { return qGraphicsQueue; }
+            inline vk::Queue& getPresentQueue() { return qPresentQueue; }
+            inline vk::Queue& getComputeQueue() { return qComputeQueue; }
+            inline vk::Queue& getTransferQueue() { return qTransferQueue; }
 
-            inline vk::PipelineCache& getPipelineCache() { return pipelineCache; }
-
-            inline vk::SampleCountFlagBits getSamples() { return m_msaaSamples; }
+            inline vk::SampleCountFlagBits getSamples() { return msaaSamples; }
             inline vk::AllocationCallbacks* getAllocator() { return pAllocator; }
 
             /**************************************************Swapchain********************************************/
             vk::Result acquireNextImage(uint32_t* imageIndex);
             vk::Result submitCommandBuffers(const vk::CommandBuffer* commandBuffer, uint32_t* imageIndex, vk::QueueFlagBits queueBit);
 
+            inline std::vector<vk::ImageView>& getImageViews() { return vImageViews; }
             inline vk::Format getImageFormat() { return imageFormat; };
             vk::Extent2D getExtent(bool automatic = false);
-            inline std::vector<vk::Image>& getImages() { return vImages; }
-            inline std::vector<vk::ImageView>& getImageViews() { return vImageViews; }
-            inline vk::SwapchainKHR& GetSwapChain() { return swapChain; }
-            inline std::vector<vk::Semaphore>& getImageAvailableSemaphores() { return vImageAvailableSemaphores; }
-            inline std::vector<vk::Semaphore>& getRenderFinishedSemaphores() { return vRenderFinishedSemaphores; }
-            inline std::vector<vk::Fence>& getInFlightFences() { return vInFlightFences; }
             float getAspect(bool automatic = false);
-            inline bool getReduildFlag() { return bSwapChainRebuild; }
-            inline void setRebuildFlag() { bSwapChainRebuild = true; }
             uint32_t getFramesInFlight() { return framesInFlight; }
             uint32_t getCurrentFrame() { return currentFrame; }
 
             void setViewportExtent(vk::Extent2D extent);
-            inline const bool isNeedToRebuildViewport() const { return bViewportRebuild; }
 
             template <class _Ty, class _Ret>
             inline vk::Result create(_Ty& info, _Ret* ref)
@@ -276,37 +267,35 @@ namespace engine
 
         private:
             vk::Instance vkInstance{ VK_NULL_HANDLE }; // Main vulkan instance
-            VkDebugUtilsMessengerEXT m_vkDebugUtils{ NULL };
+            VkDebugUtilsMessengerEXT vkDebugUtils{ NULL };
             vk::SurfaceKHR vkSurface{ VK_NULL_HANDLE }; // Vulkan's drawing surface
             std::map<std::thread::id, std::shared_ptr<CCommandPool>> commandPools;
             vk::AllocationCallbacks* pAllocator{ nullptr };
 
             vk::PhysicalDevice vkPhysical;
             vk::Device vkDevice;
-            vk::Queue m_qGraphicsQueue;
-            vk::Queue m_qPresentQueue;
-            vk::Queue m_qComputeQueue;
-            vk::Queue m_qTransferQueue;
+            vk::Queue qGraphicsQueue;
+            vk::Queue qPresentQueue;
+            vk::Queue qComputeQueue;
+            vk::Queue qTransferQueue;
 
             vk::PipelineCache pipelineCache{ VK_NULL_HANDLE };
-            vk::SampleCountFlagBits m_msaaSamples{ vk::SampleCountFlagBits::e1 };
-            bool m_bValidation{ false };
+            vk::SampleCountFlagBits msaaSamples{ vk::SampleCountFlagBits::e1 };
+            bool bValidation{ false };
 
             //Swapchain
             vk::Format imageFormat;
             vk::Extent2D swapchainExtent;
             vk::SwapchainKHR swapChain{ VK_NULL_HANDLE };
-            bool bSwapChainRebuild{};
 
             vk::Extent2D viewportExtent;
-            bool bViewportRebuild{ false };
 
             std::vector<vk::Image> vImages;
             std::vector<vk::ImageView> vImageViews;
             std::vector<vk::Semaphore> vImageAvailableSemaphores;
             std::vector<vk::Semaphore> vRenderFinishedSemaphores;
             std::vector<vk::Fence> vInFlightFences;
-            uint32_t framesInFlight{ 2 };
+            uint32_t framesInFlight{ 4 };
             uint32_t currentFrame{ 0 };
 		};
 	}

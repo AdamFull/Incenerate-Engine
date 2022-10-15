@@ -38,6 +38,10 @@ bool CWindowHandle::begin()
     SDL_Event event;
     vWinEvents.clear();
 
+    auto surface = SDL_GetWindowSurface(pWindow);
+    iWidth = surface->w;
+    iHeight = surface->h;
+
     while (SDL_PollEvent(&event))
     {
         SDL_PumpEvents();

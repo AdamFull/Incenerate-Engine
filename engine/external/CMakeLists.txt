@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19.1)
 project(external_lib)
 
-add_library(${PROJECT_NAME} external.cpp)
+add_library(${PROJECT_NAME} external.cpp "ogt_vox.h")
 
 add_subdirectory(utility)
 target_link_libraries(${PROJECT_NAME} PUBLIC utility_lib)

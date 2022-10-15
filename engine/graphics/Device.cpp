@@ -79,7 +79,7 @@ void internalFreeNotification(void* pUserData, size_t size, VkInternalAllocation
 
 static vk::AllocationCallbacks* createPAllocator()
 {
-    vk::AllocationCallbacks* m_allocator = (vk::AllocationCallbacks*)malloc(sizeof(vk::AllocationCallbacks));
+    vk::AllocationCallbacks* m_allocator = new vk::AllocationCallbacks();
     memset(m_allocator, 0, sizeof(vk::AllocationCallbacks));
     m_allocator->pfnAllocation = (PFN_vkAllocationFunction)(&allocationFunction);
     m_allocator->pfnReallocation = (PFN_vkReallocationFunction)(&reallocationFunction);
@@ -89,6 +89,10 @@ static vk::AllocationCallbacks* createPAllocator()
     return m_allocator;
 }
 
+CDevice::CDevice()
+{
+    pAllocator = createPAllocator();
+}
 
 CDevice::~CDevice()
 {
@@ -101,8 +105,8 @@ CDevice::~CDevice()
     vkInstance.destroySurfaceKHR(vkSurface);
     destroy(&vkDevice);
 
-    if (m_bValidation)
-        destroyDebugUtilsMessengerEXT(vkInstance, m_vkDebugUtils, (const VkAllocationCallbacks*)pAllocator);
+    if (bValidation)
+        destroyDebugUtilsMessengerEXT(vkInstance, vkDebugUtils, (const VkAllocationCallbacks*)pAllocator);
 
     destroy(&vkInstance);
     free(pAllocator);
@@ -111,8 +115,10 @@ CDevice::~CDevice()
 
 void CDevice::create(const FEngineCreateInfo& createInfo)
 {
-    pAllocator = createPAllocator();
-    m_bValidation = true;
+#ifdef _DEBUG
+    bValidation = true;
+#endif
+
     createInstance(createInfo);
     createDebugCallback();
     createSurface();
@@ -123,10 +129,10 @@ void CDevice::create(const FEngineCreateInfo& createInfo)
 
 void CDevice::createInstance(const FEngineCreateInfo& createInfo)
 {
-    if (m_bValidation && !VulkanStaticHelper::checkValidationLayerSupport(validationLayers))
+    if (bValidation && !VulkanStaticHelper::checkValidationLayerSupport(validationLayers))
         throw std::runtime_error("Validation layers requested, but not available!");
 
-    auto extensions = VulkanStaticHelper::getRequiredExtensions(m_bValidation);
+    auto extensions = VulkanStaticHelper::getRequiredExtensions(bValidation);
 
     auto vkVersion = getVulkanVersion(createInfo.eAPI);
 
@@ -144,7 +150,7 @@ void CDevice::createInstance(const FEngineCreateInfo& createInfo)
     instanceCI.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     instanceCI.ppEnabledExtensionNames = extensions.data();
 
-    if (m_bValidation)
+    if (bValidation)
     {
         std::array<vk::ValidationFeatureEnableEXT, 1> validationExt{ vk::ValidationFeatureEnableEXT::eSynchronizationValidation };
         vk::ValidationFeaturesEXT validationFeatures{};
@@ -162,7 +168,7 @@ void CDevice::createInstance(const FEngineCreateInfo& createInfo)
 
 void CDevice::createDebugCallback()
 {
-    if (!m_bValidation)
+    if (!bValidation)
         return;
 
     auto createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
@@ -173,7 +179,7 @@ void CDevice::createDebugCallback()
         nullptr);
 
     // NOTE: Vulkan-hpp has methods for this, but they trigger linking errors...
-    if (createDebugUtilsMessengerEXT(vkInstance, reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(&createInfo), (const VkAllocationCallbacks*)pAllocator, &m_vkDebugUtils) != VK_SUCCESS)
+    if (createDebugUtilsMessengerEXT(vkInstance, reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(&createInfo), (const VkAllocationCallbacks*)pAllocator, &vkDebugUtils) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to set up debug callback!");
     }
@@ -196,8 +202,8 @@ void CDevice::createDevice()
     vkPhysical = getPhysicalDevice(deviceExtensions);
     assert(vkPhysical && "No avaliable physical devices. Check device dependencies.");
 
-    if (!isSupportedSampleCount(m_msaaSamples))
-        m_msaaSamples = vk::SampleCountFlagBits::e1;
+    if (!isSupportedSampleCount(msaaSamples))
+        msaaSamples = vk::SampleCountFlagBits::e1;
 
     FQueueFamilyIndices indices = findQueueFamilies(vkPhysical);
 
@@ -228,7 +234,7 @@ void CDevice::createDevice()
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-    if (m_bValidation)
+    if (bValidation)
     {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -237,14 +243,14 @@ void CDevice::createDevice()
     vk::Result res = create(createInfo, &vkDevice);
     assert(res == vk::Result::eSuccess && "Failed to create logical device.");
 
-    m_qGraphicsQueue = vkDevice.getQueue(indices.graphicsFamily.value(), 0);
-    assert(m_qGraphicsQueue && "Failed while getting graphics queue.");
-    m_qPresentQueue = vkDevice.getQueue(indices.presentFamily.value(), 0);
-    assert(m_qPresentQueue && "Failed while getting present queue.");
-    m_qComputeQueue = vkDevice.getQueue(indices.computeFamily.value(), 0);
-    assert(m_qComputeQueue && "Failed while getting compute queue.");
-    m_qTransferQueue = vkDevice.getQueue(indices.transferFamily.value(), 0);
-    assert(m_qTransferQueue && "Failed while getting transfer queue.");
+    qGraphicsQueue = vkDevice.getQueue(indices.graphicsFamily.value(), 0);
+    assert(qGraphicsQueue && "Failed while getting graphics queue.");
+    qPresentQueue = vkDevice.getQueue(indices.presentFamily.value(), 0);
+    assert(qPresentQueue && "Failed while getting present queue.");
+    qComputeQueue = vkDevice.getQueue(indices.computeFamily.value(), 0);
+    assert(qComputeQueue && "Failed while getting compute queue.");
+    qTransferQueue = vkDevice.getQueue(indices.transferFamily.value(), 0);
+    assert(qTransferQueue && "Failed while getting transfer queue.");
 }
 
 void CDevice::createPipelineCache()
@@ -267,9 +273,11 @@ void CDevice::createSwapchain()
 
     uint32_t imageCount = framesInFlight;
     if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
-    {
         imageCount = swapChainSupport.capabilities.maxImageCount;
-    }
+    else if (imageCount < swapChainSupport.capabilities.minImageCount)
+        imageCount = swapChainSupport.capabilities.minImageCount;
+
+    framesInFlight = imageCount;
 
     vk::SwapchainCreateInfoKHR createInfo{};
     createInfo.surface = vkSurface;
@@ -393,7 +401,7 @@ void CDevice::updateCommandPools()
     }
 }
 
-void CDevice::tryRebuildSwapchain()
+void CDevice::recreateSwapchain()
 {
     commandPools.clear();
     cleanupSwapchain();
@@ -855,13 +863,13 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
         switch (queueBit)
         {
         case vk::QueueFlagBits::eGraphics: {
-            queue = m_qGraphicsQueue;
+            queue = qGraphicsQueue;
         } break;
         case vk::QueueFlagBits::eCompute: {
-            queue = m_qComputeQueue;
+            queue = qComputeQueue;
         } break;
         case vk::QueueFlagBits::eTransfer: {
-            queue = m_qTransferQueue;
+            queue = qTransferQueue;
         } break;
         }
         queue.submit(submitInfo, vInFlightFences[currentFrame]);
@@ -880,7 +888,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = imageIndex;
 
-    auto& present = m_qPresentQueue;
+    auto& present = qPresentQueue;
     res = present.presentKHR(presentInfo);
 
     currentFrame = (currentFrame + 1) % framesInFlight;

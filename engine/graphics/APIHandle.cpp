@@ -43,7 +43,7 @@ void CAPIHandle::reCreate()
 
     pDevice->GPUWait();
 
-    pDevice->tryRebuildSwapchain();
+    pDevice->recreateSwapchain();
     screenExtent = pDevice->getExtent();
     imageIndex = 0;
     CWindowHandle::bWasResized = false;

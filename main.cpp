@@ -1,10 +1,15 @@
 #include "engine/engine.h"
+#include "engine/system/filesystem/filesystem.h"
 
 #include <random>
 #include <PerlinNoise.hpp>
 
+#define OGT_VOX_IMPLEMENTATION
+#include <ogt_vox.h>
+
 using namespace engine;
 using namespace engine::graphics;
+using namespace engine::system;
 
 uint32_t ConvertToRGBA(const glm::vec4& color)
 {
@@ -14,6 +19,11 @@ uint32_t ConvertToRGBA(const glm::vec4& color)
     auto a = (uint8_t)(color.w * 255.f);
 
     return (a << 24) | (b << 16) | (g << 8) | r;
+}
+
+uint32_t ConvertToRGBA(const ogt_vox_rgba& color)
+{
+    return (color.a << 24) | (color.b << 16) | (color.g << 8) | color.r;
 }
 
 int main()
@@ -27,24 +37,69 @@ int main()
     siv::PerlinNoise noise{ std::random_device{} };
     noise.reseed(std::mt19937{ 67890u });
 
-    for (uint32_t z = 0; z < 100; ++z)
+    vVertices.reserve(500);
+
+    //for (uint32_t x = 0; x < 500; x++)
+    //{
+    //    auto xc = (double)x * 0.25;
+    //    for (uint32_t z = 0; z < 500; z++)
+    //    {
+    //        auto zc = (double)z * 0.25;
+    //
+    //        auto height = static_cast<uint32_t>(noise.octave2D_01(xc, zc, 1) * 20.f);
+    //
+    //        for (uint32_t y = 0; y < height; y++)
+    //        {
+    //            uint32_t color;
+    //            if (y > 0 && y <= 2)
+    //                color = 0xFF010203;
+    //            else if (y > 2 && y <= 5)
+    //                color = 0xFF6c7071;
+    //            else if (y > 5 && y <= 10)
+    //                color = 0xFFabaeaf;
+    //            else
+    //                color = 0xFF008000;
+    //
+    //            auto yc = (double)y * 0.25;
+    //            vVertices.emplace_back(FVertex(glm::vec3(xc, yc, zc), color));
+    //        }
+    //    }
+    //}
+
+    auto voxfile = fs::read_file("models/monu2.vox");
+
+    const ogt_vox_scene* scene = ogt_vox_read_scene_with_flags(reinterpret_cast<const uint8_t*>(voxfile.c_str()), voxfile.size(), 0);
+    if (scene)
     {
-        for (uint32_t y = 0; y < 100; ++y)
+        for (uint32_t instance_index = 0; instance_index < scene->num_instances; instance_index++)
         {
-            for (uint32_t x = 0; x < 100; ++x)
+            const ogt_vox_instance* instance = &scene->instances[instance_index];
+            const ogt_vox_model* model = scene->models[instance->model_index];
+
+            uint32_t voxel_index = 0;
+            for (uint32_t z = 0; z < model->size_z; z++) 
             {
-                auto xc = (double)x * 0.1;
-                auto yc = (double)y * 0.1;
-                auto zc = (double)z * 0.1;
-                auto res = noise.octave3D_01(xc, yc, zc, 1);
+                auto zc = (float)z * 0.25f;
+                for (uint32_t y = 0; y < model->size_y; y++) 
+                {
+                    auto yc = (float)y * 0.25f;
+                    for (uint32_t x = 0; x < model->size_x; x++, voxel_index++)
+                    {
+                        uint32_t color_index = model->voxel_data[voxel_index];
 
-                auto colvec = glm::vec4(1.f, 0.f, 0.f, 1.f);
-
-                if (res > 0.5)
-                    vVertices.emplace_back(FVertex(glm::vec3(xc, yc, zc), ConvertToRGBA(colvec)));
+                        if (color_index != 0)
+                        {
+                            auto xc = (float)x * 0.25f;
+                            auto color = scene->palette.color[color_index];
+                            vVertices.emplace_back(FVertex(glm::vec3(xc, yc, zc), ConvertToRGBA(color)));
+                        }
+                    }
+                }
             }
         }
     }
+
+    ogt_vox_destroy_scene(scene);
 
     FEngineCreateInfo ci;
     ci.eAPI = ERenderApi::eVulkan_1_1;

@@ -289,7 +289,6 @@ CShaderCompiler::CShaderCompiler()
 CShaderCompiler::~CShaderCompiler()
 {
 	glslang::FinalizeProcess();
-	save_cache();
 }
 
 std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::path& path, const std::string& preamble, ERenderApi eAPI)

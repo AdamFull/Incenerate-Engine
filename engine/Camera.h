@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "Frustum.h"
 #include "EngineStructures.h"
 
 namespace engine
@@ -39,6 +39,7 @@ namespace engine
 
 	private:
 		glm::vec4 viewPos{};
+		FFrustum frustum;
 		FTransform transform;
 		float dt{ 0.0 }, aspect{1.7f}, fieldOfView{45.f}, nearPlane{0.1f}, farPlane{60.f}, sensitivity{15.f};
 		float angleH{ 0.f }, angleV{ 0.f };
