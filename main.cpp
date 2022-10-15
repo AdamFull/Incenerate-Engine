@@ -1,6 +1,8 @@
 #include "engine/engine.h"
 #include "engine/system/filesystem/filesystem.h"
 
+#include "engine/SparseVoxelOctree.h"
+
 #include <random>
 #include <PerlinNoise.hpp>
 
@@ -66,6 +68,8 @@ int main()
     //    }
     //}
 
+    CSparseVoxelOctree svo;
+
     auto voxfile = fs::read_file("models/monu2.vox");
 
     const ogt_vox_scene* scene = ogt_vox_read_scene_with_flags(reinterpret_cast<const uint8_t*>(voxfile.c_str()), voxfile.size(), 0);
@@ -90,8 +94,9 @@ int main()
                         if (color_index != 0)
                         {
                             auto xc = (float)x * 0.25f;
-                            auto color = scene->palette.color[color_index];
-                            vVertices.emplace_back(FVertex(glm::vec3(xc, yc, zc), ConvertToRGBA(color)));
+                            auto color = ConvertToRGBA(scene->palette.color[color_index]);
+                            vVertices.emplace_back(FVertex(glm::vec3(xc, yc, zc), color));
+                            svo.insert(octreevec_t(x, y, z), color);
                         }
                     }
                 }
