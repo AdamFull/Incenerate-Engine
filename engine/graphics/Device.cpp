@@ -103,6 +103,7 @@ CDevice::~CDevice()
     commandPools.clear();
 
     vkInstance.destroySurfaceKHR(vkSurface);
+    vmaDestroyAllocator(vmaAlloc);
     destroy(&vkDevice);
 
     if (bValidation)
@@ -118,13 +119,47 @@ void CDevice::create(const FEngineCreateInfo& createInfo)
 #ifdef _DEBUG
     bValidation = true;
 #endif
-
+    
     createInstance(createInfo);
     createDebugCallback();
     createSurface();
     createDevice();
+    createMemoryAllocator(createInfo);
     createPipelineCache();
     createSwapchain();
+}
+
+void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
+{
+    VmaVulkanFunctions vk_funcs = {};
+    vk_funcs.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
+    vk_funcs.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
+    vk_funcs.vkAllocateMemory = vkAllocateMemory;
+    vk_funcs.vkFreeMemory = vkFreeMemory;
+    vk_funcs.vkMapMemory = vkMapMemory;
+    vk_funcs.vkUnmapMemory = vkUnmapMemory;
+    vk_funcs.vkFlushMappedMemoryRanges = vkFlushMappedMemoryRanges;
+    vk_funcs.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
+    vk_funcs.vkBindBufferMemory = vkBindBufferMemory;
+    vk_funcs.vkBindImageMemory = vkBindImageMemory;
+    vk_funcs.vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
+    vk_funcs.vkGetImageMemoryRequirements = vkGetImageMemoryRequirements;
+    vk_funcs.vkCreateBuffer = vkCreateBuffer;
+    vk_funcs.vkDestroyBuffer = vkDestroyBuffer;
+    vk_funcs.vkCreateImage = vkCreateImage;
+    vk_funcs.vkDestroyImage = vkDestroyImage;
+    vk_funcs.vkCmdCopyBuffer = vkCmdCopyBuffer;
+
+    VmaAllocatorCreateInfo createInfo{};
+    createInfo.instance = vkInstance;
+    createInfo.physicalDevice = vkPhysical;
+    createInfo.device = vkDevice;
+    createInfo.pAllocationCallbacks = (VkAllocationCallbacks*)pAllocator;
+    createInfo.vulkanApiVersion = getVulkanVersion(eci.eAPI);
+    createInfo.pVulkanFunctions = &vk_funcs;
+    
+    auto res = vmaCreateAllocator(&createInfo, &vmaAlloc);
+    assert(res == VK_SUCCESS && "Cannot create vulkan memory allocator.");
 }
 
 void CDevice::createInstance(const FEngineCreateInfo& createInfo)
@@ -497,25 +532,21 @@ void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk:
     cmdBuf.submitIdle();
 }
 
-void CDevice::createImage(vk::Image& image, vk::DeviceMemory& memory, vk::ImageCreateInfo createInfo, vk::MemoryPropertyFlags properties)
+void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, VmaAllocation& allocation)
 {
-    vk::Result res;
+    VkResult res;
     assert(vkDevice && "Trying to create image, byt logical device is not valid.");
 
-    res = create(createInfo, &image);
-    assert(res == vk::Result::eSuccess && "Image was not created");
+    VmaAllocationCreateInfo alloc_create_info = {};
+    alloc_create_info.usage = VMA_MEMORY_USAGE_UNKNOWN; //Device local
 
-    vk::MemoryRequirements memReq{};
-    vkDevice.getImageMemoryRequirements(image, &memReq);
+    VkImageCreateInfo imageCI = (VkImageCreateInfo)createInfo;
 
-    vk::MemoryAllocateInfo allocInfo{};
-    allocInfo.allocationSize = memReq.size;
-    allocInfo.memoryTypeIndex = findMemoryType(memReq.memoryTypeBits, properties);
+    VkImage tempimg;
+    res = vmaCreateImage(vmaAlloc, &imageCI, &alloc_create_info, &tempimg, &allocation, nullptr);
+    assert(res == VK_SUCCESS && "Image was not created");
 
-    res = create(allocInfo, &memory);
-    assert(res == vk::Result::eSuccess && "Image memory was not allocated");
-
-    vkDevice.bindImageMemory(image, memory, 0);
+    image = tempimg;
 }
 
 void CDevice::transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
@@ -979,18 +1010,27 @@ vk::Extent2D CDevice::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabil
 
 vk::PhysicalDevice CDevice::getPhysicalDevice(const std::vector<const char*>& deviceExtensions)
 {
+    vk::PhysicalDevice selected_device{nullptr};
     auto devices = getAvaliablePhysicalDevices(deviceExtensions);
     for (auto& device : devices)
     {
         auto props = device.getProperties();
-        std::cout << props.deviceName << std::endl;
+
+        std::stringstream ss;
+        ss << "[" << props.deviceID << "] Name: " << props.deviceName << " Vendor: " << props.vendorID << " api: " << props.apiVersion;
+
+        if (!selected_device && props.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
+            selected_device = device;
+
+        std::cout << ss.str() << std::endl;
     }
 
-    auto device = devices.back();
-    if (device && isDeviceSuitable(device, deviceExtensions))
-    {
-        return device;
-    }
+    if (!selected_device)
+        selected_device = devices.front();
+
+    if (selected_device && isDeviceSuitable(selected_device, deviceExtensions))
+        return selected_device;
+
     return nullptr;
 }
 
@@ -999,22 +1039,17 @@ std::vector<vk::PhysicalDevice> CDevice::getAvaliablePhysicalDevices(const std::
     auto devices = vkInstance.enumeratePhysicalDevices();
     std::vector<vk::PhysicalDevice> output_devices;
     if (devices.size() == 0)
-    {
         throw std::runtime_error("Failed to find GPUs with Vulkan support!");
-    }
 
     for (const auto& device : devices)
     {
         if (isDeviceSuitable(device, deviceExtensions))
-        {
             output_devices.emplace_back(device);
-        }
     }
 
     if (output_devices.size() == 0)
-    {
         throw std::runtime_error("Failed to find a suitable GPU!");
-    }
+
     return output_devices;
 }
 

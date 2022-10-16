@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ImageLoader.h"
+#include <vk_mem_alloc.h>
 
 #include <filesystem>
 
@@ -55,10 +56,10 @@ namespace engine
 			CDevice* pDevice{ nullptr };
 
 			vk::Image _image{ VK_NULL_HANDLE };
-			vk::DeviceMemory _deviceMemory{ VK_NULL_HANDLE };
 			vk::ImageView _view{ VK_NULL_HANDLE };
 			vk::Sampler _sampler{ VK_NULL_HANDLE };
 			vk::DescriptorSet descriptorSet{ VK_NULL_HANDLE };
+			VmaAllocation allocation{ VK_NULL_HANDLE };
 
 			vk::DescriptorImageInfo _descriptor;
 

@@ -12,7 +12,9 @@ namespace engine
 	{
 		struct FProgramCreateInfo
 		{
+			bool vertexfree{ false };
 			vk::PipelineBindPoint bindPoint;
+			vk::PrimitiveTopology topology;
 			vk::CullModeFlagBits  cullMode;
 			vk::FrontFace frontFace;
 			bool depthTest{ false };

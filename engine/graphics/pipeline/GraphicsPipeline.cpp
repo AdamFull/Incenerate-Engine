@@ -20,11 +20,13 @@ void CGraphicsPipeline::create(CShaderObject* pShader, vk::RenderPass& renderPas
 void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
 {
     auto& shader = pShader->getShader();
+    auto vertexfree = pShader->isVertexFree();
     auto culling = pShader->getCullMode();
     auto frontface = pShader->getFrontFace();
     auto depthTest = pShader->getDepthTestFlag();
     auto dynamicStateEnables = pShader->getDynamicStateEnables();
     auto enableTesselation = pShader->getTesselationFlag();
+    auto topology = pShader->getPrimitiveTopology();
 
     auto attributeDescription = FVertex::getAttributeDescriptions();
     auto bindingDescription = FVertex::getBindingDescription();
@@ -32,16 +34,19 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     vk::PipelineVertexInputStateCreateInfo vertexInputCI{};
     vertexInputCI.vertexBindingDescriptionCount = 0;
     vertexInputCI.vertexAttributeDescriptionCount = 0;
-    vertexInputCI.vertexBindingDescriptionCount = attributeDescription.size() > 0 ? 1 : 0;
-    vertexInputCI.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());
-    vertexInputCI.pVertexBindingDescriptions = &bindingDescription;
-    vertexInputCI.pVertexAttributeDescriptions = attributeDescription.data();
+    if (!vertexfree)
+    {
+        vertexInputCI.vertexBindingDescriptionCount = attributeDescription.size() > 0 ? 1 : 0;
+        vertexInputCI.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());
+        vertexInputCI.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputCI.pVertexAttributeDescriptions = attributeDescription.data();
+    }
 
     auto attachmentCount = 1;
     bool isDepthOnly = attachmentCount == 0;
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
-    inputAssembly.topology = vk::PrimitiveTopology::ePointList;
+    inputAssembly.topology = topology;
     inputAssembly.flags = vk::PipelineInputAssemblyStateCreateFlags{};
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 

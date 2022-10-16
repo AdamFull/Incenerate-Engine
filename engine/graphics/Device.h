@@ -3,6 +3,7 @@
 #include "Helpers.h"
 #include "buffers/CommandPool.h"
 
+#include <vk_mem_alloc.h>
 #include <memory>
 #include <map>
 #include <thread>
@@ -47,7 +48,7 @@ namespace engine
             }
 
             void copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
-            void createImage(vk::Image& image, vk::DeviceMemory& memory, vk::ImageCreateInfo createInfo, vk::MemoryPropertyFlags properties);
+            void createImage(vk::Image& image, vk::ImageCreateInfo createInfo, VmaAllocation& allocation);
             void transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
             void transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
             void copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions);
@@ -73,6 +74,8 @@ namespace engine
 
             inline vk::SampleCountFlagBits getSamples() { return msaaSamples; }
             inline vk::AllocationCallbacks* getAllocator() { return pAllocator; }
+
+            inline VmaAllocator& getVMAAllocator() { return vmaAlloc; }
 
             /**************************************************Swapchain********************************************/
             vk::Result acquireNextImage(uint32_t* imageIndex);
@@ -147,6 +150,11 @@ namespace engine
             inline vk::Result create(vk::ComputePipelineCreateInfo& info, vk::Pipeline* ref)
             {
                 return vkDevice.createComputePipelines(pipelineCache, 1, &info, pAllocator, ref);
+            }
+            template <>
+            inline vk::Result create(vk::RayTracingPipelineCreateInfoKHR& info, vk::Pipeline* ref)
+            {
+                return vkDevice.createRayTracingPipelinesKHR(nullptr, pipelineCache, 1, &info, pAllocator, ref);
             }
             template <>
             inline vk::Result create(vk::DescriptorSetLayoutCreateInfo& info, vk::DescriptorSetLayout* ref)
@@ -248,6 +256,7 @@ namespace engine
             inline void destroy(vk::Fence* ref) { vkDevice.destroyFence(*ref, pAllocator); }
 
         private:
+            void createMemoryAllocator(const FEngineCreateInfo& createInfo);
             void createInstance(const FEngineCreateInfo& createInfo);
             void createDebugCallback();
             void createSurface();
@@ -271,6 +280,7 @@ namespace engine
             vk::SurfaceKHR vkSurface{ VK_NULL_HANDLE }; // Vulkan's drawing surface
             std::map<std::thread::id, std::shared_ptr<CCommandPool>> commandPools;
             vk::AllocationCallbacks* pAllocator{ nullptr };
+            VmaAllocator vmaAlloc{ VK_NULL_HANDLE };
 
             vk::PhysicalDevice vkPhysical;
             vk::Device vkDevice;

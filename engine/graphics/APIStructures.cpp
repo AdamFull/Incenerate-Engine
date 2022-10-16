@@ -34,6 +34,24 @@ namespace vk
 
 	NLOHMANN_JSON_SERIALIZE_ENUM
 	(
+		PrimitiveTopology,
+		{
+			{PrimitiveTopology::ePointList, "PointList"},
+			{PrimitiveTopology::eLineList, "LineList"},
+			{PrimitiveTopology::eLineStrip, "LineStrip"},
+			{PrimitiveTopology::eTriangleList, "TriangleList"},
+			{PrimitiveTopology::eTriangleStrip, "TriangleStrip"},
+			{PrimitiveTopology::eTriangleFan, "TriangleFan"},
+			{PrimitiveTopology::eLineListWithAdjacency, "LineListWithAdjacency"},
+			{PrimitiveTopology::eLineStripWithAdjacency, "LineStripWithAdjacency"},
+			{PrimitiveTopology::eTriangleListWithAdjacency, "TriangleListWithAdjacency"},
+			{PrimitiveTopology::eTriangleStripWithAdjacency, "TriangleStripWithAdjacency"},
+			{PrimitiveTopology::ePatchList, "PatchList"},
+		}
+	);
+
+	NLOHMANN_JSON_SERIALIZE_ENUM
+	(
 		PipelineBindPoint,
 		{
 			{PipelineBindPoint::eGraphics, "Graphics"},
@@ -132,7 +150,9 @@ namespace engine
 		{
 			json = nlohmann::json
 			{
+				{"vertex_free", type.vertexfree},
 				{"bind_point", type.bindPoint},
+				{"topology", type.topology},
 				{"cull_mode", type.cullMode},
 				{"front_face", type.frontFace},
 				{"depth_test", type.depthTest},
@@ -145,7 +165,9 @@ namespace engine
 
 		void from_json(const nlohmann::json& json, FProgramCreateInfo& type)
 		{
+			utl::parse_to("vertex_free", json, type.vertexfree);
 			utl::parse_to("bind_point", json, type.bindPoint);
+			utl::parse_to("topology", json, type.topology);
 			utl::parse_to("cull_mode", json, type.cullMode);
 			utl::parse_to("front_face", json, type.frontFace);
 			utl::parse_to("depth_test", json, type.depthTest);

@@ -1,10 +1,11 @@
 #include "engine/engine.h"
 #include "engine/system/filesystem/filesystem.h"
-
-#include "engine/SparseVoxelOctree.h"
+#include "engine/graphics/image/Image.h"
 
 #include <random>
 #include <PerlinNoise.hpp>
+
+#include "engine/VoxelOctree.h"
 
 #define OGT_VOX_IMPLEMENTATION
 #include <ogt_vox.h>
@@ -39,6 +40,8 @@ int main()
     siv::PerlinNoise noise{ std::random_device{} };
     noise.reseed(std::mt19937{ 67890u });
 
+    CVoxelOctree octree;
+
     vVertices.reserve(500);
 
     //for (uint32_t x = 0; x < 500; x++)
@@ -68,8 +71,6 @@ int main()
     //    }
     //}
 
-    CSparseVoxelOctree svo;
-
     auto voxfile = fs::read_file("models/monu2.vox");
 
     const ogt_vox_scene* scene = ogt_vox_read_scene_with_flags(reinterpret_cast<const uint8_t*>(voxfile.c_str()), voxfile.size(), 0);
@@ -96,7 +97,7 @@ int main()
                             auto xc = (float)x * 0.25f;
                             auto color = ConvertToRGBA(scene->palette.color[color_index]);
                             vVertices.emplace_back(FVertex(glm::vec3(xc, yc, zc), color));
-                            svo.insert(octreevec_t(x, y, z), color);
+                            octree.push(glm::u32vec3(x, y, z), color);
                         }
                     }
                 }
@@ -105,6 +106,7 @@ int main()
     }
 
     ogt_vox_destroy_scene(scene);
+    octree.build();
 
     FEngineCreateInfo ci;
     ci.eAPI = ERenderApi::eVulkan_1_1;
@@ -118,18 +120,27 @@ int main()
     auto& graphics = CEngine::getInstance()->getGraphics();
     auto& cameractrl = CEngine::getInstance()->getCameraController();
 
-
+    //auto image = std::make_unique<CImage>(graphics->getDevice().get());
+    //image->create("lava-and-rock_albedo.ktx2");
+    //
+    //auto& program = graphics->addStage("screenspace");
+    //
+    //program->setRenderFunc([&](CShaderObject* pso, vk::CommandBuffer& cb)
+    //    {
+    //        pso->addTexture("input_tex", image->getDescriptor());
+    //    });
+        
     auto& program = graphics->addStage("voxel_shader");
-
+    
     auto& vbo = program->getVBO();
     vbo->addVertices(std::move(vVertices));
-
+    
     program->setRenderFunc([&](CShaderObject* pso, vk::CommandBuffer& cb) 
         {
             auto& camera = cameractrl->getCamera();
             auto projection = camera->getProjection();
             auto view = camera->getView();
-
+    
             auto& ubo = pso->getUniformBuffer("MatricesBlock");
             ubo->set("proj", projection);
             ubo->set("view", view);

@@ -13,10 +13,14 @@ CImage::CImage(CDevice* device)
 
 CImage::~CImage()
 {
-    pDevice->destroy(&_image);
-    pDevice->destroy(&_view);
-    pDevice->destroy(&_deviceMemory);
-    pDevice->destroy(&_sampler);
+    if(_view)
+        pDevice->destroy(&_view);
+    
+    if (_image)
+        vmaDestroyImage(pDevice->getVMAAllocator(), _image, allocation);
+    
+    if(_sampler)
+        pDevice->destroy(&_sampler);
 
     pDevice = nullptr;
 }
@@ -159,7 +163,7 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
 
     imageInfo.samples = pDevice->getSamples();
 
-    pDevice->createImage(_image, _deviceMemory, imageInfo, vk::MemoryPropertyFlagBits::eDeviceLocal);
+    pDevice->createImage(_image, imageInfo, allocation);
 
     vk::ImageViewCreateInfo viewInfo{};
     if (info->isArray && info->isCubemap)
@@ -196,10 +200,9 @@ void CImage::writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
 {
     vk::DeviceSize imgSize = info->dataSize;
 
-    CBuffer stagingBuffer(pDevice);
-    stagingBuffer.create(imgSize, 1, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    stagingBuffer.map();
-    stagingBuffer.write((void*)info->pData.get());
+    auto stagingBuffer = CBuffer::MakeStagingBuffer(pDevice, imgSize, 1);
+    stagingBuffer->map();
+    stagingBuffer->write((void*)info->pData.get());
 
     transitionImageLayout(vk::ImageLayout::eTransferDstOptimal, aspect);
 
@@ -217,7 +220,7 @@ void CImage::writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
         region.bufferOffset = 0;
         vRegions.push_back(region);
 
-        auto buffer = stagingBuffer.getBuffer();
+        auto buffer = stagingBuffer->getBuffer();
         pDevice->copyBufferToImage(buffer, _image, vRegions);
         generateMipmaps(_image, _mipLevels, format, _extent.width, _extent.height, aspect);
     }
@@ -245,7 +248,7 @@ void CImage::writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
                 }
             }
 
-            auto buffer = stagingBuffer.getBuffer();
+            auto buffer = stagingBuffer->getBuffer();
             pDevice->copyBufferToImage(buffer, _image, vRegions);
         }
 

@@ -54,7 +54,9 @@ namespace engine
 			vk::FrontFace getFrontFace() { return programCI.frontFace; }
 			bool getDepthTestFlag() { return programCI.depthTest; }
 			std::vector<vk::DynamicState>& getDynamicStateEnables() { return programCI.dynamicStates; }
+			vk::PrimitiveTopology getPrimitiveTopology() { return programCI.topology; }
 			bool getTesselationFlag() { return programCI.tesselation; }
+			bool isVertexFree() { return programCI.vertexfree; }
 
 			const std::unique_ptr<CShader>& getShader();
 		private:

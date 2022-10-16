@@ -78,14 +78,12 @@ void CVertexBufferObject::createVertexBuffer()
 		vk::DeviceSize bufferSize = sizeof(vVertices[0]) * vVertices.size();
 		auto vertexSize = sizeof(vVertices[0]);
 
-		CBuffer stagingBuffer(pDevice);
-		stagingBuffer.create(vertexSize, vVertices.size(), vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-		stagingBuffer.map();
-		stagingBuffer.write((void*)vVertices.data());
+		auto stagingBuffer = CBuffer::MakeStagingBuffer(pDevice, vertexSize, vVertices.size());
+		stagingBuffer->map();
+		stagingBuffer->write((void*)vVertices.data());
 
-		vertexBuffer = utl::make_scope<CBuffer>(pDevice);
-		vertexBuffer->create(vertexSize, vVertices.size(), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
-		pDevice->copyOnDeviceBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
+		vertexBuffer = CBuffer::MakeVertexBuffer(pDevice, vertexSize, vVertices.size());
+		pDevice->copyOnDeviceBuffer(stagingBuffer->getBuffer(), vertexBuffer->getBuffer(), bufferSize);
 	}
 }
 
@@ -96,13 +94,11 @@ void CVertexBufferObject::createIndexBuffer()
 		vk::DeviceSize bufferSize = sizeof(vIndices[0]) * vIndices.size();
 		auto indexSize = sizeof(vIndices[0]);
 
-		CBuffer stagingBuffer(pDevice);
-		stagingBuffer.create(indexSize, vIndices.size(), vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-		stagingBuffer.map();
-		stagingBuffer.write((void*)vIndices.data());
+		auto stagingBuffer = CBuffer::MakeStagingBuffer(pDevice, indexSize, vIndices.size());
+		stagingBuffer->map();
+		stagingBuffer->write((void*)vIndices.data());
 
-		indexBuffer = utl::make_scope<CBuffer>(pDevice);
-		indexBuffer->create(indexSize, vIndices.size(), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
-		pDevice->copyOnDeviceBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
+		indexBuffer = CBuffer::MakeIndexBuffer(pDevice, indexSize, vIndices.size());
+		pDevice->copyOnDeviceBuffer(stagingBuffer->getBuffer(), indexBuffer->getBuffer(), bufferSize);
 	}
 }

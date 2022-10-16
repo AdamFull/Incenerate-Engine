@@ -1,6 +1,7 @@
 {
   "test_shader": {
     "bind_point": "Graphics",
+    "topology": "TriangleList",
     "cull_mode": "Front",
     "front_face": "ccw",
     "depth_test": true,
@@ -15,6 +16,7 @@
   },
   "voxel_shader": {
     "bind_point": "Graphics",
+    "topology":  "PointList",
     "cull_mode": "Back",
     "front_face": "ccw",
     "depth_test": true,
@@ -23,6 +25,19 @@
       "shaders/voxel.vert",
       "shaders/voxel.geom",
       "shaders/voxel.frag"
+    ]
+  },
+  "screenspace": {
+    "vertex_free": true,
+    "bind_point": "Graphics",
+    "topology": "TriangleList",
+    "cull_mode": "Front",
+    "front_face": "cw",
+    "depth_test": true,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "shaders/screenspace.vert",
+      "shaders/screenspace.frag"
     ]
   }
 }
