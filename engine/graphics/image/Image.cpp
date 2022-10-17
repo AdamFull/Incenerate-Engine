@@ -13,11 +13,13 @@ CImage::CImage(CDevice* device)
 
 CImage::~CImage()
 {
+    auto& vmalloc = pDevice->getVMAAllocator();
+
     if(_view)
         pDevice->destroy(&_view);
     
     if (_image)
-        vmaDestroyImage(pDevice->getVMAAllocator(), _image, allocation);
+        vmalloc.destroyImage(_image, allocation);
     
     if(_sampler)
         pDevice->destroy(&_sampler);

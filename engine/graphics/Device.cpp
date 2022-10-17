@@ -131,7 +131,7 @@ void CDevice::create(const FEngineCreateInfo& createInfo)
 
 void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
 {
-    VmaVulkanFunctions vk_funcs = {};
+    vma::VulkanFunctions vk_funcs = {};
     vk_funcs.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
     vk_funcs.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
     vk_funcs.vkAllocateMemory = vkAllocateMemory;
@@ -150,16 +150,16 @@ void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
     vk_funcs.vkDestroyImage = vkDestroyImage;
     vk_funcs.vkCmdCopyBuffer = vkCmdCopyBuffer;
 
-    VmaAllocatorCreateInfo createInfo{};
+    vma::AllocatorCreateInfo createInfo{};
     createInfo.instance = vkInstance;
     createInfo.physicalDevice = vkPhysical;
     createInfo.device = vkDevice;
-    createInfo.pAllocationCallbacks = (VkAllocationCallbacks*)pAllocator;
+    createInfo.pAllocationCallbacks = pAllocator;
     createInfo.vulkanApiVersion = getVulkanVersion(eci.eAPI);
     createInfo.pVulkanFunctions = &vk_funcs;
     
-    auto res = vmaCreateAllocator(&createInfo, &vmaAlloc);
-    assert(res == VK_SUCCESS && "Cannot create vulkan memory allocator.");
+    auto res = vma::createAllocator(&createInfo, &vmaAlloc);
+    assert(res == vk::Result::eSuccess && "Cannot create vulkan memory allocator.");
 }
 
 void CDevice::createInstance(const FEngineCreateInfo& createInfo)
@@ -462,21 +462,6 @@ uint32_t CDevice::getVulkanVersion(ERenderApi eAPI)
     return 0;
 }
 
-uint32_t CDevice::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
-{
-    vk::PhysicalDeviceMemoryProperties memProperties = vkPhysical.getMemoryProperties();
-
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
-    {
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
-        {
-            return i;
-        }
-    }
-
-    throw std::runtime_error("Failed to find suitable memory type!");
-}
-
 FQueueFamilyIndices CDevice::findQueueFamilies()
 {
     return findQueueFamilies(vkPhysical);
@@ -532,21 +517,15 @@ void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk:
     cmdBuf.submitIdle();
 }
 
-void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, VmaAllocation& allocation)
+void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation)
 {
-    VkResult res;
     assert(vkDevice && "Trying to create image, byt logical device is not valid.");
 
-    VmaAllocationCreateInfo alloc_create_info = {};
-    alloc_create_info.usage = VMA_MEMORY_USAGE_UNKNOWN; //Device local
+    vma::AllocationCreateInfo alloc_create_info = {};
+    alloc_create_info.usage = vma::MemoryUsage::eUnknown; //Device local
 
-    VkImageCreateInfo imageCI = (VkImageCreateInfo)createInfo;
-
-    VkImage tempimg;
-    res = vmaCreateImage(vmaAlloc, &imageCI, &alloc_create_info, &tempimg, &allocation, nullptr);
-    assert(res == VK_SUCCESS && "Image was not created");
-
-    image = tempimg;
+    auto res = vmaAlloc.createImage(&createInfo, &alloc_create_info, &image, &allocation, nullptr);
+    assert(res == vk::Result::eSuccess && "Image was not created");
 }
 
 void CDevice::transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)

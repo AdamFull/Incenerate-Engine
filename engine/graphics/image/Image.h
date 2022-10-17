@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ImageLoader.h"
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.hpp>
 
 #include <filesystem>
 
@@ -59,7 +59,7 @@ namespace engine
 			vk::ImageView _view{ VK_NULL_HANDLE };
 			vk::Sampler _sampler{ VK_NULL_HANDLE };
 			vk::DescriptorSet descriptorSet{ VK_NULL_HANDLE };
-			VmaAllocation allocation{ VK_NULL_HANDLE };
+			vma::Allocation allocation{ VK_NULL_HANDLE };
 
 			vk::DescriptorImageInfo _descriptor;
 

@@ -3,7 +3,7 @@
 #include "Helpers.h"
 #include "buffers/CommandPool.h"
 
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.hpp>
 #include <memory>
 #include <map>
 #include <thread>
@@ -32,7 +32,6 @@ namespace engine
 
             uint32_t getVulkanVersion(ERenderApi pAPI);
             /***************************************************Helpers***************************************************/
-            uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
             FQueueFamilyIndices findQueueFamilies();
             FSwapChainSupportDetails querySwapChainSupport();
             std::vector<vk::SampleCountFlagBits> getAvaliableSampleCount();
@@ -48,7 +47,7 @@ namespace engine
             }
 
             void copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
-            void createImage(vk::Image& image, vk::ImageCreateInfo createInfo, VmaAllocation& allocation);
+            void createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation);
             void transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
             void transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
             void copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions);
@@ -75,7 +74,7 @@ namespace engine
             inline vk::SampleCountFlagBits getSamples() { return msaaSamples; }
             inline vk::AllocationCallbacks* getAllocator() { return pAllocator; }
 
-            inline VmaAllocator& getVMAAllocator() { return vmaAlloc; }
+            inline vma::Allocator& getVMAAllocator() { return vmaAlloc; }
 
             /**************************************************Swapchain********************************************/
             vk::Result acquireNextImage(uint32_t* imageIndex);
@@ -280,7 +279,7 @@ namespace engine
             vk::SurfaceKHR vkSurface{ VK_NULL_HANDLE }; // Vulkan's drawing surface
             std::map<std::thread::id, std::shared_ptr<CCommandPool>> commandPools;
             vk::AllocationCallbacks* pAllocator{ nullptr };
-            VmaAllocator vmaAlloc{ VK_NULL_HANDLE };
+            vma::Allocator vmaAlloc{ VK_NULL_HANDLE };
 
             vk::PhysicalDevice vkPhysical;
             vk::Device vkDevice;

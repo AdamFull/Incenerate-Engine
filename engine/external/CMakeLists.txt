@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19.1)
 project(external_lib)
 
-add_library(${PROJECT_NAME} external.cpp vk_mem_alloc.cpp "ogt_vox.h")
+add_library(${PROJECT_NAME} external.cpp)
 
 add_subdirectory(utility)
 target_link_libraries(${PROJECT_NAME} PUBLIC utility_lib)
@@ -24,10 +24,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ktx)
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${Vulkan_LIBRARIES})
 
-target_include_directories(${PROJECT_NAME} 
-    PUBLIC "${Vulkan_INCLUDE_DIR}"
-)
+add_subdirectory(vma)
+target_link_libraries(${PROJECT_NAME} PUBLIC VulkanMemoryAllocator)
 
 target_include_directories(${PROJECT_NAME} 
+    PUBLIC "${Vulkan_INCLUDE_DIR}"
 	PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
 )

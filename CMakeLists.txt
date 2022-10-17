@@ -24,7 +24,6 @@ else()
 endif()
 
 add_compile_definitions(
-
     GLM_FORCE_INLINE 
     GLM_FORCE_XYZW_ONLY
     GLM_CORCE_PURE
