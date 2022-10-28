@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.19.1)
+project(engine_game)
+
+file(GLOB_RECURSE ENGINE_GAME_SOURCE *.cpp *.c *.cc *.h *.hpp)
+
+add_library(${PROJECT_NAME} STATIC ${ENGINE_GAME_SOURCE})
+
+target_include_directories(${PROJECT_NAME} 
+    PUBLIC "${ENGINE_ROOT}"
+    PUBLIC "${EXTERNALS_PATH}"
+    PUBLIC "${EXTERNALS_PATH}/glm"
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+)

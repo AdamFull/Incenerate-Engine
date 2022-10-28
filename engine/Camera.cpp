@@ -4,8 +4,10 @@ using namespace engine;
 
 void CCamera::create()
 {
-	//angleV = glm::degrees(-transform.rot.y);
-	//angleH = glm::degrees(glm::atan(transform.rot.z / transform.rot.x));
+    transform.pos = { -6.3434, 15.9819, -22.8122 };
+    transform.rot = { 0.514259, -0.318132, 0.796448 };
+	angleV = glm::degrees(-transform.rot.y);
+	angleH = glm::degrees(glm::atan(transform.rot.z / transform.rot.x));
 }
 
 void CCamera::update(float fDT)
@@ -70,25 +72,25 @@ glm::mat4 CCamera::getView(bool flipY) const
     if (flipY)
         position.y *= -1.f;
 
-    return glm::lookAt(position, position + transform.rot, getUpVector());
+    return glm::lookAt(position, position + getForwardVector(), getUpVector());
 }
 
-glm::vec4& CCamera::getViewPos()
+glm::vec3& CCamera::getViewPos()
 {
-    return viewPos;
+    return transform.pos;
 }
 
 glm::vec3 CCamera::getForwardVector() const
 {
-    return transform.rot;
+    return glm::normalize(transform.rot);
 }
 
 glm::vec3 CCamera::getUpVector() const
 {
-    return glm::vec3{ 0.0, 1.0, 0.0 };
+    return glm::normalize(glm::cross(getRightVector(), getForwardVector()));
 }
 
 glm::vec3 CCamera::getRightVector() const
 {
-    return glm::normalize(glm::cross(getForwardVector(), getUpVector()));
+    return glm::normalize(glm::cross(getForwardVector(), glm::vec3{ 0.0, 1.0, 0.0 }));
 }

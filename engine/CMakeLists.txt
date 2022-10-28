@@ -7,6 +7,7 @@ set(EXTERNALS_PATH "${ENGINE_ROOT}/external")
 add_subdirectory(external)
 add_subdirectory(graphics)
 add_subdirectory(system)
+add_subdirectory(game)
 
 file(GLOB ENGINE_SOURCE *.cpp *.c *.cc *.h *.hpp)
 
@@ -15,11 +16,13 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC external_lib
     PUBLIC engine_graphics
     PUBLIC engine_system
+    PUBLIC engine_game
 )
 
 target_include_directories(${PROJECT_NAME} 
     PRIVATE "${ENGINE_ROOT}/graphics"
     PRIVATE "${ENGINE_ROOT}/system"
+    PRIVATE "${ENGINE_ROOT}/game"
     PUBLIC "${EXTERNALS_PATH}/utility"
     PUBLIC "${EXTERNALS_PATH}/glm"
 )
