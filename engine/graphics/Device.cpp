@@ -1,7 +1,5 @@
 #include "Device.h"
 
-#include <utility/ulog.hpp>
-
 #include "Engine.h"
 #include "system/window/WindowHandle.h"
 #include "buffers/CommandBuffer.h"
@@ -9,6 +7,7 @@
 #include <set>
 
 #include <SDL_vulkan.h>
+#include <vulkan/vulkan_to_string.hpp>
 
 using namespace engine::graphics;
 using namespace engine::system::window;
@@ -33,10 +32,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL CDevice::validationCallback(VkDebugUtilsMessageSe
 {
     switch (messageSeverity)
     {
-    //case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: utl::log<utl::level::eVerbose>(pCallbackData->pMessage); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: utl::log<utl::level::eInfo>(pCallbackData->pMessage); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: utl::log<utl::level::eWarning>(pCallbackData->pMessage); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:  utl::log<utl::level::eError>(pCallbackData->pMessage); break;
+    //case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: log_verbose(pCallbackData->pMessage); break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: log_info(pCallbackData->pMessage); break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: log_warning(pCallbackData->pMessage); break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:  log_error(pCallbackData->pMessage); break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT: break;
     }
 
@@ -96,6 +95,8 @@ CDevice::CDevice()
 
 CDevice::~CDevice()
 {
+    log_debug("Destroying device.");
+
     cleanupSwapchain();
     destroy(&swapChain);
 
@@ -119,6 +120,8 @@ void CDevice::create(const FEngineCreateInfo& createInfo)
 #ifdef _DEBUG
     bValidation = true;
 #endif
+
+    log_debug("Validation state: {}", bValidation);
     
     createInstance(createInfo);
     createDebugCallback();
@@ -159,15 +162,15 @@ void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
     createInfo.pVulkanFunctions = &vk_funcs;
     
     auto res = vma::createAllocator(&createInfo, &vmaAlloc);
-    assert(res == vk::Result::eSuccess && "Cannot create vulkan memory allocator.");
+    log_cerror(VkHelper::check(res), "Cannot create vulkan memory allocator.");
 }
 
 void CDevice::createInstance(const FEngineCreateInfo& createInfo)
 {
-    if (bValidation && !VulkanStaticHelper::checkValidationLayerSupport(validationLayers))
-        throw std::runtime_error("Validation layers requested, but not available!");
+    if (bValidation && !VkHelper::checkValidationLayerSupport(validationLayers))
+        log_error("Validation layers requested, but not available!");
 
-    auto extensions = VulkanStaticHelper::getRequiredExtensions(bValidation);
+    auto extensions = VkHelper::getRequiredExtensions(bValidation);
 
     auto vkVersion = getVulkanVersion(createInfo.eAPI);
 
@@ -177,6 +180,8 @@ void CDevice::createInstance(const FEngineCreateInfo& createInfo)
     appInfo.pEngineName = "voxengine";
     appInfo.engineVersion = vkVersion;
     appInfo.apiVersion = vkVersion;
+
+    log_debug("Creating instance: [name: {}, version {}]", appInfo.pApplicationName, vkVersion);
 
     vk::InstanceCreateInfo instanceCI{};
     instanceCI.pApplicationInfo = &appInfo;
@@ -198,7 +203,7 @@ void CDevice::createInstance(const FEngineCreateInfo& createInfo)
     }
 
     vk::Result res = create(instanceCI, &vkInstance);
-    assert(res == vk::Result::eSuccess && "Cannot create vulkan instance.");
+    log_cerror(VkHelper::check(res), "Cannot create vulkan instance.");
 }
 
 void CDevice::createDebugCallback()
@@ -215,27 +220,27 @@ void CDevice::createDebugCallback()
 
     // NOTE: Vulkan-hpp has methods for this, but they trigger linking errors...
     if (createDebugUtilsMessengerEXT(vkInstance, reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(&createInfo), (const VkAllocationCallbacks*)pAllocator, &vkDebugUtils) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to set up debug callback!");
-    }
+        log_error("failed to set up debug callback!");
 }
 
 void CDevice::createSurface()
 {
     auto window = CEngine::getInstance()->getWindow()->getWindowPointer();
-    assert(vkInstance && "Unable to create surface, cause vulkan instance is not valid");
+    log_cerror(vkInstance, "Unable to create surface, cause vulkan instance is not valid");
     VkSurfaceKHR rawSurfaceKHR{ VK_NULL_HANDLE };
     SDL_Vulkan_CreateSurface(window, vkInstance, &rawSurfaceKHR);
-    //UWindow->createWindowSurface(vkInstance, (const void*)pAllocator, rawSurfaceKHR);
     vkSurface = rawSurfaceKHR;
-    assert(vkSurface && "Surface creation failed");
+    log_cerror(vkSurface, "Surface creation failed");
 }
 
 void CDevice::createDevice()
 {
-    assert(vkInstance && "Unable to create ligical device, cause vulkan instance is not valid");
+    log_cerror(vkInstance, "Unable to create ligical device, cause vulkan instance is not valid");
     vkPhysical = getPhysicalDevice(deviceExtensions);
-    assert(vkPhysical && "No avaliable physical devices. Check device dependencies.");
+    log_cerror(vkPhysical, "No avaliable physical devices. Check device dependencies.");
+
+    auto props = vkPhysical.getProperties();
+    log_debug("Selected device: [ID: {}, NAME: {}, VENDOR ID: {}, API: {}]", props.deviceID, props.deviceName, props.vendorID, props.apiVersion);
 
     if (!isSupportedSampleCount(msaaSamples))
         msaaSamples = vk::SampleCountFlagBits::e1;
@@ -248,9 +253,7 @@ void CDevice::createDevice()
     float queuePriority = 1.0f;
 
     for (uint32_t queueFamily : uniqueQueueFamilies)
-    {
         queueCreateInfos.push_back({ vk::DeviceQueueCreateFlags(), queueFamily, 1, &queuePriority });
-    }
 
     vk::PhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.samplerAnisotropy = true;
@@ -276,23 +279,23 @@ void CDevice::createDevice()
     }
 
     vk::Result res = create(createInfo, &vkDevice);
-    assert(res == vk::Result::eSuccess && "Failed to create logical device.");
+    log_cerror(VkHelper::check(res), "Failed to create logical device.");
 
     qGraphicsQueue = vkDevice.getQueue(indices.graphicsFamily.value(), 0);
-    assert(qGraphicsQueue && "Failed while getting graphics queue.");
+    log_cerror(qGraphicsQueue, "Failed while getting graphics queue.");
     qPresentQueue = vkDevice.getQueue(indices.presentFamily.value(), 0);
-    assert(qPresentQueue && "Failed while getting present queue.");
+    log_cerror(qPresentQueue, "Failed while getting present queue.");
     qComputeQueue = vkDevice.getQueue(indices.computeFamily.value(), 0);
-    assert(qComputeQueue && "Failed while getting compute queue.");
+    log_cerror(qComputeQueue, "Failed while getting compute queue.");
     qTransferQueue = vkDevice.getQueue(indices.transferFamily.value(), 0);
-    assert(qTransferQueue && "Failed while getting transfer queue.");
+    log_cerror(qTransferQueue, "Failed while getting transfer queue.");
 }
 
 void CDevice::createPipelineCache()
 {
     vk::PipelineCacheCreateInfo pipelineCacheCreateInfo = {};
     vk::Result res = create(pipelineCacheCreateInfo, &pipelineCache);
-    assert(res == vk::Result::eSuccess && "Cannot create pipeline cache.");
+    log_cerror(VkHelper::check(res), "Cannot create pipeline cache.");
 }
 
 void CDevice::createSwapchain()
@@ -302,8 +305,8 @@ void CDevice::createSwapchain()
     swapChain = VK_NULL_HANDLE;
 
     auto swapChainSupport = querySwapChainSupport();
-    vk::SurfaceFormatKHR surfaceFormat = VulkanStaticHelper::chooseSwapSurfaceFormat(swapChainSupport.formats);
-    vk::PresentModeKHR presentMode = VulkanStaticHelper::chooseSwapPresentMode(swapChainSupport.presentModes);
+    vk::SurfaceFormatKHR surfaceFormat = VkHelper::chooseSwapSurfaceFormat(swapChainSupport.formats);
+    vk::PresentModeKHR presentMode = VkHelper::chooseSwapPresentMode(swapChainSupport.presentModes);
     swapchainExtent = chooseSwapExtent(swapChainSupport.capabilities);
 
     uint32_t imageCount = framesInFlight;
@@ -313,6 +316,7 @@ void CDevice::createSwapchain()
         imageCount = swapChainSupport.capabilities.minImageCount;
 
     framesInFlight = imageCount;
+    log_debug("Creating swapchain: [Frames in flight {}, extent {}x{}]", framesInFlight, swapchainExtent.width, swapchainExtent.height);
 
     vk::SwapchainCreateInfoKHR createInfo{};
     createInfo.surface = vkSurface;
@@ -344,11 +348,11 @@ void CDevice::createSwapchain()
     createInfo.oldSwapchain = oldSwapchain;
 
     res = create(createInfo, &swapChain);
-    assert(res == vk::Result::eSuccess && "Swap chain was not created");
+    log_cerror(VkHelper::check(res), "Swap chain was not created");
 
     vImages.resize(imageCount);
     res = vkDevice.getSwapchainImagesKHR(swapChain, &imageCount, vImages.data());
-    assert(res == vk::Result::eSuccess && "Swap chain images was not created");
+    log_cerror(VkHelper::check(res), "Swap chain images was not created");
 
     imageFormat = surfaceFormat.format;
 
@@ -375,7 +379,7 @@ void CDevice::createSwapchain()
         {
             viewInfo.image = vImages[i];
             res = create(viewInfo, &vImageViews[i]);
-            assert(res == vk::Result::eSuccess && "Cannot create image view");
+            log_cerror(VkHelper::check(res), "Cannot create image view");
         }
     }
 
@@ -393,22 +397,24 @@ void CDevice::createSwapchain()
             for (size_t i = 0; i < imageCount; i++)
             {
                 res = create(semaphoreCI, &vImageAvailableSemaphores[i]);
-                assert(res == vk::Result::eSuccess && "Cannot create semaphore");
+                log_cerror(VkHelper::check(res), "Cannot create semaphore");
                 res = create(semaphoreCI, &vRenderFinishedSemaphores[i]);
-                assert(res == vk::Result::eSuccess && "Cannot create semaphore");
+                log_cerror(VkHelper::check(res), "Cannot create semaphore");
                 res = create(fenceCI, &vInFlightFences[i]);
-                assert(res == vk::Result::eSuccess && "Cannot create fence");
+                log_cerror(VkHelper::check(res), "Cannot create fence");
             }
         }
         catch (vk::SystemError err)
         {
-            throw std::runtime_error("Failed to create synchronization objects for a frame!");
+            log_error("Failed to create synchronization objects for a frame!");
         }
     }
 }
 
 void CDevice::cleanupSwapchain()
 {
+    log_debug("Cleaning up vulkan swapchain.");
+
     for (size_t i = 0; i < framesInFlight; i++)
     {
         destroy(&vInFlightFences[i]);
@@ -438,6 +444,8 @@ void CDevice::updateCommandPools()
 
 void CDevice::recreateSwapchain()
 {
+    log_debug("Recreating vulkan swapchain.");
+
     commandPools.clear();
     cleanupSwapchain();
     createSwapchain();
@@ -519,13 +527,17 @@ void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk:
 
 void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation)
 {
-    assert(vkDevice && "Trying to create image, byt logical device is not valid.");
+    log_debug("Creating image: [extent {}x{}x{}, type {}, format {}, mips {}, layers {}, samples {}, tiling {}, sharing {}, layout {}]", 
+        createInfo.extent.width, createInfo.extent.height, createInfo.extent.depth,
+        vk::to_string(createInfo.imageType), vk::to_string(createInfo.format), createInfo.mipLevels, createInfo.arrayLayers,
+        vk::to_string(createInfo.samples), vk::to_string(createInfo.tiling), vk::to_string(createInfo.sharingMode), vk::to_string(createInfo.initialLayout));
+    log_cerror(vkDevice, "Trying to create image, byt logical device is not valid.");
 
     vma::AllocationCreateInfo alloc_create_info = {};
     alloc_create_info.usage = vma::MemoryUsage::eUnknown; //Device local
 
     auto res = vmaAlloc.createImage(&createInfo, &alloc_create_info, &image, &allocation, nullptr);
-    assert(res == vk::Result::eSuccess && "Image was not created");
+    log_cerror(VkHelper::check(res), "Image was not created");
 }
 
 void CDevice::transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
@@ -632,7 +644,7 @@ void CDevice::transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image
         }
         else
         {
-            throw std::invalid_argument("Unsupported layout transition!");
+            log_error("Unsupported layout transition!");
         }
     }
 
@@ -660,7 +672,10 @@ void CDevice::copyTo(vk::CommandBuffer& commandBuffer, vk::Image& src, vk::Image
 
 void CDevice::createSampler(vk::Sampler& sampler, vk::Filter magFilter, vk::SamplerAddressMode eAddressMode, bool anisotropy, bool compareOp, uint32_t mipLevels)
 {
-    assert(vkPhysical && "Trying to create sampler, but physical device is invalid.");
+    log_debug("Creating sampler: [filter {}, addr {}, anisotropy {}, compare {}, mips {}]", 
+        vk::to_string(magFilter), vk::to_string(eAddressMode), anisotropy, compareOp, mipLevels);
+
+    log_cerror(vkPhysical, "Trying to create sampler, but physical device is invalid.");
     vk::SamplerCreateInfo samplerInfo{};
     samplerInfo.magFilter = magFilter;
     samplerInfo.minFilter = magFilter;
@@ -686,35 +701,31 @@ void CDevice::createSampler(vk::Sampler& sampler, vk::Filter magFilter, vk::Samp
 
     // TODO: Result handle
     vk::Result res = create(samplerInfo, &sampler);
-    assert(res == vk::Result::eSuccess && "Texture sampler was not created");
+    log_cerror(VkHelper::check(res), "Texture sampler was not created");
 }
 
 vk::Format CDevice::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
 {
-    assert(vkPhysical && "Trying to find supported format, but physical device is invalid.");
+    log_cerror(vkPhysical, "Trying to find supported format, but physical device is invalid.");
     for (vk::Format format : candidates)
     {
         vk::FormatProperties props;
         vkPhysical.getFormatProperties(format, &props);
 
         if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features)
-        {
             return format;
-        }
         else if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features)
-        {
             return format;
-        }
     }
 
     // TODO: Handle null result
-    throw std::runtime_error("Failed to find supported format!");
+    log_error("Failed to find supported format!");
 }
 
 std::vector<vk::Format> CDevice::findSupportedFormats(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
 {
     std::vector<vk::Format> vFormats;
-    assert(vkPhysical && "Trying to find supported format, but physical device is invalid.");
+    log_cerror(vkPhysical, "Trying to find supported format, but physical device is invalid.");
     for (vk::Format format : candidates)
     {
         vk::FormatProperties props;
@@ -747,7 +758,7 @@ std::vector<vk::Format> CDevice::getTextureCompressionFormats()
 {
     std::vector<vk::Format> vFormats;
 
-    assert(vkPhysical && "Trying to create image, byt logical device is not valid.");
+    log_cerror(vkPhysical, "Trying to create image, byt logical device is not valid.");
     vk::PhysicalDeviceFeatures supportedFeatures = vkPhysical.getFeatures();
 
     if (supportedFeatures.textureCompressionBC)
@@ -842,7 +853,7 @@ std::vector<vk::Format> CDevice::getTextureCompressionFormats()
 vk::Result CDevice::acquireNextImage(uint32_t* imageIndex)
 {
     vk::Result res = vkDevice.waitForFences(1, &vInFlightFences[currentFrame], VK_TRUE, (std::numeric_limits<uint64_t>::max)());
-    assert(res == vk::Result::eSuccess && "Waiting for fences error.");
+    log_cerror(VkHelper::check(res), "Waiting for fences error.");
     res = vkDevice.acquireNextImageKHR(swapChain, (std::numeric_limits<uint64_t>::max)(), vImageAvailableSemaphores[currentFrame], nullptr, imageIndex);
     return res;
 }
@@ -865,7 +876,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     res = vkDevice.resetFences(1, &vInFlightFences[currentFrame]);
-    assert(res == vk::Result::eSuccess && "Cannot reset fences.");
+    log_cerror(VkHelper::check(res), "Cannot reset fences.");
 
     try
     {
@@ -886,7 +897,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
     }
     catch (vk::SystemError err)
     {
-        throw std::runtime_error("failed to submit draw command buffer!");
+        log_error("failed to submit draw command buffer!");
     }
 
     vk::PresentInfoKHR presentInfo = {};
@@ -991,17 +1002,13 @@ vk::PhysicalDevice CDevice::getPhysicalDevice(const std::vector<const char*>& de
 {
     vk::PhysicalDevice selected_device{nullptr};
     auto devices = getAvaliablePhysicalDevices(deviceExtensions);
+
     for (auto& device : devices)
     {
         auto props = device.getProperties();
 
-        std::stringstream ss;
-        ss << "[" << props.deviceID << "] Name: " << props.deviceName << " Vendor: " << props.vendorID << " api: " << props.apiVersion;
-
         if (!selected_device && props.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
             selected_device = device;
-
-        std::cout << ss.str() << std::endl;
     }
 
     if (!selected_device)
@@ -1018,7 +1025,7 @@ std::vector<vk::PhysicalDevice> CDevice::getAvaliablePhysicalDevices(const std::
     auto devices = vkInstance.enumeratePhysicalDevices();
     std::vector<vk::PhysicalDevice> output_devices;
     if (devices.size() == 0)
-        throw std::runtime_error("Failed to find GPUs with Vulkan support!");
+        log_error("Failed to find GPUs with Vulkan support!");
 
     for (const auto& device : devices)
     {
@@ -1027,7 +1034,7 @@ std::vector<vk::PhysicalDevice> CDevice::getAvaliablePhysicalDevices(const std::
     }
 
     if (output_devices.size() == 0)
-        throw std::runtime_error("Failed to find a suitable GPU!");
+        log_error("Failed to find a suitable GPU!");
 
     return output_devices;
 }
@@ -1036,7 +1043,7 @@ bool CDevice::isDeviceSuitable(const vk::PhysicalDevice& device, const std::vect
 {
     FQueueFamilyIndices indices = findQueueFamilies(device);
 
-    bool extensionsSupported = VulkanStaticHelper::checkDeviceExtensionSupport(device, deviceExtensions);
+    bool extensionsSupported = VkHelper::checkDeviceExtensionSupport(device, deviceExtensions);
 
     bool swapChainAdequate = false;
     if (extensionsSupported)

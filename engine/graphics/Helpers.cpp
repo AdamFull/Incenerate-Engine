@@ -5,42 +5,40 @@
 #include "Engine.h"
 #include "system/window/WindowHandle.h"
 
-#include <utility/ulog.hpp>
-
 #include <SDL_vulkan.h>
 
 using namespace engine;
 using namespace engine::system::window;
 using namespace engine::graphics;
 
-bool VulkanStaticHelper::checkValidationLayerSupport(const std::vector<const char*>& validationLayers)
+bool VkHelper::check(vk::Result result)
+{
+    return result == vk::Result::eSuccess;
+}
+
+bool VkHelper::checkValidationLayerSupport(const std::vector<const char*>& validationLayers)
 {
     auto availableLayers = vk::enumerateInstanceLayerProperties();
 
+    log_debug("Enabled validation layers:");
+    bool layerFound{ false };
     for (auto& layerName : validationLayers)
     {
-        bool layerFound = false;
-
         for (const auto& layerProperties : availableLayers)
         {
-            utl::log<utl::level::eWarning>(layerProperties.layerName);
             if (strcmp(layerName, layerProperties.layerName) == 0)
             {
+                log_debug(layerProperties.layerName);
                 layerFound = true;
                 break;
             }
         }
-
-        if (!layerFound)
-        {
-            return false;
-        }
     }
 
-    return true;
+    return layerFound;
 }
 
-std::vector<const char*> VulkanStaticHelper::getRequiredExtensions(bool validation)
+std::vector<const char*> VkHelper::getRequiredExtensions(bool validation)
 {
     auto window = CEngine::getInstance()->getWindow()->getWindowPointer();
 
@@ -59,7 +57,7 @@ std::vector<const char*> VulkanStaticHelper::getRequiredExtensions(bool validati
     return extensions;
 }
 
-bool VulkanStaticHelper::checkDeviceExtensionSupport(const vk::PhysicalDevice& device, const std::vector<const char*>& deviceExtensions)
+bool VkHelper::checkDeviceExtensionSupport(const vk::PhysicalDevice& device, const std::vector<const char*>& deviceExtensions)
 {
     std::set<std::string> sRequiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
@@ -71,7 +69,7 @@ bool VulkanStaticHelper::checkDeviceExtensionSupport(const vk::PhysicalDevice& d
     return sRequiredExtensions.empty();
 }
 
-vk::SurfaceFormatKHR VulkanStaticHelper::chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
+vk::SurfaceFormatKHR VkHelper::chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
 {
     if (availableFormats.size() == 1 && availableFormats[0].format == vk::Format::eUndefined)
     {
@@ -89,7 +87,7 @@ vk::SurfaceFormatKHR VulkanStaticHelper::chooseSwapSurfaceFormat(const std::vect
     return availableFormats[0];
 }
 
-vk::PresentModeKHR VulkanStaticHelper::chooseSwapPresentMode(const std::vector<vk::PresentModeKHR> availablePresentModes)
+vk::PresentModeKHR VkHelper::chooseSwapPresentMode(const std::vector<vk::PresentModeKHR> availablePresentModes)
 {
     vk::PresentModeKHR bestMode = vk::PresentModeKHR::eFifo;
 
@@ -108,7 +106,7 @@ vk::PresentModeKHR VulkanStaticHelper::chooseSwapPresentMode(const std::vector<v
     return bestMode;
 }
 
-bool VulkanStaticHelper::hasStencilComponent(vk::Format format)
+bool VkHelper::hasStencilComponent(vk::Format format)
 {
     return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
 }

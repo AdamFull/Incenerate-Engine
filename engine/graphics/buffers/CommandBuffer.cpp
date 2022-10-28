@@ -30,7 +30,7 @@ void CCommandBuffer::create(bool _begin, vk::QueueFlagBits queueType, vk::Comman
 
     vCommandBuffers.resize(count);
     vk::Result res = pDevice->create(allocInfo, vCommandBuffers.data());
-    assert(res == vk::Result::eSuccess && "Cannot create bommand buffers");
+    log_cerror(VkHelper::check(res), "Cannot create bommand buffers");
 
     if (_begin)
         begin();
@@ -63,7 +63,7 @@ void CCommandBuffer::end()
 vk::Result CCommandBuffer::submitIdle()
 {
     auto& vkDevice = pDevice->getLogical();
-    assert(vkDevice && "Trying to submit queue, but device is invalid.");
+    log_cerror(vkDevice, "Trying to submit queue, but device is invalid.");
     vk::Result res;
     if (running)
         end();
@@ -76,9 +76,9 @@ vk::Result CCommandBuffer::submitIdle()
     vk::FenceCreateInfo fenceCreateInfo{};
     vk::Fence fence;
     res = pDevice->create(fenceCreateInfo, &fence);
-    assert(res == vk::Result::eSuccess && "Cannot create fence.");
+    log_cerror(VkHelper::check(res), "Cannot create fence.");
     res = vkDevice.resetFences(1, &fence);
-    assert(res == vk::Result::eSuccess && "Cannot reset fence.");
+    log_cerror(VkHelper::check(res), "Cannot reset fence.");
 
     vk::Queue queue{};
     switch (queueType)
@@ -95,7 +95,7 @@ vk::Result CCommandBuffer::submitIdle()
     }
     queue.submit(submitInfo, fence);
     res = vkDevice.waitForFences(1, &fence, VK_TRUE, (std::numeric_limits<uint64_t>::max)());
-    assert(res == vk::Result::eSuccess && "Wait for fences error.");
+    log_cerror(VkHelper::check(res), "Wait for fences error.");
     pDevice->destroy(&fence);
     return res;
 }

@@ -65,7 +65,7 @@ void CShaderObject::create()
 
             for (auto& [name, uniform] : pShader->getUniformBlocks())
             {
-                utl::scope_ptr<CHandler> pUniform;
+                std::unique_ptr<CHandler> pUniform;
                 switch (uniform.getDescriptorType())
                 {
                 case vk::DescriptorType::eUniformBuffer: {
@@ -166,7 +166,7 @@ void CShaderObject::addTexture(const std::string& attachment, std::shared_ptr<CI
 	mTextures[attachment] = pTexture->getDescriptor();
 }
 
-void CShaderObject::addTexture(const std::string& attachment, utl::weak_ptr<CImage>& pTexture)
+void CShaderObject::addTexture(const std::string& attachment, std::weak_ptr<CImage>& pTexture)
 {
 	auto texture = pTexture.lock();
 	mTextures[attachment] = texture->getDescriptor();
@@ -186,12 +186,12 @@ std::unique_ptr<CHandler>& CShaderObject::getUniformBuffer(const std::string& na
     return pEmptyHandler;
 }
 
-std::map<std::string, utl::scope_ptr<CHandler>>& CShaderObject::getUniformBuffers()
+std::map<std::string, std::unique_ptr<CHandler>>& CShaderObject::getUniformBuffers()
 {
     return vInstances.at(currentInstance)->mBuffers;
 }
 
-utl::scope_ptr<CDescriptorHandler>& CShaderObject::getDescriptorSet()
+std::unique_ptr<CDescriptorHandler>& CShaderObject::getDescriptorSet()
 {
     return vInstances.at(currentInstance)->pDescriptorSet;
 }

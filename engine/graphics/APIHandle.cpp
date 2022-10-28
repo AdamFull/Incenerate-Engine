@@ -22,6 +22,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     screenExtent = pDevice->getExtent();
     commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
+
+    log_info("Graphics core initialized.");
 }
 
 void CAPIHandle::reCreate()
@@ -37,6 +39,8 @@ void CAPIHandle::reCreate()
     // 2. destroy swapchain (destroy all images)
     // 3. create swapchain (with images)
     // 4. re create framebuffers
+
+    log_debug("ReCreating swapchain.");
 
     while (pWindow->isMinimized())
         pWindow->begin();
@@ -62,7 +66,7 @@ void CAPIHandle::render()
     vk::CommandBuffer commandBuffer{};
     try { commandBuffer = beginFrame(); }
     catch (vk::OutOfDateKHRError err) { reCreate(); }
-    catch (vk::SystemError err) { throw std::runtime_error("Failed to acquire swap chain image!"); }
+    catch (vk::SystemError err) { log_error("Failed to acquire swap chain image!"); }
 
     if (!commandBuffer)
         return;
@@ -74,7 +78,7 @@ void CAPIHandle::render()
     vk::Result resultPresent;
     try { resultPresent = endFrame(); }
     catch (vk::OutOfDateKHRError err) { resultPresent = vk::Result::eErrorOutOfDateKHR; }
-    catch (vk::SystemError err) { throw std::runtime_error("failed to present swap chain image!"); }
+    catch (vk::SystemError err) { log_error("failed to present swap chain image!"); }
 
     if (resultPresent == vk::Result::eSuboptimalKHR || resultPresent == vk::Result::eErrorOutOfDateKHR || CWindowHandle::bWasResized)
         reCreate();
@@ -105,7 +109,7 @@ std::unique_ptr<CVertexBufferObject> CAPIHandle::allocateVBO()
 
 vk::CommandBuffer CAPIHandle::beginFrame()
 {
-    assert(!frameStarted && "Can't call beginFrame while already in progress");
+    log_cerror(!frameStarted, "Can't call beginFrame while already in progress");
     vk::Result res = pDevice->acquireNextImage(&imageIndex);
     if (res == vk::Result::eErrorOutOfDateKHR)
     {
@@ -113,7 +117,7 @@ vk::CommandBuffer CAPIHandle::beginFrame()
         return nullptr;
     }
     else if (res == vk::Result::eSuboptimalKHR) {
-        throw std::runtime_error("Failed to acquire swap chain image!");
+        log_error("Failed to acquire swap chain image!");
     }
 
     frameStarted = true;
@@ -124,7 +128,7 @@ vk::CommandBuffer CAPIHandle::beginFrame()
 
 vk::Result CAPIHandle::endFrame()
 {
-    assert(frameStarted && "Can't call endFrame while frame is not in progress");
+    log_cerror(frameStarted, "Can't call endFrame while frame is not in progress");
     commandBuffers->end();
     frameStarted = false;
     return commandBuffers->submit(imageIndex);

@@ -37,13 +37,13 @@ namespace engine
 
 			void addTexture(const std::string& attachment, vk::DescriptorImageInfo& descriptor);
 			void addTexture(const std::string& attachment, std::shared_ptr<CImage>& pTexture);
-			void addTexture(const std::string& attachment, utl::weak_ptr<CImage>& pTexture);
+			void addTexture(const std::string& attachment, std::weak_ptr<CImage>& pTexture);
 
 			vk::DescriptorImageInfo& getTexture(const std::string& attachment);
 
 			std::unique_ptr<CHandler>& getUniformBuffer(const std::string& name);
-			std::map<std::string, utl::scope_ptr<CHandler>>& getUniformBuffers();
-			utl::scope_ptr<CDescriptorHandler>& getDescriptorSet();
+			std::map<std::string, std::unique_ptr<CHandler>>& getUniformBuffers();
+			std::unique_ptr<CDescriptorHandler>& getDescriptorSet();
 
 			std::unique_ptr<CPipeline>& getPipeline() { return pPipeline; }
 			const std::unique_ptr<CVertexBufferObject>& getVBO() { return pVBO; }
@@ -72,7 +72,7 @@ namespace engine
 			bool bIsCreated{ false }, bIsReCreated{ false };
 
 			std::unique_ptr<CHandler> pEmptyHandler{ nullptr };
-			std::vector<utl::scope_ptr<FSOInstance>> vInstances;
+			std::vector<std::unique_ptr<FSOInstance>> vInstances;
 			std::map<std::string, vk::DescriptorImageInfo> mTextures;
 
 			FProgramCreateInfo programCI;

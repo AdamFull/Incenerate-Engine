@@ -32,13 +32,13 @@ void CDescriptorSet::create(vk::PipelineBindPoint bindPoint, vk::PipelineLayout&
     vDescriptorSets.resize(framesInFlight);
 
     vk::Result res = pDevice->create(allocInfo, vDescriptorSets.data());
-    assert(res == vk::Result::eSuccess && "Cannot create descriptor sets.");
+    log_cerror(VkHelper::check(res), "Cannot create descriptor sets.");
 }
 
 void CDescriptorSet::update(std::vector<vk::WriteDescriptorSet>& vWrites)
 {
     auto& vkDevice = pDevice->getLogical();
-    assert(vkDevice && "Trying to update descriptor sets, but device is invalid.");
+    log_cerror(vkDevice, "Trying to update descriptor sets, but device is invalid.");
     for (auto& write : vWrites)
         write.dstSet = get();
 
@@ -48,7 +48,7 @@ void CDescriptorSet::update(std::vector<vk::WriteDescriptorSet>& vWrites)
 void CDescriptorSet::update(vk::WriteDescriptorSet& writes)
 {
     auto& vkDevice = pDevice->getLogical();
-    assert(vkDevice && "Trying to free descriptor sets, but device is invalid.");
+    log_cerror(vkDevice, "Trying to free descriptor sets, but device is invalid.");
     writes.dstSet = get();
     vkDevice.updateDescriptorSets(1, &writes, 0, nullptr);
 }

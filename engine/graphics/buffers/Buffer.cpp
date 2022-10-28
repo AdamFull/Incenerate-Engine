@@ -108,7 +108,7 @@ void CBuffer::create(vk::DeviceSize instanceSize, vk::DeviceSize instanceCount, 
     auto& vmalloc = pDevice->getVMAAllocator();
 
     auto res = vmalloc.createBuffer(&bufferInfo, &alloc_create_info, &buffer, &allocation, nullptr);
-    assert(res == vk::Result::eSuccess && "Cannot allocate memory for buffer.");
+    log_cerror(VkHelper::check(res), "Cannot allocate memory for buffer.");
 }
 
 void CBuffer::reCreate(vk::DeviceSize instanceSize, uint32_t instanceCount, vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
@@ -139,23 +139,27 @@ vk::DescriptorBufferInfo& CBuffer::getDescriptor()
 void CBuffer::map()
 {
     auto& vkDevice = pDevice->getLogical();
-    assert(vkDevice && buffer  && "Called map on buffer before create");
+    log_cerror(vkDevice && buffer, "Called map on buffer before create");
 
-    auto res = vmaMapMemory(pDevice->getVMAAllocator(), allocation, &mappedMemory);
-    assert(res == VK_SUCCESS && "Can't map memory.");
+    auto allocator = pDevice->getVMAAllocator();
+    
+    auto res = allocator.mapMemory(allocation, &mappedMemory);
+    log_cerror(VkHelper::check(res), "Can't map memory.");
 }
 
 void CBuffer::unmap()
 {
     auto& vkDevice = pDevice->getLogical();
-    assert(vkDevice && "Called unmap buffer but device is invalid");
+    log_cerror(vkDevice, "Called unmap buffer but device is invalid");
+
+    auto allocator = pDevice->getVMAAllocator();
     if (mappedMemory)
-        vmaUnmapMemory(pDevice->getVMAAllocator(), allocation);
+        allocator.unmapMemory(allocation);
 }
 
 bool CBuffer::compare(void* idata, vk::DeviceSize size, vk::DeviceSize offset)
 {
-    assert(mappedMemory && "Cannot compare to unmapped buffer");
+    log_cerror(mappedMemory, "Cannot compare to unmapped buffer");
     if (offset == 0)
     {
         return std::memcmp(mappedMemory, idata, size) != 0;
@@ -170,7 +174,7 @@ bool CBuffer::compare(void* idata, vk::DeviceSize size, vk::DeviceSize offset)
 
 void CBuffer::write(void* idata, vk::DeviceSize size, vk::DeviceSize offset)
 {
-    assert(mappedMemory && "Cannot copy to unmapped buffer");
+    log_cerror(mappedMemory, "Cannot copy to unmapped buffer");
 
     if (size == VK_WHOLE_SIZE)
     {
@@ -187,8 +191,10 @@ void CBuffer::write(void* idata, vk::DeviceSize size, vk::DeviceSize offset)
 void CBuffer::flush(vk::DeviceSize size, vk::DeviceSize offset)
 {
     auto& vkDevice = pDevice->getLogical();
-    assert(vkDevice && "Called flush buffer but device is invalid");
-    vmaFlushAllocation(pDevice->getVMAAllocator(), allocation, offset, size);
+    log_cerror(vkDevice, "Called flush buffer but device is invalid");
+
+    auto allocator = pDevice->getVMAAllocator();
+    allocator.flushAllocation(allocation, offset, size);
 }
 
 vk::DeviceSize CBuffer::getAlignment(vk::DeviceSize instanceSize, vk::DeviceSize minOffsetAlignment)

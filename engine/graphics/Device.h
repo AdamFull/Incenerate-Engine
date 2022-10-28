@@ -3,6 +3,8 @@
 #include "Helpers.h"
 #include "buffers/CommandPool.h"
 
+#include <utility/logger/logger.h>
+
 namespace engine
 {
 	namespace graphics
@@ -87,7 +89,7 @@ namespace engine
             template <class _Ty, class _Ret>
             inline vk::Result create(_Ty& info, _Ret* ref)
             {
-                assert(false && "Unknown object type.");
+                log_error("Unknown object type.");
                 return vk::Result::eSuccess;
             }
             template <>
@@ -207,7 +209,7 @@ namespace engine
             }
 
             template <class _Ty>
-            inline void destroy(_Ty* ref) { assert(false && "Unknown object type."); }
+            inline void destroy(_Ty* ref) { log_error("Unknown object type."); }
             template <>
             inline void destroy(vk::Instance* ref) { vkDestroyInstance(*ref, (const VkAllocationCallbacks*)pAllocator); }
             template <>

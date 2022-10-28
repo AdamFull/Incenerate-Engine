@@ -20,14 +20,14 @@ void CDescriptorHandler::create(CShaderObject* pso)
 
 	pShader = pso->getShader().get();
 	
-	pDescriptorSet = utl::make_scope<CDescriptorSet>(pDevice);
+	pDescriptorSet = std::make_unique<CDescriptorSet>(pDevice);
 	pDescriptorSet->create(bindPoint, layout, descriptorPool, descriptorSetLayout);
 }
 
 void CDescriptorHandler::update()
 {
 	auto& vkDevice = pDevice->getLogical();
-	assert(vkDevice && "Trying to update descriptor sets, but device is invalid.");
+	log_cerror(vkDevice, "Trying to update descriptor sets, but device is invalid.");
 	for (auto& write : vWriteDescriptorSets)
 		write.dstSet = pDescriptorSet->get();
 	vkDevice.updateDescriptorSets(static_cast<uint32_t>(vWriteDescriptorSets.size()), vWriteDescriptorSets.data(), 0, nullptr);

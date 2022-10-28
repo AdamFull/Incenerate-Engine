@@ -20,7 +20,7 @@ void CCommandPool::create(const std::thread::id& threadId)
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
     vk::Result res = pDevice->create(poolInfo, &commandPool);
-    assert(res == vk::Result::eSuccess && "Cannot create command pool.");
+    log_cerror(VkHelper::check(res), "Cannot create command pool.");
 }
 
 CCommandPool::~CCommandPool()

@@ -1,6 +1,6 @@
 #include "ShaderCompiler.h"
 
-#include <utility/ulog.hpp>
+#include <utility/logger/logger.h>
 #include <utility/upattern.hpp>
 
 #include "system/filesystem/filesystem.h"
@@ -38,13 +38,13 @@ public:
 		{
 			std::stringstream ss;
 			ss << "In shader file: " << includerName << " Shader Include could not be loaded: " << std::quoted(headerName);
-			utl::log<utl::level::eError>(ss.str());
+			log_error(ss.str());
 			return nullptr;
 		}
 
-		auto content = utl::allocate<char[]>(fileLoaded.size());
+		auto content = new char[fileLoaded.size()];
 		std::memcpy(content, fileLoaded.data(), fileLoaded.size());
-		return utl::allocate<IncludeResult>(std::make_tuple(headerName, content, fileLoaded.size(), content));
+		return new IncludeResult(headerName, content, fileLoaded.size(), content);
 	}
 
 	IncludeResult* includeSystem(const char* headerName, const char* includerName, size_t inclusionDepth) override
@@ -55,21 +55,21 @@ public:
 		if (fileLoaded.empty()) {
 			std::stringstream ss;
 			ss << "Shader Include could not be loaded: " << std::quoted(headerName);
-			utl::log<utl::level::eError>(ss.str());
+			log_error(ss.str());
 			return nullptr;
 		}
 
-		auto content = utl::allocate<char[]>(fileLoaded.size());
+		auto content = new char[fileLoaded.size()];
 		std::memcpy(content, fileLoaded.data(), fileLoaded.size());
-		return utl::allocate<IncludeResult>(std::make_tuple(headerName, content, fileLoaded.size(), content));
+		return new IncludeResult(headerName, content, fileLoaded.size(), content);
 	}
 
 	void releaseInclude(IncludeResult* result) override
 	{
 		if (result)
 		{
-			utl::deallocate(result->userData);
-			utl::deallocate(result);
+			delete[] result->userData;
+			delete result;
 		}
 	}
 private:
@@ -283,7 +283,7 @@ CShaderCompiler::CShaderCompiler()
 	load_cache();
 
 	if (!glslang::InitializeProcess())
-		throw std::runtime_error("Failed to initialize glslang processor.");
+		log_error("Failed to initialize glslang processor.");
 }
 
 CShaderCompiler::~CShaderCompiler()
@@ -334,8 +334,8 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 			ss << shader.getInfoLog() << "\n";
 			ss << shader.getInfoDebugLog() << "\n";
 			ss << "***********************************************************";
-			utl::log<utl::level::eError>(ss.str());
-			assert(false && "SPRIV shader preprocess failed!");
+			log_error(ss.str());
+			log_error("SPRIV shader preprocess failed!");
 		}
 
 		if (!shader.parse(&resources, clientVersion, true, messages, includer))
@@ -346,8 +346,8 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 			ss << shader.getInfoLog() << "\n";
 			ss << shader.getInfoDebugLog() << "\n";
 			ss << "***********************************************************";
-			utl::log<utl::level::eError>(ss.str());
-			assert(false && "SPRIV shader parse failed!");
+			log_error(ss.str());
+			log_error("SPRIV shader parse failed!");
 		}
 
 		program.addShader(&shader);
@@ -360,8 +360,8 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 			ss << shader.getInfoLog() << "\n";
 			ss << shader.getInfoDebugLog() << "\n";
 			ss << "***********************************************************";
-			utl::log<utl::level::eError>(ss.str());
-			assert(false && "Error while linking shader program.");
+			log_error(ss.str());
+			log_error("Error while linking shader program.");
 		}
 
 		glslang::SpvOptions spvOptions;

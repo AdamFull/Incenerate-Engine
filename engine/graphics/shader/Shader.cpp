@@ -93,7 +93,7 @@ void CShader::createShaderModule(const std::vector<uint32_t>& spirv, vk::ShaderS
 
         vk::ShaderModule shaderModule{ VK_NULL_HANDLE };
         vk::Result res = pDevice->create(shaderCI, &shaderModule);
-        assert(res == vk::Result::eSuccess && "Cannot create shader module.");
+        log_cerror(VkHelper::check(res), "Cannot create shader module.");
 
         vk::PipelineShaderStageCreateInfo shaderStageCI{};
         shaderStageCI.stage = stage;
@@ -104,6 +104,6 @@ void CShader::createShaderModule(const std::vector<uint32_t>& spirv, vk::ShaderS
     }
     catch (vk::SystemError err)
     {
-        throw std::runtime_error("Failed to create shader module!");
+        log_error("Failed to create shader module!");
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fifo_map.hpp>
+#include <utility/logger/logger.h>
 
 namespace engine
 {
@@ -51,7 +52,7 @@ namespace engine
 					if (attachment != mFbAttachments.end())
 						references.emplace_back(vk::AttachmentReference{ attachment->second.reference, vk::ImageLayout::eShaderReadOnlyOptimal });
 					else
-						assert(false && "Attachment not found.");
+						log_error("Attachment not found.");
 				}
 				mInputReferences.emplace(index, references);
 			}
@@ -67,7 +68,7 @@ namespace engine
 					if (attachment != mFbAttachments.end())
 						references.emplace_back(vk::AttachmentReference{ attachment->second.reference, vk::ImageLayout::eColorAttachmentOptimal });
 					else
-						assert(false && "Attachment not found.");
+						log_error("Attachment not found.");
 				}
 				mOutputReferences.emplace(index, references);
 			}

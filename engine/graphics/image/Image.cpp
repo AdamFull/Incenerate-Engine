@@ -63,14 +63,12 @@ void CImage::create(void* pData, const vk::Extent3D& extent, vk::Format format, 
 void CImage::generateMipmaps(vk::Image& image, uint32_t mipLevels, vk::Format format, uint32_t width, uint32_t height, vk::ImageAspectFlags aspectFlags)
 {
     auto& physicalDevice = pDevice->getPhysical();
-    assert(physicalDevice && "Trying to generate mipmaps, but physical device is invalid.");
+    log_cerror(physicalDevice, "Trying to generate mipmaps, but physical device is invalid.");
     vk::FormatProperties formatProperties;
     physicalDevice.getFormatProperties(format, &formatProperties);
 
     if (!(formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
-    {
-        throw std::runtime_error("Texture image format does not support linear blitting!");
-    }
+        log_error("Texture image format does not support linear blitting!");
 
     auto cmdBuf = CCommandBuffer(pDevice);
     cmdBuf.create(true, vk::QueueFlagBits::eTransfer);
@@ -107,7 +105,7 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
 
     //TODO: Add checking for texture type here
     if (!isSupportedDimension(info))
-        throw std::runtime_error("Unsupported texture dimension.");
+        log_error("Unsupported texture dimension.");
 
     _extent = vk::Extent3D{ info->baseWidth, info->baseHeight, info->baseDepth };
     _mipLevels = info->numLevels;
@@ -189,7 +187,7 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
     viewInfo.image = _image;
 
     vk::Result res = pDevice->create(viewInfo, &_view);
-    assert(res == vk::Result::eSuccess && "Cannot create image view");
+    log_cerror(VkHelper::check(res), "Cannot create image view");
 
     if (!_sampler)
     {
@@ -300,7 +298,7 @@ void CImage::transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLa
 bool CImage::isSupportedDimension(std::unique_ptr<FImageCreateInfo>& info)
 {
     auto& physicalDevice = pDevice->getPhysical();
-    assert(physicalDevice && "Trying to check supported dibension, but physical device is invalid.");
+    log_cerror(physicalDevice, "Trying to check supported dibension, but physical device is invalid.");
     vk::PhysicalDeviceProperties devprops;
     physicalDevice.getProperties(&devprops);
 

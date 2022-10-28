@@ -61,7 +61,7 @@ void CPipeline::createDescriptorSetLayout(CShaderObject* pShader)
     descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayouts.data();
 
     vk::Result res = pDevice->create(descriptorSetLayoutCreateInfo, &descriptorSetLayout);
-    assert(res == vk::Result::eSuccess && "Cannot create descriptor set layout.");
+    log_cerror(VkHelper::check(res), "Cannot create descriptor set layout.");
 }
 
 void CPipeline::createDescriptorPool(CShaderObject* pShader)
@@ -75,7 +75,7 @@ void CPipeline::createDescriptorPool(CShaderObject* pShader)
     descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPools.size());
     descriptorPoolCreateInfo.pPoolSizes = descriptorPools.data();
     vk::Result res = pDevice->create(descriptorPoolCreateInfo, &descriptorPool);
-    assert(res == vk::Result::eSuccess && "Cannot create descriptor pool.");
+    log_cerror(VkHelper::check(res), "Cannot create descriptor pool.");
 }
 
 void CPipeline::createPipelineLayout(CShaderObject* pShader)
@@ -89,5 +89,5 @@ void CPipeline::createPipelineLayout(CShaderObject* pShader)
     pipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
     pipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
     vk::Result res = pDevice->create(pipelineLayoutCreateInfo, &pipelineLayout);
-    assert(res == vk::Result::eSuccess && "Cannot create pipeline layout.");
+    log_cerror(VkHelper::check(res), "Cannot create pipeline layout.");
 }

@@ -1,5 +1,7 @@
 #include "ImageLoader.h"
 
+#include <utility/logger/logger.h>
+
 #include <ktx.h>
 #include <ktxvulkan.h>
 
@@ -26,7 +28,7 @@ void CImageLoader::loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<
     ktxTexture* kTexture{ nullptr };
 
     auto ktxresult = ktxTexture_CreateFromNamedFile(fsPath.string().c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &kTexture);
-    assert(ktxresult == KTX_SUCCESS && "Failed to open ktx texture.");
+    log_cerror(ktxresult == KTX_SUCCESS, "Failed to open ktx texture.");
 
     imageCI->isArray = kTexture->isArray;
     imageCI->isCubemap = kTexture->isCubemap;
@@ -53,7 +55,7 @@ void CImageLoader::loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<
         {
             size_t offset{ 0 };
             ktxresult = ktxTexture_GetImageOffset(kTexture, level, 0, layer, &offset);
-            assert(ktxresult == KTX_SUCCESS && "Failed to load mip level.");
+            log_cerror(ktxresult == KTX_SUCCESS, "Failed to load mip level.");
             imageCI->mipOffsets[layer].emplace_back(offset);
         }
     }
@@ -66,7 +68,7 @@ void CImageLoader::loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr
     ktxTexture2* kTexture{ nullptr };
 
     auto ktxresult = ktxTexture_CreateFromNamedFile(fsPath.string().c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, (ktxTexture**)&kTexture);
-    assert(ktxresult == KTX_SUCCESS && "Failed to open ktx texture.");
+    log_cerror(ktxresult == KTX_SUCCESS, "Failed to open ktx texture.");
 
     imageCI->isArray = kTexture->isArray;
     imageCI->isCubemap = kTexture->isCubemap;
@@ -83,7 +85,7 @@ void CImageLoader::loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr
     if (ktxTexture2_NeedsTranscoding(kTexture))
     {
         ktxresult = ktxTexture2_TranscodeBasis(kTexture, KTX_TTF_BC7_RGBA, 0);
-        assert(ktxresult == KTX_SUCCESS && "Failed to transcode texture.");
+        log_cerror(ktxresult == KTX_SUCCESS, "Failed to transcode texture.");
     }
 
     imageCI->dataSize = kTexture->dataSize;
@@ -99,7 +101,7 @@ void CImageLoader::loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr
         {
             size_t offset{ 0 };
             ktxresult = ktxTexture_GetImageOffset((ktxTexture*)kTexture, level, 0, layer, &offset);
-            assert(ktxresult == KTX_SUCCESS && "Failed to load mip level.");
+            log_cerror(ktxresult == KTX_SUCCESS, "Failed to load mip level.");
             imageCI->mipOffsets[layer].emplace_back(offset);
         }
     }

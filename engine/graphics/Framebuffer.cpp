@@ -172,7 +172,7 @@ void CFramebuffer::addImage(const std::string& name, vk::Format format, vk::Imag
                 attachmentDescription.finalLayout = vk::ImageLayout::ePresentSrcKHR;
             }
             else
-                assert(false && "Cannot use sampled image with input attachment.");
+                log_error("Cannot use sampled image with input attachment.");
         }
         clearValue.setColor(vk::ClearColorValue{ std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f} });
     }
@@ -216,7 +216,7 @@ void CFramebuffer::createRenderPass()
     renderPassCI.dependencyCount = static_cast<uint32_t>(vSubpassDep.size());
     renderPassCI.pDependencies = vSubpassDep.data();
     vk::Result res = pDevice->create(renderPassCI, &renderPass);
-    assert(res == vk::Result::eSuccess && "Cannot create render pass.");
+    log_cerror(VkHelper::check(res), "Cannot create render pass.");
 }
 
 void CFramebuffer::createFramebuffer()
@@ -259,7 +259,7 @@ void CFramebuffer::createFramebuffer()
 
         vk::Framebuffer framebuffer{ VK_NULL_HANDLE };
         vk::Result res = pDevice->create(framebufferCI, &framebuffer);
-        assert(res == vk::Result::eSuccess && "Cannot create framebuffer.");
+        log_cerror(VkHelper::check(res), "Cannot create framebuffer.");
         vFramebuffers.emplace_back(framebuffer);
     }
 }

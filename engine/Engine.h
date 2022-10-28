@@ -19,6 +19,8 @@ namespace engine
 
 	class CEngine : public utl::singleton<CEngine>
 	{
+	protected:
+		CEngine();
 	public:
 		friend std::unique_ptr<CEngine> std::make_unique<CEngine>();
 

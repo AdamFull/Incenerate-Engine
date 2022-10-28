@@ -127,5 +127,5 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
 
 
     auto result = pDevice->create(pipelineInfo, &pipeline);
-    assert(pipeline && "Failed creating pipeline.");
+    log_cerror(pipeline, "Failed creating pipeline.");
 }

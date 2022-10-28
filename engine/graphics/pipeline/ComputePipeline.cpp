@@ -27,5 +27,5 @@ void CComputePipeline::createPipeline(CShaderObject* pShader)
     pipelineInfo.basePipelineIndex = -1;
 
     vk::Result res = pDevice->create(pipelineInfo, &pipeline);
-    assert(res == vk::Result::eSuccess && "Failed creating pipeline.");
+    log_cerror(VkHelper::check(res), "Failed creating pipeline.");
 }
