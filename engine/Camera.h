@@ -10,6 +10,7 @@ namespace engine
 	public:
 		void create();
 		void update(float fDT);
+		void onResize(uint32_t width, uint32_t height);
 
 		void moveForward(bool bInv);
 		void moveRight(bool bInv);
@@ -17,8 +18,8 @@ namespace engine
 
 		void lookAt(float dX, float dY);
 
-		glm::mat4 getProjection(bool flipY = false) const;
-		glm::mat4 getView(bool flipY = false) const;
+		const glm::mat4& getProjection(bool flipY = false) const;
+		const glm::mat4& getView(bool flipY = false) const;
 		glm::vec3& getViewPos();
 
 		glm::vec3 getForwardVector() const;
@@ -40,10 +41,19 @@ namespace engine
 		const FFrustum& getFrustum() { return frustum; }
 
 	private:
+		void recalculateView();
+		void recalculateProjection();
+		void recalculateRayDirections();
+	private:
 		glm::vec4 viewPos{};
 		FFrustum frustum;
 		FTransform transform;
 		float dt{ 0.0 }, aspect{1.7f}, fieldOfView{45.f}, nearPlane{0.1f}, farPlane{128.f}, sensitivity{15.f};
 		float angleH{ 0.f }, angleV{ 0.f };
+
+		std::vector<glm::vec3> vRayDirections;
+		uint32_t width{0}, height{0};
+		bool bMoved{ true };
+		glm::mat4 view, invView, projection, invProjection;
 	};
 }

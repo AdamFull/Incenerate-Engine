@@ -49,8 +49,8 @@ struct FBox
 
 	void set(const glm::vec3& position)
 	{
-		min = (glm::vec3{ -voxel_scale } + position) * 2.f;
-		max = (glm::vec3{ voxel_scale } + position) * 2.f;
+		min = (glm::vec3{ -voxel_scale } + position);
+		max = (glm::vec3{ voxel_scale } + position);
 	}
 
 	glm::vec3 min, max;
@@ -112,10 +112,16 @@ public:
 					{
 						uint32_t color = 0xFF008000;
 
-						ray.direction = glm::normalize(ray.origin - final_pos) * -1.f;
+						ray.direction = glm::normalize(final_pos - ray.origin);
 						box.set(final_pos);
-						if(intersect(box, ray, distance))
-							verts.emplace_back(FVertex(final_pos, color));
+						if (intersect(box, ray, distance))
+						{
+							verts.emplace_back(FVertex(ray.origin, color));
+							verts.emplace_back(FVertex(ray.direction * 50.f, color));
+						}
+						
+						//if(intersect(box, ray, distance))
+						//	verts.emplace_back(FVertex(final_pos, color));
 					}
 				}
 			}
@@ -187,7 +193,8 @@ int main()
 		}
 	}
 
-	
+	auto startTime = std::chrono::high_resolution_clock::now();
+
 	auto& frustum = camera->getFrustum();
 	for (auto& chunk : vChunks)
 	{
@@ -195,7 +202,13 @@ int main()
 			chunk.make(noise, vVertices, camera);
 	}
 
-	vVertices.emplace_back(FVertex{ camera->getViewPos() * 2.f, 0xFF0000FF});
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	log_info("Voxels traced by: {}s.", std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count());
+
+	//Get chunk min and chunk max
+	//Iterate between min and max
+
+	//vVertices.emplace_back(FVertex{ camera->getViewPos() * 2.f, 0xFF0000FF});
 
 	//auto voxfile = fs::read_file("models/monu2.vox");
 	//
@@ -244,7 +257,7 @@ int main()
 	//        pso->addTexture("input_tex", image->getDescriptor());
 	//    });
 
-	auto& program = graphics->addStage("voxel_shader");
+	auto& program = graphics->addStage("test_shader");
 
 	auto& vbo = program->getVBO();
 	vbo->addVertices(std::move(vVertices));
