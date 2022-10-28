@@ -1,7 +1,5 @@
 #pragma once
 
-#include <map>
-#include <vulkan/vulkan.hpp>
 #include "system/filesystem/filesystem.h"
 
 namespace engine

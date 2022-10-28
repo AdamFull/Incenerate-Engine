@@ -1,17 +1,11 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
 #include "DescriptorSet.h"
 
 namespace engine
 {
 	namespace graphics
 	{
-		class CDevice;
-		class CShader;
-		class CShaderObject;
-
 		class CDescriptorHandler
 		{
 		public:

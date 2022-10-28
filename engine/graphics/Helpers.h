@@ -1,9 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
-#include <optional>
-
 #include "EngineStructures.h"
 
 namespace engine

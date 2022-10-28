@@ -1,9 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
 #include <fifo_map.hpp>
-
-#include <map>
 
 namespace engine
 {

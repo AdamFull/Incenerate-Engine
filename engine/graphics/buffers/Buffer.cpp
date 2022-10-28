@@ -7,6 +7,15 @@
 
 using namespace engine::graphics;
 
+std::unique_ptr<CBuffer> CBuffer::MakeBuffer(CDevice* device, size_t size, size_t count,
+    vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
+    vk::DeviceSize minOffsetAlignment)
+{
+    auto buffer = std::make_unique<CBuffer>(device);
+    buffer->create(size, count, memory_usage, usageFlags, minOffsetAlignment);
+    return buffer;
+}
+
 std::unique_ptr<CBuffer> CBuffer::MakeStagingBuffer(CDevice* device, size_t size, size_t count)
 {
     auto buffer = std::make_unique<CBuffer>(device);

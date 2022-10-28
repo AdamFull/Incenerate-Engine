@@ -1,10 +1,6 @@
 #pragma once
 
 #include <utility/uparse.hpp>
-#include <vulkan/vulkan.hpp>
-
-#include <glm/glm.hpp>
-#include <glm/gtx/hash.hpp>
 
 namespace engine
 {

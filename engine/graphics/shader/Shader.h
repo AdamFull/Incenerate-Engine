@@ -6,8 +6,6 @@ namespace engine
 {
 	namespace graphics
 	{
-		class CDevice;
-
 		class CShader : public CShaderReflect
 		{
 		public:

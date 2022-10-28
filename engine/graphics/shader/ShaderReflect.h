@@ -1,14 +1,7 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
 #include <spirvcross/spirv_cross.hpp>
 #include <spirvcross/spirv_glsl.hpp>
-
-#include <string>
-#include <map>
-#include <unordered_map>
-#include <optional>
 
 namespace engine
 {

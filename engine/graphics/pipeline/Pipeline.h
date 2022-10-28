@@ -1,14 +1,9 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
 namespace engine
 {
 	namespace graphics
 	{
-		class CDevice;
-		class CShaderObject;
-
 		class CPipeline
 		{
 		public:

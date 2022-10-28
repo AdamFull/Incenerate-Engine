@@ -1,15 +1,11 @@
 #pragma once
 
 #include "ImageLoader.h"
-#include <vma/vk_mem_alloc.hpp>
-
-#include <filesystem>
 
 namespace engine
 {
 	namespace graphics
 	{
-		class CDevice;
 		class CImage
 		{
 		public:

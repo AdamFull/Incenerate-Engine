@@ -20,7 +20,6 @@ namespace engine
 			//std::map<std::string, std::unique_ptr<CPushHandler>>
 		};
 
-		class CImage;
 		class CShaderObject
 		{
 		public:

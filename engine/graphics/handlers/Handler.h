@@ -7,7 +7,6 @@ namespace engine
 {
 	namespace graphics
 	{
-		class CDevice;
 		enum class EHandlerStatus
 		{
 			eNone,

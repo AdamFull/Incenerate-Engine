@@ -3,11 +3,6 @@
 #include "Helpers.h"
 #include "buffers/CommandPool.h"
 
-#include <vma/vk_mem_alloc.hpp>
-#include <memory>
-#include <map>
-#include <thread>
-
 namespace engine
 {
 	namespace graphics

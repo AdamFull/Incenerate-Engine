@@ -5,6 +5,8 @@ file(GLOB_RECURSE ENGINE_GRAPHICS_SOURCE *.cpp *.c *.cc *.h *.hpp)
 
 add_library(${PROJECT_NAME} STATIC ${ENGINE_GRAPHICS_SOURCE})
 
+target_precompile_headers( ${PROJECT_NAME} PUBLIC common.h)
+
 target_include_directories(${PROJECT_NAME} 
     PUBLIC "${ENGINE_ROOT}"
     PUBLIC "${EXTERNALS_PATH}"

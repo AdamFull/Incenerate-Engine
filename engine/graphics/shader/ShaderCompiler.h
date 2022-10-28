@@ -2,8 +2,6 @@
 
 #include "APIStructures.h"
 
-#include <filesystem>
-
 #include "EngineEnums.h"
 
 namespace engine

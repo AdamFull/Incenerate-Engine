@@ -1,15 +1,9 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
-#include <thread>
-
 namespace engine
 {
 	namespace graphics
 	{
-        class CDevice;
-
         class CCommandPool
         {
         public:

@@ -1,19 +1,18 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-#include <vma/vk_mem_alloc.hpp>
-
 namespace engine
 {
 	namespace graphics
 	{
-		class CDevice;
-
 		class CBuffer
 		{
 		public:
 			CBuffer(CDevice* device);
 			~CBuffer();
+
+			static std::unique_ptr<CBuffer> MakeBuffer(CDevice* device, size_t size, size_t count, 
+				vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
+				vk::DeviceSize minOffsetAlignment = 1);
 
 			static std::unique_ptr<CBuffer> MakeStagingBuffer(CDevice* device, size_t size, size_t count);
 			static std::unique_ptr<CBuffer> MakeVertexBuffer(CDevice* device, size_t size, size_t count);
