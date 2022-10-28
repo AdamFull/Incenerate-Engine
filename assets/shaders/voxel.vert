@@ -8,13 +8,12 @@ layout (location = 4) out vec4 vertex_color;
 
 layout (std140, binding = 0) uniform MatricesBlock
 {
-	mat4 view;
-	mat4 proj;
+	mat4 projView;
 } matrices;
 
 void main()
 {
 	vertex_color = color;
-	view_proj = matrices.proj * matrices.view;
+	view_proj = matrices.projView;
 	gl_Position = vec4(position, 1.0);
 }
