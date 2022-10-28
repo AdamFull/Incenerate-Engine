@@ -1,7 +1,7 @@
 {
   "test_shader": {
     "bind_point": "Graphics",
-    "topology": "TriangleList",
+    "topology": "LineList",
     "cull_mode": "Front",
     "front_face": "ccw",
     "depth_test": true,
