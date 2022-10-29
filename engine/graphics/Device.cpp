@@ -325,7 +325,7 @@ void CDevice::createSwapchain()
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
     createInfo.imageExtent = swapchainExtent;
     createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
+    createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;\
 
     auto indices = findQueueFamilies();
     uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };

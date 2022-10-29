@@ -1,0 +1,9 @@
+auto image = std::make_unique<CImage>(graphics->getDevice().get());
+image->create("lava-and-rock_albedo.ktx2");
+
+auto& program = graphics->addStage("screenspace");
+
+program->setRenderFunc([&](CShaderObject* pso, vk::CommandBuffer& cb)
+    {
+        pso->addTexture("input_tex", image->getDescriptor());
+    });
