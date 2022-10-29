@@ -67,6 +67,7 @@ namespace engine
             inline vk::Queue& getPresentQueue() { return qPresentQueue; }
             inline vk::Queue& getComputeQueue() { return qComputeQueue; }
             inline vk::Queue& getTransferQueue() { return qTransferQueue; }
+            vk::Queue& getQueue(vk::QueueFlagBits flag);
 
             inline vk::SampleCountFlagBits getSamples() { return msaaSamples; }
             inline vk::AllocationCallbacks* getAllocator() { return pAllocator; }

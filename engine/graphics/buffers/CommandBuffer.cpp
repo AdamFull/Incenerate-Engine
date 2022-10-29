@@ -80,21 +80,9 @@ vk::Result CCommandBuffer::submitIdle()
     res = vkDevice.resetFences(1, &fence);
     log_cerror(VkHelper::check(res), "Cannot reset fence.");
 
-    vk::Queue queue{};
-    switch (queueType)
-    {
-    case vk::QueueFlagBits::eGraphics: {
-        queue = pDevice->getGraphicsQueue();
-    } break;
-    case vk::QueueFlagBits::eCompute: {
-        queue = pDevice->getComputeQueue();
-    } break;
-    case vk::QueueFlagBits::eTransfer: {
-        queue = pDevice->getTransferQueue();
-    } break;
-    }
+    auto& queue = pDevice->getQueue(queueType);
     queue.submit(submitInfo, fence);
-    res = vkDevice.waitForFences(1, &fence, VK_TRUE, (std::numeric_limits<uint64_t>::max)());
+    res = vkDevice.waitForFences(1, &fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
     log_cerror(VkHelper::check(res), "Wait for fences error.");
     pDevice->destroy(&fence);
     return res;

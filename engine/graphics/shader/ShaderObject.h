@@ -3,7 +3,7 @@
 #include "buffers/VertexBufferObject.h"
 #include "handlers/Handler.h"
 #include "pipeline/Pipeline.h"
-#include "Framebuffer.h"
+#include "rendering/Framebuffer.h"
 #include "descriptors/DescriptorHandler.h"
 #include "APIStructures.h"
 

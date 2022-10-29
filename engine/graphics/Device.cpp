@@ -880,19 +880,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
 
     try
     {
-        vk::Queue queue{};
-        switch (queueBit)
-        {
-        case vk::QueueFlagBits::eGraphics: {
-            queue = qGraphicsQueue;
-        } break;
-        case vk::QueueFlagBits::eCompute: {
-            queue = qComputeQueue;
-        } break;
-        case vk::QueueFlagBits::eTransfer: {
-            queue = qTransferQueue;
-        } break;
-        }
+        auto& queue = getQueue(queueBit);
         queue.submit(submitInfo, vInFlightFences[currentFrame]);
     }
     catch (vk::SystemError err)
@@ -931,6 +919,22 @@ const std::shared_ptr<CCommandPool>& CDevice::getCommandPool(const std::thread::
     commandPools.emplace(threadId, std::make_shared<CCommandPool>(this));
     commandPools[threadId]->create(threadId);
     return commandPools[threadId];
+}
+
+vk::Queue& CDevice::getQueue(vk::QueueFlagBits flag)
+{
+    switch (flag)
+    {
+    case vk::QueueFlagBits::eGraphics: {
+        return qGraphicsQueue;
+    } break;
+    case vk::QueueFlagBits::eCompute: {
+        return qComputeQueue;
+    } break;
+    case vk::QueueFlagBits::eTransfer: {
+        return qTransferQueue;
+    } break;
+    }
 }
 
 FQueueFamilyIndices CDevice::findQueueFamilies(const vk::PhysicalDevice& device)
