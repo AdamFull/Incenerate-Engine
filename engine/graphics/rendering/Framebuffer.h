@@ -94,6 +94,8 @@ namespace engine
 			std::unordered_map<std::string, std::shared_ptr<CImage>>& getCurrentImages();
 			std::shared_ptr<CImage>& getDepthImage() { return vFramebufferDepth.front(); }
 
+			vk::SubpassDescription& getDescription() { return vSubpassDesc.front(); }
+
 			void createRenderPass();
 			void createFramebuffer();
 			std::shared_ptr<CImage> createImage(const FFramebufferAttachmentInfo& attachment, vk::Extent2D extent);

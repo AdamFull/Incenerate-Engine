@@ -47,6 +47,7 @@ namespace engine
 
 			std::unique_ptr<CPipeline>& getPipeline() { return pPipeline; }
 			const std::unique_ptr<CVertexBufferObject>& getVBO() { return pVBO; }
+			const std::unique_ptr<CFramebuffer>& getFramebuffer() { return pFramebuffer; }
 
 			vk::PipelineBindPoint getBindPoint() { return programCI.bindPoint; }
 			vk::CullModeFlagBits getCullMode() { return programCI.cullMode; }

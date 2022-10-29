@@ -42,7 +42,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
         vertexInputCI.pVertexAttributeDescriptions = attributeDescription.data();
     }
 
-    auto attachmentCount = 1;
+    auto attachmentCount = pShader->getFramebuffer()->getDescription().colorAttachmentCount;
     bool isDepthOnly = attachmentCount == 0;
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
