@@ -28,66 +28,6 @@ uint32_t ConvertToRGBA(const ogt_vox_rgba& color)
 	return (color.a << 24) | (color.b << 16) | (color.g << 8) | color.r;
 }
 
-// a regular node
-struct svo_node {
-	svo_node* children[8];
-};
-
-// a node that stores colors instead
-struct svo_array_node {
-	uint32_t colors[8];
-};
-
-// a node that stores just one color, something that we want to avoid
-struct svo_leaf_node {
-	uint32_t color;
-};
-
-uint64_t ileave_two0(uint32_t input)
-{
-	constexpr size_t numInputs = 3;
-	constexpr uint64_t masks[] = 
-	{
-		0x9249'2492'4924'9249,
-		0x30C3'0C30'C30C'30C3,
-		0xF00F'00F0'0F00'F00F,
-		0x00FF'0000'FF00'00FF,
-		0xFFFF'0000'0000'FFFF
-	};
-
-	uint64_t n = input;
-	for (int i = 4; i != 1; --i) 
-	{
-		const auto shift = (numInputs - 1) * (1 << i);
-		n |= n << shift;
-		n &= masks[i];
-	}
-
-	return n;
-}
-
-uint64_t ileave3(const glm::u32vec3 pos)
-{
-	return (ileave_two0(pos.x) << 2) | (ileave_two0(pos.y) << 1) | ileave_two0(pos.z);
-}
-
-constexpr uint32_t chunk_size{ 50 };
-constexpr float chunk_divider{ 32.f };
-constexpr float voxel_scale{ 0.25f };
-
-glm::vec3 toWorldSpace(const glm::u32vec3& pos)
-{
-	return glm::vec3(pos) * voxel_scale;
-}
-
-struct FTreeNode
-{
-	uint32_t data{ 0 };
-
-	bool isLeaf() { return false; }
-	bool isBranch() { return false; }
-};
-
 int main()
 {
 	FEngineCreateInfo ci;
@@ -111,7 +51,6 @@ int main()
 
 	auto startTime = std::chrono::high_resolution_clock::now();
 
-	auto i = ileave3({ 0, 2, 10 });
 	vVertices.emplace_back(FVertex{ camera->getViewPos() * 2.f, 0xFF0000FF });
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
