@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19.1)
 project(VulkanMemoryAllocator)
 
-file(GLOB VMA_SOURCES *.cpp *.c *.cc *.h *.hpp)
+file(GLOB VMA_SOURCES *.cpp *.c *.cc)
 
 add_library(${PROJECT_NAME} STATIC ${VMA_SOURCES})
 

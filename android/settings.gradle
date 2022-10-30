@@ -12,6 +12,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "project_android"
+rootProject.name = "incenerate"
 include ':libsdl'
 include ':app'

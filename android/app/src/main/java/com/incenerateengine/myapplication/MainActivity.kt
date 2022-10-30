@@ -1,4 +1,4 @@
-package com.incenerate2d.myapplication
+package com.incenerateengine.myapplication
 
 import android.os.Build
 import android.os.Bundle
@@ -58,7 +58,7 @@ class MainActivity : SDLActivity() {
     override fun getLibraries(): Array<String>? {
         return arrayOf(
             "SDL2",
-            "incenerate2d"
+            "incenerateengine"
         )
     }
 

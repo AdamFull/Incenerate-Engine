@@ -3,6 +3,7 @@
 #include "system/window/WindowHandle.h"
 
 using namespace engine;
+using namespace engine::game;
 using namespace engine::system::window;
 
 void CCamera::create()
@@ -16,14 +17,12 @@ void CCamera::create()
 void CCamera::update(float fDT)
 {
     dt = fDT;
-    viewPos = glm::vec4(transform.pos, 1.0);
 
     onResize(CWindowHandle::iWidth, CWindowHandle::iHeight);
 
     if (bMoved)
     {
         recalculateView();
-        //recalculateRayDirections();
         bMoved = false;
     }
 
@@ -39,7 +38,6 @@ void CCamera::onResize(uint32_t width, uint32_t height)
     this->height = height;
 
     recalculateProjection();
-    //recalculateRayDirections();
 }
 
 void CCamera::moveForward(bool bInv)
@@ -128,34 +126,4 @@ void CCamera::recalculateProjection()
 {
     projection = glm::perspective(glm::radians(fieldOfView), aspect, nearPlane, farPlane);
     invProjection = glm::inverse(projection);
-}
-
-void CCamera::recalculateRayDirections()
-{
-    constexpr const uint32_t divider = 4;
-    vRayDirections.resize(width * height / divider);
-    float fwidth{ (float)width }, fheight{ (float)height };
-
-    for (uint32_t y = 0; y < height; y++)
-    {
-        if (y % divider == 0)
-        {
-            float fy = (float)y;
-            for (uint32_t x = 0; x < width; x++)
-            {
-                if (x % divider == 0)
-                {
-                    float fx = (float)x;
-
-                    glm::vec2 coord = { fx / fwidth, fy / fheight };
-                    coord = coord * 2.0f - 1.0f;
-
-                    glm::vec4 target = invProjection * glm::vec4(coord.x, coord.y, 1, 1);
-                    glm::vec3 rayDirection = glm::vec3(invView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0)); // World space
-                    auto idx = (x + y * width) / divider;
-                    vRayDirections[idx] = rayDirection;
-                }
-            }
-        }
-    }
 }

@@ -42,7 +42,7 @@ android {
         mVersionName = "v${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}.${versionProps['VERSION_CODE']}"
 
         defaultConfig {
-            applicationId "com.incenerate2d.myapplication"
+            applicationId "com.incenerateengine.myapplication"
             minSdkVersion PROP_MIN_SDK_VERSION
             targetSdkVersion PROP_TARGET_SDK_VERSION
             versionCode mVersionCode
@@ -51,9 +51,9 @@ android {
             testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
             externalNativeBuild {
                 cmake {
-                    targets 'incenerate2d'
+                    targets 'incenerateengine'
                     arguments "-DCMAKE_FIND_ROOT_PATH=", "-DANDROID_STL=c++_static", "-DANDROID_TOOLCHAIN=clang", "-DANDROID_ARM_NEON=TRUE"
-                    cppFlags "-frtti -fexceptions -fsigned-char -DANDROID_INCLUDE_GLEXT -DANDROID_INCLUDE_ES3"
+                    cppFlags "-std=c++2a -frtti -fexceptions -fsigned-char"
                 }
             }
 

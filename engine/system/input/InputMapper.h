@@ -3,7 +3,7 @@
 #include "KeycodeHelper.hpp"
 
 #include <utility/ufunction.hpp>
-#include <glm/glm/glm.hpp>
+#include <glm/glm.hpp>
 
 #include <map>
 #include <vector>

@@ -4,25 +4,34 @@ project(voxel_engine)
 set(ENGINE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(EXTERNALS_PATH "${ENGINE_ROOT}/external")
 
-add_subdirectory(external)
-add_subdirectory(graphics)
-add_subdirectory(system)
-add_subdirectory(game)
+add_subdirectory("external")
 
-file(GLOB ENGINE_SOURCE *.cpp *.c *.cc *.h *.hpp)
+file(GLOB_RECURSE ENGINE_GRAPHICS_SOURCE graphics/*.cpp graphics/*.c graphics/*.cc)
+file(GLOB_RECURSE ENGINE_SYSTEM_SOURCE system/*.cpp system/*.c system/*.cc)
+file(GLOB_RECURSE ENGINE_GAME_SOURCE game/*.cpp game/*.c game/*.cc)
+file(GLOB ENGINE_SOURCE *.cpp *.c *.cc)
 
-add_library(${PROJECT_NAME} STATIC ${ENGINE_SOURCE})
+include_directories(${Vulkan_INCLUDE_DIR})
+
+add_library(${PROJECT_NAME} STATIC 
+${ENGINE_SOURCE} 
+${ENGINE_GRAPHICS_SOURCE}
+${ENGINE_SYSTEM_SOURCE}
+${ENGINE_GAME_SOURCE}
+)
+
 target_link_libraries(${PROJECT_NAME} 
     PUBLIC external_lib
-    PUBLIC engine_graphics
-    PUBLIC engine_system
-    PUBLIC engine_game
 )
 
 target_include_directories(${PROJECT_NAME} 
-    PRIVATE "${ENGINE_ROOT}/graphics"
-    PRIVATE "${ENGINE_ROOT}/system"
-    PRIVATE "${ENGINE_ROOT}/game"
-    PUBLIC "${EXTERNALS_PATH}/utility"
-    PUBLIC "${EXTERNALS_PATH}/glm"
+    PUBLIC "${Vulkan_INCLUDE_DIR}"
+    PUBLIC "${EXTERNALS_PATH}/SDL/include"
+    PUBLIC "${EXTERNALS_PATH}/ktx/include"
+    PUBLIC "${ENGINE_ROOT}"
+    PUBLIC "${ENGINE_ROOT}/graphics"
+    PUBLIC "${ENGINE_ROOT}/system"
+    PUBLIC "${ENGINE_ROOT}/game"
 )
+
+target_precompile_headers( ${PROJECT_NAME} PUBLIC common.h)

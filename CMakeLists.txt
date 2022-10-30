@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19.1)
-project(VoxelApp)
+project(incenerateengine)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -38,7 +38,11 @@ add_compile_definitions(
 
 add_subdirectory(engine)
 
+if(ANDROID)
+add_library(${PROJECT_NAME} main.cpp)
+else()
 add_executable(${PROJECT_NAME} main.cpp)
+endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE voxel_engine)
 target_include_directories(${PROJECT_NAME} PRIVATE engine)

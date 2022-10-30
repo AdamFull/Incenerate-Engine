@@ -3,9 +3,6 @@
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.hpp>
 
-#include <glm/glm.hpp>
-#include <glm/gtx/hash.hpp>
-
 #include <filesystem>
 #include <string>
 #include <memory>

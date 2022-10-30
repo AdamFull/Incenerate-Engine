@@ -2,15 +2,13 @@
 
 #include "system/input/InputMapper.h"
 
-#include "window/WindowHandle.h"
-
 using namespace engine;
+using namespace engine::game;
 using namespace engine::system::input;
 
-void CFreeCameraController::create(system::input::CInputMapper* pInputMapper)
+void CFreeCameraController::create(CInputMapper* pInputMapper)
 {
-	pCamera = std::make_unique<CCamera>();
-	pCamera->create();
+    CCameraController::create(pInputMapper);
 
 	pInputMapper->createAction("CameraMovement", EKeyCode::eKeyW, EKeyCode::eKeyS, EKeyCode::eKeyA,
 		EKeyCode::eKeyD, EKeyCode::eKeySpace, EKeyCode::eKeyLCtrl, EKeyCode::eMouseMiddle);
@@ -22,12 +20,7 @@ void CFreeCameraController::create(system::input::CInputMapper* pInputMapper)
 
 void CFreeCameraController::update(float fDT)
 {
-    pCamera->update(fDT);
-}
-
-const std::unique_ptr<CCamera>& CFreeCameraController::getCamera()
-{
-	return pCamera;
+    CCameraController::update(fDT);
 }
 
 void CFreeCameraController::cameraMovement(system::input::EKeyCode eKey, system::input::EKeyState eState)

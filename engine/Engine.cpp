@@ -1,6 +1,7 @@
 #include "Engine.h"
 
 using namespace engine;
+using namespace engine::game;
 using namespace engine::graphics;
 using namespace engine::system::window;
 using namespace engine::system::input;
@@ -23,14 +24,11 @@ void CEngine::create(const FEngineCreateInfo& createInfo)
 
 	pInputMapper = std::make_unique<CInputMapper>();
 
-	pCameraController = std::make_unique<CFreeCameraController>();
-	pCameraController->create(pInputMapper.get());
-
-	auto& camera = pCameraController->getCamera();
-	camera->setAspect(pWindow->getAspect());
-
 	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
 	pGraphics->create(createInfo);
+
+	pScene = std::make_shared<CScene>();
+	pScene->create();
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	log_info("Engine initialization finished with: {}s.", std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count());
@@ -43,12 +41,9 @@ void CEngine::begin_render_loop()
 	{
 		auto startTime = std::chrono::high_resolution_clock::now();
 
-		//TODO: change after adding scene system
-		auto& camera = pCameraController->getCamera();
-		camera->setAspect(pWindow->getAspect());
-
 		pInputMapper->update(delta_time);
-		pCameraController->update(delta_time);
+
+		pScene->update(delta_time);
 
 		pGraphics->render();
 
@@ -74,9 +69,4 @@ const inputptr_t& CEngine::getInputMapper() const
 const graphptr_t& CEngine::getGraphics() const
 {
 	return pGraphics;
-}
-
-const camctrlptr_t& CEngine::getCameraController() const
-{
-	return pCameraController;
 }

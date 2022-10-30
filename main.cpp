@@ -31,7 +31,7 @@ uint32_t ConvertToRGBA(const ogt_vox_rgba& color)
 int main()
 {
 	FEngineCreateInfo ci;
-	ci.eAPI = ERenderApi::eVulkan_1_1;
+	ci.eAPI = ERenderApi::eVulkan_1_3;
 
 	ci.window.width = 800;
 	ci.window.height = 600;
@@ -40,9 +40,6 @@ int main()
 	CEngine::getInstance()->create(ci);
 
 	auto& graphics = CEngine::getInstance()->getGraphics();
-	auto& cameractrl = CEngine::getInstance()->getCameraController();
-	auto& camera = cameractrl->getCamera();
-	cameractrl->update(0.f);
 
 	std::vector<FVertex> vVertices{};
 
@@ -51,27 +48,9 @@ int main()
 
 	auto startTime = std::chrono::high_resolution_clock::now();
 
-	vVertices.emplace_back(FVertex{ camera->getViewPos() * 2.f, 0xFF0000FF });
-
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	log_info("Voxels traced by: {}s.", std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count());
 
-
-
-
-	auto& program = graphics->addStage("voxel_shader");
-
-	auto& vbo = program->getVBO();
-	vbo->addVertices(std::move(vVertices));
-
-	program->setRenderFunc([&](CShaderObject* pso, vk::CommandBuffer& cb)
-		{
-			auto projection = camera->getProjection();
-			auto view = camera->getView();
-
-			auto& ubo = pso->getUniformBuffer("MatricesBlock");
-			ubo->set("projView", projection * view);
-		});
 
 	CEngine::getInstance()->begin_render_loop();
 

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <utility/uparse.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtx/hash.hpp>
 
 namespace engine
 {
