@@ -2,21 +2,12 @@
 
 #include <fifo_map.hpp>
 #include <utility/logger/logger.h>
+#include "EngineEnums.h"
 
 namespace engine
 {
 	namespace graphics
 	{
-		enum class EImageType
-		{
-			e2D,
-			e3D,
-			eCubeMap,
-			eArray2D,
-			eArray3D,
-			eArrayCube
-		};
-
 		struct FFramebufferAttachmentInfo
 		{
 			vk::Format format;
@@ -78,6 +69,7 @@ namespace engine
 				vk::PipelineStageFlags dstStageMask = vk::PipelineStageFlagBits::eFragmentShader, vk::AccessFlags srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite,
 				vk::AccessFlags dstAccessMask = vk::AccessFlagBits::eMemoryRead, vk::DependencyFlags depFlags = vk::DependencyFlagBits::eByRegion);
 
+			const vk::Rect2D& getRenderArea() const { return renderArea; }
 			void setRenderArea(int32_t offset_x, int32_t offset_y, uint32_t width, uint32_t height);
 			void setRenderArea(vk::Offset2D offset, vk::Extent2D extent);
 			void setRenderArea(vk::Rect2D&& area);

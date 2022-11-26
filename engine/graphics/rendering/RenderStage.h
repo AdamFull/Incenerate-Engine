@@ -1,0 +1,27 @@
+#pragma once
+#include "Framebuffer.h"
+#include "RenderSystemParser.h"
+
+namespace engine
+{
+	namespace graphics
+	{
+		class CRenderStage
+		{
+		public:
+			CRenderStage(CDevice* device);
+			void create(const FCIStage& createInfo);
+			void reCreate(const FCIStage& createInfo);
+			void render(vk::CommandBuffer& commandBuffer);
+
+			const std::unique_ptr<CFramebuffer>& getFramebuffer() const;
+		private:
+			CDevice* pDevice{ nullptr };
+			FCIStage stageCI;
+			std::unique_ptr<CFramebuffer> pFramebuffer;
+
+			std::unique_ptr<CShaderObject> pShader;
+			std::unique_ptr<CImage> pImage;
+		};
+	}
+}

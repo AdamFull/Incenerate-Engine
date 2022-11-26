@@ -7,7 +7,9 @@
 #include "pipeline/ComputePipeline.h"
 #include "handlers/StorageHandler.h"
 #include "handlers/UniformHandler.h"
+#include "Engine.h"
 
+using namespace engine;
 using namespace engine::graphics;
 
 CShaderObject::CShaderObject(CDevice* device)
@@ -15,8 +17,12 @@ CShaderObject::CShaderObject(CDevice* device)
     pDevice = device;
 
     pShader = std::make_unique<CShader>(pDevice);
-    pFramebuffer = std::make_unique<CFramebuffer>(pDevice);
     pVBO = std::make_unique<CVertexBufferObject>(pDevice);
+}
+
+CShaderObject::~CShaderObject()
+{
+
 }
 
 const std::unique_ptr<CShader>& CShaderObject::getShader()
@@ -28,59 +34,47 @@ void CShaderObject::create()
 {
     if (!bIsCreated)
     {
-        //Creating framebuffer
-        pFramebuffer->setRenderArea(vk::Offset2D{0, 0}, pDevice->getExtent());
-        pFramebuffer->addImage("present_khr", pDevice->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment);
-        pFramebuffer->addImage("depth_tex", pDevice->getDepthFormat(), vk::ImageUsageFlagBits::eDepthStencilAttachment);
-        pFramebuffer->addOutputReference(0U, "present_khr");
-        pFramebuffer->addDescription(0U, "depth_tex");
-
-        pFramebuffer->addSubpassDependency(VK_SUBPASS_EXTERNAL, 0, vk::PipelineStageFlagBits::eFragmentShader,
-            vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
-            vk::AccessFlagBits::eShaderRead, vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite);
-        pFramebuffer->addSubpassDependency(0, VK_SUBPASS_EXTERNAL, vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
-            vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite, vk::AccessFlagBits::eColorAttachmentWrite);
-
-        pFramebuffer->setFlipViewport(true);
-        pFramebuffer->create();
-
-        //Creating pipeline
-        switch (programCI.bindPoint)
+        auto& framebuffer = pDevice->getAPI()->getFramebuffer(programCI.srStage);
+        if (framebuffer)
         {
-        case vk::PipelineBindPoint::eGraphics: {
-            pPipeline = std::make_unique<CGraphicsPipeline>(pDevice);
-            pPipeline->create(this, pFramebuffer->getRenderPass(), 0);
-        } break;
-        case vk::PipelineBindPoint::eCompute: {
-            pPipeline = std::make_unique<CComputePipeline>(pDevice);
-            pPipeline->create(this);
-        } break;
-        }
-
-        for (auto instance = 0; instance < instances; instance++)
-        {
-            auto instance_ptr = std::make_unique<FSOInstance>();
-            instance_ptr->pDescriptorSet = std::make_unique<CDescriptorHandler>(pDevice);
-            instance_ptr->pDescriptorSet->create(this);
-
-            for (auto& [name, uniform] : pShader->getUniformBlocks())
+            //Creating pipeline
+            switch (programCI.bindPoint)
             {
-                std::unique_ptr<CHandler> pUniform;
-                switch (uniform.getDescriptorType())
-                {
-                case vk::DescriptorType::eUniformBuffer: {
-                    pUniform = std::make_unique<CUniformHandler>(pDevice); 
-                    pUniform->create(uniform);
-                } break;
-                case vk::DescriptorType::eStorageBuffer: {
-                    pUniform = std::make_unique<CStorageHandler>(pDevice); 
-                    pUniform->create(uniform);
-                } break;
-                }
-                instance_ptr->mBuffers.emplace(name, std::move(pUniform));
+            case vk::PipelineBindPoint::eGraphics: {
+                pPipeline = std::make_unique<CGraphicsPipeline>(pDevice);
+                pPipeline->create(this, framebuffer->getRenderPass(), 0);
+            } break;
+            case vk::PipelineBindPoint::eCompute: {
+                pPipeline = std::make_unique<CComputePipeline>(pDevice);
+                pPipeline->create(this);
+            } break;
             }
 
-            vInstances.emplace_back(std::move(instance_ptr));
+            for (auto instance = 0; instance < instances; instance++)
+            {
+                auto instance_ptr = std::make_unique<FSOInstance>();
+                instance_ptr->pDescriptorSet = std::make_unique<CDescriptorHandler>(pDevice);
+                instance_ptr->pDescriptorSet->create(this);
+
+                for (auto& [name, uniform] : pShader->getUniformBlocks())
+                {
+                    std::unique_ptr<CHandler> pUniform;
+                    switch (uniform.getDescriptorType())
+                    {
+                    case vk::DescriptorType::eUniformBuffer: {
+                        pUniform = std::make_unique<CUniformHandler>(pDevice);
+                        pUniform->create(uniform);
+                    } break;
+                    case vk::DescriptorType::eStorageBuffer: {
+                        pUniform = std::make_unique<CStorageHandler>(pDevice);
+                        pUniform->create(uniform);
+                    } break;
+                    }
+                    instance_ptr->mBuffers.emplace(name, std::move(pUniform));
+                }
+
+                vInstances.emplace_back(std::move(instance_ptr));
+            }
         }
 
         bIsCreated = true;
@@ -89,12 +83,7 @@ void CShaderObject::create()
 
 void CShaderObject::reCreate()
 {
-    if (!bIsReCreated)
-    {
-        pFramebuffer->setRenderArea(vk::Offset2D{ 0, 0 }, pDevice->getExtent());
-        pFramebuffer->reCreate();
-        bIsReCreated = true;
-    }
+    
 }
 
 void CShaderObject::setRenderFunc(utl::function<void(CShaderObject*, vk::CommandBuffer&)>&& rf)
@@ -104,13 +93,10 @@ void CShaderObject::setRenderFunc(utl::function<void(CShaderObject*, vk::Command
 
 void CShaderObject::render(vk::CommandBuffer& commandBuffer)
 {
-    pFramebuffer->begin(commandBuffer);
-
     if (pRenderFunc)
         pRenderFunc(this, commandBuffer);
 
     bind(commandBuffer);
-    pFramebuffer->end(commandBuffer);
 }
 
 void CShaderObject::dispatch(size_t size)
@@ -170,6 +156,11 @@ void CShaderObject::addTexture(const std::string& attachment, std::weak_ptr<CIma
 {
 	auto texture = pTexture.lock();
 	mTextures[attachment] = texture->getDescriptor();
+}
+
+void CShaderObject::addTexture(const std::string& attachment, const std::unique_ptr<CImage>& pTexture)
+{
+    mTextures[attachment] = pTexture->getDescriptor();
 }
 
 vk::DescriptorImageInfo& CShaderObject::getTexture(const std::string& attachment)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Buffer.h"
-#include "Device.h"
+#include "APIHandle.h"
 
 namespace engine
 {

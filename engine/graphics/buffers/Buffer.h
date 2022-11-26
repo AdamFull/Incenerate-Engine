@@ -10,7 +10,7 @@ namespace engine
 			CBuffer(CDevice* device);
 			~CBuffer();
 
-			static std::unique_ptr<CBuffer> MakeBuffer(CDevice* device, size_t size, size_t count, 
+			static std::unique_ptr<CBuffer> MakeBuffer(CDevice* device, size_t size, size_t count,
 				vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
 				vk::DeviceSize minOffsetAlignment = 1);
 

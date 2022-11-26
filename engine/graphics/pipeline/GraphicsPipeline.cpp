@@ -1,6 +1,6 @@
 #include "GraphicsPipeline.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 #include "shader/ShaderObject.h"
 #include "APIStructures.h"
 
@@ -8,7 +8,7 @@ using namespace engine::graphics;
 
 CGraphicsPipeline::CGraphicsPipeline(CDevice* device)
 {
-	pDevice = device;
+    pDevice = device;
 }
 
 void CGraphicsPipeline::create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass)
@@ -41,8 +41,9 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
         vertexInputCI.pVertexBindingDescriptions = &bindingDescription;
         vertexInputCI.pVertexAttributeDescriptions = attributeDescription.data();
     }
-
-    auto attachmentCount = pShader->getFramebuffer()->getDescription().colorAttachmentCount;
+    
+   ;
+    auto attachmentCount = pDevice->getAPI()->getFramebuffer(pShader->getStage())->getDescription().colorAttachmentCount;
     bool isDepthOnly = attachmentCount == 0;
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};

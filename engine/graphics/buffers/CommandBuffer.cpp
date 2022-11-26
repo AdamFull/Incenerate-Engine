@@ -1,6 +1,6 @@
 #include "CommandBuffer.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 #include "CommandPool.h"
 
 using namespace engine::graphics;

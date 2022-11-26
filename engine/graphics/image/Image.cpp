@@ -1,6 +1,6 @@
 #include "Image.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 #include "buffers/CommandBuffer.h"
 #include "buffers/Buffer.h"
 

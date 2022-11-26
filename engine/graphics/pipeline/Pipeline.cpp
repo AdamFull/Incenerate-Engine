@@ -1,13 +1,13 @@
 #include "Pipeline.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 #include "shader/ShaderObject.h"
 
 using namespace engine::graphics;
 
 CPipeline::CPipeline(CDevice* device)
 {
-	pDevice = device;
+    pDevice = device;
 }
 
 CPipeline::~CPipeline()

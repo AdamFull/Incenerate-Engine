@@ -1,6 +1,6 @@
 #include "Framebuffer.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 #include "image/Image2D.h"
 #include "image/Image2DArray.h"
 #include "image/ImageCubemap.h"
@@ -300,12 +300,12 @@ std::shared_ptr<CImage> CFramebuffer::createImage(const FFramebufferAttachmentIn
         texture = tex;
     } break;
     case EImageType::eArray2D: { 
-        auto tex = std::make_shared<CImage2DArray>(pDevice); 
+        auto tex = std::make_shared<CImage2DArray>(pDevice);
         tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
         texture = tex;
     } break;
     case EImageType::eArrayCube: { 
-        auto tex = std::make_shared<CImageCubemapArray>(pDevice); 
+        auto tex = std::make_shared<CImageCubemapArray>(pDevice);
         tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
         texture = tex;
     } break;

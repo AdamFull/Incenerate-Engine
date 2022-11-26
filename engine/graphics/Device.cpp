@@ -1,5 +1,3 @@
-#include "Device.h"
-
 #include "Engine.h"
 #include "system/window/WindowHandle.h"
 #include "buffers/CommandBuffer.h"
@@ -88,8 +86,9 @@ static vk::AllocationCallbacks* createPAllocator()
     return m_allocator;
 }
 
-CDevice::CDevice()
+CDevice::CDevice(CAPIHandle* api)
 {
+    pAPI = api;
     pAllocator = createPAllocator();
 }
 
@@ -908,6 +907,11 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
 vk::Extent2D CDevice::getExtent(bool automatic)
 {
     return swapchainExtent;
+}
+
+CAPIHandle* CDevice::getAPI()
+{
+    return pAPI;
 }
 
 const std::shared_ptr<CCommandPool>& CDevice::getCommandPool(const std::thread::id& threadId)

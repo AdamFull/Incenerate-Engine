@@ -1,8 +1,6 @@
 #pragma once
 
 #include <utility/uparse.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtx/hash.hpp>
 
 namespace engine
 {
@@ -10,6 +8,7 @@ namespace engine
 	{
 		struct FProgramCreateInfo
 		{
+			std::string srStage{};
 			bool vertexfree{ false };
 			vk::PipelineBindPoint bindPoint;
 			vk::PrimitiveTopology topology;

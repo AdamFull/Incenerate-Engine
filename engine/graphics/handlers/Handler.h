@@ -18,7 +18,7 @@ namespace engine
 		{
 		public:
 			CHandler() = default;
-			CHandler(CDevice* render);
+			CHandler(CDevice* device);
 			virtual ~CHandler() = default;
 
 			virtual void create(const CUniformBlock& uniformBlock);

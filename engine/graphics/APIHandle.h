@@ -5,6 +5,8 @@
 #include "shader/ShaderLoader.h"
 #include "buffers/VertexBufferObject.h"
 #include "EngineEnums.h"
+#include "graphics/image/Image.h"
+#include "graphics/rendering/RenderSystem.h"
 
 namespace engine
 {
@@ -27,13 +29,14 @@ namespace engine
 			void shutdown();
 			void render();
 
-			const std::unique_ptr<CShaderObject>& addStage(const std::string& shader_name);
-
 			const std::unique_ptr<CDevice>& getDevice() const;
 			const std::unique_ptr<CShaderLoader>& getShaderLoader();
+			const std::unique_ptr<CRenderSystem>& getRenderSystem();
 			std::unique_ptr<CVertexBufferObject> allocateVBO();
 
 			ERenderApi getAPI() { return eAPI; }
+
+			const std::unique_ptr<CFramebuffer>& getFramebuffer(const std::string& srName);
 
 		private:
 			vk::CommandBuffer beginFrame();
@@ -45,8 +48,7 @@ namespace engine
 			ERenderApi eAPI;
 			std::unique_ptr<CDevice> pDevice;
 			std::unique_ptr<CShaderLoader> pLoader;
-
-			std::vector<std::unique_ptr<CShaderObject>> vStages;
+			std::unique_ptr<CRenderSystem> pRenderSystem;
 
 			uint32_t imageIndex{ 0 };
 			bool frameStarted{ false };

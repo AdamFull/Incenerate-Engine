@@ -150,21 +150,23 @@ namespace engine
 		{
 			json = nlohmann::json
 			{
-				{"vertex_free", type.vertexfree},
-				{"bind_point", type.bindPoint},
-				{"topology", type.topology},
-				{"cull_mode", type.cullMode},
-				{"front_face", type.frontFace},
-				{"depth_test", type.depthTest},
-				{"dynamic_states", type.dynamicStates},
-				{"tesselation", type.tesselation},
-				{"stages", type.stages},
-				{"defines", type.defines},
+				{"stage", type.srStage},
+				{"vertex_free", type.srStage},
+				{"bind_point", type.srStage},
+				{"topology", type.srStage},
+				{"cull_mode", type.srStage},
+				{"front_face", type.srStage},
+				{"depth_test", type.srStage},
+				{"dynamic_states", type.srStage},
+				{"tesselation", type.srStage},
+				{"stages", type.srStage},
+				{"defines", type.srStage}
 			};
 		}
 
 		void from_json(const nlohmann::json& json, FProgramCreateInfo& type)
 		{
+			utl::parse_to("stage", json, type.srStage);
 			utl::parse_to("vertex_free", json, type.vertexfree);
 			utl::parse_to("bind_point", json, type.bindPoint);
 			utl::parse_to("topology", json, type.topology);

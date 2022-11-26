@@ -27,8 +27,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name)
 	auto it = programCI.find(name);
 	if (it != programCI.end())
 	{
-		auto& gapi = CEngine::getInstance()->getGraphics();
-		auto api = gapi->getAPI();
+		auto api = pDevice->getAPI()->getAPI();
 
 		auto pShaderObject = std::make_unique<CShaderObject>(pDevice);
 		auto& pShader = pShaderObject->pShader;
@@ -56,16 +55,10 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name)
 
 void CShaderLoader::load_config()
 {
-	auto tmp = fs::read_file(shader_config_path);
-	if (!tmp.empty())
-	{
-		auto bson = nlohmann::json::parse(tmp);
-		bson.get_to(programCI);
-	}
+	fs::read_json(shader_config_path, programCI);
 }
 
 void CShaderLoader::save_config()
 {
-	auto json = nlohmann::json(programCI).dump();
-	fs::write_file(shader_config_path, json);
+	fs::write_json(shader_config_path, programCI);
 }

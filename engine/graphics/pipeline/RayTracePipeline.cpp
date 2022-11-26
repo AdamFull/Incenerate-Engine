@@ -1,5 +1,6 @@
 #include "RayTracePipeline.h"
 
+#include "APIHandle.h"
 #include "shader/ShaderObject.h"
 
 using namespace engine::graphics;

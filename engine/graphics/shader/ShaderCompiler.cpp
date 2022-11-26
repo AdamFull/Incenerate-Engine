@@ -32,9 +32,9 @@ public:
 		}
 
 		local_path = std::filesystem::weakly_canonical(directory / headerName);
-		auto fileLoaded = fs::read_file(local_path.string());
 
-		if (fileLoaded.empty())
+		std::string fileLoaded;
+		if (!fs::read_file(local_path, fileLoaded))
 		{
 			std::stringstream ss;
 			ss << "In shader file: " << includerName << " Shader Include could not be loaded: " << std::quoted(headerName);
@@ -50,9 +50,9 @@ public:
 	IncludeResult* includeSystem(const char* headerName, const char* includerName, size_t inclusionDepth) override
 	{
 		auto header = std::filesystem::path("shaders") / headerName;
-		auto fileLoaded = fs::read_file(header);
 
-		if (fileLoaded.empty()) {
+		std::string fileLoaded;
+		if (!fs::read_file(header, fileLoaded)) {
 			std::stringstream ss;
 			ss << "Shader Include could not be loaded: " << std::quoted(headerName);
 			log_error(ss.str());
@@ -293,8 +293,8 @@ CShaderCompiler::~CShaderCompiler()
 
 std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::path& path, const std::string& preamble, ERenderApi eAPI)
 {
-	auto data = fs::read_file(path);
-	if (!data.empty())
+	std::string data;
+	if (fs::read_file(path, data))
 	{
 		auto fname = path.filename().string();
 		auto hash = utl::const_hash(data.c_str());
@@ -424,16 +424,10 @@ std::optional<FCachedShader> CShaderCompiler::update(const std::string& name, co
 
 void CShaderCompiler::load_cache()
 {
-	auto tmp = fs::read_file(cache_file_name);
-	if (!tmp.empty())
-	{
-		auto bson = nlohmann::json::parse(tmp);
-		bson.get_to(cache);
-	}
+	fs::read_json(cache_file_name, cache);
 }
 
 void CShaderCompiler::save_cache()
 {
-	auto binary = nlohmann::json(cache).dump();
-	fs::write_file(cache_file_name, binary);
+	fs::write_json(cache_file_name, cache);
 }

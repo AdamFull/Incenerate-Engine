@@ -12,7 +12,7 @@ namespace engine
 		class CDevice
 		{
 		public:
-            CDevice();
+            CDevice(CAPIHandle* api);
 			~CDevice();
 
 			void create(const FEngineCreateInfo& createInfo);
@@ -86,6 +86,8 @@ namespace engine
             uint32_t getCurrentFrame() { return currentFrame; }
 
             void setViewportExtent(vk::Extent2D extent);
+
+            CAPIHandle* getAPI();
 
             template <class _Ty, class _Ret>
             inline vk::Result create(_Ty& info, _Ret* ref)
@@ -272,6 +274,7 @@ namespace engine
             bool isDeviceSuitable(const vk::PhysicalDevice& device, const std::vector<const char*>& deviceExtensions);
 
         private:
+            CAPIHandle* pAPI{ nullptr };
             vk::Instance vkInstance{ VK_NULL_HANDLE }; // Main vulkan instance
             VkDebugUtilsMessengerEXT vkDebugUtils{ NULL };
             vk::SurfaceKHR vkSurface{ VK_NULL_HANDLE }; // Vulkan's drawing surface

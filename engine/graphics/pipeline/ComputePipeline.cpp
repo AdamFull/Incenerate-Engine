@@ -1,13 +1,13 @@
 #include "ComputePipeline.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 #include "shader/ShaderObject.h"
 
 using namespace engine::graphics;
 
 CComputePipeline::CComputePipeline(CDevice* device)
 {
-	pDevice = device;
+    pDevice = device;
 }
 
 void CComputePipeline::create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass)

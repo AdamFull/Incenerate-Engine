@@ -1,10 +1,12 @@
 #include "ImageCubemap.h"
 
+#include "APIHandle.h"
+
 using namespace engine::graphics;
 
 CImageCubemap::CImageCubemap(CDevice* device)
 {
-	pDevice = device;
+    pDevice = device;
 }
 
 void CImageCubemap::create(const vk::Extent2D& extent, vk::Format format, vk::ImageLayout layout, vk::ImageUsageFlags usage,

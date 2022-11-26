@@ -1,10 +1,12 @@
 #include "Image2D.h"
 
+#include "APIHandle.h"
+
 using namespace engine::graphics;
 
 CImage2D::CImage2D(CDevice* device)
 {
-	pDevice = device;
+    pDevice = device;
 }
 
 void CImage2D::create(const vk::Extent2D& extent, vk::Format format, vk::ImageLayout layout, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspect,

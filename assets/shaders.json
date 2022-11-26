@@ -28,6 +28,7 @@
     ]
   },
   "screenspace": {
+    "stage": "deferred",
     "vertex_free": true,
     "bind_point": "Graphics",
     "topology": "TriangleList",

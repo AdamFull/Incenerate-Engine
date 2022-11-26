@@ -17,7 +17,7 @@ namespace engine
             const vk::CommandPool& getCommandPool() const { return commandPool; }
             const std::thread::id& getThreadId() const { return threadId; }
         private:
-            CDevice* pDevice;
+            CDevice* pDevice{ nullptr };
             vk::CommandPool commandPool{ VK_NULL_HANDLE };
             std::thread::id threadId;
         };

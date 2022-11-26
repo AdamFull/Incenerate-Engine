@@ -1,5 +1,6 @@
 #include "APIHandle.h"
 
+#include "graphics/rendering/RenderSystem.h"
 #include "system/window/WindowHandle.h"
 
 using namespace engine::graphics;
@@ -14,7 +15,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 {
 	eAPI = createInfo.eAPI;
 
-	pDevice = std::make_unique<CDevice>();
+	pDevice = std::make_unique<CDevice>(this);
 	pDevice->create(createInfo);
 
     pLoader = std::make_unique<CShaderLoader>(pDevice.get());
@@ -22,6 +23,9 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     screenExtent = pDevice->getExtent();
     commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
+
+    pRenderSystem = std::make_unique<CRenderSystem>(pDevice.get());
+    pRenderSystem->create("rendering.json");
 
     log_info("Graphics core initialized.");
 }
@@ -51,9 +55,7 @@ void CAPIHandle::reCreate()
     screenExtent = pDevice->getExtent();
     imageIndex = 0;
     CWindowHandle::bWasResized = false;
-
-    for (auto& stage : vStages)
-        stage->reCreate();
+    pRenderSystem->reCreate();
 }
 
 void CAPIHandle::shutdown()
@@ -71,9 +73,7 @@ void CAPIHandle::render()
     if (!commandBuffer)
         return;
     
-    //TODO: select between drawcall and dispatch
-    for (auto& stage : vStages)
-        stage->render(commandBuffer);
+    pRenderSystem->render(commandBuffer);
 
     vk::Result resultPresent;
     try { resultPresent = endFrame(); }
@@ -86,12 +86,6 @@ void CAPIHandle::render()
     pDevice->updateCommandPools();
 }
 
-const std::unique_ptr<CShaderObject>& CAPIHandle::addStage(const std::string& shader_name)
-{
-    vStages.emplace_back(pLoader->load(shader_name));
-    return vStages.back();
-}
-
 const std::unique_ptr<CDevice>& CAPIHandle::getDevice() const
 {
     return pDevice;
@@ -102,9 +96,20 @@ const std::unique_ptr<CShaderLoader>& CAPIHandle::getShaderLoader()
     return pLoader;
 }
 
+const std::unique_ptr<CRenderSystem>& CAPIHandle::getRenderSystem()
+{
+    return pRenderSystem;
+}
+
 std::unique_ptr<CVertexBufferObject> CAPIHandle::allocateVBO()
 {
     return std::make_unique<CVertexBufferObject>(pDevice.get());
+}
+
+const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::string& srName)
+{
+    auto& pStage = pRenderSystem->getStage(srName);
+    return pStage->getFramebuffer();
 }
 
 vk::CommandBuffer CAPIHandle::beginFrame()

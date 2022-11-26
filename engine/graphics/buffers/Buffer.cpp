@@ -1,6 +1,6 @@
 #include "Buffer.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 
 #include <set>
 #include <vector>

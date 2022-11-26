@@ -6,10 +6,10 @@ set(EXTERNALS_PATH "${ENGINE_ROOT}/external")
 
 add_subdirectory("external")
 
-file(GLOB_RECURSE ENGINE_GRAPHICS_SOURCE graphics/*.cpp graphics/*.c graphics/*.cc)
-file(GLOB_RECURSE ENGINE_SYSTEM_SOURCE system/*.cpp system/*.c system/*.cc)
-file(GLOB_RECURSE ENGINE_GAME_SOURCE game/*.cpp game/*.c game/*.cc)
-file(GLOB ENGINE_SOURCE *.cpp *.c *.cc)
+file(GLOB_RECURSE ENGINE_GRAPHICS_SOURCE "graphics/*.cpp" "graphics/*.c" "graphics/*.cc")
+file(GLOB_RECURSE ENGINE_SYSTEM_SOURCE "system/*.cpp" "system/*.c" "system/*.cc")
+file(GLOB_RECURSE ENGINE_GAME_SOURCE "game/*.cpp" "game/*.c" "game/*.cc")
+file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc")
 
 include_directories(${Vulkan_INCLUDE_DIR})
 
@@ -17,8 +17,7 @@ add_library(${PROJECT_NAME} STATIC
 ${ENGINE_SOURCE} 
 ${ENGINE_GRAPHICS_SOURCE}
 ${ENGINE_SYSTEM_SOURCE}
-${ENGINE_GAME_SOURCE}
-)
+${ENGINE_GAME_SOURCE})
 
 target_link_libraries(${PROJECT_NAME} 
     PUBLIC external_lib

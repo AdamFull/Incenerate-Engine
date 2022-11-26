@@ -26,6 +26,7 @@ namespace engine
 			friend class CShaderLoader;
 			CShaderObject() = default;
 			CShaderObject(CDevice* device);
+			~CShaderObject();
 
 			void create();
 			void reCreate();
@@ -38,6 +39,7 @@ namespace engine
 			void addTexture(const std::string& attachment, vk::DescriptorImageInfo& descriptor);
 			void addTexture(const std::string& attachment, std::shared_ptr<CImage>& pTexture);
 			void addTexture(const std::string& attachment, std::weak_ptr<CImage>& pTexture);
+			void addTexture(const std::string& attachment, const std::unique_ptr<CImage>& pTexture);
 
 			vk::DescriptorImageInfo& getTexture(const std::string& attachment);
 
@@ -47,16 +49,16 @@ namespace engine
 
 			std::unique_ptr<CPipeline>& getPipeline() { return pPipeline; }
 			const std::unique_ptr<CVertexBufferObject>& getVBO() { return pVBO; }
-			const std::unique_ptr<CFramebuffer>& getFramebuffer() { return pFramebuffer; }
 
-			vk::PipelineBindPoint getBindPoint() { return programCI.bindPoint; }
-			vk::CullModeFlagBits getCullMode() { return programCI.cullMode; }
-			vk::FrontFace getFrontFace() { return programCI.frontFace; }
-			bool getDepthTestFlag() { return programCI.depthTest; }
-			std::vector<vk::DynamicState>& getDynamicStateEnables() { return programCI.dynamicStates; }
-			vk::PrimitiveTopology getPrimitiveTopology() { return programCI.topology; }
-			bool getTesselationFlag() { return programCI.tesselation; }
-			bool isVertexFree() { return programCI.vertexfree; }
+			vk::PipelineBindPoint getBindPoint() const { return programCI.bindPoint; }
+			vk::CullModeFlagBits getCullMode() const { return programCI.cullMode; }
+			vk::FrontFace getFrontFace() const { return programCI.frontFace; }
+			bool getDepthTestFlag() const { return programCI.depthTest; }
+			const std::vector<vk::DynamicState>& getDynamicStateEnables() const { return programCI.dynamicStates; }
+			vk::PrimitiveTopology getPrimitiveTopology() const { return programCI.topology; }
+			bool getTesselationFlag() const { return programCI.tesselation; }
+			bool isVertexFree() const { return programCI.vertexfree; }
+			const std::string& getStage() const { return programCI.srStage; }
 
 			const std::unique_ptr<CShader>& getShader();
 		private:
@@ -66,7 +68,6 @@ namespace engine
 
 			std::unique_ptr<CShader> pShader;
 			std::unique_ptr<CPipeline> pPipeline;
-			std::unique_ptr<CFramebuffer> pFramebuffer;
 			std::unique_ptr<CVertexBufferObject> pVBO;
 
 			uint32_t currentInstance{ 0 }, instances{ 1 };

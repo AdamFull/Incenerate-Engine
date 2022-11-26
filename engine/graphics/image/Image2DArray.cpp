@@ -1,10 +1,12 @@
 #include "Image2DArray.h"
 
+#include "APIHandle.h"
+
 using namespace engine::graphics;
 
 CImage2DArray::CImage2DArray(CDevice* device)
 {
-	pDevice = device;
+    pDevice = device;
 }
 
 void CImage2DArray::create(uint32_t layers, const vk::Extent2D& extent, vk::Format format, vk::ImageLayout layout, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspect,

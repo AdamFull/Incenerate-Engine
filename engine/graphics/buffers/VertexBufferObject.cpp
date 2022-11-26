@@ -1,6 +1,6 @@
 #include "VertexBufferObject.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 
 using namespace engine::graphics;
 

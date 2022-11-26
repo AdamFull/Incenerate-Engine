@@ -1,12 +1,12 @@
 #include "Handler.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 
 using namespace engine::graphics;
 
-CHandler::CHandler(CDevice* render)
+CHandler::CHandler(CDevice* device)
 {
-
+    pDevice = device;
 }
 
 void CHandler::create(const CUniformBlock& uniformBlock)

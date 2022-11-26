@@ -1,12 +1,12 @@
 #include "DescriptorSet.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 
 using namespace engine::graphics;
 
 CDescriptorSet::CDescriptorSet(CDevice* device)
 {
-	pDevice = device;
+    pDevice = device;
 }
 
 CDescriptorSet::~CDescriptorSet()
