@@ -17,7 +17,6 @@ CShaderObject::CShaderObject(CDevice* device)
     pDevice = device;
 
     pShader = std::make_unique<CShader>(pDevice);
-    pVBO = std::make_unique<CVertexBufferObject>(pDevice);
 }
 
 CShaderObject::~CShaderObject()
@@ -86,40 +85,11 @@ void CShaderObject::reCreate()
     
 }
 
-void CShaderObject::setRenderFunc(utl::function<void(CShaderObject*, vk::CommandBuffer&)>&& rf)
-{
-    pRenderFunc = std::move(rf);
-}
-
 void CShaderObject::render(vk::CommandBuffer& commandBuffer)
-{
-    if (pRenderFunc)
-        pRenderFunc(this, commandBuffer);
-
-    bind(commandBuffer);
-}
-
-void CShaderObject::dispatch(size_t size)
-{
-    auto cmdBuf = CCommandBuffer(pDevice);
-    cmdBuf.create(true, vk::QueueFlagBits::eCompute);
-    auto& commandBuffer = cmdBuf.getCommandBuffer();
-
-    if (pRenderFunc)
-        pRenderFunc(this, commandBuffer);
-
-    bind(commandBuffer, false);
-
-    auto groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(size) / static_cast<float>(*pShader->getLocalSizes()[0])));
-    auto groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(size) / static_cast<float>(*pShader->getLocalSizes()[1])));
-    commandBuffer.dispatch(groupCountX, groupCountY, 1);
-    cmdBuf.submitIdle();
-}
-
-void CShaderObject::bind(vk::CommandBuffer& commandBuffer, bool drawcall)
 {
     auto& pDescriptorSet = getDescriptorSet();
     auto& mBuffers = getUniformBuffers();
+
     pDescriptorSet->reset();
     for (auto& [name, uniform] : mBuffers)
     {
@@ -137,9 +107,18 @@ void CShaderObject::bind(vk::CommandBuffer& commandBuffer, bool drawcall)
     pPipeline->bind(commandBuffer);
     bIsReCreated = false;
     currentInstance = (currentInstance + 1) % instances;
+}
 
-    if (drawcall)
-        pVBO->bind(commandBuffer);
+void CShaderObject::dispatch(size_t size)
+{
+    auto cmdBuf = CCommandBuffer(pDevice);
+    cmdBuf.create(true, vk::QueueFlagBits::eCompute);
+    auto& commandBuffer = cmdBuf.getCommandBuffer();
+
+    auto groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(size) / static_cast<float>(*pShader->getLocalSizes()[0])));
+    auto groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(size) / static_cast<float>(*pShader->getLocalSizes()[1])));
+    commandBuffer.dispatch(groupCountX, groupCountY, 1);
+    cmdBuf.submitIdle();
 }
 
 void CShaderObject::addTexture(const std::string& attachment, vk::DescriptorImageInfo& descriptor)

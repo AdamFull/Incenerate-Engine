@@ -13,10 +13,9 @@ namespace engine
 			CShaderLoader(CDevice* device);
 			~CShaderLoader();
 
+			void create(const std::string& srShaderPath);
 			std::unique_ptr<CShaderObject> load(const std::string& name);
-		private:
-			void load_config();
-			void save_config();
+
 		private:
 			CDevice* pDevice{ nullptr };
 			std::unique_ptr<CShaderCompiler> pCompiler;

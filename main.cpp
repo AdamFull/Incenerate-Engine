@@ -30,21 +30,7 @@ uint32_t ConvertToRGBA(const ogt_vox_rgba& color)
 
 int main()
 {
-	FEngineCreateInfo ci;
-	ci.eAPI = ERenderApi::eVulkan_1_3;
-
-	ci.window.width = 800;
-	ci.window.height = 600;
-	ci.window.srName = "my window";
-
-	CEngine::getInstance()->create(ci);
-
-	auto& graphics = CEngine::getInstance()->getGraphics();
-
-	std::vector<FVertex> vVertices{};
-
-	siv::PerlinNoise noise{ std::random_device{} };
-	noise.reseed(std::mt19937{ 67890u });
+	CEngine::getInstance()->create();
 
 	auto startTime = std::chrono::high_resolution_clock::now();
 

@@ -11,8 +11,6 @@ using namespace engine::system;
 CShaderLoader::CShaderLoader(CDevice* device)
 {
 	pDevice = device;
-
-	load_config();
 	pCompiler = std::make_unique<CShaderCompiler>();
 }
 
@@ -20,6 +18,11 @@ CShaderLoader::~CShaderLoader()
 {
 	pCompiler = nullptr;
 	pDevice = nullptr;
+}
+
+void CShaderLoader::create(const std::string& srShaderPath)
+{
+	fs::read_json(srShaderPath, programCI);
 }
 
 std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name)
@@ -51,14 +54,4 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name)
 	}
 
 	return nullptr;
-}
-
-void CShaderLoader::load_config()
-{
-	fs::read_json(shader_config_path, programCI);
-}
-
-void CShaderLoader::save_config()
-{
-	fs::write_json(shader_config_path, programCI);
 }

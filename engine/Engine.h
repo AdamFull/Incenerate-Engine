@@ -26,7 +26,7 @@ namespace engine
 
 		~CEngine() = default;
 
-		void create(const FEngineCreateInfo& createInfo);
+		void create();
 
 		void begin_render_loop();
 

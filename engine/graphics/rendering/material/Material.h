@@ -4,6 +4,11 @@ namespace engine
 {
 	namespace graphics
 	{
+		class CMaterial
+		{
+
+		};
+
 		struct FMaterial
 		{
 			enum class EAlphaMode

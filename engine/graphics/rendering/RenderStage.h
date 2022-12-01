@@ -14,14 +14,14 @@ namespace engine
 			void reCreate(const FCIStage& createInfo);
 			void render(vk::CommandBuffer& commandBuffer);
 
+			void push(CShaderObject* shader);
+
 			const std::unique_ptr<CFramebuffer>& getFramebuffer() const;
 		private:
 			CDevice* pDevice{ nullptr };
 			FCIStage stageCI;
 			std::unique_ptr<CFramebuffer> pFramebuffer;
-
-			std::unique_ptr<CShaderObject> pShader;
-			std::unique_ptr<CImage> pImage;
+			std::vector<CShaderObject*> vRenderQueue;
 		};
 	}
 }

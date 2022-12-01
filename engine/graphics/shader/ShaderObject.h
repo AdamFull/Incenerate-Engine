@@ -30,11 +30,8 @@ namespace engine
 
 			void create();
 			void reCreate();
-			void setRenderFunc(utl::function<void(CShaderObject*, vk::CommandBuffer&)>&& rf);
 			void render(vk::CommandBuffer& commandBuffer);
 			void dispatch(size_t size);
-
-			void bind(vk::CommandBuffer& commandBuffer, bool drawcall = true);
 
 			void addTexture(const std::string& attachment, vk::DescriptorImageInfo& descriptor);
 			void addTexture(const std::string& attachment, std::shared_ptr<CImage>& pTexture);
@@ -48,7 +45,6 @@ namespace engine
 			std::unique_ptr<CDescriptorHandler>& getDescriptorSet();
 
 			std::unique_ptr<CPipeline>& getPipeline() { return pPipeline; }
-			const std::unique_ptr<CVertexBufferObject>& getVBO() { return pVBO; }
 
 			vk::PipelineBindPoint getBindPoint() const { return programCI.bindPoint; }
 			vk::CullModeFlagBits getCullMode() const { return programCI.cullMode; }
@@ -63,12 +59,10 @@ namespace engine
 			const std::unique_ptr<CShader>& getShader();
 		private:
 			CDevice* pDevice{ nullptr };
-
-			utl::function<void(CShaderObject*, vk::CommandBuffer&)> pRenderFunc;
+			uint32_t iVBOid{ 0 };
 
 			std::unique_ptr<CShader> pShader;
 			std::unique_ptr<CPipeline> pPipeline;
-			std::unique_ptr<CVertexBufferObject> pVBO;
 
 			uint32_t currentInstance{ 0 }, instances{ 1 };
 			bool bIsCreated{ false }, bIsReCreated{ false };

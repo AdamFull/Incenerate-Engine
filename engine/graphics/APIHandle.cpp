@@ -19,13 +19,14 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 	pDevice->create(createInfo);
 
     pLoader = std::make_unique<CShaderLoader>(pDevice.get());
+    pLoader->create(createInfo.srShaders);
 
     screenExtent = pDevice->getExtent();
     commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
 
     pRenderSystem = std::make_unique<CRenderSystem>(pDevice.get());
-    pRenderSystem->create("rendering.json");
+    pRenderSystem->create(createInfo.srPipeline);
 
     log_info("Graphics core initialized.");
 }

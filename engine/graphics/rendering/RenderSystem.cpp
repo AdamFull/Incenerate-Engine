@@ -44,3 +44,10 @@ const std::unique_ptr<CRenderStage>& CRenderSystem::getStage(const std::string& 
 {
 	return mStages[srName];
 }
+
+void CRenderSystem::pushShader(CShaderObject* shader)
+{
+	auto& stage = getStage(shader->getStage());
+	if (stage)
+		stage->push(shader);
+}

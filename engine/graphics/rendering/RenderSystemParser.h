@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EngineEnums.h"
+#include "EngineStructures.h"
 
 namespace engine
 {

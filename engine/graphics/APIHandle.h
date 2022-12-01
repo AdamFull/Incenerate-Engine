@@ -4,7 +4,7 @@
 #include "buffers/CommandBuffer.h"
 #include "shader/ShaderLoader.h"
 #include "buffers/VertexBufferObject.h"
-#include "EngineEnums.h"
+#include "EngineStructures.h"
 #include "graphics/image/Image.h"
 #include "graphics/rendering/RenderSystem.h"
 

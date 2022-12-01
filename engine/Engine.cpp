@@ -1,8 +1,10 @@
 #include "Engine.h"
+#include "system/filesystem/filesystem.h"
 
 using namespace engine;
 using namespace engine::game;
 using namespace engine::graphics;
+using namespace engine::system;
 using namespace engine::system::window;
 using namespace engine::system::input;
 
@@ -14,10 +16,13 @@ CEngine::CEngine()
 	log_init("voxel_app", "1.0.0");
 }
 
-void CEngine::create(const FEngineCreateInfo& createInfo)
+void CEngine::create()
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
 	log_info("Beginning engine initialization.");
+
+	FEngineCreateInfo createInfo;
+	fs::read_json("engine/config.cfg", createInfo);
 
 	pWindow = std::make_unique<CWindowHandle>();
 	pWindow->create(createInfo.window);

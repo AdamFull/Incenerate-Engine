@@ -2,7 +2,7 @@
 
 #include "APIStructures.h"
 
-#include "EngineEnums.h"
+#include "EngineStructures.h"
 
 namespace engine
 {

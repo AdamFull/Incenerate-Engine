@@ -45,12 +45,6 @@ void CRenderStage::create(const FCIStage& createInfo)
 		);
 
 	pFramebuffer->create();
-
-	pImage = std::make_unique<CImage>(pDevice);
-	pImage->create("lava-and-rock_albedo.ktx2");
-
-	pShader = pDevice->getAPI()->getShaderLoader()->load("screenspace");
-	pShader->addTexture("input_tex", pImage);
 }
 
 void CRenderStage::reCreate(const FCIStage& createInfo)
@@ -66,9 +60,17 @@ void CRenderStage::reCreate(const FCIStage& createInfo)
 void CRenderStage::render(vk::CommandBuffer& commandBuffer)
 {
 	pFramebuffer->begin(commandBuffer);
-	//Render here, but how?
-	pShader->render(commandBuffer);
+
+	for (auto& renderer : vRenderQueue)
+		renderer->render(commandBuffer);
+
 	pFramebuffer->end(commandBuffer);
+	vRenderQueue.clear();
+}
+
+void CRenderStage::push(CShaderObject* shader)
+{
+	vRenderQueue.emplace_back(shader);
 }
 
 const std::unique_ptr<CFramebuffer>& CRenderStage::getFramebuffer() const
