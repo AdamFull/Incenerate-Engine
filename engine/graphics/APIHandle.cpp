@@ -113,6 +113,29 @@ const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::strin
     return pStage->getFramebuffer();
 }
 
+size_t CAPIHandle::createShader(const std::string& srName)
+{
+    return pResourceHolder->addShader(pLoader->load(srName));
+}
+
+size_t CAPIHandle::createImage(const std::string& srPath)
+{
+    auto pImage = std::make_unique<CImage>(pDevice.get());
+    pImage->create(srPath);
+    return pResourceHolder->addImage(std::move(pImage));
+}
+
+size_t CAPIHandle::createMaterial(const std::string& srName)
+{
+    return invalid_index;
+}
+
+size_t CAPIHandle::createVBO()
+{
+    auto pVBO = std::make_unique<CVertexBufferObject>(pDevice.get());
+    return pResourceHolder->addVertexBuffer(std::move(pVBO));
+}
+
 vk::CommandBuffer CAPIHandle::beginFrame()
 {
     log_cerror(!frameStarted, "Can't call beginFrame while already in progress");

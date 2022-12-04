@@ -14,8 +14,12 @@ CScene::CScene()
 void CScene::create()
 {
 	CGameObject::create();
-
 	pCameraController->create(CEngine::getInstance()->getInputMapper().get());
+}
+
+void CScene::render()
+{
+	CGameObject::render();
 }
 
 void CScene::update(float fDT)

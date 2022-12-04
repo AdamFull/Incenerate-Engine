@@ -13,6 +13,7 @@ namespace engine
 			virtual ~CScene() override = default;
 
 			void create() override;
+			void render() override;
 			void update(float fDT) override;
 
 		protected:

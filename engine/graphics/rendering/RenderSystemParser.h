@@ -46,6 +46,7 @@ namespace engine
 		struct FJSONStage
 		{
 			std::string srName;
+			ERenderStageAvaliableFlagBits eFlag;
 			FJSONViewport viewport;
 			bool bFlipViewport{ false };
 			std::vector<FJSONImage> vImages;
@@ -98,6 +99,7 @@ namespace engine
 		struct FCIStage
 		{
 			std::string srName;
+			ERenderStageAvaliableFlagBits eFlag;
 			FCIViewport viewport;
 			bool bFlipViewport{ false };
 			std::vector<FCIImage> vImages;

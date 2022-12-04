@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility/uparse.hpp>
+#include <utility/uflag.hpp>
 #include <string>
 
 namespace engine
@@ -24,6 +25,24 @@ namespace engine
 		eArrayCube
 	};
 
+	enum class ECullingType
+	{
+		eByPoint,
+		eBySphere,
+		eByBox
+	};
+
+	enum class ERenderStageAvaliableFlagBits
+	{
+		eShadow = 1 << 0,
+		eMesh = 1 << 1,
+		eComposition = 1 << 2,
+		ePostProcess = 1 << 3
+	};
+
+	using ERenderStageAvaliableFlags = utl::flags<ERenderStageAvaliableFlagBits>;
+
+
 	struct FWindowCreateInfo
 	{
 		int32_t width{ 0 };
@@ -46,3 +65,15 @@ namespace engine
 	void to_json(nlohmann::json& json, const FEngineCreateInfo& type);
 	void from_json(const nlohmann::json& json, FEngineCreateInfo& type);
 }
+
+template <>
+struct utl::FlagTraits<engine::ERenderStageAvaliableFlagBits>
+{
+	static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
+
+	enum : uint32_t
+	{
+		allFlags = (uint32_t)engine::ERenderStageAvaliableFlagBits::eShadow | (uint32_t)engine::ERenderStageAvaliableFlagBits::eMesh |
+		(uint32_t)engine::ERenderStageAvaliableFlagBits::eComposition | (uint32_t)engine::ERenderStageAvaliableFlagBits::ePostProcess
+	};
+};

@@ -15,6 +15,9 @@ namespace engine
 
 			void onResize(uint32_t width, uint32_t height);
 
+			void activate();
+			void deactivate();
+
 			void moveForward(bool bInv);
 			void moveRight(bool bInv);
 			void moveUp(bool bInv);
@@ -44,6 +47,7 @@ namespace engine
 			const FFrustum& getFrustum() { return frustum; }
 
 		private:
+			void bind();
 			void recalculateView();
 			void recalculateProjection();
 		private:
@@ -51,9 +55,9 @@ namespace engine
 			float dt{ 0.0 }, aspect{ 1.7f }, fieldOfView{ 45.f }, nearPlane{ 0.1f }, farPlane{ 128.f }, sensitivity{ 15.f };
 			float angleH{ 0.f }, angleV{ 0.f };
 
-			uint32_t width{ 0 }, height{ 0 };
-			bool bMoved{ true };
+			bool bMoved{ true }, bActive{ true };
 			glm::mat4 view, invView, projection, invProjection;
+			glm::vec2 viewportDim{};
 		};
 	}
 }

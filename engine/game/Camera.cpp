@@ -1,5 +1,6 @@
 #include "Camera.h"
 
+#include "Engine.h"
 #include "system/window/WindowHandle.h"
 
 using namespace engine;
@@ -12,6 +13,17 @@ void CCamera::create()
     transform.rot = { 0.514259, -0.318132, 0.796448 };
 	angleV = glm::degrees(-transform.rot.y);
 	angleH = glm::degrees(glm::atan(transform.rot.z / transform.rot.x));
+}
+
+void CCamera::activate()
+{
+    bActive = true;
+    bind();
+}
+
+void CCamera::deactivate()
+{
+    bActive = false;
 }
 
 void CCamera::update(float fDT)
@@ -31,11 +43,11 @@ void CCamera::update(float fDT)
 
 void CCamera::onResize(uint32_t width, uint32_t height)
 {
-    if (width == this->width && height == this->height)
+    if (width == viewportDim.x && height == viewportDim.y)
         return;
 
-    this->width = width;
-    this->height = height;
+    viewportDim.x = width;
+    viewportDim.y = height;
 
     recalculateProjection();
 }
@@ -114,6 +126,22 @@ glm::vec3 CCamera::getUpVector() const
 glm::vec3 CCamera::getRightVector() const
 {
     return glm::normalize(glm::cross(getForwardVector(), glm::vec3{ 0.0, 1.0, 0.0 }));
+}
+
+void CCamera::bind()
+{
+    if (bActive)
+    {
+        auto& renderSystem = CEngine::getInstance()->getGraphics()->getRenderSystem();
+        if (renderSystem)
+        {
+            renderSystem->setView(view);
+            renderSystem->setProjection(projection);
+            renderSystem->setViewDir(transform.pos);
+            renderSystem->setViewportDim(viewportDim);
+            renderSystem->setFrustum(frustum);
+        }
+    }
 }
 
 void CCamera::recalculateView()

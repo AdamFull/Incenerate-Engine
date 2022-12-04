@@ -16,3 +16,5 @@
 #include <map>
 
 #include "fdecl.h"
+
+constexpr const size_t invalid_index{ -1ull };

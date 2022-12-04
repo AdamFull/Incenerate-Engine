@@ -3,10 +3,10 @@
 #include "Device.h"
 #include "buffers/CommandBuffer.h"
 #include "shader/ShaderLoader.h"
-#include "buffers/VertexBufferObject.h"
 #include "EngineStructures.h"
 #include "graphics/image/Image.h"
 #include "graphics/rendering/RenderSystem.h"
+#include "ResourceHolder.h"
 
 namespace engine
 {
@@ -38,6 +38,11 @@ namespace engine
 
 			const std::unique_ptr<CFramebuffer>& getFramebuffer(const std::string& srName);
 
+			size_t createShader(const std::string& srName);
+			size_t createImage(const std::string& srPath);
+			size_t createMaterial(const std::string& srName);
+			size_t createVBO();
+
 		private:
 			vk::CommandBuffer beginFrame();
 			vk::Result endFrame();
@@ -49,6 +54,7 @@ namespace engine
 			std::unique_ptr<CDevice> pDevice;
 			std::unique_ptr<CShaderLoader> pLoader;
 			std::unique_ptr<CRenderSystem> pRenderSystem;
+			std::unique_ptr<CResourceHolder> pResourceHolder;
 
 			uint32_t imageIndex{ 0 };
 			bool frameStarted{ false };

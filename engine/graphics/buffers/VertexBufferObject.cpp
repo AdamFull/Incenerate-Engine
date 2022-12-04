@@ -13,10 +13,15 @@ void CVertexBufferObject::create()
 {
 	if (!bBuffersCreated)
 	{
-		createVertexBuffer();
-		createIndexBuffer();
+		recreate();
 		bBuffersCreated = true;
 	}
+}
+
+void CVertexBufferObject::recreate()
+{
+	createVertexBuffer();
+	createIndexBuffer();
 }
 
 void CVertexBufferObject::bind(vk::CommandBuffer commandBuffer)

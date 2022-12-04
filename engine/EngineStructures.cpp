@@ -26,6 +26,27 @@ namespace engine
 		}
 	);
 
+	NLOHMANN_JSON_SERIALIZE_ENUM
+	(
+		ECullingType,
+		{
+			{ECullingType::eByPoint, "point"},
+			{ECullingType::eBySphere, "sphere"},
+			{ECullingType::eByBox, "box"}
+		}
+	);
+
+	NLOHMANN_JSON_SERIALIZE_ENUM
+	(
+		ERenderStageAvaliableFlagBits,
+		{
+			{ERenderStageAvaliableFlagBits::eShadow, "shadow"},
+			{ERenderStageAvaliableFlagBits::eMesh, "mesh"},
+			{ERenderStageAvaliableFlagBits::eComposition, "composition"},
+			{ERenderStageAvaliableFlagBits::ePostProcess, "post_process"}
+		}
+	);
+
 
 	void to_json(nlohmann::json& json, const FWindowCreateInfo& type)
 	{

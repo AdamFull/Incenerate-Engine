@@ -75,6 +75,7 @@ FCIRenderSystem CRenderSystemParser::parse(const std::string& path)
 		{
 			FCIStage stageCI;
 			stageCI.srName = stage.srName;
+			stageCI.eFlag = stage.eFlag;
 			stageCI.viewport = parseViewport(stage.viewport);
 			stageCI.bFlipViewport = stage.bFlipViewport;
 			stageCI.vImages = parseImages(stage.vImages);

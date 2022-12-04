@@ -57,20 +57,14 @@ void CRenderStage::reCreate(const FCIStage& createInfo)
 	}
 }
 
-void CRenderStage::render(vk::CommandBuffer& commandBuffer)
+void CRenderStage::begin(vk::CommandBuffer& commandBuffer)
 {
 	pFramebuffer->begin(commandBuffer);
-
-	for (auto& renderer : vRenderQueue)
-		renderer->render(commandBuffer);
-
-	pFramebuffer->end(commandBuffer);
-	vRenderQueue.clear();
 }
 
-void CRenderStage::push(CShaderObject* shader)
+void CRenderStage::end(vk::CommandBuffer& commandBuffer)
 {
-	vRenderQueue.emplace_back(shader);
+	pFramebuffer->end(commandBuffer);
 }
 
 const std::unique_ptr<CFramebuffer>& CRenderStage::getFramebuffer() const

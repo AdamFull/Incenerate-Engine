@@ -17,6 +17,7 @@ namespace engine
 			~CVertexBufferObject() = default;
 
 			void create();
+			void recreate();
 			void bind(vk::CommandBuffer commandBuffer);
 			void addVertices(std::vector<FVertex>&& vertices);
 			void addIndices(std::vector<uint32_t>&& indices);

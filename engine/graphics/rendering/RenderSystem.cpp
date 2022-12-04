@@ -2,6 +2,7 @@
 #include "RenderSystemParser.h"
 #include "APIHandle.h"
 
+using namespace engine;
 using namespace engine::graphics;
 
 CRenderSystem::CRenderSystem(CDevice* device)
@@ -37,7 +38,12 @@ void CRenderSystem::reCreate()
 void CRenderSystem::render(vk::CommandBuffer& commandBuffer)
 {
 	for (auto& [name, stage] : mStages)
-		stage->render(commandBuffer);
+	{
+		stage->begin(commandBuffer);
+
+		stage->end(commandBuffer);
+	}
+	//	stage->render(commandBuffer);
 }
 
 const std::unique_ptr<CRenderStage>& CRenderSystem::getStage(const std::string& srName)
@@ -45,9 +51,32 @@ const std::unique_ptr<CRenderStage>& CRenderSystem::getStage(const std::string& 
 	return mStages[srName];
 }
 
-void CRenderSystem::pushShader(CShaderObject* shader)
+void CRenderSystem::setView(const glm::mat4& view)
 {
-	auto& stage = getStage(shader->getStage());
-	if (stage)
-		stage->push(shader);
+	pView = &view;
+}
+
+void CRenderSystem::setProjection(const glm::mat4& projection)
+{
+	pProjection = &projection;
+}
+
+void CRenderSystem::setViewDir(const glm::vec3& viewDir)
+{
+	pViewDir = &viewDir;
+}
+
+void CRenderSystem::setViewportDim(const glm::vec2& viewportDim)
+{
+	pViewportDim = &viewportDim;
+}
+
+void CRenderSystem::setFrustum(const FFrustum& frustum)
+{
+	pFrustum = &frustum;
+}
+
+const FFrustum& CRenderSystem::getFrustum() const
+{
+	return *pFrustum;
 }

@@ -4,11 +4,6 @@ namespace engine
 {
 	namespace graphics
 	{
-		class CMaterial
-		{
-
-		};
-
 		struct FMaterial
 		{
 			enum class EAlphaMode
@@ -35,6 +30,23 @@ namespace engine
 			int32_t ambientOcclusion{ 0 };
 			int32_t emissionColor{ 0 };
 			int32_t heightMap{ 0 };
+		};
+
+		class CMaterial
+		{
+		public:
+			void setParameters(FMaterial&& mat);
+			const FMaterial& getParameters() { return parameters; }
+
+			void setTexture(const std::string& srTexture, size_t index = invalid_index);
+			size_t getTexture(const std::string& srTexture);
+
+			void setShader(size_t index);
+			size_t getShader();
+		private:
+			FMaterial parameters;
+			std::map<std::string, size_t> mTextures;
+			size_t iShader{ invalid_index };
 		};
 	}
 }
