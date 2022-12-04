@@ -24,6 +24,11 @@ namespace engine
 
 			const FFrustum& getFrustum() const;
 		private:
+			void renderShadows(vk::CommandBuffer& commandBuffer);
+			void renderMeshes(vk::CommandBuffer& commandBuffer);
+			void renderComposition(vk::CommandBuffer& commandBuffer);
+			void renderPostProcess(vk::CommandBuffer& commandBuffer);
+		private:
 			CDevice* pDevice{ nullptr };
 			std::map<std::string, std::unique_ptr<CRenderStage>> mStages;
 			std::unique_ptr<CRenderSystemParser> pParser;

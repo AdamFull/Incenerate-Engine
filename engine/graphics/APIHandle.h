@@ -32,6 +32,7 @@ namespace engine
 			const std::unique_ptr<CDevice>& getDevice() const;
 			const std::unique_ptr<CShaderLoader>& getShaderLoader();
 			const std::unique_ptr<CRenderSystem>& getRenderSystem();
+			const std::unique_ptr<CResourceHolder>& getResourceHolder();
 			std::unique_ptr<CVertexBufferObject> allocateVBO();
 
 			ERenderApi getAPI() { return eAPI; }

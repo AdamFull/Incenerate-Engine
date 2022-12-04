@@ -82,20 +82,22 @@ namespace engine
 
 			vk::Framebuffer& getFramebuffer(uint32_t index) { return vFramebuffers[index]; }
 			vk::Framebuffer& getCurrentFramebuffer();
-			std::unordered_map<std::string, std::shared_ptr<CImage>>& getImages(uint32_t index) { return mFramebufferImages[index]; }
-			std::unordered_map<std::string, std::shared_ptr<CImage>>& getCurrentImages();
-			std::shared_ptr<CImage>& getDepthImage() { return vFramebufferDepth.front(); }
+			std::unordered_map<std::string, size_t>& getImages(uint32_t index) { return mFramebufferImages[index]; }
+			std::unordered_map<std::string, size_t>& getCurrentImages();
+			size_t getDepthImage() { return depthImageIDX; }
 
 			vk::SubpassDescription& getDescription() { return vSubpassDesc.front(); }
 
 			void createRenderPass();
 			void createFramebuffer();
-			std::shared_ptr<CImage> createImage(const FFramebufferAttachmentInfo& attachment, vk::Extent2D extent);
+			std::unique_ptr<CImage> createImage(const FFramebufferAttachmentInfo& attachment, vk::Extent2D extent);
 
 			static bool isColorAttachment(vk::ImageUsageFlags usageFlags) { return static_cast<bool>(usageFlags & vk::ImageUsageFlagBits::eColorAttachment); }
 			static bool isDepthAttachment(vk::ImageUsageFlags usageFlags) { return static_cast<bool>(usageFlags & vk::ImageUsageFlagBits::eDepthStencilAttachment); }
 			static bool isSampled(vk::ImageUsageFlags usageFlags) { return static_cast<bool>(usageFlags & vk::ImageUsageFlagBits::eSampled); }
 			static bool isInputAttachment(vk::ImageUsageFlags usageFlags) { return static_cast<bool>(usageFlags & vk::ImageUsageFlagBits::eInputAttachment); }
+		private:
+			void clearImages();
 		private:
 			CDevice* pDevice{ nullptr };
 			vk::Rect2D renderArea;
@@ -112,8 +114,8 @@ namespace engine
 
 			std::vector<vk::Framebuffer> vFramebuffers;
 			nlohmann::fifo_map<std::string, FFramebufferAttachmentInfo> mFbAttachments;
-			std::map<uint32_t, std::unordered_map<std::string, std::shared_ptr<CImage>>> mFramebufferImages;
-			std::vector<std::shared_ptr<CImage>> vFramebufferDepth;
+			std::map<uint32_t, std::unordered_map<std::string, size_t>> mFramebufferImages;
+			size_t depthImageIDX{ invalid_index };
 		};
 	}
 }

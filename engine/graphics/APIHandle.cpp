@@ -21,6 +21,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     pLoader = std::make_unique<CShaderLoader>(pDevice.get());
     pLoader->create(createInfo.srShaders);
 
+    pResourceHolder = std::make_unique<CResourceHolder>();
+
     screenExtent = pDevice->getExtent();
     commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
@@ -100,6 +102,11 @@ const std::unique_ptr<CShaderLoader>& CAPIHandle::getShaderLoader()
 const std::unique_ptr<CRenderSystem>& CAPIHandle::getRenderSystem()
 {
     return pRenderSystem;
+}
+
+const std::unique_ptr<CResourceHolder>& CAPIHandle::getResourceHolder()
+{
+    return pResourceHolder;
 }
 
 std::unique_ptr<CVertexBufferObject> CAPIHandle::allocateVBO()

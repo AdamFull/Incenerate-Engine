@@ -2,6 +2,7 @@
 
 #include "APIHandle.h"
 
+using namespace engine;
 using namespace engine::graphics;
 
 CRenderStage::CRenderStage(CDevice* device)
@@ -70,4 +71,9 @@ void CRenderStage::end(vk::CommandBuffer& commandBuffer)
 const std::unique_ptr<CFramebuffer>& CRenderStage::getFramebuffer() const
 {
 	return pFramebuffer;
+}
+
+ERenderStageAvaliableFlagBits CRenderStage::getStageFlag()
+{
+	return stageCI.eFlag;
 }

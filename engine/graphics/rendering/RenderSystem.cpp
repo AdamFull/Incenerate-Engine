@@ -39,11 +39,27 @@ void CRenderSystem::render(vk::CommandBuffer& commandBuffer)
 {
 	for (auto& [name, stage] : mStages)
 	{
+		auto stageFlag = stage->getStageFlag();
 		stage->begin(commandBuffer);
+
+		switch (stageFlag)
+		{
+		case engine::ERenderStageAvaliableFlagBits::eShadow:
+			renderShadows(commandBuffer); 
+			break;
+		case engine::ERenderStageAvaliableFlagBits::eMesh:
+			renderMeshes(commandBuffer);
+			break;
+		case engine::ERenderStageAvaliableFlagBits::eComposition:
+			renderComposition(commandBuffer);
+			break;
+		case engine::ERenderStageAvaliableFlagBits::ePostProcess:
+			renderPostProcess(commandBuffer);
+			break;
+		}
 
 		stage->end(commandBuffer);
 	}
-	//	stage->render(commandBuffer);
 }
 
 const std::unique_ptr<CRenderStage>& CRenderSystem::getStage(const std::string& srName)
@@ -79,4 +95,24 @@ void CRenderSystem::setFrustum(const FFrustum& frustum)
 const FFrustum& CRenderSystem::getFrustum() const
 {
 	return *pFrustum;
+}
+
+void CRenderSystem::renderShadows(vk::CommandBuffer& commandBuffer)
+{
+
+}
+
+void CRenderSystem::renderMeshes(vk::CommandBuffer& commandBuffer)
+{
+
+}
+
+void CRenderSystem::renderComposition(vk::CommandBuffer& commandBuffer)
+{
+
+}
+
+void CRenderSystem::renderPostProcess(vk::CommandBuffer& commandBuffer)
+{
+
 }

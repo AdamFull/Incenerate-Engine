@@ -22,8 +22,7 @@ CFramebuffer::~CFramebuffer()
         pDevice->destroy(&framebuffer);
 
     vFramebuffers.clear();
-    mFramebufferImages.clear();
-    vFramebufferDepth.clear();
+    clearImages();
 
     pDevice = nullptr;
 }
@@ -40,8 +39,7 @@ void CFramebuffer::reCreate()
         pDevice->destroy(&fb);
 
     vFramebuffers.clear();
-    mFramebufferImages.clear();
-    vFramebufferDepth.clear();
+    clearImages();
     createFramebuffer();
 }
 
@@ -201,7 +199,7 @@ vk::Framebuffer& CFramebuffer::getCurrentFramebuffer()
     return getFramebuffer(pDevice->getCurrentFrame());
 }
 
-std::unordered_map<std::string, std::shared_ptr<CImage>>& CFramebuffer::getCurrentImages()
+std::unordered_map<std::string, size_t>& CFramebuffer::getCurrentImages()
 {
     return getImages(pDevice->getCurrentFrame());
 }
@@ -221,6 +219,8 @@ void CFramebuffer::createRenderPass()
 
 void CFramebuffer::createFramebuffer()
 {
+    auto& pResources = pDevice->getAPI()->getResourceHolder();
+
     auto framesInFlight = pDevice->getFramesInFlight();
     for (size_t frame = 0; frame < framesInFlight; frame++)
     {
@@ -229,21 +229,22 @@ void CFramebuffer::createFramebuffer()
         {
             if (attachment.usageFlags & vk::ImageUsageFlagBits::eDepthStencilAttachment)
             {
-                vFramebufferDepth.emplace_back(createImage(attachment, renderArea.extent));
-                mFramebufferImages[frame].emplace(name, vFramebufferDepth.back());
-                imageViews.push_back(vFramebufferDepth.back()->getDescriptor().imageView);
+                auto depthImage = createImage(attachment, renderArea.extent);
+                imageViews.push_back(depthImage->getDescriptor().imageView);
+
+                depthImageIDX = pResources->addImage(std::move(depthImage));
+                mFramebufferImages[frame].emplace(name, depthImageIDX);
+                
             }
             else
             {
                 if (attachment.format == pDevice->getImageFormat())
-                {
                     imageViews.push_back(pDevice->getImageViews()[frame]);
-                }
                 else
                 {
                     auto image = createImage(attachment, renderArea.extent);
-                    mFramebufferImages[frame].emplace(name, image);
                     imageViews.push_back(image->getDescriptor().imageView);
+                    mFramebufferImages[frame].emplace(name, pResources->addImage(std::move(image)));
                 }
             }
         }
@@ -264,9 +265,9 @@ void CFramebuffer::createFramebuffer()
     }
 }
 
-std::shared_ptr<CImage> CFramebuffer::createImage(const FFramebufferAttachmentInfo& attachment, vk::Extent2D extent)
+std::unique_ptr<CImage> CFramebuffer::createImage(const FFramebufferAttachmentInfo& attachment, vk::Extent2D extent)
 {
-    std::shared_ptr<CImage> texture;
+    std::unique_ptr<CImage> texture;
     bool translate_layout{ false };
 
     vk::ImageAspectFlags aspectMask{};
@@ -295,21 +296,34 @@ std::shared_ptr<CImage> CFramebuffer::createImage(const FFramebufferAttachmentIn
     switch (attachment.eType)
     {
     case EImageType::e2D: {
-        auto tex = std::make_shared<CImage2D>(pDevice); 
+        auto tex = std::make_unique<CImage2D>(pDevice); 
         tex->create(extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, vk::SamplerAddressMode::eRepeat, vk::SampleCountFlagBits::e1, translate_layout);
-        texture = tex;
+        texture = std::move(tex);
     } break;
     case EImageType::eArray2D: { 
-        auto tex = std::make_shared<CImage2DArray>(pDevice);
+        auto tex = std::make_unique<CImage2DArray>(pDevice);
         tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
-        texture = tex;
+        texture = std::move(tex);
     } break;
     case EImageType::eArrayCube: { 
-        auto tex = std::make_shared<CImageCubemapArray>(pDevice);
+        auto tex = std::make_unique<CImageCubemapArray>(pDevice);
         tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
-        texture = tex;
+        texture = std::move(tex);
     } break;
     }
 
     return texture;
+}
+
+void CFramebuffer::clearImages()
+{
+    auto& pResources = pDevice->getAPI()->getResourceHolder();
+
+    for (auto& [frame, images] : mFramebufferImages)
+    {
+        for (auto& [name, image] : images)
+            pResources->removeImage(image);
+    }
+
+    mFramebufferImages.clear();
 }

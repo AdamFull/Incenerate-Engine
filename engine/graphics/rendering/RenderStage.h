@@ -17,6 +17,7 @@ namespace engine
 			void end(vk::CommandBuffer& commandBuffer);
 
 			const std::unique_ptr<CFramebuffer>& getFramebuffer() const;
+			ERenderStageAvaliableFlagBits getStageFlag();
 		private:
 			CDevice* pDevice{ nullptr };
 			FCIStage stageCI;
