@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.19.1)
 project(external_lib)
 
+set(EXTERNAL_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_library(${PROJECT_NAME} external.cpp)
+
+add_subdirectory(fmt)
+target_link_libraries(${PROJECT_NAME} PUBLIC fmt)
 
 add_subdirectory(utility)
 target_link_libraries(${PROJECT_NAME} PUBLIC utility_lib)
