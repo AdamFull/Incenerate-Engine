@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19.1)
+cmake_minimum_required(VERSION 3.18.0)
 project(voxel_engine)
 
 set(ENGINE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")

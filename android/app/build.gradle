@@ -115,31 +115,9 @@ android {
     externalNativeBuild {
         cmake {
             path file('../../CMakeLists.txt')
-            version '3.22.1'
+            version '3.16.0+'
         }
     }
-}
-
-android.applicationVariants.all { variant ->
-    def dest_assets_folder = "${projectDir}/assets"
-    def dest_pack_folder = "${projectDir}/../InstallPack/src/main/assets/"
-
-    delete dest_pack_folder
-    mkdir dest_pack_folder
-
-    // delete previous files first
-    delete dest_assets_folder
-    def targetName = variant.name.capitalize()
-    def copyTaskName = "copy${targetName}ResourcesToAssets"
-
-    project.tasks.register(copyTaskName) {
-        copy {
-            from "${buildDir}/../../../assets"
-            into "${buildDir}/intermediates/assets/${variant.dirName}"
-            exclude "**/*.gz"
-        }
-    }
-    tasks.getByName("pre${targetName}Build").dependsOn copyTaskName
 }
 
 dependencies {

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19.1)
+cmake_minimum_required(VERSION 3.18.0)
 project(VulkanMemoryAllocator)
 
 file(GLOB VMA_SOURCES *.cpp *.c *.cc)

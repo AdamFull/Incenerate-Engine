@@ -19,3 +19,6 @@
 [submodule "engine/external/utility"]
 	path = engine/external/utility
 	url = https://github.com/AdamFull/utllib.git
+[submodule "engine/external/fmt"]
+	path = engine/external/fmt
+	url = https://github.com/fmtlib/fmt.git
