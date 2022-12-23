@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EngineStructures.h"
-#include <vma/vk_mem_alloc.hpp>
+#include <vma/vk_mem_alloc.h>
 
 namespace engine
 {

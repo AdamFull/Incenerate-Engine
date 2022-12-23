@@ -13,7 +13,7 @@ size_t emplace_to(_Cont& container, _Ty&& object)
 	if(uid == invalid_index)
 		uid.fetch_add(1, std::memory_order_relaxed);
 
-	container.emplace(container.size(), std::forward<_Ty>(object));
+	container.emplace(uid, std::forward<_Ty>(object));
 	return uid;
 }
 

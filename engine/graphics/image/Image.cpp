@@ -19,7 +19,7 @@ CImage::~CImage()
         pDevice->destroy(&_view);
     
     if (_image)
-        vmalloc.destroyImage(_image, allocation);
+        vmaDestroyImage(vmalloc, _image, allocation);
     
     if(_sampler)
         pDevice->destroy(&_sampler);

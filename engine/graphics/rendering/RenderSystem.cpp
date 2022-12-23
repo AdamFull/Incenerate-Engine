@@ -21,6 +21,9 @@ void CRenderSystem::create(const std::string& description)
 		mStages.emplace(stage.srName, std::move(pStage));
 		mStages[stage.srName]->create(stage);
 	}
+
+	image = pDevice->getAPI()->createImage("lava-and-rock_albedo.ktx2");
+	shader = pDevice->getAPI()->createShader("screenspace");
 }
 
 void CRenderSystem::reCreate()
@@ -37,10 +40,20 @@ void CRenderSystem::reCreate()
 
 void CRenderSystem::render(vk::CommandBuffer& commandBuffer)
 {
+	auto pApi = pDevice->getAPI();
+	auto& pResources = pApi->getResourceHolder();
+
+	auto& pTexture = pResources->getImage(image);
+	auto& pShader = pResources->getShader(shader);
+
 	for (auto& [name, stage] : mStages)
 	{
 		auto stageFlag = stage->getStageFlag();
 		stage->begin(commandBuffer);
+
+		pShader->addTexture("input_tex", pTexture);
+		pShader->render(commandBuffer);
+		commandBuffer.draw(3, 1, 0, 0);
 
 		switch (stageFlag)
 		{

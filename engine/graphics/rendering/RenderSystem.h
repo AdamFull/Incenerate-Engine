@@ -32,6 +32,8 @@ namespace engine
 			CDevice* pDevice{ nullptr };
 			std::map<std::string, std::unique_ptr<CRenderStage>> mStages;
 			std::unique_ptr<CRenderSystemParser> pParser;
+			size_t image{ invalid_index };
+			size_t shader{ invalid_index };
 
 			const glm::mat4* pView{ nullptr };
 			const glm::mat4* pProjection{ nullptr };

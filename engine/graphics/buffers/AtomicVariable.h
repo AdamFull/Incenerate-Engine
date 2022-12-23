@@ -18,11 +18,11 @@ namespace engine
 
 			void create()
 			{
-				pBuffer = CBuffer::MakeBuffer(pDevice, sizeof(_Ty), 1, vma::MemoryUsage::eGpuOnly,
+				pBuffer = CBuffer::MakeBuffer(pDevice, sizeof(_Ty), 1, VmaMemoryUsage::eGpuOnly,
 					vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst |
 					vk::BufferUsageFlagBits::eTransferSrc);
 
-				pStagingBuffer = CBuffer::MakeBuffer(pDevice, sizeof(_Ty), 1, vma::MemoryUsage::eCpuCopy,
+				pStagingBuffer = CBuffer::MakeBuffer(pDevice, sizeof(_Ty), 1, VmaMemoryUsage::eCpuCopy,
 					vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc);
 			}
 

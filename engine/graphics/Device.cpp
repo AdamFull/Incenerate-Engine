@@ -133,7 +133,7 @@ void CDevice::create(const FEngineCreateInfo& createInfo)
 
 void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
 {
-    vma::VulkanFunctions vk_funcs = {};
+    VmaVulkanFunctions vk_funcs = {};
     vk_funcs.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
     vk_funcs.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
     vk_funcs.vkAllocateMemory = vkAllocateMemory;
@@ -152,15 +152,15 @@ void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
     vk_funcs.vkDestroyImage = vkDestroyImage;
     vk_funcs.vkCmdCopyBuffer = vkCmdCopyBuffer;
 
-    vma::AllocatorCreateInfo createInfo{};
+    VmaAllocatorCreateInfo createInfo{};
     createInfo.instance = vkInstance;
     createInfo.physicalDevice = vkPhysical;
     createInfo.device = vkDevice;
-    createInfo.pAllocationCallbacks = pAllocator;
+    createInfo.pAllocationCallbacks = (VkAllocationCallbacks*)pAllocator;
     createInfo.vulkanApiVersion = getVulkanVersion(eci.eAPI);
     createInfo.pVulkanFunctions = &vk_funcs;
     
-    auto res = vma::createAllocator(&createInfo, &vmaAlloc);
+    auto res = (vk::Result)vmaCreateAllocator(&createInfo, &vmaAlloc);
     log_cerror(VkHelper::check(res), "Cannot create vulkan memory allocator.");
 }
 
@@ -524,7 +524,7 @@ void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk:
     cmdBuf.submitIdle();
 }
 
-void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation)
+void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, VmaAllocation& allocation)
 {
     log_debug("Creating image: [extent {}x{}x{}, type {}, format {}, mips {}, layers {}, samples {}, tiling {}, sharing {}, layout {}]", 
         createInfo.extent.width, createInfo.extent.height, createInfo.extent.depth,
@@ -532,11 +532,15 @@ void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma:
         vk::to_string(createInfo.samples), vk::to_string(createInfo.tiling), vk::to_string(createInfo.sharingMode), vk::to_string(createInfo.initialLayout));
     log_cerror(vkDevice, "Trying to create image, byt logical device is not valid.");
 
-    vma::AllocationCreateInfo alloc_create_info = {};
-    alloc_create_info.usage = vma::MemoryUsage::eUnknown; //Device local
+    VmaAllocationCreateInfo alloc_create_info = {};
+    alloc_create_info.usage = VmaMemoryUsage::VMA_MEMORY_USAGE_UNKNOWN; //Device local
 
-    auto res = vmaAlloc.createImage(&createInfo, &alloc_create_info, &image, &allocation, nullptr);
+    auto ici = (VkImageCreateInfo)createInfo;
+    auto img = (VkImage)image;
+    auto res = (vk::Result)vmaCreateImage(vmaAlloc, &ici, &alloc_create_info, &img, &allocation, nullptr);
     log_cerror(VkHelper::check(res), "Image was not created");
+
+    image = img;
 }
 
 void CDevice::transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
