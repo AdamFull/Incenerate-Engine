@@ -24,7 +24,7 @@ add_subdirectory(ktx)
 target_link_libraries(${PROJECT_NAME} PUBLIC ktx)
 
 if(ANDROID)
-    #add_definitions(-DVULKAN_HPP_TYPESAFE_CONVERSION)
+    add_definitions(-DVULKAN_HPP_TYPESAFE_CONVERSION -DVMA_IMPLEMENTATION -DVMA_STATS_STRING_ENABLED=0)
     set(VULKAN_DIR ${ANDROID_NDK}/sources/third_party/vulkan/src)
     set(Vulkan_INCLUDE_DIR ${VULKAN_DIR}/include)
 else()

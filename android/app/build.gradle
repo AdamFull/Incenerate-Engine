@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    ndkVersion '22.1.7171670'
+    ndkVersion '25.1.8937393'
     compileSdkVersion PROP_COMPILE_SDK_VERSION.toInteger()
 
     def mVersionName = ""

@@ -21,7 +21,7 @@ namespace VMA_HPP_NAMESPACE {
     if (value == AllocatorCreateFlagBits::eAmdDeviceCoherentMemory) return "AmdDeviceCoherentMemory";
     if (value == AllocatorCreateFlagBits::eBufferDeviceAddress) return "BufferDeviceAddress";
     if (value == AllocatorCreateFlagBits::eExtMemoryPriority) return "ExtMemoryPriority";
-    return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
+    return "unknown";
   }
 }
 
@@ -100,7 +100,7 @@ namespace VMA_HPP_NAMESPACE {
     if (value == MemoryUsage::eAuto) return "Auto";
     if (value == MemoryUsage::eAutoPreferDevice) return "AutoPreferDevice";
     if (value == MemoryUsage::eAutoPreferHost) return "AutoPreferHost";
-    return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
+    return "unknown";
   }
 }
 
@@ -142,7 +142,7 @@ namespace VMA_HPP_NAMESPACE {
     if (value == AllocationCreateFlagBits::eStrategyMinOffset) return "StrategyMinOffset";
     if (value == AllocationCreateFlagBits::eStrategyBestFit) return "StrategyBestFit";
     if (value == AllocationCreateFlagBits::eStrategyFirstFit) return "StrategyFirstFit";
-    return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
+    return "unknown";
   }
 }
 
@@ -223,7 +223,7 @@ namespace VMA_HPP_NAMESPACE {
   VULKAN_HPP_INLINE std::string to_string(PoolCreateFlagBits value) {
     if (value == PoolCreateFlagBits::eIgnoreBufferImageGranularity) return "IgnoreBufferImageGranularity";
     if (value == PoolCreateFlagBits::eLinearAlgorithm) return "LinearAlgorithm";
-    return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
+    return "unknown";
   }
 }
 
@@ -280,7 +280,7 @@ namespace VMA_HPP_NAMESPACE {
     if (value == DefragmentationFlagBits::eFlagAlgorithmBalanced) return "FlagAlgorithmBalanced";
     if (value == DefragmentationFlagBits::eFlagAlgorithmFull) return "FlagAlgorithmFull";
     if (value == DefragmentationFlagBits::eFlagAlgorithmExtensive) return "FlagAlgorithmExtensive";
-    return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
+    return "unknown";
   }
 }
 
@@ -339,7 +339,7 @@ namespace VMA_HPP_NAMESPACE {
     if (value == DefragmentationMoveOperation::eCopy) return "Copy";
     if (value == DefragmentationMoveOperation::eIgnore) return "Ignore";
     if (value == DefragmentationMoveOperation::eDestroy) return "Destroy";
-    return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
+    return "unknown";
   }
 }
 
@@ -351,7 +351,7 @@ namespace VMA_HPP_NAMESPACE {
 
   VULKAN_HPP_INLINE std::string to_string(VirtualBlockCreateFlagBits value) {
     if (value == VirtualBlockCreateFlagBits::eLinearAlgorithm) return "LinearAlgorithm";
-    return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
+    return "unknown";
   }
 }
 
@@ -406,7 +406,7 @@ namespace VMA_HPP_NAMESPACE {
     if (value == VirtualAllocationCreateFlagBits::eStrategyMinMemory) return "StrategyMinMemory";
     if (value == VirtualAllocationCreateFlagBits::eStrategyMinTime) return "StrategyMinTime";
     if (value == VirtualAllocationCreateFlagBits::eStrategyMinOffset) return "StrategyMinOffset";
-    return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString(static_cast<uint32_t>(value)) + " )";
+    return "unknown";
   }
 }
 

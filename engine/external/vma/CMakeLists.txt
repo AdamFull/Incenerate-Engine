@@ -1,10 +1,57 @@
 cmake_minimum_required(VERSION 3.18.0)
 project(VulkanMemoryAllocator)
 
-file(GLOB VMA_SOURCES *.cpp *.c *.cc)
+find_package(Vulkan REQUIRED)
+include_directories(${Vulkan_INCLUDE_DIR})
 
-add_library(${PROJECT_NAME} STATIC ${VMA_SOURCES})
+option(VMA_STATIC_VULKAN_FUNCTIONS "Link statically with Vulkan API" ON)
+option(VMA_DYNAMIC_VULKAN_FUNCTIONS "Fetch pointers to Vulkan functions internally (no static linking)" OFF)
+option(VMA_DEBUG_ALWAYS_DEDICATED_MEMORY "Every allocation will have its own memory block" OFF)
+option(VMA_DEBUG_INITIALIZE_ALLOCATIONS "Automatically fill new allocations and destroyed allocations with some bit pattern" OFF)
+option(VMA_DEBUG_GLOBAL_MUTEX "Enable single mutex protecting all entry calls to the library" OFF)
+option(VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT "Never exceed VkPhysicalDeviceLimits::maxMemoryAllocationCount and return error" OFF)
 
-target_include_directories(${PROJECT_NAME} 
-    PUBLIC "${Vulkan_INCLUDE_DIR}"
+message(STATUS "VMA_STATIC_VULKAN_FUNCTIONS = ${VMA_STATIC_VULKAN_FUNCTIONS}")
+message(STATUS "VMA_DYNAMIC_VULKAN_FUNCTIONS = ${VMA_DYNAMIC_VULKAN_FUNCTIONS}")
+message(STATUS "VMA_DEBUG_ALWAYS_DEDICATED_MEMORY = ${VMA_DEBUG_ALWAYS_DEDICATED_MEMORY}")
+message(STATUS "VMA_DEBUG_INITIALIZE_ALLOCATIONS = ${VMA_DEBUG_INITIALIZE_ALLOCATIONS}")
+message(STATUS "VMA_DEBUG_GLOBAL_MUTEX = ${VMA_DEBUG_GLOBAL_MUTEX}")
+message(STATUS "VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT = ${VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT}")
+
+set(VMA_LIBRARY_SOURCE_FILES
+    "VmaUsage.cpp"
+    "VmaUsage.h"
+    "vk_mem_alloc.h"
+)
+
+# Visual Studio only debugger symbols
+if(WIN32 AND ${CMAKE_GENERATOR} MATCHES "Visual Studio.*")
+    set(VMA_LIBRARY_SOURCE_FILES ${VMA_LIBRARY_SOURCE_FILES} vk_mem_alloc.natvis)
+endif()
+
+add_library(${PROJECT_NAME} ${VMA_LIBRARY_SOURCE_FILES})
+
+set_target_properties(
+    ${PROJECT_NAME} PROPERTIES
+
+    CXX_EXTENSIONS OFF
+    # Use C++14
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
+)
+
+if(${VMA_STATIC_VULKAN_FUNCTIONS})
+    target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan)
+endif()
+
+target_compile_definitions(
+    ${PROJECT_NAME}
+    PUBLIC
+    VMA_STATIC_VULKAN_FUNCTIONS=$<BOOL:${VMA_STATIC_VULKAN_FUNCTIONS}>
+    VMA_DYNAMIC_VULKAN_FUNCTIONS=$<BOOL:${VMA_DYNAMIC_VULKAN_FUNCTIONS}>
+    VMA_DEBUG_ALWAYS_DEDICATED_MEMORY=$<BOOL:${VMA_DEBUG_ALWAYS_DEDICATED_MEMORY}>
+    VMA_DEBUG_INITIALIZE_ALLOCATIONS=$<BOOL:${VMA_DEBUG_INITIALIZE_ALLOCATIONS}>
+    VMA_DEBUG_GLOBAL_MUTEX=$<BOOL:${VMA_DEBUG_GLOBAL_MUTEX}>
+    VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT=$<BOOL:${VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT}>
+    VMA_RECORDING_ENABLED=$<BOOL:${VMA_RECORDING_ENABLED}>
 )
