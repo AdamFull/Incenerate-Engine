@@ -23,7 +23,7 @@ void CWindowHandle::create(const FWindowCreateInfo& createInfo)
     
     SDL_Init(SDL_INIT_VIDEO);
     pWindow = SDL_CreateWindow(createInfo.srName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, iWidth, iHeight, flags);
-    log_cerror(pWindow, "Could not create window.");
+    log_cerror(pWindow != nullptr, "Could not create window.");
     log_info("Created window: [name: {}, extent: {}x{}, aspect: {}]", createInfo.srName, iWidth, iHeight, getAspect());
 }
 

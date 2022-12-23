@@ -52,8 +52,8 @@ android {
             externalNativeBuild {
                 cmake {
                     targets 'incenerateengine'
-                    arguments "-DCMAKE_FIND_ROOT_PATH=", "-DANDROID_STL=c++_static", "-DANDROID_TOOLCHAIN=clang", "-DANDROID_ARM_NEON=TRUE"
-                    cppFlags "-std=c++2a -frtti -fexceptions -fsigned-char"
+                    arguments "-DCMAKE_FIND_ROOT_PATH=", "-DANDROID_STL=c++_static", "-DANDROID_TOOLCHAIN=clang", "-DANDROID_ARM_NEON=TRUE", "-DANDROID=1"
+                    cppFlags "-std=c++17 -frtti -fexceptions -fsigned-char"
                 }
             }
 
@@ -115,7 +115,7 @@ android {
     externalNativeBuild {
         cmake {
             path file('../../CMakeLists.txt')
-            version '3.16.0+'
+            version '3.19.0+'
         }
     }
 }

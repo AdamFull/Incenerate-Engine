@@ -12,7 +12,6 @@ bool fs::read_file(const std::filesystem::path& path, std::string& data)
     {
         std::ifstream file(full_path, std::ios_base::in | std::ios_base::binary);
         file.rdbuf()->pubsetbuf(0, 0);
-        file.imbue(std::locale(std::locale::empty(), new std::codecvt<char16_t, char, std::mbstate_t>));
 
         data = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
         return true;

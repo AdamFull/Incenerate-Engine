@@ -22,7 +22,6 @@ namespace vk
 			{ShaderStageFlagBits::eCallableKHR, "CallableKHR"},
 			{ShaderStageFlagBits::eTaskNV, "TaskNV"},
 			{ShaderStageFlagBits::eMeshNV, "MeshNV"},
-			{ShaderStageFlagBits::eSubpassShadingHUAWEI, "SubpassShadingHUAWEI"},
 			{ShaderStageFlagBits::eAnyHitNV, "AnyHitNV"},
 			{ShaderStageFlagBits::eCallableNV, "CallableNV"},
 			{ShaderStageFlagBits::eClosestHitNV, "ClosestHitNV"},
@@ -57,7 +56,6 @@ namespace vk
 			{PipelineBindPoint::eGraphics, "Graphics"},
 			{PipelineBindPoint::eCompute, "Compute"},
 			{PipelineBindPoint::eRayTracingKHR, "RayTracingKHR"},
-			{PipelineBindPoint::eSubpassShadingHUAWEI, "SubpassShadingHUAWEI"},
 			{PipelineBindPoint::eRayTracingNV, "RayTracingNV"},
 		}
 	);
@@ -82,6 +80,7 @@ namespace vk
 		}
 	);
 
+#ifndef __ANDROID__
 	NLOHMANN_JSON_SERIALIZE_ENUM
 	(
 		DynamicState,
@@ -140,6 +139,62 @@ namespace vk
 			{DynamicState::eViewportWithCountEXT, "ViewportWithCountEXT"},
 		}
 	);
+#else
+	NLOHMANN_JSON_SERIALIZE_ENUM
+	(
+		DynamicState,
+		{
+			{DynamicState::eViewport, "Viewport"},
+			{DynamicState::eScissor, "Scissor"},
+			{DynamicState::eLineWidth, "LineWidth"},
+			{DynamicState::eDepthBias, "DepthBias"},
+			{DynamicState::eBlendConstants, "BlendConstants"},
+			{DynamicState::eDepthBounds, "DepthBounds"},
+			{DynamicState::eStencilCompareMask, "StencilCompareMask"},
+			{DynamicState::eStencilWriteMask, "StencilWriteMask"},
+			{DynamicState::eStencilReference, "StencilReference"},
+			{DynamicState::eScissorWithCount, "ScissorWithCount"},
+			{DynamicState::eVertexInputBindingStride, "VertexInputBindingStride"},
+			{DynamicState::eDepthTestEnable, "DepthTestEnable"},
+			{DynamicState::eDepthWriteEnable, "DepthWriteEnable"},
+			{DynamicState::eDepthCompareOp, "DepthCompareOp"},
+			{DynamicState::eDepthBoundsTestEnable, "DepthBoundsTestEnable"},
+			{DynamicState::eStencilTestEnable, "StencilTestEnable"},
+			{DynamicState::eStencilOp, "StencilOp"},
+			{DynamicState::eRasterizerDiscardEnable, "RasterizerDiscardEnable"},
+			{DynamicState::eDepthBiasEnable, "DepthBiasEnable"},
+			{DynamicState::ePrimitiveRestartEnable, "PrimitiveRestartEnable"},
+			{DynamicState::eViewportWScalingNV, "ViewportWScalingNV"},
+			{DynamicState::eDiscardRectangleEXT, "DiscardRectangleEXT"},
+			{DynamicState::eSampleLocationsEXT, "SampleLocationsEXT"},
+			{DynamicState::eRayTracingPipelineStackSizeKHR, "RayTracingPipelineStackSizeKHR"},
+			{DynamicState::eViewportShadingRatePaletteNV, "ViewportShadingRatePaletteNV"},
+			{DynamicState::eViewportCoarseSampleOrderNV, "ViewportCoarseSampleOrderNV"},
+			{DynamicState::eExclusiveScissorNV, "ExclusiveScissorNV"},
+			{DynamicState::eFragmentShadingRateKHR, "FragmentShadingRateKHR"},
+			{DynamicState::eLineStippleEXT, "LineStippleEXT"},
+			{DynamicState::eVertexInputEXT, "VertexInputEXT"},
+			{DynamicState::ePatchControlPointsEXT, "PatchControlPointsEXT"},
+			{DynamicState::eLogicOpEXT, "LogicOpEXT"},
+			{DynamicState::eColorWriteEnableEXT, "ColorWriteEnableEXT"},
+			{DynamicState::eCullModeEXT, "CullMode"},
+			{DynamicState::eDepthBiasEnableEXT, "DepthBiasEnableEXT"},
+			{DynamicState::eDepthBoundsTestEnableEXT, "DepthBoundsTestEnableEXT"},
+			{DynamicState::eDepthCompareOpEXT, "DepthCompareOpEXT"},
+			{DynamicState::eDepthTestEnableEXT, "DepthTestEnableEXT"},
+			{DynamicState::eDepthWriteEnableEXT, "DepthWriteEnableEXT"},
+			{DynamicState::eFrontFaceEXT, "FrontFace"},
+			{DynamicState::ePrimitiveRestartEnableEXT, "PrimitiveRestartEnableEXT"},
+			{DynamicState::ePrimitiveTopologyEXT, "PrimitiveTopology"},
+			{DynamicState::eRasterizerDiscardEnableEXT, "RasterizerDiscardEnableEXT"},
+			{DynamicState::eScissorWithCountEXT, "ScissorWithCountEXT"},
+			{DynamicState::eStencilOpEXT, "StencilOpEXT"},
+			{DynamicState::eStencilTestEnableEXT, "StencilTestEnableEXT"},
+			{DynamicState::eVertexInputBindingStrideEXT, "VertexInputBindingStrideEXT"},
+			{DynamicState::eViewportWithCountEXT, "ViewportWithCount"},
+		}
+	);
+#endif
 }
 
 namespace engine
