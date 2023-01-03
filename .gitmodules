@@ -19,9 +19,9 @@
 [submodule "engine/external/utility"]
 	path = engine/external/utility
 	url = https://github.com/AdamFull/utllib.git
-[submodule "engine/external/fmt"]
-	path = engine/external/fmt
-	url = https://github.com/fmtlib/fmt.git
 [submodule "engine/external/glmlib"]
 	path = engine/external/glmlib
 	url = https://github.com/g-truc/glm.git
+[submodule "engine/external/openal-soft"]
+	path = engine/external/openal-soft
+	url = https://github.com/kcat/openal-soft.git

@@ -7,6 +7,7 @@ set(EXTERNALS_PATH "${ENGINE_ROOT}/external")
 add_subdirectory("external")
 
 file(GLOB_RECURSE ENGINE_GRAPHICS_SOURCE "graphics/*.cpp" "graphics/*.c" "graphics/*.cc")
+file(GLOB_RECURSE ENGINE_AUDIO_SOURCE "audio/*.cpp" "audio/*.c" "audio/*.cc")
 file(GLOB_RECURSE ENGINE_SYSTEM_SOURCE "system/*.cpp" "system/*.c" "system/*.cc")
 file(GLOB_RECURSE ENGINE_GAME_SOURCE "game/*.cpp" "game/*.c" "game/*.cc")
 file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc")
@@ -27,6 +28,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${Vulkan_INCLUDE_DIR}"
     PUBLIC "${EXTERNALS_PATH}/SDL/include"
     PUBLIC "${EXTERNALS_PATH}/ktx/include"
+    PUBLIC "${EXTERNALS_PATH}/openal-soft/include"
     PUBLIC "${EXTERNALS_PATH}/glmlib"
     PUBLIC "${ENGINE_ROOT}"
     PUBLIC "${ENGINE_ROOT}/graphics"
