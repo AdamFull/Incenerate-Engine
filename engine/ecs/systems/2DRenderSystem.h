@@ -6,10 +6,10 @@ namespace engine
 {
 	namespace ecs
 	{
-		class CCompositionSystem : public ISystem
+		class C2DRenderSystem : public ISystem
 		{
 		public:
-			virtual ~CCompositionSystem() override = default;
+			virtual ~C2DRenderSystem() override = default;
 
 			void __create() override;
 			void __update(float fDt) override;

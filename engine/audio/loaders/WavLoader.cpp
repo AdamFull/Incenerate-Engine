@@ -6,7 +6,7 @@ EAudioReaderError CWavLoader::open(const std::string& filepath)
 {
 	char header[header_size];
 
-	pFile = fopen(filename.c_str(), "rb");
+	pFile = fopen(filepath.c_str(), "rb");
 	if (!pFile)
 		return EAudioReaderError::eCannotOpenFile;
 
@@ -54,17 +54,17 @@ const uint16_t& CWavLoader::getNumChannels() const
 
 const uint32_t& CWavLoader::getSampleRate() const
 {
-	rawheader.sampleRate;
+	return rawheader.sampleRate;
 }
 
 const uint32_t& CWavLoader::getByteRate() const
 {
-	rawheader.byteRate;
+	return rawheader.byteRate;
 }
 
 const uint16_t& CWavLoader::getBlockAlign() const
 {
-	rawheader.blockAlign;
+	return rawheader.blockAlign;
 }
 
 const uint16_t& CWavLoader::getBitsPerSample() const

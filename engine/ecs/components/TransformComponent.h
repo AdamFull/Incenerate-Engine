@@ -47,21 +47,21 @@ namespace engine
 			}
 		};
 
-		void to_json(nlohmann::json& json, const FTransformComponent& type)
-		{
-			//json = nlohmann::json
-			//{
-			//	{"pos", type.position},
-			//	{"rot", type.rotation},
-			//	{"scale", type.scale}
-			//};
-		}
-
-		void from_json(const nlohmann::json& json, FTransformComponent& type)
-		{
-			//utl::parse_to("pos", json, type.position);
-			//utl::parse_to("rot", json, type.rotation);
-			//utl::parse_to("scale", json, type.scale);
-		}
+		//void to_json(nlohmann::json& json, const FTransformComponent& type)
+		//{
+		//	json = nlohmann::json
+		//	{
+		//		{"pos", type.position},
+		//		{"rot", type.rotation},
+		//		{"scale", type.scale}
+		//	};
+		//}
+		//
+		//void from_json(const nlohmann::json& json, FTransformComponent& type)
+		//{
+		//	utl::parse_to("pos", json, type.position);
+		//	utl::parse_to("rot", json, type.rotation);
+		//	utl::parse_to("scale", json, type.scale);
+		//}
 	}
 }

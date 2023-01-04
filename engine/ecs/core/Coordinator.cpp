@@ -24,11 +24,6 @@ void CCoordinator::destroyEntity(Entity entity)
 }
 
 // Event methods
-void CCoordinator::addEventListener(EventId eventId, utl::function<void(CEvent&)> const& listener)
-{
-	pEventManager->addListener(eventId, listener);
-}
-
 void CCoordinator::sendEvent(CEvent& event)
 {
 	pEventManager->sendEvent(event);

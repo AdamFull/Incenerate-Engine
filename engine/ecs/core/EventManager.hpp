@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Event.hpp"
-#include "Types.hpp"
+#include "Type.hpp"
 
 #include <utility/ufunction.hpp>
 #include <list>

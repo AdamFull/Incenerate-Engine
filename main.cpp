@@ -37,7 +37,7 @@ int main()
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	log_info("Voxels traced by: {}s.", std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count());
 
-	CEngine::getInstance()->begin_render_loop();
+	CEngine::getInstance()->beginEngineLoop();
 
 	return 0;
 }

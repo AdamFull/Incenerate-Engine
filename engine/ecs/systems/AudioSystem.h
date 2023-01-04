@@ -9,8 +9,10 @@ namespace engine
 		class CAudioSystem : public ISystem
 		{
 		public:
-			void create() override;
-			void update(float fDt) override;
+			virtual ~CAudioSystem() override = default;
+
+			void __create() override;
+			void __update(float fDt) override;
 		};
 	}
 }

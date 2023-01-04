@@ -408,8 +408,6 @@ void CDevice::createSwapchain()
             log_error("Failed to create synchronization objects for a frame!");
         }
     }
-
-    log_error("pizda");
 }
 
 void CDevice::cleanupSwapchain()

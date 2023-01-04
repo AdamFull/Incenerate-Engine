@@ -65,7 +65,7 @@ namespace engine
 			{
 				const char* typeName = typeid(_Ty).name();
 				assert(mComponentTypes.find(typeName) != mComponentTypes.end() && "Component not registered before use.");
-				return static_cast<CComponentArray<_Ty>>(mComponentArrays[typeName].get());
+				return static_cast<CComponentArray<_Ty>*>(mComponentArrays[typeName].get());
 			}
 		};
 	}

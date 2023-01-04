@@ -2,12 +2,12 @@
 
 using namespace engine::ecs;
 
-void CAudioSystem::create()
+void CAudioSystem::__create()
 {
 
 }
 
-void CAudioSystem::update(float fDt)
+void CAudioSystem::__update(float fDt)
 {
-
+	
 }

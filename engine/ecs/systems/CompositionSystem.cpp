@@ -2,12 +2,12 @@
 
 using namespace engine::ecs;
 
-void CCompositionSystem::create()
+void CCompositionSystem::__create()
 {
 
 }
 
-void CCompositionSystem::update(float fDt)
+void CCompositionSystem::__update(float fDt)
 {
 
 }

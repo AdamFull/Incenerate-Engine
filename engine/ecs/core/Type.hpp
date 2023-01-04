@@ -27,8 +27,12 @@ namespace engine
 		// Events
 		using EventId = uint32_t;
 		using ParamId = uint32_t;
+
+		namespace Events::Input 
+		{
+			const ParamId Key = "Events::Input::Key"_hash;
+			const ParamId Mouse = "Events::Input::Mouse"_hash;
+			const ParamId Axis = "Events::Input::Axis"_hash;
+		}
 	}
 }
-
-#define METHOD_LISTENER(EventType, Listener) EventType, std::bind(&Listener, this, std::placeholders::_1)
-#define FUNCTION_LISTENER(EventType, Listener) EventType, std::bind(&Listener, std::placeholders::_1)

@@ -7,17 +7,19 @@
 #include "EngineStructures.h"
 #include "ecs/core/Coordinator.hpp"
 #include "system/window/WindowHandle.h"
-#include "system/input/InputMapper.h"
 #include "graphics/APIHandle.h"
-#include "game/Scene.h"
+
+#include "ecs/SceneGraph.hpp"
+
+#define EGCoordinator CEngine::getInstance()->getCoordinator()
+#define EGWindow CEngine::getInstance()->getWindow()
+#define EGGraphics CEngine::getInstance()->getGraphics()
 
 namespace engine
 {
 	using coordinator_t = std::unique_ptr<ecs::CCoordinator>;
 	using winptr_t = std::unique_ptr<system::window::CWindowHandle>;
-	using inputptr_t = std::unique_ptr<system::input::CInputMapper>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
-	using sceneptr_t = std::shared_ptr<game::CScene>;
 
 	class CEngine : public utl::singleton<CEngine>
 	{
@@ -34,17 +36,15 @@ namespace engine
 
 		const coordinator_t& getCoordinator() const;
 		const winptr_t& getWindow() const;
-		const inputptr_t& getInputMapper() const;
 		const graphptr_t& getGraphics() const;
 
 	private:
 		void initEntityComponentSystem();
 	private:
+		std::unique_ptr<ecs::CSceneNode> pRoot;
 		coordinator_t pCoordinator;
 		winptr_t pWindow;
-		inputptr_t pInputMapper;
 		graphptr_t pGraphics;
-		sceneptr_t pScene;
 
 		std::vector<ecs::ISystem*> vSystems;
 	};

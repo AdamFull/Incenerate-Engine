@@ -5,6 +5,7 @@
 
 #include <vector>
 #include "EngineStructures.h"
+#include "KeycodeHelper.hpp"
 
 namespace engine
 {
@@ -22,7 +23,6 @@ namespace engine
                 void destroy();
 
                 bool begin();
-                void end();
 
                 bool isMinimized();
 
@@ -40,6 +40,7 @@ namespace engine
 
             private:
                 SDL_Window* pWindow{ nullptr };
+                CKeyDecoder mKeys;
                 std::vector<SDL_Event> vWinEvents;
                 bool bRunning{ true };
                 

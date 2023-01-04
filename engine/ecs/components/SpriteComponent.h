@@ -4,9 +4,9 @@ namespace engine
 {
 	namespace ecs
 	{
-		struct FAudioComponent
+		struct FSpriteComponent
 		{
-			std::string srAsset;
+
 		};
 	}
 }

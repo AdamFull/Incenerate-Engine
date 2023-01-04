@@ -1,9 +1,8 @@
 #include "WindowHandle.h"
-#include "WindowCallback.h"
 
 #include <utility/logger/logger.h>
+#include "Engine.h"
 
-using namespace engine::system::input;
 using namespace engine::system::window;
 
 int32_t CWindowHandle::iWidth{ 0 }, CWindowHandle::iHeight{ 0 };
@@ -40,6 +39,8 @@ void CWindowHandle::destroy()
 
 bool CWindowHandle::begin()
 {
+    bool bKeyStateChange{ false };
+
     SDL_Event event;
     vWinEvents.clear();
 
@@ -64,7 +65,7 @@ bool CWindowHandle::begin()
         case SDL_KEYUP:
         case SDL_KEYDOWN:
         {
-            FWindowCallback::OnKeyStateChanges(FKeycodeHelper::KeyboardCodeToEngineCode(event.key.keysym.scancode), (EKeyState)event.key.state);
+            bKeyStateChange |= mKeys.update(event.key);
         } break;
 
         case SDL_TEXTINPUT:
@@ -74,31 +75,30 @@ bool CWindowHandle::begin()
         case SDL_CONTROLLERBUTTONUP:
         case SDL_CONTROLLERBUTTONDOWN:
         {
-            FWindowCallback::OnKeyStateChanges(FKeycodeHelper::GamepadCodeToEngineCode((SDL_GameControllerButton)event.cbutton.button), (EKeyState)event.cbutton.state);
+            bKeyStateChange |= mKeys.update(event.cbutton);
         } break;
 
         case SDL_MOUSEBUTTONUP:
         case SDL_MOUSEBUTTONDOWN:
         {
-            FWindowCallback::OnCursorInput(event.button.x, event.button.y);
-            FWindowCallback::OnKeyStateChanges(FKeycodeHelper::MouseCodeToEngineCode(event.button.button), (EKeyState)event.button.state);
+            bKeyStateChange |= mKeys.update(event.button);
         };
 
         case SDL_MOUSEWHEEL:
         {
-            FWindowCallback::OnMouseWheel(event.wheel.x, event.wheel.y);
+            //FWindowCallback::OnMouseWheel(event.wheel.x, event.wheel.y);
         } break;
 
         case SDL_FINGERMOTION:
         {
-            FWindowCallback::OnCursorMove(event.tfinger.dx, event.tfinger.dy);
+            //FWindowCallback::OnCursorMove(event.tfinger.dx, event.tfinger.dy);
         } break;
 
         case SDL_CONTROLLERTOUCHPADMOTION:
         {
             static float controller_xold{ 0.f }, controller_yold{ 0.f };
 
-            FWindowCallback::OnCursorMove(controller_xold - static_cast<float>(event.ctouchpad.x), controller_yold - static_cast<float>(event.ctouchpad.y));
+            //FWindowCallback::OnCursorMove(controller_xold - static_cast<float>(event.ctouchpad.x), controller_yold - static_cast<float>(event.ctouchpad.y));
 
             controller_xold = event.ctouchpad.x;
             controller_yold = event.ctouchpad.y;
@@ -107,19 +107,19 @@ bool CWindowHandle::begin()
 
         case SDL_MOUSEMOTION:
         {
-            FWindowCallback::OnCursorMove(static_cast<float>(event.motion.x), static_cast<float>(event.motion.y));
+            //FWindowCallback::OnCursorMove(static_cast<float>(event.motion.x), static_cast<float>(event.motion.y));
         } break;
 
         case SDL_FINGERDOWN:
         case SDL_FINGERUP:
         {
-            FWindowCallback::OnCursorInput(event.tfinger.x, event.tfinger.y);
+            //FWindowCallback::OnCursorInput(event.tfinger.x, event.tfinger.y);
         } break;
 
         case SDL_CONTROLLERTOUCHPADDOWN:
         case SDL_CONTROLLERTOUCHPADUP:
         {
-            FWindowCallback::OnCursorInput(event.ctouchpad.x, event.ctouchpad.y);
+            //FWindowCallback::OnCursorInput(event.ctouchpad.x, event.ctouchpad.y);
         } break;
 
         case SDL_CONTROLLERAXISMOTION:
@@ -143,12 +143,15 @@ bool CWindowHandle::begin()
         vWinEvents.emplace_back(event);
     }
 
-    return bRunning;
-}
+    if (bKeyStateChange)
+    {
+        using namespace engine::ecs;
+        CEvent eevent(Events::Input::Key);
+        eevent.setParam(Events::Input::Key, mKeys);
+        EGCoordinator->sendEvent(eevent);
+    }
 
-void CWindowHandle::end()
-{
-    //SDL_GL_SwapWindow(pWindow);
+    return bRunning;
 }
 
 bool CWindowHandle::isMinimized()

@@ -12,14 +12,14 @@ namespace engine
 		{
 		public:
 			template<class _Ty>
-			std::unique_ptr<_Ty>& registrate()
+			_Ty* registrate()
 			{
 				const char* typeName = typeid(_Ty).name();
 
 				assert(mSystems.find(typeName) == mSystems.end() && "Registering system more than once.");
 
-				mSystems.insert({ typeName, std::make_shared<_Ty>() });
-				return mSystems[typeName];
+				mSystems.insert({ typeName, std::make_unique<_Ty>() });
+				return static_cast<_Ty*>(mSystems[typeName].get());
 			}
 
 			template<class _Ty>
@@ -37,7 +37,7 @@ namespace engine
 
 		private:
 			std::unordered_map<const char*, Signature> mSignatures{};
-			std::unordered_map<const char*, std::shared_ptr<ISystem>> mSystems{};
+			std::unordered_map<const char*, std::unique_ptr<ISystem>> mSystems{};
 		};
 	}
 }

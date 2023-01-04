@@ -1,13 +1,17 @@
 #include "Engine.h"
 #include "system/filesystem/filesystem.h"
 
+#include <utility/utime.hpp>
+
+#include "ecs/components/CameraComponent.h"
+#include "ecs/components/MeshComponent.h"
+#include "ecs/components/AudioComponent.h"
+
 using namespace engine;
 using namespace engine::ecs;
-using namespace engine::game;
 using namespace engine::graphics;
 using namespace engine::system;
 using namespace engine::system::window;
-using namespace engine::system::input;
 
 CEngine::CEngine()
 {
@@ -19,52 +23,55 @@ CEngine::CEngine()
 
 void CEngine::create()
 {
-	auto startTime = std::chrono::high_resolution_clock::now();
+	utl::stopwatch sw;
 	log_info("Beginning engine initialization.");
 
 	FEngineCreateInfo createInfo;
 	fs::read_json("engine/config.cfg", createInfo);
 
-	pCoordinator = std::make_unique<CCoordinator>();
-	pCoordinator->create();
+	initEntityComponentSystem();
 
 	pWindow = std::make_unique<CWindowHandle>();
 	pWindow->create(createInfo.window);
 
-	pInputMapper = std::make_unique<CInputMapper>();
-
 	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
 	pGraphics->create(createInfo);
 
-	pScene = std::make_shared<CScene>();
-	pScene->create();
-
-	initEntityComponentSystem();
-
 	auto currentTime = std::chrono::high_resolution_clock::now();
-	log_info("Engine initialization finished with: {}s.", std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count());
+	log_info("Engine initialization finished with: {}s.", sw.stop<float>());
+
+	pRoot = std::make_unique<CSceneNode>();
+	pRoot->setName("root");
+
+
+	auto pCamera = std::make_unique<CSceneNode>();
+	pCamera->setName("camera");
+	pCoordinator->addComponent<FCameraComponent>(pCamera->getEntity(), FCameraComponent{});
+	pRoot->attach(std::move(pCamera));
+
+	auto pMesh = std::make_unique<CSceneNode>();
+	pMesh->setName("audio_model");
+	pCoordinator->addComponent<FMeshComponent>(pMesh->getEntity(), FMeshComponent{});
+	pCoordinator->addComponent<FAudioComponent>(pMesh->getEntity(), FAudioComponent{});
+	pRoot->attach(std::move(pMesh));
 }
 
 void CEngine::beginEngineLoop()
 {
-	float delta_time{ 0.001f };
+	for (const auto& system : vSystems)
+		system->create();
+
+	utl::stopwatch sw;
+	float dt{ 0.f };
+
 	while (pWindow->begin())
 	{
-		auto startTime = std::chrono::high_resolution_clock::now();
-
 		for (const auto& system : vSystems)
-			system->update(delta_time);
-
-		pInputMapper->update(delta_time);
-
-		pScene->update(delta_time);
+			system->update(dt);
 
 		pGraphics->render();
 
-		pWindow->end();
-
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		delta_time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		dt = sw.stop<float>();
 	}
 
 	pGraphics->shutdown();
@@ -78,11 +85,6 @@ const coordinator_t& CEngine::getCoordinator() const
 const winptr_t& CEngine::getWindow() const
 {
 	return pWindow;
-}
-
-const inputptr_t& CEngine::getInputMapper() const
-{
-	return pInputMapper;
 }
 
 const graphptr_t& CEngine::getGraphics() const

@@ -7,7 +7,7 @@ CAudioSystem::~CAudioSystem()
     if (!alcCall(alcMakeContextCurrent, contextMadeCurrent, pDevice, nullptr))
         log_error("Failed to change current context.");
 
-    if (!alcCall(alcDestroyContext, pDevice, openALContext))
+    if (!alcCall(alcDestroyContext, pDevice, pContext))
         log_error("Failed to destroy context.");
 
     bool closed{ false };

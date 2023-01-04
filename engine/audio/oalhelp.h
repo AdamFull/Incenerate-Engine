@@ -106,7 +106,7 @@ namespace alc
         -> typename std::enable_if_t<!std::is_same_v<void, decltype(functor(args...))>, bool>
     {
         returnValue = functor(std::forward<_Args>(args)...);
-        return CheckError();
+        return CheckError(device);
     }
 }
 

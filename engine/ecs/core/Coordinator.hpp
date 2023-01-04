@@ -45,7 +45,7 @@ namespace engine
 				pComponentManager->removeComponent<_Ty>(entity);
 
 				auto signature = pEntityManager->getSignature(entity);
-				signature.set(mComponentManager->getType<_Ty>(), false);
+				signature.set(pComponentManager->getType<_Ty>(), false);
 				pEntityManager->setSignature(entity, signature);
 
 				pSystemManager->entitySignatureChanged(entity, signature);
@@ -65,7 +65,7 @@ namespace engine
 
 			// System methods
 			template<class _Ty>
-			std::unique_ptr<_Ty>& registerSystem()
+			_Ty* registerSystem()
 			{
 				return pSystemManager->registrate<_Ty>();
 			}
@@ -77,7 +77,12 @@ namespace engine
 			}
 
 			// Event methods
-			void addEventListener(EventId eventId, utl::function<void(CEvent&)> const& listener);
+			template<class... _Args>
+			void addEventListener(EventId eventId, _Args&& ...args)
+			{
+				pEventManager->addListener(eventId, utl::function<void(CEvent&)>(std::forward<_Args>(args)...));
+			}
+
 			void sendEvent(CEvent& event);
 			void sendEvent(EventId eventId);
 		private:
