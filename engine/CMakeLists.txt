@@ -6,19 +6,23 @@ set(EXTERNALS_PATH "${ENGINE_ROOT}/external")
 
 add_subdirectory("external")
 
-file(GLOB_RECURSE ENGINE_GRAPHICS_SOURCE "graphics/*.cpp" "graphics/*.c" "graphics/*.cc")
-file(GLOB_RECURSE ENGINE_AUDIO_SOURCE "audio/*.cpp" "audio/*.c" "audio/*.cc")
-file(GLOB_RECURSE ENGINE_SYSTEM_SOURCE "system/*.cpp" "system/*.c" "system/*.cc")
-file(GLOB_RECURSE ENGINE_GAME_SOURCE "game/*.cpp" "game/*.c" "game/*.cc")
-file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc")
+file(GLOB_RECURSE ENGINE_ECS_SOURCE "ecs/*.cpp" "ecs/*.c" "ecs/*.cc" "ecs/*.h" "ecs/*.hpp")
+file(GLOB_RECURSE ENGINE_GRAPHICS_SOURCE "graphics/*.cpp" "graphics/*.c" "graphics/*.cc" "graphics/*.h" "graphics/*.hpp")
+file(GLOB_RECURSE ENGINE_AUDIO_SOURCE "audio/*.cpp" "audio/*.c" "audio/*.cc" "audio/*.h" "audio/*.hpp")
+file(GLOB_RECURSE ENGINE_SYSTEM_SOURCE "system/*.cpp" "system/*.c" "system/*.cc" "system/*.h" "system/*.hpp")
+file(GLOB_RECURSE ENGINE_GAME_SOURCE "game/*.cpp" "game/*.c" "game/*.cc" "game/*.h" "game/*.hpp")
+file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc" "*.h" "*.hpp")
 
 include_directories(${Vulkan_INCLUDE_DIR})
 
 add_library(${PROJECT_NAME} STATIC 
-${ENGINE_SOURCE} 
-${ENGINE_GRAPHICS_SOURCE}
+${ENGINE_ECS_SOURCE}
+${ENGINE_GRAPHICS_SOURCE} 
+${ENGINE_AUDIO_SOURCE}
 ${ENGINE_SYSTEM_SOURCE}
-${ENGINE_GAME_SOURCE})
+${ENGINE_GAME_SOURCE}
+${ENGINE_SOURCE}
+)
 
 target_link_libraries(${PROJECT_NAME} 
     PUBLIC external_lib

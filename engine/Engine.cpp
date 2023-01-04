@@ -2,6 +2,7 @@
 #include "system/filesystem/filesystem.h"
 
 using namespace engine;
+using namespace engine::ecs;
 using namespace engine::game;
 using namespace engine::graphics;
 using namespace engine::system;
@@ -24,6 +25,9 @@ void CEngine::create()
 	FEngineCreateInfo createInfo;
 	fs::read_json("engine/config.cfg", createInfo);
 
+	pCoordinator = std::make_unique<CCoordinator>();
+	pCoordinator->create();
+
 	pWindow = std::make_unique<CWindowHandle>();
 	pWindow->create(createInfo.window);
 
@@ -35,16 +39,21 @@ void CEngine::create()
 	pScene = std::make_shared<CScene>();
 	pScene->create();
 
+	initEntityComponentSystem();
+
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	log_info("Engine initialization finished with: {}s.", std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count());
 }
 
-void CEngine::begin_render_loop()
+void CEngine::beginEngineLoop()
 {
 	float delta_time{ 0.001f };
 	while (pWindow->begin())
 	{
 		auto startTime = std::chrono::high_resolution_clock::now();
+
+		for (const auto& system : vSystems)
+			system->update(delta_time);
 
 		pInputMapper->update(delta_time);
 
@@ -59,6 +68,11 @@ void CEngine::begin_render_loop()
 	}
 
 	pGraphics->shutdown();
+}
+
+const coordinator_t& CEngine::getCoordinator() const
+{
+	return pCoordinator;
 }
 
 const winptr_t& CEngine::getWindow() const

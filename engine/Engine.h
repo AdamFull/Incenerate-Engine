@@ -5,6 +5,7 @@
 #include <utility/upattern.hpp>
 
 #include "EngineStructures.h"
+#include "ecs/core/Coordinator.hpp"
 #include "system/window/WindowHandle.h"
 #include "system/input/InputMapper.h"
 #include "graphics/APIHandle.h"
@@ -12,6 +13,7 @@
 
 namespace engine
 {
+	using coordinator_t = std::unique_ptr<ecs::CCoordinator>;
 	using winptr_t = std::unique_ptr<system::window::CWindowHandle>;
 	using inputptr_t = std::unique_ptr<system::input::CInputMapper>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
@@ -28,16 +30,22 @@ namespace engine
 
 		void create();
 
-		void begin_render_loop();
+		void beginEngineLoop();
 
+		const coordinator_t& getCoordinator() const;
 		const winptr_t& getWindow() const;
 		const inputptr_t& getInputMapper() const;
 		const graphptr_t& getGraphics() const;
 
 	private:
+		void initEntityComponentSystem();
+	private:
+		coordinator_t pCoordinator;
 		winptr_t pWindow;
 		inputptr_t pInputMapper;
 		graphptr_t pGraphics;
 		sceneptr_t pScene;
+
+		std::vector<ecs::ISystem*> vSystems;
 	};
 }
