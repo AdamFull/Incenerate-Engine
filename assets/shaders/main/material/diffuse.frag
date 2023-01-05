@@ -30,24 +30,21 @@ layout(binding = 6) uniform sampler2D height_tex;
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec4 inPosition;
-layout(location = 3) in vec4 inOldPosition;
 #ifdef HAS_NORMALS
-layout(location = 4) in vec3 inNormal;
+layout(location = 3) in vec3 inNormal;
 #endif
 #ifdef HAS_TANGENTS
-layout (location = 5) in vec4 inTangent;
+layout (location = 4) in vec4 inTangent;
 #endif
 
 layout(location = 0) out uvec4 outPack;
 layout(location = 1) out vec4 outEmissive;
-layout(location = 2) out vec2 outVelocity;
 
 #include "../../shader_util.glsl"
 
 layout(std140, binding = 0) uniform FUniformData 
 {
   	mat4 model;
-	mat4 model_old;
   	mat4 view;
   	mat4 projection;
   	mat4 normal;
@@ -145,8 +142,4 @@ void main()
 
 	outPack = packTextures(normal_map, albedo_map, pbr_map);
 	outEmissive = emission;
-
-	vec2 newpos = (inPosition.xy / inPosition.w) * 0.5 + 0.5;
-    vec2 oldpos = (inOldPosition.xy / inOldPosition.w) * 0.5 + 0.5;
-    outVelocity = newpos - oldpos;
 }

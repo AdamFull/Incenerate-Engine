@@ -8,7 +8,6 @@ layout(location = 4) in vec4 inTangent;
 layout(binding = 0) uniform FUniformData 
 {
 	mat4 model;
-	mat4 model_old;
   	mat4 view;
   	mat4 projection;
   	mat4 normal;

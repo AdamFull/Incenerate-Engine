@@ -48,6 +48,9 @@ void CEngine::create()
 
 	initEntityComponentSystem();
 
+	for (const auto& system : vSystems)
+		system->create();
+
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	log_info("Engine initialization finished with: {}s.", sw.stop<float>());
 
@@ -56,9 +59,6 @@ void CEngine::create()
 
 void CEngine::beginEngineLoop()
 {
-	for (const auto& system : vSystems)
-		system->create();
-
 	utl::stopwatch sw;
 	float dt{ 0.f };
 
@@ -86,4 +86,9 @@ const winptr_t& CEngine::getWindow() const
 const graphptr_t& CEngine::getGraphics() const
 {
 	return pGraphics;
+}
+
+const scenegraph_t& CEngine::getSceneGraph() const
+{
+	return pRoot;
 }

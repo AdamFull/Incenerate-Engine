@@ -26,12 +26,12 @@ namespace engine
 			std::vector<std::string> vCompileDefinitions;
 			bool doubleSided{ false };
 
-			int32_t albedo{ invalid_index };
-			int32_t metallicRoughness{ invalid_index };
-			int32_t normalMap{ invalid_index };
-			int32_t ambientOcclusion{ invalid_index };
-			int32_t emissionColor{ invalid_index };
-			int32_t heightMap{ invalid_index };
+			size_t albedo{ invalid_index };
+			size_t metallicRoughness{ invalid_index };
+			size_t normalMap{ invalid_index };
+			size_t ambientOcclusion{ invalid_index };
+			size_t emissionColor{ invalid_index };
+			size_t heightMap{ invalid_index };
 		};
 
 		class CMaterial

@@ -35,23 +35,21 @@ layout(triangles, equal_spacing , cw) in;
 layout (location = 0) in vec2 inUV[];
 layout (location = 1) in vec3 inColor[];
 layout (location = 2) in vec4 inPosition[];
-layout (location = 3) in vec4 inOldPosition[];
 #ifdef HAS_NORMALS
-layout (location = 4) in vec3 inNormal[];
+layout (location = 3) in vec3 inNormal[];
 #endif
 #ifdef HAS_TANGENTS
-layout (location = 5) in vec4 inTangent[];
+layout (location = 4) in vec4 inTangent[];
 #endif
  
 layout (location = 0) out vec2 outUV;
 layout (location = 1) out vec3 outColor;
 layout (location = 2) out vec4 outPosition;
-layout (location = 3) out vec4 outOldPosition;
 #ifdef HAS_NORMALS
-layout (location = 4) out vec3 outNormal;
+layout (location = 3) out vec3 outNormal;
 #endif
 #ifdef HAS_TANGENTS
-layout (location = 5) out vec4 outTangent;
+layout (location = 4) out vec4 outTangent;
 #endif
 
 void main()
@@ -74,9 +72,6 @@ void main()
 	vec3 displace = normalize(outNormal) * (max(texture(height_tex, outUV.st).r - 0.5f, 0.0) * material.tessellationStrength);
     outPosition += vec4(displace, 0.0);
 #endif
-	
-	outOldPosition = outPosition;
-	outOldPosition = data.model_old * outOldPosition;
 
 	outPosition = data.model * outPosition;
 		

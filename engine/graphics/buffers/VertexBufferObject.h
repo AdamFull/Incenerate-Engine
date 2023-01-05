@@ -22,8 +22,8 @@ namespace engine
 			void addVertices(std::vector<FVertex>&& vertices);
 			void addIndices(std::vector<uint32_t>&& indices);
 			void addMeshData(std::vector<FVertex>&& vertices, std::vector<uint32_t>&& indices);
-			inline uint64_t getLastIndex();
-			inline uint64_t getLastVertex();
+			uint64_t getLastIndex();
+			uint64_t getLastVertex();
 
 		private:
 			void createVertexBuffer();

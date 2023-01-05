@@ -44,11 +44,7 @@ void CVertexBufferObject::bind(vk::CommandBuffer commandBuffer)
 			commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
 			commandBuffer.drawIndexed(vIndices.size(), 1, 0, 0, 0);
 		}
-		else
-			commandBuffer.draw(static_cast<uint32_t>(vVertices.size()), 1, 0, 0);
 	}
-	else
-		commandBuffer.draw(3, 1, 0, 0);
 }
 
 void CVertexBufferObject::addVertices(std::vector<FVertex>&& vertices)
@@ -66,12 +62,12 @@ void CVertexBufferObject::addMeshData(std::vector<FVertex>&& vertices, std::vect
 	addVertices(std::move(vertices));
 	addIndices(std::move(indices));
 }
-inline uint64_t CVertexBufferObject::getLastIndex()
+uint64_t CVertexBufferObject::getLastIndex()
 {
 	return vIndices.size();
 }
 
-inline uint64_t CVertexBufferObject::getLastVertex()
+uint64_t CVertexBufferObject::getLastVertex()
 {
 	return vVertices.size();
 }

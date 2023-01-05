@@ -42,12 +42,11 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
         vertexInputCI.pVertexAttributeDescriptions = attributeDescription.data();
     }
     
-   ;
     auto attachmentCount = pDevice->getAPI()->getFramebuffer(pShader->getStage())->getDescription().colorAttachmentCount;
     bool isDepthOnly = attachmentCount == 0;
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
-    inputAssembly.topology = topology;
+    inputAssembly.topology = enableTesselation ? vk::PrimitiveTopology::ePatchList : vk::PrimitiveTopology::eTriangleList;
     inputAssembly.flags = vk::PipelineInputAssemblyStateCreateFlags{};
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 
@@ -68,7 +67,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     {
         vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-        colorBlendAttachment.blendEnable = VK_TRUE;
+        colorBlendAttachment.blendEnable = VK_FALSE;
         colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
         colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
         colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;

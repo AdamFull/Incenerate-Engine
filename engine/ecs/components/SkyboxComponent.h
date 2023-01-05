@@ -9,9 +9,10 @@ namespace engine
 		struct FSkyboxComponent
 		{
 			std::string source;
-			size_t origin;
-			size_t prefiltred;
-			size_t irradiance;
+			size_t vbo_id{ invalid_index };
+			size_t origin{ invalid_index };
+			size_t prefiltred{ invalid_index };
+			size_t irradiance{ invalid_index };
 		};
 
 		void to_json(nlohmann::json& json, const FSkyboxComponent& type);

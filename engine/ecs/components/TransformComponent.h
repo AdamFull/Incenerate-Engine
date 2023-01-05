@@ -23,13 +23,13 @@ namespace engine
 			}
 
 			inline const glm::vec3& getPosition() const { return position; }
-			inline void setPosition(const glm::vec3& position) { this->position = position; }
+			inline void setPosition(const glm::vec3& _position) { this->position = _position; }
 
 			inline const glm::vec3& getRotation() const { return rotation; }
-			inline void setRotation(const glm::vec3& rotation) { this->rotation = rotation; }
+			inline void setRotation(const glm::vec3& _rotation) { this->rotation = _rotation; }
 
 			inline const glm::vec3& getScale() const { return scale; }
-			inline void setScale(const glm::vec3& _scale) { this->scale = scale; }
+			inline void setScale(const glm::vec3& _scale) { this->scale = _scale; }
 
 			const glm::mat4 getModel()
 			{

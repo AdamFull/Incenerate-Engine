@@ -37,23 +37,21 @@ layout (vertices = VERTICES_COUNT) out;
 layout (location = 0) in vec2 inUV[];
 layout (location = 1) in vec3 inColor[];
 layout (location = 2) in vec4 inPosition[];
-layout (location = 3) in vec4 inOldPosition[];
 #ifdef HAS_NORMALS
-layout (location = 4) in vec3 inNormal[];
+layout (location = 3) in vec3 inNormal[];
 #endif
 #ifdef HAS_TANGENTS
-layout (location = 5) in vec4 inTangent[];
+layout (location = 4) in vec4 inTangent[];
 #endif
 
 layout (location = 0) out vec2 outUV[VERTICES_COUNT];
 layout (location = 1) out vec3 outColor[VERTICES_COUNT];
 layout (location = 2) out vec4 outPosition[VERTICES_COUNT];
-layout (location = 3) out vec4 outOldPosition[VERTICES_COUNT];
 #ifdef HAS_NORMALS
-layout (location = 4) out vec3 outNormal[VERTICES_COUNT];
+layout (location = 3) out vec3 outNormal[VERTICES_COUNT];
 #endif
 #ifdef HAS_TANGENTS
-layout (location = 5) out vec4 outTangent[VERTICES_COUNT];
+layout (location = 4) out vec4 outTangent[VERTICES_COUNT];
 #endif
 
 // Calculate the tessellation factor based on screen space
@@ -143,7 +141,6 @@ void main()
     outUV[gl_InvocationID] = inUV[gl_InvocationID];
     outColor[gl_InvocationID] = inColor[gl_InvocationID];
 	outPosition[gl_InvocationID] = inPosition[gl_InvocationID];
-	outOldPosition[gl_InvocationID] = inOldPosition[gl_InvocationID];
 #ifdef HAS_NORMALS
 	outNormal[gl_InvocationID] = inNormal[gl_InvocationID];
 #endif

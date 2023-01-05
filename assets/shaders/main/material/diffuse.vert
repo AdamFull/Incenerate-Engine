@@ -12,12 +12,11 @@ layout(location = 4) in vec4 inTangent;
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outColor;
 layout(location = 2) out vec4 outPosition;
-layout(location = 3) out vec4 outOldPosition;
 #ifdef HAS_NORMALS
-layout(location = 4) out vec3 outNormal;
+layout(location = 3) out vec3 outNormal;
 #endif
 #ifdef HAS_TANGENTS
-layout (location = 5) out vec4 outTangent;
+layout (location = 4) out vec4 outTangent;
 #endif
 
 #include "../../shader_util.glsl"
@@ -25,7 +24,6 @@ layout (location = 5) out vec4 outTangent;
 layout(std140, binding = 0) uniform FUniformData 
 {
   	mat4 model;
-  	mat4 model_old;
   	mat4 view;
   	mat4 projection;
   	mat4 normal;
@@ -46,11 +44,10 @@ void main()
 #endif 
 
 #ifdef USE_TESSELLATION
-	outPosition = outOldPosition = inPosition;
+	outPosition = inPosition;
 	gl_Position = vec4(inPosition, 1.0);
 #else
 	outPosition = data.model * vec4(inPosition, 1.0);
-	outOldPosition = data.model_old * vec4(inPosition, 1.0);
 	gl_Position = data.projection * data.view * outPosition;
 #endif
 }

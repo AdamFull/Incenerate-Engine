@@ -47,7 +47,7 @@ void CGltfLoader::load(const std::string& source, const std::unique_ptr<CSceneNo
     std::string error, warning;
     gltfContext.SetImageLoader(loadImageDataFuncEmpty, nullptr);
 
-    auto fpath = fs::get_workdir() / source;
+    auto fpath = std::filesystem::weakly_canonical(fs::get_workdir() / source);
     fsParentPath = std::filesystem::weakly_canonical(fpath.parent_path());
     fsParentPath = std::filesystem::relative(fsParentPath, fs::get_workdir());
 
@@ -91,18 +91,17 @@ void CGltfLoader::loadNode(const std::unique_ptr<CSceneNode>& pParent, const tin
 
     // Loading position data
     if (node.translation.size() == 3)
-        transform.setPosition(glm::make_vec3(node.translation.data()));
+        transform.position = glm::make_vec3(node.translation.data());
     // Loading rotation data
     if (node.rotation.size() == 4)
     {
         //TODO: refactor transform for using quaterion
         glm::quat quat = glm::conjugate(glm::make_quat(node.rotation.data()));
-        glm::vec3 rot = glm::eulerAngles(quat); //  * glm::vec3(-1.0, 1.0, 1.0)
-        transform.setRotation(rot);
+        transform.rotation = glm::eulerAngles(quat); //  * glm::vec3(-1.0, 1.0, 1.0)
     }
     // Loading scale data
     if (node.scale.size() == 3)
-        transform.setScale(glm::make_vec3(node.scale.data()));
+        transform.scale = glm::make_vec3(node.scale.data());
 
     // Node with children
     if (node.children.size() > 0)

@@ -15,12 +15,14 @@
 #define EGCoordinator CEngine::getInstance()->getCoordinator()
 #define EGWindow CEngine::getInstance()->getWindow()
 #define EGGraphics CEngine::getInstance()->getGraphics()
+#define EGSceneGraph CEngine::getInstance()->getSceneGraph()
 
 namespace engine
 {
 	using coordinator_t = std::unique_ptr<ecs::CCoordinator>;
 	using winptr_t = std::unique_ptr<system::window::CWindowHandle>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
+	using scenegraph_t = std::unique_ptr<game::CSceneNode>;
 
 	class CEngine : public utl::singleton<CEngine>
 	{
@@ -38,11 +40,12 @@ namespace engine
 		const coordinator_t& getCoordinator() const;
 		const winptr_t& getWindow() const;
 		const graphptr_t& getGraphics() const;
+		const scenegraph_t& getSceneGraph() const;
 
 	private:
 		void initEntityComponentSystem();
 	private:
-		std::unique_ptr<game::CSceneNode> pRoot;
+		scenegraph_t pRoot;
 		coordinator_t pCoordinator;
 		winptr_t pWindow;
 		graphptr_t pGraphics;

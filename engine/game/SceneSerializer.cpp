@@ -97,7 +97,7 @@ void CSceneLoader::loadNodes(const std::unique_ptr<CSceneNode>& pParent, const s
 			if (name == "gltfscene")
 			{
 				auto source = component.get<std::string>();
-				CMeshLoader::load(source, )
+				CMeshLoader::load(source, pNode);
 			}
 
 			if (name == "directionallight")
