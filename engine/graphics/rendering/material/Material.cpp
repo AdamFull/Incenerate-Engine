@@ -1,5 +1,7 @@
 #include "Material.h"
 
+#include "Engine.h"
+
 using namespace engine::graphics;
 
 void CMaterial::setParameters(FMaterial&& mat)

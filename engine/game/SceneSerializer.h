@@ -17,6 +17,14 @@ namespace engine
 		void to_json(nlohmann::json& json, const FSceneObjectRaw& type);
 		void from_json(const nlohmann::json& json, FSceneObjectRaw& type);
 
+		struct FGltfSceneRaw
+		{
+			std::string source;
+		};
+
+		void to_json(nlohmann::json& json, const FGltfSceneRaw& type);
+		void from_json(const nlohmann::json& json, FGltfSceneRaw& type);
+
 		class CSceneLoader
 		{
 		public:

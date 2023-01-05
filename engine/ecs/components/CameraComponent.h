@@ -7,8 +7,16 @@ namespace engine
 {
 	namespace ecs
 	{
+		enum class ECameraType
+		{
+			eOrthographic,
+			ePerspective
+		};
+
 		struct FCameraComponent
 		{
+			ECameraType type{ ECameraType::ePerspective };
+
 			FFrustum frustum;
 
 			float aspect{ 1.7f };
@@ -16,6 +24,9 @@ namespace engine
 			float nearPlane{ 0.1f };
 			float farPlane{ 128.f }; 
 			float sensitivity{ 15.f };
+
+			float xmag{ 0.f };
+			float ymag{ 0.f };
 
 			float angleH{ 0.f };
 			float angleV{ 0.f };

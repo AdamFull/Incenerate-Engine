@@ -14,7 +14,7 @@ namespace engine
 			~CShaderLoader();
 
 			void create(const std::string& srShaderPath);
-			std::unique_ptr<CShaderObject> load(const std::string& name);
+			std::unique_ptr<CShaderObject> load(const std::string& name, size_t mat_id);
 
 		private:
 			CDevice* pDevice{ nullptr };

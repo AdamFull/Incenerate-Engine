@@ -15,6 +15,8 @@
 #include "ecs/components/SkyboxComponent.h"
 #include "ecs/components/ScriptComponent.h"
 
+#include "loaders/MeshLoader.h"
+
 namespace engine
 {
 	namespace game
@@ -41,6 +43,7 @@ namespace engine
 using namespace engine::ecs;
 using namespace engine::game;
 using namespace engine::system;
+using namespace engine::loaders;
 
 std::unique_ptr<CSceneNode> CSceneLoader::load(const std::string& scenepath)
 {
@@ -91,8 +94,11 @@ void CSceneLoader::loadNodes(const std::unique_ptr<CSceneNode>& pParent, const s
 			if (name == "sprite")
 				EGCoordinator->addComponent(entity, component.get<FSpriteComponent>());
 
-			if (name == "mesh")
-				EGCoordinator->addComponent(entity, component.get<FMeshComponent>());
+			if (name == "gltfscene")
+			{
+				auto source = component.get<std::string>();
+				CMeshLoader::load(source, )
+			}
 
 			if (name == "directionallight")
 				EGCoordinator->addComponent(entity, component.get<FDirectionalLightComponent>());

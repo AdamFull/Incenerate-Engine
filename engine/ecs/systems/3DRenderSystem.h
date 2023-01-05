@@ -21,7 +21,7 @@ namespace engine
 			void onReCreate(CEvent& event);
 		private:
 			graphics::FCIStage stageCI;
-			size_t stageId{ invalid_index }, image{ invalid_index }, shader{ invalid_index };
+			size_t stageId{ invalid_index };
 		};
 	}
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ecs/components/MeshComponent.h"
+#include "game/SceneGraph.hpp"
 
 namespace engine
 {
@@ -9,7 +9,7 @@ namespace engine
 		class CMeshLoader
 		{
 		public:
-			static void load(ecs::FMeshComponent& component);
+			static void load(const std::string& source, const std::unique_ptr<game::CSceneNode>& pRoot);
 		};
 	}
 }

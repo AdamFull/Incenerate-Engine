@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <utility/uparse.hpp>
 
 namespace engine
 {
@@ -37,12 +36,8 @@ namespace engine
 
 		struct FMeshComponent
 		{
-			std::string source;
-			bool isSkybox{ false };
+			size_t vbo_id{ invalid_index };
 			std::vector<FMeshlet> vMeshlets;
 		};
-
-		void to_json(nlohmann::json& json, const FMeshComponent& type);
-		void from_json(const nlohmann::json& json, FMeshComponent& type);
 	}
 }

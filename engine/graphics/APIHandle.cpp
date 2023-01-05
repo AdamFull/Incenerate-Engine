@@ -148,9 +148,17 @@ size_t CAPIHandle::createRenderStage(const std::string& srName)
     return id;
 }
 
-size_t CAPIHandle::createShader(const std::string& srName)
+size_t CAPIHandle::createShader(const std::string& srName, size_t mat_id)
 {
-    return pResourceHolder->addShader(pLoader->load(srName));
+    auto id = pResourceHolder->addShader(pLoader->load(srName, mat_id));
+
+    if (mat_id != invalid_index)
+    {
+        auto& pMaterial = getMaterial(mat_id);
+        pMaterial->setShader(id);
+    }
+
+    return id;
 }
 
 size_t CAPIHandle::createImage(const std::string& srPath)

@@ -51,13 +51,17 @@ namespace engine
 		struct FVertex
 		{
 			FVertex() = default;
-			FVertex(glm::vec3 pos, uint32_t color) : pos(pos), color(color) {}
-			glm::vec3 pos{0.f};
-			uint32_t color;
+			FVertex(glm::vec3 p, glm::vec3 n, glm::vec2 t) : pos(p), normal(n), texcoord(t) {}
+
+			glm::vec3 pos{};
+			glm::vec3 color{};
+			glm::vec3 normal{};
+			glm::vec2 texcoord{};
+			glm::vec4 tangent{};
 
 			bool operator==(const FVertex& other) const
 			{
-				return pos == other.pos && color == other.color;
+				return pos == other.pos && color == other.color && normal == other.normal && texcoord == other.texcoord && tangent == other.tangent;
 			}
 
 			static vk::VertexInputBindingDescription getBindingDescription()
@@ -73,7 +77,7 @@ namespace engine
 			static std::vector<vk::VertexInputAttributeDescription> getAttributeDescriptions()
 			{
 				std::vector<vk::VertexInputAttributeDescription> attributeDescriptions = {};
-				attributeDescriptions.resize(2);
+				attributeDescriptions.resize(5);
 
 				attributeDescriptions[0].binding = 0;
 				attributeDescriptions[0].location = 0;
@@ -82,8 +86,23 @@ namespace engine
 
 				attributeDescriptions[1].binding = 0;
 				attributeDescriptions[1].location = 1;
-				attributeDescriptions[1].format = vk::Format::eR8G8B8A8Unorm;
+				attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
 				attributeDescriptions[1].offset = offsetof(FVertex, color);
+
+				attributeDescriptions[2].binding = 0;
+				attributeDescriptions[2].location = 2;
+				attributeDescriptions[2].format = vk::Format::eR32G32B32Sfloat;
+				attributeDescriptions[2].offset = offsetof(FVertex, normal);
+
+				attributeDescriptions[3].binding = 0;
+				attributeDescriptions[3].location = 3;
+				attributeDescriptions[3].format = vk::Format::eR32G32Sfloat;
+				attributeDescriptions[3].offset = offsetof(FVertex, texcoord);
+
+				attributeDescriptions[4].binding = 0;
+				attributeDescriptions[4].location = 4;
+				attributeDescriptions[4].format = vk::Format::eR32G32B32A32Sfloat;
+				attributeDescriptions[4].offset = offsetof(FVertex, tangent);
 
 				return attributeDescriptions;
 			}
@@ -106,7 +125,7 @@ namespace std
 		size_t operator()(engine::graphics::FVertex const& vertex) const
 		{
 			size_t seed = 0;
-			engine::graphics::hashCombine(seed, vertex.pos, vertex.color);
+			engine::graphics::hashCombine(seed, vertex.pos, vertex.color, vertex.normal, vertex.texcoord, vertex.tangent);
 			return seed;
 		}
 	};

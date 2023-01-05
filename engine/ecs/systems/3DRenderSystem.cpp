@@ -5,8 +5,6 @@
 #include "ecs/components/TransformComponent.h"
 #include "ecs/components/MeshComponent.h"
 
-#include "loaders/MeshLoader.h"
-
 using namespace engine::loaders;
 using namespace engine::graphics;
 using namespace engine::ecs;
@@ -59,24 +57,12 @@ void C3DRenderSystem::__create()
 	stageId = EGGraphics->createRenderStage("deferred");
 	auto& pStage = EGGraphics->getRenderStage(stageId);
 	pStage->create(stageCI);
-
-	for (auto& entity : mEntities)
-	{
-		auto& mesh = EGCoordinator->getComponent<FMeshComponent>(entity);
-		CMeshLoader::load(mesh);
-	}
-
-	image = EGGraphics->createImage("lava-and-rock_albedo.ktx2");
-	shader = EGGraphics->createShader("screenspace");
 }
 
 void C3DRenderSystem::__update(float fDt)
 {
 	auto& stage = EGGraphics->getRenderStage(stageId);
 	auto commandBuffer = EGGraphics->begin();
-
-	auto& pTexture = EGGraphics->getResourceHolder()->getImage(image);
-	auto& pShader = EGGraphics->getResourceHolder()->getShader(shader);
 	
 	stage->begin(commandBuffer);
 
@@ -85,10 +71,6 @@ void C3DRenderSystem::__update(float fDt)
 		auto& transform = EGCoordinator->getComponent<FTransformComponent>(entity);
 		auto& mesh = EGCoordinator->getComponent<FMeshComponent>(entity);
 	}
-
-	pShader->addTexture("input_tex", pTexture);
-	pShader->render(commandBuffer);
-	commandBuffer.draw(3, 1, 0, 0);
 
 	stage->end(commandBuffer);
 

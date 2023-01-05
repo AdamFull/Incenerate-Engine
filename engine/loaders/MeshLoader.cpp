@@ -5,11 +5,10 @@
 using namespace engine::loaders;
 using namespace engine::ecs;
 
-void CMeshLoader::load(FMeshComponent& component)
+void CMeshLoader::load(const std::string& source, const std::unique_ptr<game::CSceneNode>& pRoot)
 {
-	auto filepath = component.source;
-	auto ext = filepath.substr(filepath.find_last_of(".") + 1);
+	auto ext = source.substr(source.find_last_of(".") + 1);
 
 	if (ext == "gltf")
-		CGltfLoader::load(component);
+		std::make_unique<CGltfLoader>()->load(source, pRoot);
 }

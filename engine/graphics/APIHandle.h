@@ -48,7 +48,7 @@ namespace engine
 			const std::unique_ptr<CVertexBufferObject>& getVertexBuffer(size_t id);
 
 			size_t createRenderStage(const std::string& srName);
-			size_t createShader(const std::string& srName);
+			size_t createShader(const std::string& srName, size_t mat_id = invalid_index);
 			size_t createImage(const std::string& srPath);
 			size_t createMaterial(const std::string& srName);
 			size_t createVBO();

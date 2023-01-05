@@ -40,11 +40,9 @@
     ]
   },
   {
-    "name": "SimpleMesh",
+    "name": "GltfScene",
     "components": {
-      "mesh": {
-        "source": "models/simplescene/SimpleScene.gltf"
-      }
+      "gltfscene": "models/simplescene/SimpleScene.gltf"
     },
     "children": [
       {

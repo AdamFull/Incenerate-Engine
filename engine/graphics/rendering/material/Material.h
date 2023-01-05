@@ -23,20 +23,22 @@ namespace engine
 			float roughnessFactor{ 1.f };
 			float tessellationFactor{ 0.f };
 			float tessStrength{ 0.f };
+			std::vector<std::string> vCompileDefinitions;
+			bool doubleSided{ false };
 
-			int32_t albedo{ 0 };
-			int32_t metallicRoughness{ 0 };
-			int32_t normalMap{ 0 };
-			int32_t ambientOcclusion{ 0 };
-			int32_t emissionColor{ 0 };
-			int32_t heightMap{ 0 };
+			int32_t albedo{ invalid_index };
+			int32_t metallicRoughness{ invalid_index };
+			int32_t normalMap{ invalid_index };
+			int32_t ambientOcclusion{ invalid_index };
+			int32_t emissionColor{ invalid_index };
+			int32_t heightMap{ invalid_index };
 		};
 
 		class CMaterial
 		{
 		public:
 			void setParameters(FMaterial&& mat);
-			const FMaterial& getParameters() { return parameters; }
+			FMaterial& getParameters() { return parameters; }
 
 			void setTexture(const std::string& srTexture, size_t index = invalid_index);
 			size_t getTexture(const std::string& srTexture);

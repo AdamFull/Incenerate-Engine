@@ -13,13 +13,6 @@ namespace engine
 {
 	namespace graphics
 	{
-		struct FSOInstance
-		{
-			std::unique_ptr<CDescriptorHandler> pDescriptorSet;
-			std::map<std::string, std::unique_ptr<CHandler>> mBuffers;
-			//std::map<std::string, std::unique_ptr<CPushHandler>>
-		};
-
 		class CShaderObject
 		{
 		public:
@@ -29,20 +22,14 @@ namespace engine
 			~CShaderObject();
 
 			void create();
-			void reCreate();
-			void render(vk::CommandBuffer& commandBuffer);
+			void predraw(vk::CommandBuffer& commandBuffer);
 			void dispatch(size_t size);
 
-			void addTexture(const std::string& attachment, vk::DescriptorImageInfo& descriptor);
-			void addTexture(const std::string& attachment, std::shared_ptr<CImage>& pTexture);
-			void addTexture(const std::string& attachment, std::weak_ptr<CImage>& pTexture);
-			void addTexture(const std::string& attachment, const std::unique_ptr<CImage>& pTexture);
+			void addTexture(const std::string& attachment, size_t id);
 
 			vk::DescriptorImageInfo& getTexture(const std::string& attachment);
 
 			std::unique_ptr<CHandler>& getUniformBuffer(const std::string& name);
-			std::map<std::string, std::unique_ptr<CHandler>>& getUniformBuffers();
-			std::unique_ptr<CDescriptorHandler>& getDescriptorSet();
 
 			std::unique_ptr<CPipeline>& getPipeline() { return pPipeline; }
 
@@ -63,13 +50,11 @@ namespace engine
 
 			std::unique_ptr<CShader> pShader;
 			std::unique_ptr<CPipeline> pPipeline;
-
-			uint32_t currentInstance{ 0 }, instances{ 1 };
-			bool bIsCreated{ false }, bIsReCreated{ false };
+			std::map<std::string, vk::DescriptorImageInfo> mTextures;
+			std::unique_ptr<CDescriptorHandler> pDescriptorSet;
+			std::map<std::string, std::unique_ptr<CHandler>> mBuffers;
 
 			std::unique_ptr<CHandler> pEmptyHandler{ nullptr };
-			std::vector<std::unique_ptr<FSOInstance>> vInstances;
-			std::map<std::string, vk::DescriptorImageInfo> mTextures;
 
 			FProgramCreateInfo programCI;
 		};

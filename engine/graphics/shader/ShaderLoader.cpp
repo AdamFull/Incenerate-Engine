@@ -25,11 +25,20 @@ void CShaderLoader::create(const std::string& srShaderPath)
 	fs::read_json(srShaderPath, programCI);
 }
 
-std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name)
+std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size_t mat_id)
 {
 	auto it = programCI.find(name);
 	if (it != programCI.end())
 	{
+		if (mat_id != invalid_index)
+		{
+			auto& pMaterial = EGGraphics->getMaterial(mat_id);
+			auto& params = pMaterial->getParameters();
+			
+			for (auto& definition : params.vCompileDefinitions)
+				it->second.defines.emplace(definition, "");
+		}
+
 		auto api = pDevice->getAPI()->getAPI();
 
 		auto pShaderObject = std::make_unique<CShaderObject>(pDevice);

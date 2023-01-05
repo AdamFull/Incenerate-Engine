@@ -57,22 +57,6 @@ namespace engine
 		}
 
 
-		void to_json(nlohmann::json& json, const FMeshComponent& type)
-		{
-			json = nlohmann::json
-			{
-				{"source", type.source},
-				{"isSkybox", type.isSkybox},
-			};
-		}
-
-		void from_json(const nlohmann::json& json, FMeshComponent& type)
-		{
-			utl::parse_to("source", json, type.source);
-			utl::parse_to("isSkybox", json, type.isSkybox);
-		}
-
-
 		void to_json(nlohmann::json& json, const FTransformComponent& type)
 		{
 			json = nlohmann::json

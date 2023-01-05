@@ -11,6 +11,7 @@
 
 #include "game/SceneGraph.hpp"
 
+#define EGEngine CEngine::getInstance()
 #define EGCoordinator CEngine::getInstance()->getCoordinator()
 #define EGWindow CEngine::getInstance()->getWindow()
 #define EGGraphics CEngine::getInstance()->getGraphics()
