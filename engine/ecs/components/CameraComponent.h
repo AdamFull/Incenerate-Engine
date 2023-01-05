@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/Frustum.h"
+#include <utility/uparse.hpp>
 
 namespace engine
 {
@@ -22,8 +23,11 @@ namespace engine
 			glm::mat4 view, invView, projection, invProjection;
 			glm::vec2 viewportDim{};
 
-			bool bMoved{ true };
-			bool bActive{ true };
+			bool moved{ true };
+			bool active{ true };
 		};
+
+		void to_json(nlohmann::json& json, const FCameraComponent& type);
+		void from_json(const nlohmann::json& json, FCameraComponent& type);
 	}
 }

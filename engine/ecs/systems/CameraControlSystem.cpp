@@ -12,7 +12,7 @@ void CCameraControlSystem::__create()
 	{
 		auto& camera = EGCoordinator->getComponent<FCameraComponent>(entity);
 
-		if (camera.bActive)
+		if (camera.active)
 		{
 			auto& transform = EGCoordinator->getComponent<FTransformComponent>(entity);
 			transform.position = { -6.3434, 15.9819, -22.8122 };
@@ -31,7 +31,7 @@ void CCameraControlSystem::__update(float fDt)
 	{
 		auto& camera = EGCoordinator->getComponent<FCameraComponent>(entity);
 
-		if (camera.bActive)
+		if (camera.active)
 		{
 			auto& transform = EGCoordinator->getComponent<FTransformComponent>(entity);
 
@@ -46,10 +46,10 @@ void CCameraControlSystem::__update(float fDt)
 				recalculateProjection(camera);
 			}
 
-			if (camera.bMoved)
+			if (camera.moved)
 			{
 				recalculateView(camera, transform);
-				camera.bMoved = false;
+				camera.moved = false;
 			}
 
 			// TODO: bind camera to render system

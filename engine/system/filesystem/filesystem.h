@@ -39,12 +39,12 @@ namespace engine
             }
 
             template<class _Ty>
-            static bool write_json(const std::filesystem::path& path, const _Ty& type)
+            static bool write_json(const std::filesystem::path& path, const _Ty& type, int32_t indent = -1)
             {
                 auto json = nlohmann::json(type);
                 if (!json.empty())
                 {
-                    auto data = json.dump();
+                    auto data = json.dump(indent);
                     if (!data.empty())
                         return write_file(path, data);
                 }

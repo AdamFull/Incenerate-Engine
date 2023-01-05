@@ -28,6 +28,11 @@ namespace engine
 		using EventId = uint32_t;
 		using ParamId = uint32_t;
 
+		namespace Events::Graphics
+		{
+			const ParamId ReCreate = "Events::Graphics::ReCreate"_hash;
+		}
+
 		namespace Events::Input 
 		{
 			const ParamId Key = "Events::Input::Key"_hash;

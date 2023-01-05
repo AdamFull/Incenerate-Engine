@@ -3,12 +3,11 @@
 
 #include <utility/utime.hpp>
 
-#include "ecs/components/CameraComponent.h"
-#include "ecs/components/MeshComponent.h"
-#include "ecs/components/AudioComponent.h"
+#include "game/SceneSerializer.h"
 
 using namespace engine;
 using namespace engine::ecs;
+using namespace engine::game;
 using namespace engine::graphics;
 using namespace engine::system;
 using namespace engine::system::window;
@@ -21,6 +20,15 @@ CEngine::CEngine()
 	log_init("voxel_app", "1.0.0");
 }
 
+CEngine::~CEngine()
+{
+	pRoot = nullptr;
+	pGraphics = nullptr;
+	pWindow = nullptr;
+	pCoordinator = nullptr;
+	log_debug("Engine was shutdown.");
+}
+
 void CEngine::create()
 {
 	utl::stopwatch sw;
@@ -29,7 +37,8 @@ void CEngine::create()
 	FEngineCreateInfo createInfo;
 	fs::read_json("engine/config.cfg", createInfo);
 
-	initEntityComponentSystem();
+	pCoordinator = std::make_unique<CCoordinator>();
+	pCoordinator->create();
 
 	pWindow = std::make_unique<CWindowHandle>();
 	pWindow->create(createInfo.window);
@@ -37,23 +46,12 @@ void CEngine::create()
 	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
 	pGraphics->create(createInfo);
 
+	initEntityComponentSystem();
+
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	log_info("Engine initialization finished with: {}s.", sw.stop<float>());
 
-	pRoot = std::make_unique<CSceneNode>();
-	pRoot->setName("root");
-
-
-	auto pCamera = std::make_unique<CSceneNode>();
-	pCamera->setName("camera");
-	pCoordinator->addComponent<FCameraComponent>(pCamera->getEntity(), FCameraComponent{});
-	pRoot->attach(std::move(pCamera));
-
-	auto pMesh = std::make_unique<CSceneNode>();
-	pMesh->setName("audio_model");
-	pCoordinator->addComponent<FMeshComponent>(pMesh->getEntity(), FMeshComponent{});
-	pCoordinator->addComponent<FAudioComponent>(pMesh->getEntity(), FAudioComponent{});
-	pRoot->attach(std::move(pMesh));
+	pRoot = CSceneLoader::load("scene.json");
 }
 
 void CEngine::beginEngineLoop()
@@ -68,8 +66,6 @@ void CEngine::beginEngineLoop()
 	{
 		for (const auto& system : vSystems)
 			system->update(dt);
-
-		pGraphics->render();
 
 		dt = sw.stop<float>();
 	}

@@ -9,7 +9,7 @@
 #include "system/window/WindowHandle.h"
 #include "graphics/APIHandle.h"
 
-#include "ecs/SceneGraph.hpp"
+#include "game/SceneGraph.hpp"
 
 #define EGCoordinator CEngine::getInstance()->getCoordinator()
 #define EGWindow CEngine::getInstance()->getWindow()
@@ -28,7 +28,7 @@ namespace engine
 	public:
 		friend std::unique_ptr<CEngine> std::make_unique<CEngine>();
 
-		~CEngine() = default;
+		~CEngine();
 
 		void create();
 
@@ -41,7 +41,7 @@ namespace engine
 	private:
 		void initEntityComponentSystem();
 	private:
-		std::unique_ptr<ecs::CSceneNode> pRoot;
+		std::unique_ptr<game::CSceneNode> pRoot;
 		coordinator_t pCoordinator;
 		winptr_t pWindow;
 		graphptr_t pGraphics;

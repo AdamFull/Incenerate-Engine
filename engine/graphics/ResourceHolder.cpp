@@ -85,3 +85,18 @@ const std::unique_ptr<CVertexBufferObject>& CResourceHolder::getVertexBuffer(siz
 {
 	return get_from<CVertexBufferObject>(vVBOs, id);
 }
+
+size_t CResourceHolder::addRenderStage(std::unique_ptr<CRenderStage>&& rs)
+{
+	return emplace_to(vRenderStages, std::move(rs));
+}
+
+void CResourceHolder::removeRenderStage(size_t id)
+{
+	vRenderStages.erase(id);
+}
+
+const std::unique_ptr<CRenderStage>& CResourceHolder::getRenderStage(size_t id)
+{
+	return get_from<CRenderStage>(vRenderStages, id);
+}
