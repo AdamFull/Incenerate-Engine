@@ -30,21 +30,23 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size
 	auto it = programCI.find(name);
 	if (it != programCI.end())
 	{
+		std::stringstream defineBlock;
+		size_t usages{ 1 };
 		if (mat_id != invalid_index)
 		{
 			auto& pMaterial = EGGraphics->getMaterial(mat_id);
 			auto& params = pMaterial->getParameters();
+			usages = pMaterial->getUsageCount();
 			
 			for (auto& definition : params.vCompileDefinitions)
-				it->second.defines.emplace(definition, "");
+				defineBlock << "#define " << definition << '\n';
 		}
 
-		auto api = pDevice->getAPI()->getAPI();
+		auto api = EGGraphics->getAPI();
 
 		auto pShaderObject = std::make_unique<CShaderObject>(pDevice);
 		auto& pShader = pShaderObject->pShader;
 
-		std::stringstream defineBlock;
 		for (const auto& [defineName, defineValue] : it->second.defines)
 			defineBlock << "#define " << defineName << " " << defineValue << '\n';
 
@@ -61,7 +63,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size
 
 		pShaderObject->programCI = it->second;
 
-		pShaderObject->create();
+		pShaderObject->create(usages);
 
 		return pShaderObject;
 	}

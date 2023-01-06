@@ -10,9 +10,10 @@ CComputePipeline::CComputePipeline(CDevice* device)
     pDevice = device;
 }
 
-void CComputePipeline::create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass)
+void CComputePipeline::create(CShaderObject* pShader)
 {
-
+    CPipeline::create(pShader);
+    createPipeline(pShader);
 }
 
 void CComputePipeline::createPipeline(CShaderObject* pShader)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ecs/core/System.hpp"
+#include "graphics/rendering/RenderStage.h"
 
 namespace engine
 {
@@ -13,6 +14,9 @@ namespace engine
 
 			void __create() override;
 			void __update(float fDt) override;
+		private:
+			size_t shader_id{ invalid_index };
+			size_t stageId{ invalid_index };
 		};
 	}
 }

@@ -2,6 +2,7 @@
 
 using namespace engine::ecs;
 
+// Based on: https://austinmorlan.com/posts/entity_component_system/
 void CCoordinator::create()
 {
 	pComponentManager = std::make_unique<CComponentManager>();
@@ -32,4 +33,24 @@ void CCoordinator::sendEvent(CEvent& event)
 void CCoordinator::sendEvent(EventId eventId)
 {
 	pEventManager->sendEvent(eventId);
+}
+
+void CCoordinator::setActiveCamera(Entity entity)
+{
+	activeCamera = entity;
+}
+
+const std::optional<Entity>& CCoordinator::getActiveCamera() const
+{
+	return activeCamera;
+}
+
+void CCoordinator::setActiveEnvironment(Entity entity)
+{
+	activeEnvironment = entity;
+}
+
+const std::optional<Entity>& CCoordinator::getActiveEnvironment() const
+{
+	return activeEnvironment;
 }

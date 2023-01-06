@@ -12,7 +12,7 @@ namespace engine
 			CComputePipeline(CDevice* device);
 			virtual ~CComputePipeline() = default;
 
-			void create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass) override;
+			void create(CShaderObject* pShader) override;
 
 		protected:
 			void createPipeline(CShaderObject* pShader) override;

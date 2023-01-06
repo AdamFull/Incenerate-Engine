@@ -4,6 +4,7 @@
 #include "Engine.h"
 
 using namespace engine::system::window;
+using namespace engine::ecs;
 
 int32_t CWindowHandle::iWidth{ 0 }, CWindowHandle::iHeight{ 0 };
 bool CWindowHandle::bWasResized{ false };
@@ -107,7 +108,10 @@ bool CWindowHandle::begin()
 
         case SDL_MOUSEMOTION:
         {
-            //FWindowCallback::OnCursorMove(static_cast<float>(event.motion.x), static_cast<float>(event.motion.y));
+            CEvent eevent(Events::Input::Mouse);
+            eevent.setParam(Events::Input::MouseX, static_cast<float>(event.motion.x));
+            eevent.setParam(Events::Input::MouseY, static_cast<float>(event.motion.y));
+            EGCoordinator->sendEvent(eevent);
         } break;
 
         case SDL_FINGERDOWN:
@@ -143,9 +147,8 @@ bool CWindowHandle::begin()
         vWinEvents.emplace_back(event);
     }
 
-    if (bKeyStateChange)
+    //if (bKeyStateChange)
     {
-        using namespace engine::ecs;
         CEvent eevent(Events::Input::Key);
         eevent.setParam(Events::Input::Key, mKeys);
         EGCoordinator->sendEvent(eevent);

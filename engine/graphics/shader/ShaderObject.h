@@ -2,6 +2,7 @@
 
 #include "buffers/VertexBufferObject.h"
 #include "handlers/Handler.h"
+#include "handlers/PushHandler.h"
 #include "pipeline/Pipeline.h"
 #include "rendering/Framebuffer.h"
 #include "descriptors/DescriptorHandler.h"
@@ -21,15 +22,18 @@ namespace engine
 			CShaderObject(CDevice* device);
 			~CShaderObject();
 
-			void create();
+			void create(size_t usages = 1);
 			void predraw(vk::CommandBuffer& commandBuffer);
 			void dispatch(size_t size);
+			void dispatch(vk::CommandBuffer& commandBuffer, size_t size);
 
 			void addTexture(const std::string& attachment, size_t id);
+			void addTexture(const std::string& attachment, vk::DescriptorImageInfo descriptor);
 
 			vk::DescriptorImageInfo& getTexture(const std::string& attachment);
 
-			std::unique_ptr<CHandler>& getUniformBuffer(const std::string& name);
+			const std::unique_ptr<CHandler>& getUniformBuffer(const std::string& name);
+			const std::unique_ptr<CPushHandler>& getPushBlock(const std::string& name);
 
 			std::unique_ptr<CPipeline>& getPipeline() { return pPipeline; }
 
@@ -47,14 +51,15 @@ namespace engine
 		private:
 			CDevice* pDevice{ nullptr };
 			uint32_t iVBOid{ 0 };
+			size_t usageCount{ 1 };
+			size_t currentUsage{ 0 };
 
 			std::unique_ptr<CShader> pShader;
 			std::unique_ptr<CPipeline> pPipeline;
 			std::map<std::string, vk::DescriptorImageInfo> mTextures;
-			std::unique_ptr<CDescriptorHandler> pDescriptorSet;
+			std::vector<std::unique_ptr<CDescriptorHandler>> vDescriptorSets;
 			std::map<std::string, std::unique_ptr<CHandler>> mBuffers;
-
-			std::unique_ptr<CHandler> pEmptyHandler{ nullptr };
+			std::map<std::string, std::unique_ptr<CPushHandler>> mPushBlocks;
 
 			FProgramCreateInfo programCI;
 		};

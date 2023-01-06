@@ -5,6 +5,8 @@
 #include "EventManager.hpp"
 #include "SystemManager.hpp"
 
+#include <optional>
+
 namespace engine
 {
 	namespace ecs
@@ -85,7 +87,17 @@ namespace engine
 
 			void sendEvent(CEvent& event);
 			void sendEvent(EventId eventId);
+
+			// Other
+			void setActiveCamera(Entity entity);
+			const std::optional<Entity>& getActiveCamera() const;
+
+			void setActiveEnvironment(Entity entity);
+			const std::optional<Entity>& getActiveEnvironment() const;
 		private:
+			std::optional<Entity> activeCamera;
+			std::optional<Entity> activeEnvironment;
+
 			std::unique_ptr<CComponentManager> pComponentManager;
 			std::unique_ptr<CEntityManager> pEntityManager;
 			std::unique_ptr<CEventManager> pEventManager;

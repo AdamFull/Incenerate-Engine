@@ -1,5 +1,6 @@
 #include "Framebuffer.h"
 
+#include "Engine.h"
 #include "APIHandle.h"
 #include "image/Image2D.h"
 #include "image/Image2DArray.h"
@@ -80,6 +81,34 @@ void CFramebuffer::begin(vk::CommandBuffer& commandBuffer)
 void CFramebuffer::end(vk::CommandBuffer& commandBuffer)
 {
     commandBuffer.endRenderPass();
+}
+
+void CFramebuffer::addInputReference(uint32_t index, const std::vector<std::string>& vref)
+{
+    std::vector<vk::AttachmentReference> references;
+    for (auto& arg : vref)
+    {
+        auto attachment = mFbAttachments.find(arg);
+        if (attachment != mFbAttachments.end())
+            references.emplace_back(vk::AttachmentReference{ attachment->second.reference, vk::ImageLayout::eShaderReadOnlyOptimal });
+        else
+            log_error("Attachment not found.");
+    }
+    mInputReferences.emplace(index, references);
+}
+
+void CFramebuffer::addOutputReference(uint32_t index, const std::vector<std::string>& vref)
+{
+    std::vector<vk::AttachmentReference> references;
+    for (auto& arg : vref)
+    {
+        auto attachment = mFbAttachments.find(arg);
+        if (attachment != mFbAttachments.end())
+            references.emplace_back(vk::AttachmentReference{ attachment->second.reference, vk::ImageLayout::eColorAttachmentOptimal });
+        else
+            log_error("Attachment not found.");
+    }
+    mOutputReferences.emplace(index, references);
 }
 
 void CFramebuffer::addDescription(uint32_t subpass, const std::string& depthReference)
@@ -219,20 +248,19 @@ void CFramebuffer::createRenderPass()
 
 void CFramebuffer::createFramebuffer()
 {
-    auto& pResources = pDevice->getAPI()->getResourceHolder();
-
     auto framesInFlight = pDevice->getFramesInFlight();
     for (size_t frame = 0; frame < framesInFlight; frame++)
     {
         std::vector<vk::ImageView> imageViews{};
         for (auto& [name, attachment] : mFbAttachments)
         {
+            auto fullname = name + "_" + std::to_string(frame);
             if (attachment.usageFlags & vk::ImageUsageFlagBits::eDepthStencilAttachment)
             {
                 auto depthImage = createImage(attachment, renderArea.extent);
                 imageViews.push_back(depthImage->getDescriptor().imageView);
 
-                depthImageIDX = pResources->addImage(std::move(depthImage));
+                depthImageIDX = EGGraphics->addImage(fullname, std::move(depthImage));
                 mFramebufferImages[frame].emplace(name, depthImageIDX);
                 
             }
@@ -244,7 +272,7 @@ void CFramebuffer::createFramebuffer()
                 {
                     auto image = createImage(attachment, renderArea.extent);
                     imageViews.push_back(image->getDescriptor().imageView);
-                    mFramebufferImages[frame].emplace(name, pResources->addImage(std::move(image)));
+                    mFramebufferImages[frame].emplace(name, EGGraphics->addImage(fullname, std::move(image)));
                 }
             }
         }
@@ -317,12 +345,10 @@ std::unique_ptr<CImage> CFramebuffer::createImage(const FFramebufferAttachmentIn
 
 void CFramebuffer::clearImages()
 {
-    auto& pResources = pDevice->getAPI()->getResourceHolder();
-
     for (auto& [frame, images] : mFramebufferImages)
     {
         for (auto& [name, image] : images)
-            pResources->removeImage(image);
+            EGGraphics->removeImage(image);
     }
 
     mFramebufferImages.clear();

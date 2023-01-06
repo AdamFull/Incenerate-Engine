@@ -3,6 +3,7 @@
 #include "APIHandle.h"
 #include "shader/ShaderObject.h"
 #include "APIStructures.h"
+#include "Engine.h"
 
 using namespace engine::graphics;
 
@@ -42,7 +43,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
         vertexInputCI.pVertexAttributeDescriptions = attributeDescription.data();
     }
     
-    auto attachmentCount = pDevice->getAPI()->getFramebuffer(pShader->getStage())->getDescription().colorAttachmentCount;
+    auto attachmentCount = EGGraphics->getFramebuffer(pShader->getStage())->getDescription().colorAttachmentCount;
     bool isDepthOnly = attachmentCount == 0;
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};

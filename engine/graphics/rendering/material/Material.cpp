@@ -9,12 +9,12 @@ void CMaterial::setParameters(FMaterial&& mat)
 	parameters = std::move(mat);
 }
 
-void CMaterial::setTexture(const std::string& srTexture, size_t index)
+void CMaterial::addTexture(const std::string& srTexture, size_t index)
 {
 	mTextures[srTexture] = index;
 }
 
-size_t CMaterial::getTexture(const std::string& srTexture)
+const size_t CMaterial::getTexture(const std::string& srTexture) const
 {
 	if (auto found = mTextures.find(srTexture); found != mTextures.end())
 		return found->second;
@@ -27,7 +27,17 @@ void CMaterial::setShader(size_t index)
 	iShader = index;
 }
 
-size_t CMaterial::getShader()
+const size_t CMaterial::getShader() const
 {
 	return iShader;
+}
+
+void CMaterial::incrementUsageCount()
+{
+	usageCount++;
+}
+
+const size_t CMaterial::getUsageCount() const
+{
+	return usageCount;
 }

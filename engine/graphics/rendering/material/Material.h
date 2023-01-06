@@ -25,13 +25,6 @@ namespace engine
 			float tessStrength{ 0.f };
 			std::vector<std::string> vCompileDefinitions;
 			bool doubleSided{ false };
-
-			size_t albedo{ invalid_index };
-			size_t metallicRoughness{ invalid_index };
-			size_t normalMap{ invalid_index };
-			size_t ambientOcclusion{ invalid_index };
-			size_t emissionColor{ invalid_index };
-			size_t heightMap{ invalid_index };
 		};
 
 		class CMaterial
@@ -40,14 +33,19 @@ namespace engine
 			void setParameters(FMaterial&& mat);
 			FMaterial& getParameters() { return parameters; }
 
-			void setTexture(const std::string& srTexture, size_t index = invalid_index);
-			size_t getTexture(const std::string& srTexture);
+			void addTexture(const std::string& srTexture, size_t index = invalid_index);
+			const std::map<std::string, size_t> getTextures() const { return mTextures; }
+			const size_t getTexture(const std::string& srTexture) const;
 
 			void setShader(size_t index);
-			size_t getShader();
+			const size_t getShader() const;
+
+			void incrementUsageCount();
+			const size_t getUsageCount() const;
 		private:
 			FMaterial parameters;
 			std::map<std::string, size_t> mTextures;
+			size_t usageCount{ 0 };
 			size_t iShader{ invalid_index };
 		};
 	}

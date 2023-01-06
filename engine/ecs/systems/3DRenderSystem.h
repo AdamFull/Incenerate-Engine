@@ -17,11 +17,6 @@ namespace engine
 
 			void __create() override;
 			void __update(float fDt) override;
-		private:
-			void onReCreate(CEvent& event);
-		private:
-			graphics::FCIStage stageCI;
-			size_t stageId{ invalid_index };
 		};
 	}
 }

@@ -37,6 +37,8 @@ namespace engine
 		{
 			const ParamId Key = "Events::Input::Key"_hash;
 			const ParamId Mouse = "Events::Input::Mouse"_hash;
+			const ParamId MouseX = "Events::Input::MouseX"_hash;
+			const ParamId MouseY = "Events::Input::MouseY"_hash;
 			const ParamId Axis = "Events::Input::Axis"_hash;
 		}
 	}

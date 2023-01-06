@@ -11,7 +11,7 @@ using namespace engine::graphics;
 using namespace engine::system::window;
 
 std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
-std::vector<const char*> deviceExtensions{ "VK_KHR_swapchain", "VK_KHR_maintenance1" };
+std::vector<const char*> deviceExtensions{ "VK_KHR_swapchain", "VK_KHR_maintenance4" };
 
 VkResult CDevice::createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pCallback)
 {
@@ -697,7 +697,7 @@ void CDevice::createSampler(vk::Sampler& sampler, vk::Filter magFilter, vk::Samp
     samplerInfo.compareEnable = static_cast<vk::Bool32>(compareOp);
     samplerInfo.compareOp = vk::CompareOp::eLess;
 
-    samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
+    samplerInfo.mipmapMode = vk::SamplerMipmapMode::eNearest;
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = static_cast<float>(mipLevels);

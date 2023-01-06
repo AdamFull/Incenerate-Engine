@@ -40,11 +40,13 @@ void CVertexBufferObject::bind(vk::CommandBuffer commandBuffer)
 		commandBuffer.bindVertexBuffers(0, 1, &buffer, offsets);
 
 		if (hasIndex)
-		{
 			commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
-			commandBuffer.drawIndexed(vIndices.size(), 1, 0, 0, 0);
-		}
 	}
+}
+
+void CVertexBufferObject::addPrimitive(std::unique_ptr<FPrimitive>&& primitive)
+{
+	addMeshData(std::move(primitive->vVertices), std::move(primitive->vIndices));
 }
 
 void CVertexBufferObject::addVertices(std::vector<FVertex>&& vertices)

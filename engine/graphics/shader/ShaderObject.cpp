@@ -29,47 +29,61 @@ const std::unique_ptr<CShader>& CShaderObject::getShader()
 	return pShader;
 }
 
-void CShaderObject::create()
+void CShaderObject::create(size_t usages)
 {
-	auto& framebuffer = pDevice->getAPI()->getFramebuffer(programCI.srStage);
-	if (framebuffer)
+	usageCount = usages;
+
+	//Creating pipeline
+	switch (programCI.bindPoint)
 	{
-		//Creating pipeline
-		switch (programCI.bindPoint)
-		{
-		case vk::PipelineBindPoint::eGraphics: {
-			pPipeline = std::make_unique<CGraphicsPipeline>(pDevice);
-			pPipeline->create(this, framebuffer->getRenderPass(), 0);
-		} break;
-		case vk::PipelineBindPoint::eCompute: {
-			pPipeline = std::make_unique<CComputePipeline>(pDevice);
-			pPipeline->create(this);
-		} break;
-		}
+	case vk::PipelineBindPoint::eGraphics: {
+		pPipeline = std::make_unique<CGraphicsPipeline>(pDevice);
+		pPipeline->create(this, EGGraphics->getFramebuffer(programCI.srStage)->getRenderPass(), 0);
+	} break;
+	case vk::PipelineBindPoint::eCompute: {
+		pPipeline = std::make_unique<CComputePipeline>(pDevice);
+		pPipeline->create(this);
+	} break;
+	}
 
-		pDescriptorSet = std::make_unique<CDescriptorHandler>(pDevice);
+	for (size_t usage = 0; usage < usageCount; usage++)
+	{
+		auto pDescriptorSet = std::make_unique<CDescriptorHandler>(pDevice);
 		pDescriptorSet->create(this);
+		vDescriptorSets.emplace_back(std::move(pDescriptorSet));
+	}
+	
 
-		for (auto& [name, uniform] : pShader->getUniformBlocks())
+	for (auto& [name, push] : pShader->getPushBlocks())
+	{
+		auto pBlock = std::make_unique<CPushHandler>(pPipeline.get());
+		pBlock->create(push);
+		mPushBlocks.emplace(name, std::move(pBlock));
+	}
+
+	for (auto& [name, uniform] : pShader->getUniformBlocks())
+	{
+		std::unique_ptr<CHandler> pUniform;
+		switch (uniform.getDescriptorType())
 		{
-			std::unique_ptr<CHandler> pUniform;
-			switch (uniform.getDescriptorType())
-			{
-			case vk::DescriptorType::eUniformBuffer: {
-				pUniform = std::make_unique<CUniformHandler>(pDevice);
-				pUniform->create(uniform);
-			} break;
-			case vk::DescriptorType::eStorageBuffer: {
-				pUniform = std::make_unique<CStorageHandler>(pDevice);
-				pUniform->create(uniform);
-			} break;
-			}
+		case vk::DescriptorType::eUniformBuffer: {
+			pUniform = std::make_unique<CUniformHandler>(pDevice);
+			pUniform->create(uniform);
+		} break;
+		case vk::DescriptorType::eStorageBuffer: {
+			pUniform = std::make_unique<CStorageHandler>(pDevice);
+			pUniform->create(uniform);
+		} break;
 		}
+
+		mBuffers.emplace(name, std::move(pUniform));
 	}
 }
 
 void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
 {
+	auto& pDescriptorSet = vDescriptorSets.at(currentUsage);
+
 	pDescriptorSet->reset();
 	for (auto& [name, uniform] : mBuffers)
 	{
@@ -82,9 +96,12 @@ void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
 	for (auto& [key, texture] : mTextures)
 		pDescriptorSet->set(key, texture);
 	pDescriptorSet->update();
+	mTextures.clear();
 
 	pDescriptorSet->bind(commandBuffer);
 	pPipeline->bind(commandBuffer);
+
+	currentUsage = (currentUsage + 1) % usageCount;
 }
 
 void CShaderObject::dispatch(size_t size)
@@ -93,16 +110,29 @@ void CShaderObject::dispatch(size_t size)
 	cmdBuf.create(true, vk::QueueFlagBits::eCompute);
 	auto& commandBuffer = cmdBuf.getCommandBuffer();
 
+	dispatch(commandBuffer, size);
+	
+	cmdBuf.submitIdle();
+}
+
+void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, size_t size)
+{
+	predraw(commandBuffer);
+
 	auto groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(size) / static_cast<float>(*pShader->getLocalSizes()[0])));
 	auto groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(size) / static_cast<float>(*pShader->getLocalSizes()[1])));
 	commandBuffer.dispatch(groupCountX, groupCountY, 1);
-	cmdBuf.submitIdle();
 }
 
 void CShaderObject::addTexture(const std::string& attachment, size_t id)
 {
 	auto& texture = EGGraphics->getImage(id);
-	mTextures[attachment] = texture->getDescriptor();
+	addTexture(attachment, texture->getDescriptor());
+}
+
+void CShaderObject::addTexture(const std::string& attachment, vk::DescriptorImageInfo descriptor)
+{
+	mTextures[attachment] = descriptor;
 }
 
 vk::DescriptorImageInfo& CShaderObject::getTexture(const std::string& attachment)
@@ -110,10 +140,18 @@ vk::DescriptorImageInfo& CShaderObject::getTexture(const std::string& attachment
 	return mTextures[attachment];
 }
 
-std::unique_ptr<CHandler>& CShaderObject::getUniformBuffer(const std::string& name)
+const std::unique_ptr<CHandler>& CShaderObject::getUniformBuffer(const std::string& name)
 {
 	auto uniformBlock = mBuffers.find(name);
 	if (uniformBlock != mBuffers.end())
 		return uniformBlock->second;
-	return pEmptyHandler;
+	return nullptr;
+}
+
+const std::unique_ptr<CPushHandler>& CShaderObject::getPushBlock(const std::string& name)
+{
+	auto pushBlock = mPushBlocks.find(name);
+	if (pushBlock != mPushBlocks.end())
+		return pushBlock->second;
+	return nullptr;
 }

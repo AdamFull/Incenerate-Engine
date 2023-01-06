@@ -48,13 +48,15 @@ void CEngine::create()
 
 	initEntityComponentSystem();
 
+	pRoot = CSceneLoader::load("scene.json");
+
 	for (const auto& system : vSystems)
 		system->create();
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	log_info("Engine initialization finished with: {}s.", sw.stop<float>());
 
-	pRoot = CSceneLoader::load("scene.json");
+	
 }
 
 void CEngine::beginEngineLoop()
@@ -64,8 +66,10 @@ void CEngine::beginEngineLoop()
 
 	while (pWindow->begin())
 	{
+		pGraphics->begin();
 		for (const auto& system : vSystems)
 			system->update(dt);
+		pGraphics->end();
 
 		dt = sw.stop<float>();
 	}

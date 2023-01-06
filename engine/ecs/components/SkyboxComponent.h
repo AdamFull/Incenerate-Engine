@@ -10,7 +10,9 @@ namespace engine
 		{
 			std::string source;
 			size_t vbo_id{ invalid_index };
+			size_t shader_id{ invalid_index };
 			size_t origin{ invalid_index };
+			size_t brdflut{ invalid_index };
 			size_t prefiltred{ invalid_index };
 			size_t irradiance{ invalid_index };
 		};

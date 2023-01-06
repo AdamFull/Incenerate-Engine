@@ -44,6 +44,7 @@ using namespace engine::ecs;
 using namespace engine::game;
 using namespace engine::system;
 using namespace engine::loaders;
+using namespace engine::graphics;
 
 std::unique_ptr<CSceneNode> CSceneLoader::load(const std::string& scenepath)
 {
@@ -89,7 +90,19 @@ void CSceneLoader::loadNodes(const std::unique_ptr<CSceneNode>& pParent, const s
 				EGCoordinator->addComponent(entity, component.get<FAudioComponent>());
 
 			if (name == "skybox")
-				EGCoordinator->addComponent(entity, component.get<FSkyboxComponent>());
+			{
+				auto skybox = component.get<FSkyboxComponent>();
+				skybox.origin = EGGraphics->addImage(pParent->getName(), skybox.source);
+				skybox.vbo_id = EGGraphics->addVertexBuffer(pParent->getName());
+				skybox.shader_id = EGGraphics->addShader(pParent->getName(), "skybox");
+
+				auto& pVBO = EGGraphics->getVertexBuffer(skybox.vbo_id);
+				pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
+				pVBO->create();
+
+				EGCoordinator->addComponent(entity, skybox);
+			}
+				
 
 			if (name == "sprite")
 				EGCoordinator->addComponent(entity, component.get<FSpriteComponent>());

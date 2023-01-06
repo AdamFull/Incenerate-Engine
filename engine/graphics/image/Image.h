@@ -48,6 +48,10 @@ namespace engine
 
 			void setImageLayout(vk::ImageLayout layout) { _imageLayout = layout; }
 
+			const uint32_t getMipLevels() const { return _mipLevels; }
+			const vk::Format getFormat() const { return _format; }
+			const vk::Image& getImage() const { return _image; }
+
 		protected:
 			CDevice* pDevice{ nullptr };
 

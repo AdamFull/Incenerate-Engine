@@ -293,14 +293,15 @@ CShaderCompiler::~CShaderCompiler()
 
 std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::path& path, const std::string& preamble, ERenderApi eAPI)
 {
+	// TODO: shader caching works wrong
 	std::string data;
 	if (fs::read_file(path, data))
 	{
 		auto fname = path.filename().string();
 		auto hash = utl::const_hash(data.c_str());
-		auto found = get(fname, hash);
-		if (found)
-			return found;
+		//auto found = get(fname, hash);
+		//if (found)
+		//	return found;
 
 		auto stage = getShaderStage(path);
 		auto language = getEshLanguage(stage);
@@ -321,7 +322,10 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 		auto client = getClient(eAPI);
 		shader.setEnvInput(glslang::EShSourceGlsl, language, client, 110);
 		shader.setEnvClient(client, clientVersion);
-		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6); //glslang::EShTargetSpv_1_3
+		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3); //glslang::EShTargetSpv_1_3
+		// vk1.1 - spirv1.3
+		// vk1.2 - spirv1.5
+		// vk1.3 - spirv1.6
 
 		std::string str{};
 		CShaderIncluder includer;
@@ -333,9 +337,10 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 			ss << "Shader: " << path << "\n";
 			ss << shader.getInfoLog() << "\n";
 			ss << shader.getInfoDebugLog() << "\n";
-			ss << "***********************************************************";
-			log_error(ss.str());
-			log_error("SPRIV shader preprocess failed!");
+			ss << "***********************************************************\n";
+			ss << "SPRIV shader parse failed!";
+			auto msg = ss.str();
+			log_error(msg);
 		}
 
 		if (!shader.parse(&resources, clientVersion, true, messages, includer))
@@ -345,9 +350,10 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 			ss << "Shader: " << path << "\n";
 			ss << shader.getInfoLog() << "\n";
 			ss << shader.getInfoDebugLog() << "\n";
-			ss << "***********************************************************";
-			log_error(ss.str());
-			log_error("SPRIV shader parse failed!");
+			ss << "***********************************************************\n";
+			ss << "SPRIV shader parse failed!";
+			auto msg = ss.str();
+			log_error(msg);
 		}
 
 		program.addShader(&shader);
@@ -359,9 +365,10 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 			ss << "Shader: " << path << "\n";
 			ss << shader.getInfoLog() << "\n";
 			ss << shader.getInfoDebugLog() << "\n";
-			ss << "***********************************************************";
-			log_error(ss.str());
-			log_error("Error while linking shader program.");
+			ss << "***********************************************************\n";
+			ss << "Error while linking shader program.";
+			auto msg = ss.str();
+			log_error(msg);
 		}
 
 		glslang::SpvOptions spvOptions;
@@ -380,7 +387,8 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 		std::vector<uint32_t> spirv;
 		GlslangToSpv(*program.getIntermediate(static_cast<EShLanguage>(language)), spirv, &logger, &spvOptions);
 
-		return add(fname, stage, spirv, hash);
+		//return add(fname, stage, spirv, hash);
+		return FCachedShader{ stage, spirv, hash };
 	}
 
 	return std::nullopt;

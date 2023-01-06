@@ -5,19 +5,15 @@
 #extension GL_ARB_texture_cube_map_array : enable
 #extension GL_GOOGLE_include_directive : require
 
-#define SHADOW_MAP_CASCADE_COUNT 5
-
 //--------------------Includes--------------------
 #include "light_models/sascha_williems.glsl"
 
-#include "../shadows/projection/cascade_shadows.glsl"
-#include "../shadows/projection/directional_shadows.glsl"
-#include "../shadows/projection/omni_shadows.glsl"
+//#include "../shadows/projection/cascade_shadows.glsl"
+//#include "../shadows/projection/directional_shadows.glsl"
+//#include "../shadows/projection/omni_shadows.glsl"
 
 #include "../lightning_base.glsl"
 #include "../../shader_util.glsl"
-
-layout (constant_id = 0) const int testConstant = 0;
 
 //--------------------Texture bindings--------------------
 layout (binding = 0) uniform sampler2D brdflut_tex;
@@ -29,9 +25,9 @@ layout (binding = 4) uniform sampler2D emission_tex;
 layout (binding = 5) uniform sampler2D depth_tex;
 //layout (binding = 6) uniform sampler2D ssr_tex;
 
-layout (binding = 7) uniform sampler2DArray cascade_shadowmap_tex;
-layout (binding = 8) uniform sampler2DArrayShadow direct_shadowmap_tex;
-layout (binding = 9) uniform samplerCubeArrayShadow omni_shadowmap_tex;
+//layout (binding = 7) uniform sampler2DArray cascade_shadowmap_tex;
+//layout (binding = 8) uniform sampler2DArrayShadow direct_shadowmap_tex;
+//layout (binding = 9) uniform samplerCubeArrayShadow omni_shadowmap_tex;
 
 //--------------------In/Out locations--------------------
 layout (location = 0) in vec2 inUV;
@@ -78,7 +74,8 @@ vec3 calculateDirectionalLight(FDirectionalLight light, vec3 worldPosition, vec3
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 
 	vec3 viewPosition = (ubo.view * vec4(worldPosition, 1.0)).xyz;
-	float shadow_factor = getCascadeShadow(cascade_shadowmap_tex, viewPosition, worldPosition, N, light);
+	//float shadow_factor = getCascadeShadow(cascade_shadowmap_tex, viewPosition, worldPosition, N, light);
+	float shadow_factor = 1.0;
 
 	return light.color * light.intencity * color * shadow_factor;
 }
@@ -98,7 +95,8 @@ vec3 calculateSpotlight(FSpotLight light, int index, vec3 worldPosition, vec3 al
 	float heightAttenuation = smoothstep(100.0, 0.0f, dist);
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 	
-	float shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
+	//float shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
+	float shadow_factor = 1.0;
 
 	return light.color * light.intencity * color * spotEffect * heightAttenuation * shadow_factor;
 }
@@ -110,7 +108,9 @@ vec3 calculatePointLight(FPointLight light, int index, vec3 worldPosition, vec3 
 	L = normalize(L);
 	float atten = clamp(1.0 - pow(dist, 2.0f)/pow(light.radius, 2.0f), 0.0f, 1.0f); atten *= atten;
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
-	float shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index);
+
+	//float shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index);
+	float shadow_factor = 1.0;
 
 	return light.color * atten * color * light.intencity * shadow_factor;
 }
@@ -202,72 +202,7 @@ void main()
 		fragcolor = albedo;
 	}
 
-	//TODO: remove skybox from shadow render
-	if(debug.target == 0)
-		fragcolor = fragcolor;
-	else if(debug.target == 1)
-		fragcolor = vec3(depth);
-	else if(debug.target == 2)
-		fragcolor = inWorldPos;
-	else if(debug.target == 3)
-		fragcolor = normal;
-	else if(debug.target == 4)
-		fragcolor = albedo;
-	else if(debug.target == 5)
-		fragcolor = vec3(metallic);
-	else if(debug.target == 6)
-		fragcolor = vec3(roughness);
-	//else if(debug.target == 7)
-	//	fragcolor = texture(ssr_tex, inUV).rgb;
-	else if(debug.target == 8 || debug.target == 9 || debug.target == 10)
-	{
-		vec3 viewPos = (ubo.view * vec4(inWorldPos, 1.0)).xyz;
-		float shadow_factor = 1.0;
-		FDirectionalLight light;
-		
-		uint cascadeIndex = 0;
-		for(int i = 0; i < ubo.directionalLightCount; i++) 
-		{
-			light = lights.directionalLights[i];
-			for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
-			{
-				if (viewPos.z < light.cascadeSplits[i])
-					cascadeIndex = i + 1;
-			}
-			shadow_factor = texture(cascade_shadowmap_tex, vec3(inUV, cascadeIndex)).r;
-		}
-
-		if(debug.target == 8)
-			fragcolor = vec3(0.0);
-		else if(debug.target == 9)
-			fragcolor = texture(cascade_shadowmap_tex, vec3(inUV, debug.cascade)).rrr;
-		else if(debug.target == 10)
-		{
-			switch(cascadeIndex) 
-			{
-			case 0 : 
-				fragcolor *= vec3(1.0f, 0.25f, 0.25f);
-				break;
-			case 1 : 
-				fragcolor *= vec3(0.25f, 1.0f, 0.25f);
-				break;
-			case 2 : 
-				fragcolor *= vec3(0.25f, 0.25f, 1.0f);
-				break;
-			case 3 : 
-				fragcolor *= vec3(1.0f, 1.0f, 0.25f);
-				break;
-			case 4 : 
-				fragcolor *= vec3(0.25f, 1.0f, 1.0f);
-				break;
-			}
-		}
-	}
-	else if(debug.target == 8)
-	{
-		
-	}
-
 	float fxaa_luma = dot(sqrt(fragcolor), vec3(0.299, 0.587, 0.114));
-  	outFragcolor = vec4(fragcolor, fxaa_luma);
+  	//outFragcolor = vec4(fragcolor, fxaa_luma);
+	outFragcolor = vec4(albedo, 1.0);
 }

@@ -12,9 +12,26 @@ CAPIHandle::CAPIHandle(winhandle_t window)
     pWindow = window;
 }
 
+CAPIHandle::~CAPIHandle()
+{
+    pRenderStageManager = nullptr;
+    pVertexBufferManager = nullptr;
+    pMaterialManager = nullptr;
+    pShaderManager = nullptr;
+    pImageManager = nullptr;
+    pDevice = nullptr;
+    pLoader = nullptr;
+}
+
 void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 {
 	eAPI = createInfo.eAPI;
+
+    pImageManager = std::make_unique<CObjectManager<CImage>>();
+    pShaderManager = std::make_unique<CObjectManager<CShaderObject>>();
+    pMaterialManager = std::make_unique<CObjectManager<CMaterial>>();
+    pVertexBufferManager = std::make_unique<CObjectManager<CVertexBufferObject>>();
+    pRenderStageManager = std::make_unique<CObjectManager<CRenderStage>>();
 
 	pDevice = std::make_unique<CDevice>(this);
 	pDevice->create(createInfo);
@@ -22,11 +39,83 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     pLoader = std::make_unique<CShaderLoader>(pDevice.get());
     pLoader->create(createInfo.srShaders);
 
-    pResourceHolder = std::make_unique<CResourceHolder>();
-
     screenExtent = pDevice->getExtent();
     commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
+
+    {
+        mStageInfos["deferred"].srName = "deferred";
+        mStageInfos["deferred"].viewport.offset = vk::Offset2D(0, 0);
+        mStageInfos["deferred"].viewport.extent = EGGraphics->getDevice()->getExtent();
+        mStageInfos["deferred"].bFlipViewport = true;
+        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "packed_tex", vk::Format::eR32G32B32A32Uint, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "emission_tex", vk::Format::eB10G11R11UfloatPack32, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", EGGraphics->getDevice()->getDepthFormat(), vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["deferred"].vOutputs.emplace_back("packed_tex");
+        mStageInfos["deferred"].vOutputs.emplace_back("emission_tex");
+        mStageInfos["deferred"].vDescriptions.emplace_back("depth_tex");
+        mStageInfos["deferred"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eBottomOfPipe,
+                    vk::AccessFlags{}
+                ),
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+                )
+            )
+        );
+        mStageInfos["deferred"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                )
+            )
+        );
+
+        auto stageId = EGGraphics->addRenderStage("deferred");
+        auto& pStage = EGGraphics->getRenderStage(stageId);
+        pStage->create(mStageInfos["deferred"]);
+    }
+
+    {
+        mStageInfos["composition"].srName = "composition";
+        mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
+        mStageInfos["composition"].viewport.extent = EGGraphics->getDevice()->getExtent();
+        //stageCI.bFlipViewport = true;
+        mStageInfos["composition"].vImages.emplace_back(FCIImage{ "present_khr", EGGraphics->getDevice()->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
+        mStageInfos["composition"].vOutputs.emplace_back("present_khr");
+        mStageInfos["composition"].vDescriptions.emplace_back("");
+        mStageInfos["composition"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eAllCommands,
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                ),
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eAllGraphics,
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                )
+            )
+        );
+
+        auto stageId = EGGraphics->addRenderStage("composition");
+        auto& pStage = EGGraphics->getRenderStage(stageId);
+        pStage->create(mStageInfos["composition"]);
+    }
+    
 
     log_info("Graphics core initialized.");
 }
@@ -56,7 +145,12 @@ void CAPIHandle::reCreate()
     screenExtent = pDevice->getExtent();
     imageIndex = 0;
     CWindowHandle::bWasResized = false;
-    EGCoordinator->sendEvent(Events::Graphics::ReCreate);
+    for (auto& [name, stage] : mStageInfos)
+    {
+        stage.viewport.extent = pDevice->getExtent();
+        auto& pStage = pRenderStageManager->get(name);
+        pStage->reCreate(stage);
+    }
 }
 
 void CAPIHandle::shutdown()
@@ -86,6 +180,11 @@ void CAPIHandle::end()
     pDevice->updateCommandPools();
 }
 
+vk::CommandBuffer CAPIHandle::getCommandBuffer()
+{
+    return commandBuffers->getCommandBuffer();
+}
+
 const std::unique_ptr<CDevice>& CAPIHandle::getDevice() const
 {
     return pDevice;
@@ -96,87 +195,170 @@ const std::unique_ptr<CShaderLoader>& CAPIHandle::getShaderLoader()
     return pLoader;
 }
 
-const std::unique_ptr<CResourceHolder>& CAPIHandle::getResourceHolder()
+size_t CAPIHandle::addImage(const std::string& name, std::unique_ptr<CImage>&& image)
 {
-    return pResourceHolder;
+    return pImageManager->add(name, std::move(image));
 }
 
-std::unique_ptr<CVertexBufferObject> CAPIHandle::allocateVBO()
+size_t CAPIHandle::addImage(const std::string& name, const std::string& path)
 {
-    return std::make_unique<CVertexBufferObject>(pDevice.get());
+    auto image = std::make_unique<CImage>(pDevice.get());
+    image->create(path);
+    return addImage(name, std::move(image));
 }
 
-const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::string& srName)
+void CAPIHandle::removeImage(const std::string& name)
 {
-    return getRenderStage(srName)->getFramebuffer();
+    pImageManager->remove(name);
 }
 
-const std::unique_ptr<CShaderObject>& CAPIHandle::getShader(size_t id)
+void CAPIHandle::removeImage(size_t id)
 {
-    return pResourceHolder->getShader(id);
+    pImageManager->remove(id);
+}
+
+const std::unique_ptr<CImage>& CAPIHandle::getImage(const std::string& name)
+{
+    return pImageManager->get(name);
 }
 
 const std::unique_ptr<CImage>& CAPIHandle::getImage(size_t id)
 {
-    return pResourceHolder->getImage(id);
+    return pImageManager->get(id);
 }
 
-const std::unique_ptr<CMaterial>& CAPIHandle::getMaterial(size_t id)
+
+size_t CAPIHandle::addShader(const std::string& name, std::unique_ptr<CShaderObject>&& shader)
 {
-    return pResourceHolder->getMaterial(id);
+    return pShaderManager->add(name, std::move(shader));
 }
 
-const std::unique_ptr<CVertexBufferObject>& CAPIHandle::getVertexBuffer(size_t id)
+size_t CAPIHandle::addShader(const std::string& name, const std::string& shadertype, size_t mat_id)
 {
-    return pResourceHolder->getVertexBuffer(id);
-}
-
-const std::unique_ptr<CRenderStage>& CAPIHandle::getRenderStage(size_t id)
-{
-    return pResourceHolder->getRenderStage(id);
-}
-
-const std::unique_ptr<CRenderStage>& CAPIHandle::getRenderStage(const std::string& srName)
-{
-    return getRenderStage(mStages[srName]);
-}
-
-size_t CAPIHandle::createRenderStage(const std::string& srName)
-{
-    auto id = pResourceHolder->addRenderStage(std::make_unique<CRenderStage>(pDevice.get()));
-    mStages.emplace(srName, id);
-    return id;
-}
-
-size_t CAPIHandle::createShader(const std::string& srName, size_t mat_id)
-{
-    auto id = pResourceHolder->addShader(pLoader->load(srName, mat_id));
+    auto shader_id = addShader(name, pLoader->load(shadertype, mat_id));
 
     if (mat_id != invalid_index)
     {
         auto& pMaterial = getMaterial(mat_id);
-        pMaterial->setShader(id);
+        pMaterial->setShader(shader_id);
     }
 
-    return id;
+    return shader_id;
 }
 
-size_t CAPIHandle::createImage(const std::string& srPath)
+void CAPIHandle::removeShader(const std::string& name)
 {
-    auto pImage = std::make_unique<CImage>(pDevice.get());
-    pImage->create(srPath);
-    return pResourceHolder->addImage(std::move(pImage));
+    pShaderManager->remove(name);
 }
 
-size_t CAPIHandle::createMaterial(const std::string& srName)
+void CAPIHandle::removeShader(size_t id)
 {
-    return invalid_index;
+    pShaderManager->remove(id);
 }
 
-size_t CAPIHandle::createVBO()
+const std::unique_ptr<CShaderObject>& CAPIHandle::getShader(const std::string& name)
 {
-    auto pVBO = std::make_unique<CVertexBufferObject>(pDevice.get());
-    return pResourceHolder->addVertexBuffer(std::move(pVBO));
+    return pShaderManager->get(name);
+}
+
+const std::unique_ptr<CShaderObject>& CAPIHandle::getShader(size_t id)
+{
+    return pShaderManager->get(id);
+}
+
+
+size_t CAPIHandle::addMaterial(const std::string& name, std::unique_ptr<CMaterial>&& material)
+{
+    return pMaterialManager->add(name, std::move(material));
+}
+
+void CAPIHandle::removeMaterial(const std::string& name)
+{
+    pMaterialManager->remove(name);
+}
+
+void CAPIHandle::removeMaterial(size_t id)
+{
+    pMaterialManager->remove(id);
+}
+
+const std::unique_ptr<CMaterial>& CAPIHandle::getMaterial(const std::string& name)
+{
+    return pMaterialManager->get(name);
+}
+
+const std::unique_ptr<CMaterial>& CAPIHandle::getMaterial(size_t id)
+{
+    return pMaterialManager->get(id);
+}
+
+
+
+size_t CAPIHandle::addVertexBuffer(const std::string& name)
+{
+    return pVertexBufferManager->add(name, std::make_unique<CVertexBufferObject>(pDevice.get()));
+}
+
+size_t CAPIHandle::addVertexBuffer(const std::string& name, std::unique_ptr<CVertexBufferObject>&& vbo)
+{
+    return pVertexBufferManager->add(name, std::move(vbo));
+}
+
+void CAPIHandle::removeVertexBuffer(const std::string& name)
+{
+    pVertexBufferManager->remove(name);
+}
+
+void CAPIHandle::removeVertexBuffer(size_t id)
+{
+    pVertexBufferManager->remove(id);
+}
+
+const std::unique_ptr<CVertexBufferObject>& CAPIHandle::getVertexBuffer(const std::string& name)
+{
+    return pVertexBufferManager->get(name);
+}
+
+const std::unique_ptr<CVertexBufferObject>& CAPIHandle::getVertexBuffer(size_t id)
+{
+    return pVertexBufferManager->get(id);
+}
+
+
+size_t CAPIHandle::addRenderStage(const std::string& name)
+{
+    return pRenderStageManager->add(name, std::make_unique<CRenderStage>(pDevice.get()));
+}
+
+size_t CAPIHandle::addRenderStage(const std::string& name, std::unique_ptr<CRenderStage>&& stage)
+{
+    return pRenderStageManager->add(name, std::move(stage));
+}
+
+void CAPIHandle::removeRenderStage(const std::string& name)
+{
+    pRenderStageManager->remove(name);
+}
+
+void CAPIHandle::removeRenderStage(size_t id)
+{
+    pRenderStageManager->remove(id);
+}
+
+const std::unique_ptr<CRenderStage>& CAPIHandle::getRenderStage(const std::string& name)
+{
+    return pRenderStageManager->get(name);
+}
+
+const std::unique_ptr<CRenderStage>& CAPIHandle::getRenderStage(size_t id)
+{
+    return pRenderStageManager->get(id);
+}
+
+
+const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::string& srName)
+{
+    return getRenderStage(srName)->getFramebuffer();
 }
 
 vk::CommandBuffer CAPIHandle::beginFrame()

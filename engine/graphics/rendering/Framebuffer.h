@@ -32,37 +32,9 @@ namespace engine
 			void begin(vk::CommandBuffer& commandBuffer);
 			void end(vk::CommandBuffer& commandBuffer);
 
-			template <class... _Args>
-			void addInputReference(uint32_t index, _Args... args)
-			{
-				std::array<std::string, sizeof...(_Args)> unpacked{ std::forward<_Args>(args)... };
-				std::vector<vk::AttachmentReference> references;
-				for (auto& arg : unpacked)
-				{
-					auto attachment = mFbAttachments.find(arg);
-					if (attachment != mFbAttachments.end())
-						references.emplace_back(vk::AttachmentReference{ attachment->second.reference, vk::ImageLayout::eShaderReadOnlyOptimal });
-					else
-						log_error("Attachment not found.");
-				}
-				mInputReferences.emplace(index, references);
-			}
 
-			template <class... _Args>
-			void addOutputReference(uint32_t index, _Args... args)
-			{
-				std::array<std::string, sizeof...(_Args)> unpacked{ std::forward<_Args>(args)... };
-				std::vector<vk::AttachmentReference> references;
-				for (auto& arg : unpacked)
-				{
-					auto attachment = mFbAttachments.find(arg);
-					if (attachment != mFbAttachments.end())
-						references.emplace_back(vk::AttachmentReference{ attachment->second.reference, vk::ImageLayout::eColorAttachmentOptimal });
-					else
-						log_error("Attachment not found.");
-				}
-				mOutputReferences.emplace(index, references);
-			}
+			void addInputReference(uint32_t index, const std::vector<std::string>& vref);
+			void addOutputReference(uint32_t index, const std::vector<std::string>& vref);
 
 			void addDescription(uint32_t subpass, const std::string& depthReference = "");
 			void addSubpassDependency(uint32_t src, uint32_t dst, vk::PipelineStageFlags srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,

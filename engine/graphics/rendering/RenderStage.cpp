@@ -19,12 +19,7 @@ void CRenderStage::create(const FCIStage& createInfo)
 	for (auto& image : createInfo.vImages)
 		pFramebuffer->addImage(image.srName, image.format, image.usage, image.type, image.layers);
 
-	uint32_t outputID{ 0 };
-	for (auto& output : createInfo.vOutputs)
-	{
-		pFramebuffer->addOutputReference(outputID, output);
-		outputID++;
-	}
+	pFramebuffer->addOutputReference(0, createInfo.vOutputs);
 
 	uint32_t descriptionID{ 0 };
 	for (auto& description : createInfo.vDescriptions)

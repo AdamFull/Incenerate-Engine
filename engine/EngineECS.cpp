@@ -20,6 +20,7 @@
 #include "ecs/systems/CameraControlSystem.h"
 #include "ecs/systems/InputSystem.h"
 #include "ecs/systems/ScriptingSystem.h"
+#include "ecs/systems/EnvironmentSystem.h"
 
 using namespace engine;
 using namespace engine::ecs;
@@ -65,6 +66,15 @@ void CEngine::initEntityComponentSystem()
 		pCoordinator->setSystemSignature<CAudioSystem>(sign);
 	}
 	vSystems.emplace_back(pAudioSystem);
+
+	auto pEnvironmentSystem = pCoordinator->registerSystem<CEnvironmentSystem>();
+	{
+		Signature sign;
+		sign.set(pCoordinator->getComponentType<FSkyboxComponent>());
+		sign.set(pCoordinator->getComponentType<FTransformComponent>());
+		pCoordinator->setSystemSignature<CEnvironmentSystem>(sign);
+	}
+	vSystems.emplace_back(pEnvironmentSystem);
 
 	auto p3DRenderSystem = pCoordinator->registerSystem<C3DRenderSystem>();
 	{

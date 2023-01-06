@@ -1,12 +1,20 @@
 [
   {
+    "name": "Skybox",
+    "components": {
+      "skybox": {
+        "source": "textures/cubemaps/SkyhighFluffycloudField4k.ktx2"
+      }
+    }
+  },
+  {
     "name": "MainCamera",
     "components": {
       "transform": {
         "pos": {
-          "x": -10.0,
-          "y": 10.0,
-          "z": -10.0
+          "x": -2.0,
+          "y": 2.0,
+          "z": -2.0
         },
         "rot": {
           "x": 0.5,
@@ -55,18 +63,18 @@
               "z": 5.0
             }
           },
-            "pointlight": {
-              "color": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 0.0
-              },
-              "intencity": 1.5,
-              "radius": 10.0,
-              "castShadows": false
-            }
+          "pointlight": {
+            "color": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 0.0
+            },
+            "intencity": 1.5,
+            "radius": 10.0,
+            "castShadows": false
           }
         }
+      }
     ]
   }
 ]
