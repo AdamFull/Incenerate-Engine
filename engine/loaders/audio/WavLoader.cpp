@@ -1,12 +1,17 @@
 #include "WavLoader.h"
 
-using namespace engine::audio;
+#include "system/filesystem/filesystem.h"
 
-EAudioReaderError CWavLoader::open(const std::string& filepath)
+using namespace engine::loaders;
+using namespace engine::system;
+
+EAudioReaderError CWavReader::open(const std::string& filepath)
 {
 	char header[header_size];
 
-	pFile = fopen(filepath.c_str(), "rb");
+	auto relpath = fs::get_workdir() / filepath;
+
+	pFile = fopen(relpath.string().c_str(), "rb");
 	if (!pFile)
 		return EAudioReaderError::eCannotOpenFile;
 
@@ -21,7 +26,7 @@ EAudioReaderError CWavLoader::open(const std::string& filepath)
 	return validateHeader();;
 }
 
-size_t CWavLoader::read(std::vector<char>& data)
+size_t CWavReader::read(std::vector<char>& data)
 {
 	bool bReaded{ false };
 	std::vector<char> tmp;
@@ -38,7 +43,7 @@ size_t CWavLoader::read(std::vector<char>& data)
 	return whole_size;
 }
 
-void CWavLoader::close()
+void CWavReader::close()
 {
 	if (pFile)
 	{
@@ -47,32 +52,32 @@ void CWavLoader::close()
 	}
 }
 
-const uint16_t& CWavLoader::getNumChannels() const
+const uint16_t& CWavReader::getNumChannels() const
 {
 	return rawheader.numChannels;
 }
 
-const uint32_t& CWavLoader::getSampleRate() const
+const uint32_t& CWavReader::getSampleRate() const
 {
 	return rawheader.sampleRate;
 }
 
-const uint32_t& CWavLoader::getByteRate() const
+const uint32_t& CWavReader::getByteRate() const
 {
 	return rawheader.byteRate;
 }
 
-const uint16_t& CWavLoader::getBlockAlign() const
+const uint16_t& CWavReader::getBlockAlign() const
 {
 	return rawheader.blockAlign;
 }
 
-const uint16_t& CWavLoader::getBitsPerSample() const
+const uint16_t& CWavReader::getBitsPerSample() const
 {
 	return rawheader.bitsPerSample;
 }
 
-EAudioReaderError CWavLoader::validateHeader()
+EAudioReaderError CWavReader::validateHeader()
 {
 	if (std::strncmp(rawheader.chunkID, "RIFF", 4) != 0)
 		return EAudioReaderError::eInvalidHeader;

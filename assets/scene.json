@@ -58,9 +58,9 @@
         "components": {
           "transform": {
             "pos": {
-              "x": 5.0,
-              "y": 5.0,
-              "z": 5.0
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
             }
           },
           "pointlight": {
@@ -72,6 +72,9 @@
             "intencity": 1.5,
             "radius": 10.0,
             "castShadows": false
+          },
+          "audio": {
+            "source": "test2.wav"
           }
         }
       }

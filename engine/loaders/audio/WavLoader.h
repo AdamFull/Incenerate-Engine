@@ -1,10 +1,10 @@
 #pragma once
 
-#include "AudioLoader.h"
+#include "AudioReader.h"
 
 namespace engine
 {
-	namespace audio
+	namespace loaders
 	{
 		struct  FWaveHeader
 		{
@@ -23,9 +23,10 @@ namespace engine
 			uint32_t        subchunk2Size{ 0 };     // Sampled data length    
 		};
 
-		class CWavLoader : public CAudioLoader
+		class CWavReader : public CAudioReader
 		{
 		public:
+			virtual ~CWavReader() override = default;
 			EAudioReaderError open(const std::string& filepath) override;
 			size_t read(std::vector<char>& data) override;
 			void close() override;

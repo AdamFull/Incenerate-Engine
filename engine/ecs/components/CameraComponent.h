@@ -33,6 +33,9 @@ namespace engine
 
 			glm::mat4 view, invView, projection, invProjection;
 			glm::vec2 viewportDim{};
+			glm::vec3 up;
+			glm::vec3 forward;
+			glm::vec3 right;
 
 			bool moved{ true };
 			bool active{ false };

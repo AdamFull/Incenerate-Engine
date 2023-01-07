@@ -17,7 +17,6 @@ using namespace engine::graphics;
 void CCompositionSystem::__create()
 {
 	shader_id = EGGraphics->addShader("pbr_composition", "pbr_composition");
-	
 }
 
 void CCompositionSystem::__update(float fDt)
@@ -31,9 +30,12 @@ void CCompositionSystem::__update(float fDt)
 
 	// Collecting directional lights
 	{
-		auto view = EGCoordinator.view<FTransformComponent, FDirectionalLightComponent>();
-		for (auto [entity, transform, light] : view.each())
+		auto view = EGCoordinator.view<FDirectionalLightComponent>();
+		for (auto [entity, light] : view.each())
 		{
+			auto& pNode = EGSceneGraph->find(entity, true);
+			auto transform = pNode->getTransform();
+
 			FDirectionalLightCommit commit;
 			commit.direction = transform.rotation;
 			commit.color = light.color;
@@ -45,9 +47,12 @@ void CCompositionSystem::__update(float fDt)
 	
 	// Collecting point lights
 	{
-		auto view = EGCoordinator.view<FTransformComponent, FPointLightComponent>();
-		for (auto [entity, transform, light] : view.each())
+		auto view = EGCoordinator.view<FPointLightComponent>();
+		for (auto [entity, light] : view.each())
 		{
+			auto& pNode = EGSceneGraph->find(entity, true);
+			auto transform = pNode->getTransform();
+
 			FPointLightCommit commit;
 			commit.position = transform.position;
 			commit.color = light.color;
@@ -60,9 +65,12 @@ void CCompositionSystem::__update(float fDt)
 
 	// Collecting spot lights
 	{
-		auto view = EGCoordinator.view<FTransformComponent, FSpotLightComponent>();
-		for (auto [entity, transform, light] : view.each())
+		auto view = EGCoordinator.view<FSpotLightComponent>();
+		for (auto [entity, light] : view.each())
 		{
+			auto& pNode = EGSceneGraph->find(entity, true);
+			auto transform = pNode->getTransform();
+
 			FSpotLightCommit commit;
 			commit.position = transform.position;
 			commit.direction = transform.rotation;
@@ -86,7 +94,8 @@ void CCompositionSystem::__update(float fDt)
 
 	auto ecamera = get_active_camera(EGCoordinator);
 	auto& camera = EGCoordinator.get<FCameraComponent>(ecamera);
-	auto& cameraTransform = EGCoordinator.get<FTransformComponent>(ecamera);
+	auto& pNode = EGSceneGraph->find(ecamera, true);
+	auto transform = pNode->getTransform();
 	auto invViewProjection = glm::inverse(camera.projection * camera.view);
 
 	// Setting up predraw data
@@ -105,8 +114,8 @@ void CCompositionSystem::__update(float fDt)
 
 	auto& pUBO = pShader->getUniformBuffer("UBODeferred");
 	pUBO->set("invViewProjection", invViewProjection);
-	pUBO->set("view", invViewProjection);
-	pUBO->set("viewPos", cameraTransform.position);
+	pUBO->set("view", camera.view);
+	pUBO->set("viewPos", glm::vec4(transform.position, 1.0));
 	pUBO->set("directionalLightCount", directoonal_light_count);
 	pUBO->set("spotLightCount", spot_light_count);
 	pUBO->set("pointLightCount", point_light_count);

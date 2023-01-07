@@ -22,10 +22,6 @@ namespace engine
 			void recalculateProjection(FCameraComponent& camera);
 			void recalculateView(FCameraComponent& camera, FTransformComponent& transform);
 
-			glm::vec3 getForwardVector(FTransformComponent& transform) const;
-			glm::vec3 getUpVector(FTransformComponent& transform) const;
-			glm::vec3 getRightVector(FTransformComponent& transform) const;
-
 			void onKeyInput(CEvent& event);
 			void onMouseInput(CEvent& event);
 

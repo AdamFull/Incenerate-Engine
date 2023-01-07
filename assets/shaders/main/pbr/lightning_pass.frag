@@ -202,6 +202,7 @@ void main()
 		fragcolor = albedo;
 	}
 
+	//fragcolor = vec3(depth);
 	float fxaa_luma = dot(sqrt(fragcolor), vec3(0.299, 0.587, 0.114));
   	outFragcolor = vec4(fragcolor, fxaa_luma);
 	//outFragcolor = vec4(albedo, 1.0);

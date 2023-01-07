@@ -11,6 +11,7 @@ using namespace engine::game;
 using namespace engine::graphics;
 using namespace engine::system;
 using namespace engine::system::window;
+using namespace engine::audio;
 
 CEngine::CEngine()
 {
@@ -39,6 +40,9 @@ void CEngine::create()
 
 	pEventManager = std::make_unique<CEventManager>();
 
+	pAudio = std::make_unique<CAudioCore>();
+	pAudio->create();
+
 	pWindow = std::make_unique<CWindowHandle>();
 	pWindow->create(createInfo.window);
 
@@ -54,8 +58,6 @@ void CEngine::create()
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	log_info("Engine initialization finished with: {}s.", sw.stop<float>());
-
-	
 }
 
 void CEngine::beginEngineLoop()
@@ -73,6 +75,7 @@ void CEngine::beginEngineLoop()
 		dt = sw.stop<float>();
 	}
 
+	pAudio->shutdown();
 	pGraphics->shutdown();
 }
 
@@ -89,6 +92,11 @@ const winptr_t& CEngine::getWindow() const
 const graphptr_t& CEngine::getGraphics() const
 {
 	return pGraphics;
+}
+
+const audiocore_t& CEngine::getAudio() const
+{
+	return pAudio;
 }
 
 const scenegraph_t& CEngine::getSceneGraph() const

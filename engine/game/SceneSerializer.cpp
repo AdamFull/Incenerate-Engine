@@ -17,6 +17,8 @@
 
 #include "loaders/MeshLoader.h"
 
+#include "audio/AudioSource.h"
+
 namespace engine
 {
 	namespace game
@@ -45,6 +47,7 @@ using namespace engine::game;
 using namespace engine::system;
 using namespace engine::loaders;
 using namespace engine::graphics;
+using namespace engine::audio;
 
 std::unique_ptr<CSceneNode> CSceneLoader::load(const std::string& scenepath)
 {
@@ -87,14 +90,19 @@ void CSceneLoader::loadNodes(const std::unique_ptr<CSceneNode>& pParent, const s
 				EGCoordinator.emplace<FCameraComponent>(entity, component.get<FCameraComponent>());
 
 			if (name == "audio")
-				EGCoordinator.emplace<FAudioComponent>(entity, component.get<FAudioComponent>());
+			{
+				auto audio = component.get<FAudioComponent>();
+				auto pAudio = std::make_unique<CAudioSource>(audio.source);
+				audio.asource = EGAudio->addSource(pNode->getName(), std::move(pAudio));
+				EGCoordinator.emplace<FAudioComponent>(entity, audio);
+			}
 
 			if (name == "skybox")
 			{
 				auto skybox = component.get<FSkyboxComponent>();
-				skybox.origin = EGGraphics->addImage(pParent->getName(), skybox.source);
-				skybox.vbo_id = EGGraphics->addVertexBuffer(pParent->getName());
-				skybox.shader_id = EGGraphics->addShader(pParent->getName(), "skybox");
+				skybox.origin = EGGraphics->addImage(pNode->getName(), skybox.source);
+				skybox.vbo_id = EGGraphics->addVertexBuffer(pNode->getName());
+				skybox.shader_id = EGGraphics->addShader(pNode->getName(), "skybox");
 
 				auto& pVBO = EGGraphics->getVertexBuffer(skybox.vbo_id);
 				pVBO->addPrimitive(std::make_unique<FCubePrimitive>());

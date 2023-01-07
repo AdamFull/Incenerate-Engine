@@ -42,6 +42,10 @@ void CCameraControlSystem::__update(float fDt)
 			auto width = CWindowHandle::iWidth;
 			auto height = CWindowHandle::iHeight;
 
+			camera.forward = glm::normalize(transform.rotation);
+			camera.right = glm::normalize(glm::cross(camera.forward, glm::vec3{ 0.0, 1.0, 0.0 }));
+			camera.up = glm::normalize(glm::cross(camera.right, camera.forward));
+
 			if (width != camera.viewportDim.x && height != camera.viewportDim.y)
 			{
 				camera.viewportDim.x = width;
@@ -69,23 +73,8 @@ void CCameraControlSystem::recalculateProjection(FCameraComponent& camera)
 
 void CCameraControlSystem::recalculateView(FCameraComponent& camera, FTransformComponent& transform)
 {
-	camera.view = glm::lookAt(transform.position, transform.position + getForwardVector(transform), getUpVector(transform));
+	camera.view = glm::lookAt(transform.position, transform.position + camera.forward, camera.up);
 	camera.invView = glm::inverse(camera.view);
-}
-
-glm::vec3 CCameraControlSystem::getForwardVector(FTransformComponent& transform) const
-{
-	return glm::normalize(transform.rotation);
-}
-
-glm::vec3 CCameraControlSystem::getUpVector(FTransformComponent& transform) const
-{
-	return glm::normalize(glm::cross(getRightVector(transform), getForwardVector(transform)));
-}
-
-glm::vec3 CCameraControlSystem::getRightVector(FTransformComponent& transform) const
-{
-	return glm::normalize(glm::cross(getForwardVector(transform), glm::vec3{ 0.0, 1.0, 0.0 }));
 }
 
 void CCameraControlSystem::onKeyInput(CEvent& event)
@@ -170,7 +159,7 @@ void CCameraControlSystem::moveForward(bool bInv)
 	{
 		if (camera.active)
 		{
-			transform.position += getForwardVector(transform) * dir * dt * camera.sensitivity;
+			transform.position += camera.forward * dir * dt * camera.sensitivity;
 			camera.moved = true;
 		}
 	}
@@ -185,7 +174,7 @@ void CCameraControlSystem::moveRight(bool bInv)
 	{
 		if (camera.active)
 		{
-			transform.position += getRightVector(transform) * dir * dt * camera.sensitivity;
+			transform.position += camera.right * dir * dt * camera.sensitivity;
 			camera.moved = true;
 		}
 	}
@@ -200,7 +189,7 @@ void CCameraControlSystem::moveUp(bool bInv)
 	{
 		if (camera.active)
 		{
-			transform.position += getUpVector(transform) * dir * dt * camera.sensitivity;
+			transform.position += camera.up * dir * dt * camera.sensitivity;
 			camera.moved = true;
 		}
 	}
