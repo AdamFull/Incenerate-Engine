@@ -44,13 +44,6 @@ layout(std140, binding = 12) uniform UBODeferred
 	int pointLightCount;
 } ubo;
 
-layout(std140, binding = 13) uniform UBODebug
-{
-	int shading_mode;
-	int target;
-	int cascade;
-} debug;
-
 //Lights
 layout(std430, binding = 15) buffer UBOLights
 {

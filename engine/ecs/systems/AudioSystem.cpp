@@ -28,9 +28,8 @@ void CAudioSystem::__update(float fDt)
 			{
 				auto& pNode = EGSceneGraph->find(entity, true);
 				auto transform = pNode->getTransform();
-				auto& pos = transform.position;
 
-				alCall(alListener3f, AL_POSITION, pos.x, pos.y, pos.z);
+				alCall(alListener3f, AL_POSITION, transform.position.x, transform.position.y, transform.position.z);
 				float orient[6] = { camera.forward.x, camera.forward.y, camera.forward.z, camera.right.x, camera.right.y, camera.right.z};
 				alCall(alListenerfv, AL_ORIENTATION, orient);
 			}

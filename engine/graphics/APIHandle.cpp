@@ -85,6 +85,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         mStageInfos["composition"].srName = "composition";
         mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
         mStageInfos["composition"].viewport.extent = EGGraphics->getDevice()->getExtent();
+        mStageInfos["composition"].bFlipViewport = true;
         //stageCI.bFlipViewport = true;
         mStageInfos["composition"].vImages.emplace_back(FCIImage{ "present_khr", EGGraphics->getDevice()->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
         mStageInfos["composition"].vOutputs.emplace_back("present_khr");
