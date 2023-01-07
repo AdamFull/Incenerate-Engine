@@ -110,6 +110,18 @@ void CCameraControlSystem::onKeyInput(CEvent& event)
 
 void CCameraControlSystem::onMouseInput(CEvent& event)
 {
+	auto fx = event.getParam<float>(Events::Input::MouseX);
+	auto fy = event.getParam<float>(Events::Input::MouseY);
+
+	float xmax = static_cast<float>(CWindowHandle::iWidth);
+	float ymax = static_cast<float>(CWindowHandle::iHeight);
+
+	oldPos = cursorPos;
+	cursorPos = {
+		rangeToRange(fx, 0.f, xmax, -1.f, 1.f),
+		rangeToRange(fy, 0.f, ymax, -1.f, 1.f)
+	};
+
 	if (!bRotationPass)
 		return;
 
@@ -118,31 +130,19 @@ void CCameraControlSystem::onMouseInput(CEvent& event)
 	{
 		if (camera.active)
 		{
-			auto fx = event.getParam<float>(Events::Input::MouseX);
-			auto fy = event.getParam<float>(Events::Input::MouseY);
-
-			float xmax = static_cast<float>(CWindowHandle::iWidth);
-			float ymax = static_cast<float>(CWindowHandle::iHeight);
-
-			oldPos = cursorPos;
-			cursorPos = {
-				rangeToRange(fx, 0.f, xmax, -1.f, 1.f),
-				rangeToRange(fy, 0.f, ymax, -1.f, 1.f)
-			};
-
 			auto fdx = (cursorPos - oldPos) * dt;
 
 			{
-				float rotX = fdx.x / dt;
-				float rotY = fdx.y / dt;
+				float rotX = (fdx.x / dt) * camera.sensitivity * 1.5f;
+				float rotY = (fdx.y / dt) * camera.sensitivity * 1.5f;
 
-				camera.angleH += rotX * camera.sensitivity;
-				if (camera.angleV + rotY * camera.sensitivity > 89)
+				camera.angleH += rotX;
+				if (camera.angleV + rotY > 89)
 					camera.angleV = 89;
-				else if (camera.angleV + rotY * camera.sensitivity < -89)
+				else if (camera.angleV + rotY < -89)
 					camera.angleV = -89;
 				else
-					camera.angleV += rotY * camera.sensitivity;
+					camera.angleV += rotY;
 
 				const float w{ cos(glm::radians(camera.angleV)) * -cos(glm::radians(camera.angleH)) };
 				const float u{ -sin(glm::radians(camera.angleV)) };

@@ -93,8 +93,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
             FCIDependency(
                 FCIDependencyDesc(
                     VK_SUBPASS_EXTERNAL,
-                    vk::PipelineStageFlagBits::eAllCommands,
-                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
                 ),
                 FCIDependencyDesc(
                     0,
