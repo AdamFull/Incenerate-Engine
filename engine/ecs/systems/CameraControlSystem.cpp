@@ -3,6 +3,8 @@
 #include "Engine.h"
 #include "system/window/WindowHandle.h"
 
+#include "ecs/helper.hpp"
+
 using namespace engine::ecs;
 using namespace engine::system::window;
 
@@ -12,24 +14,19 @@ _Ty rangeToRange(_Ty input, _Ty in_min, _Ty in_max, _Ty out_min, _Ty out_max)
 	return (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+// TODO: it's temporary implementation. Maybe need to create special camera controller?
+
 void CCameraControlSystem::__create()
 {
-	EGCoordinator->addEventListener(Events::Input::Key, this, &CCameraControlSystem::onKeyInput);
-	EGCoordinator->addEventListener(Events::Input::Mouse, this, &CCameraControlSystem::onMouseInput);
+	EGEngine->addEventListener(Events::Input::Key, this, &CCameraControlSystem::onKeyInput);
+	EGEngine->addEventListener(Events::Input::Mouse, this, &CCameraControlSystem::onMouseInput);
 
-	for (auto& entity : mEntities)
+	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	for (auto [entity, transform, camera] : view.each())
 	{
-		auto& camera = EGCoordinator->getComponent<FCameraComponent>(entity);
-
-		if (camera.active)
-		{
-			auto& transform = EGCoordinator->getComponent<FTransformComponent>(entity);
-			//transform.rotation = { 0.514259, -0.318132, 0.796448 };
-			camera.angleV = glm::degrees(-transform.rotation.y);
-			camera.angleH = glm::degrees(glm::atan(transform.rotation.z / transform.rotation.x));
-			EGCoordinator->setActiveCamera(entity);
-			return;
-		}
+		camera.active = true;
+		camera.angleV = glm::degrees(-transform.rotation.y);
+		camera.angleH = glm::degrees(glm::atan(transform.rotation.z / transform.rotation.x));
 	}
 }
 
@@ -37,14 +34,11 @@ void CCameraControlSystem::__update(float fDt)
 {
 	dt = fDt;
 
-	for (auto& entity : mEntities)
+	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	for (auto [entity, transform, camera] : view.each())
 	{
-		auto& camera = EGCoordinator->getComponent<FCameraComponent>(entity);
-
 		if (camera.active)
 		{
-			auto& transform = EGCoordinator->getComponent<FTransformComponent>(entity);
-
 			auto width = CWindowHandle::iWidth;
 			auto height = CWindowHandle::iHeight;
 
@@ -119,48 +113,47 @@ void CCameraControlSystem::onMouseInput(CEvent& event)
 	if (!bRotationPass)
 		return;
 
-	auto activeCamera = EGCoordinator->getActiveCamera();
-
-	if (activeCamera)
+	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	for (auto [entity, transform, camera] : view.each())
 	{
-		auto& camera = EGCoordinator->getComponent<FCameraComponent>(activeCamera.value());
-		auto& transform = EGCoordinator->getComponent<FTransformComponent>(activeCamera.value());
-
-		auto fx = event.getParam<float>(Events::Input::MouseX);
-		auto fy = event.getParam<float>(Events::Input::MouseY);
-
-		float xmax = static_cast<float>(CWindowHandle::iWidth);
-		float ymax = static_cast<float>(CWindowHandle::iHeight);
-
-		oldPos = cursorPos;
-		cursorPos = {
-			rangeToRange(fx, 0.f, xmax, -1.f, 1.f),
-			rangeToRange(fy, 0.f, ymax, -1.f, 1.f)
-		};
-
-		auto fdx = (cursorPos - oldPos) * dt;
-
+		if (camera.active)
 		{
-			float rotX = fdx.x / dt;
-			float rotY = fdx.y / dt;
+			auto fx = event.getParam<float>(Events::Input::MouseX);
+			auto fy = event.getParam<float>(Events::Input::MouseY);
 
-			camera.angleH += rotX * camera.sensitivity;
-			if (camera.angleV + rotY * camera.sensitivity > 89)
-				camera.angleV = 89;
-			else if (camera.angleV + rotY * camera.sensitivity < -89)
-				camera.angleV = -89;
-			else
-				camera.angleV += rotY * camera.sensitivity;
+			float xmax = static_cast<float>(CWindowHandle::iWidth);
+			float ymax = static_cast<float>(CWindowHandle::iHeight);
 
-			const float w{ cos(glm::radians(camera.angleV)) * -cos(glm::radians(camera.angleH)) };
-			const float u{ -sin(glm::radians(camera.angleV)) };
-			const float v{ cos(glm::radians(camera.angleV)) * -sin(glm::radians(camera.angleH)) };
+			oldPos = cursorPos;
+			cursorPos = {
+				rangeToRange(fx, 0.f, xmax, -1.f, 1.f),
+				rangeToRange(fy, 0.f, ymax, -1.f, 1.f)
+			};
 
-			auto newrot = glm::normalize(glm::vec3(w * -1.f, u, v * -1.f));
-			if (transform.rotation != newrot)
+			auto fdx = (cursorPos - oldPos) * dt;
+
 			{
-				transform.rotation = newrot;
-				camera.moved = true;
+				float rotX = fdx.x / dt;
+				float rotY = fdx.y / dt;
+
+				camera.angleH += rotX * camera.sensitivity;
+				if (camera.angleV + rotY * camera.sensitivity > 89)
+					camera.angleV = 89;
+				else if (camera.angleV + rotY * camera.sensitivity < -89)
+					camera.angleV = -89;
+				else
+					camera.angleV += rotY * camera.sensitivity;
+
+				const float w{ cos(glm::radians(camera.angleV)) * -cos(glm::radians(camera.angleH)) };
+				const float u{ -sin(glm::radians(camera.angleV)) };
+				const float v{ cos(glm::radians(camera.angleV)) * -sin(glm::radians(camera.angleH)) };
+
+				auto newrot = glm::normalize(glm::vec3(w * -1.f, u, v * -1.f));
+				if (transform.rotation != newrot)
+				{
+					transform.rotation = newrot;
+					camera.moved = true;
+				}
 			}
 		}
 	}
@@ -171,44 +164,44 @@ void CCameraControlSystem::onMouseInput(CEvent& event)
 void CCameraControlSystem::moveForward(bool bInv)
 {
 	float dir = bInv ? -1.f : 1.f;
-	auto activeCamera = EGCoordinator->getActiveCamera();
 
-	if (activeCamera)
+	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	for (auto [entity, transform, camera] : view.each())
 	{
-		auto& camera = EGCoordinator->getComponent<FCameraComponent>(activeCamera.value());
-		auto& transform = EGCoordinator->getComponent<FTransformComponent>(activeCamera.value());
-
-		transform.position += getForwardVector(transform) * dir * dt * camera.sensitivity;
-		camera.moved = true;
+		if (camera.active)
+		{
+			transform.position += getForwardVector(transform) * dir * dt * camera.sensitivity;
+			camera.moved = true;
+		}
 	}
 }
 
 void CCameraControlSystem::moveRight(bool bInv)
 {
 	float dir = bInv ? -1.f : 1.f;
-	auto activeCamera = EGCoordinator->getActiveCamera();
 
-	if (activeCamera)
+	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	for (auto [entity, transform, camera] : view.each())
 	{
-		auto& camera = EGCoordinator->getComponent<FCameraComponent>(activeCamera.value());
-		auto& transform = EGCoordinator->getComponent<FTransformComponent>(activeCamera.value());
-
-		transform.position += getRightVector(transform) * dir * dt * camera.sensitivity;
-		camera.moved = true;
+		if (camera.active)
+		{
+			transform.position += getRightVector(transform) * dir * dt * camera.sensitivity;
+			camera.moved = true;
+		}
 	}
 }
 
 void CCameraControlSystem::moveUp(bool bInv)
 {
 	float dir = bInv ? -1.f : 1.f;
-	auto activeCamera = EGCoordinator->getActiveCamera();
 
-	if (activeCamera)
+	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	for (auto [entity, transform, camera] : view.each())
 	{
-		auto& camera = EGCoordinator->getComponent<FCameraComponent>(activeCamera.value());
-		auto& transform = EGCoordinator->getComponent<FTransformComponent>(activeCamera.value());
-
-		transform.position += getUpVector(transform) * dir * dt * camera.sensitivity;
-		camera.moved = true;
+		if (camera.active)
+		{
+			transform.position += getUpVector(transform) * dir * dt * camera.sensitivity;
+			camera.moved = true;
+		}
 	}
 }

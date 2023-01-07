@@ -87,7 +87,7 @@ void CGltfLoader::loadNode(const std::unique_ptr<CSceneNode>& pParent, const tin
     auto pObject = std::make_unique<CSceneNode>(obj_name);
     auto entity = pObject->getEntity();
 
-    auto& transform = EGCoordinator->getComponent<FTransformComponent>(entity);
+    auto& transform = EGCoordinator.get<FTransformComponent>(entity);
 
     // Loading position data
     if (node.translation.size() == 3)
@@ -328,7 +328,7 @@ void CGltfLoader::loadMeshComponent(const std::unique_ptr<CSceneNode>& pNode, co
 
     meshComponent.vbo_id = vbo_id;
 
-    EGCoordinator->addComponent(pNode->getEntity(), meshComponent);
+    EGCoordinator.emplace<FMeshComponent>(pNode->getEntity(), meshComponent);
 }
 
 void CGltfLoader::loadCameraComponent(const std::unique_ptr<CSceneNode>& pNode, const tinygltf::Node& node, const tinygltf::Model& model)
@@ -352,7 +352,7 @@ void CGltfLoader::loadCameraComponent(const std::unique_ptr<CSceneNode>& pNode, 
         cameraComponent.farPlane = camera.perspective.zfar;
     }
 
-    EGCoordinator->addComponent(pNode->getEntity(), cameraComponent);
+    EGCoordinator.emplace<FCameraComponent>(pNode->getEntity(), cameraComponent);
 }
 
 void CGltfLoader::loadLightComponent(const std::unique_ptr<CSceneNode>& pNode, uint32_t light_index, const tinygltf::Node& node, const tinygltf::Model& model)
@@ -372,7 +372,7 @@ void CGltfLoader::loadLightComponent(const std::unique_ptr<CSceneNode>& pNode, u
         FDirectionalLightComponent lightComponent;
         lightComponent.color = color;
         lightComponent.intencity = light.intensity;
-        EGCoordinator->addComponent(entiry, lightComponent);
+        EGCoordinator.emplace<FDirectionalLightComponent>(entiry, lightComponent);
     }
     else if (light.type == "spot")
     {
@@ -381,7 +381,7 @@ void CGltfLoader::loadLightComponent(const std::unique_ptr<CSceneNode>& pNode, u
         lightComponent.innerAngle = light.spot.innerConeAngle;
         lightComponent.outerAngle = light.spot.outerConeAngle;
         lightComponent.intencity = light.intensity;
-        EGCoordinator->addComponent(entiry, lightComponent);
+        EGCoordinator.emplace<FSpotLightComponent>(entiry, lightComponent);
     }
     else if (light.type == "point")
     {
@@ -389,7 +389,7 @@ void CGltfLoader::loadLightComponent(const std::unique_ptr<CSceneNode>& pNode, u
         lightComponent.color = color;
         lightComponent.intencity = light.intensity;
         lightComponent.radius = light.range;
-        EGCoordinator->addComponent(entiry, lightComponent);
+        EGCoordinator.emplace<FPointLightComponent>(entiry, lightComponent);
     }
 }
 

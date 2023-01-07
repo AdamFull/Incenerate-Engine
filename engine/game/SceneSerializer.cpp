@@ -79,15 +79,15 @@ void CSceneLoader::loadNodes(const std::unique_ptr<CSceneNode>& pParent, const s
 		{
 			if (name == "transform")
 			{
-				auto& transform = EGCoordinator->getComponent<FTransformComponent>(entity);
+				auto& transform = EGCoordinator.get<FTransformComponent>(entity);
 				transform = component.get<FTransformComponent>();
 			}
 
 			if (name == "camera")
-				EGCoordinator->addComponent(entity, component.get<FCameraComponent>());
+				EGCoordinator.emplace<FCameraComponent>(entity, component.get<FCameraComponent>());
 
 			if (name == "audio")
-				EGCoordinator->addComponent(entity, component.get<FAudioComponent>());
+				EGCoordinator.emplace<FAudioComponent>(entity, component.get<FAudioComponent>());
 
 			if (name == "skybox")
 			{
@@ -100,12 +100,12 @@ void CSceneLoader::loadNodes(const std::unique_ptr<CSceneNode>& pParent, const s
 				pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
 				pVBO->create();
 
-				EGCoordinator->addComponent(entity, skybox);
+				EGCoordinator.emplace<FSkyboxComponent>(entity, skybox);
 			}
 				
 
 			if (name == "sprite")
-				EGCoordinator->addComponent(entity, component.get<FSpriteComponent>());
+				EGCoordinator.emplace<FSpriteComponent>(entity, component.get<FSpriteComponent>());
 
 			if (name == "gltfscene")
 			{
@@ -114,16 +114,16 @@ void CSceneLoader::loadNodes(const std::unique_ptr<CSceneNode>& pParent, const s
 			}
 
 			if (name == "directionallight")
-				EGCoordinator->addComponent(entity, component.get<FDirectionalLightComponent>());
+				EGCoordinator.emplace<FDirectionalLightComponent>(entity, component.get<FDirectionalLightComponent>());
 
 			if (name == "pointlight")
-				EGCoordinator->addComponent(entity, component.get<FPointLightComponent>());
+				EGCoordinator.emplace<FPointLightComponent>(entity, component.get<FPointLightComponent>());
 
 			if (name == "spotlight")
-				EGCoordinator->addComponent(entity, component.get<FSpotLightComponent>());
+				EGCoordinator.emplace<FSpotLightComponent>(entity, component.get<FSpotLightComponent>());
 
 			if (name == "script")
-				EGCoordinator->addComponent(entity, component.get<FScriptComponent>());
+				EGCoordinator.emplace<FScriptComponent>(entity, component.get<FScriptComponent>());
 		}
 
 		loadNodes(pNode, object.vChildren);
@@ -137,8 +137,30 @@ void CSceneLoader::serializeNodes(const std::unique_ptr<CSceneNode>& pParent, st
 	FSceneObjectRaw object;
 	object.srName = pParent->getName();
 
+	auto entity = pParent->getEntity();
+	if (auto transform = EGCoordinator.try_get<FTransformComponent>(entity))
+		object.mComponents.emplace("transform", nlohmann::json(*transform));
+	if (auto camera = EGCoordinator.try_get<FCameraComponent>(entity))
+		object.mComponents.emplace("camera", nlohmann::json(*camera));
+	if (auto audio = EGCoordinator.try_get<FAudioComponent>(entity))
+		object.mComponents.emplace("audio", nlohmann::json(*audio));
+	if (auto skybox = EGCoordinator.try_get<FSkyboxComponent>(entity))
+		object.mComponents.emplace("skybox", nlohmann::json(*skybox));
+	if (auto sprite = EGCoordinator.try_get<FSpriteComponent>(entity))
+		object.mComponents.emplace("sprite", nlohmann::json(*sprite));
+	if (auto directionallight = EGCoordinator.try_get<FDirectionalLightComponent>(entity))
+		object.mComponents.emplace("directionallight", nlohmann::json(*directionallight));
+	if (auto pointlight = EGCoordinator.try_get<FPointLightComponent>(entity))
+		object.mComponents.emplace("pointlight", nlohmann::json(*pointlight));
+	if (auto spotlight = EGCoordinator.try_get<FSpotLightComponent>(entity))
+		object.mComponents.emplace("spotlight", nlohmann::json(*spotlight));
+	if (auto script = EGCoordinator.try_get<FScriptComponent>(entity))
+		object.mComponents.emplace("script", nlohmann::json(*script));
+
 	//TODO: serialize nodes here
 
 	for (auto& child : pParent->getChildren())
 		serializeNodes(child, object.vChildren);
+
+	vObjects.emplace_back(object);
 }

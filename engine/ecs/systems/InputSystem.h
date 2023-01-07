@@ -1,9 +1,6 @@
 #pragma once
 
-#include "ecs/core/System.hpp"
-#include "ecs/core/Event.hpp"
-
-#include "system/window/KeycodeHelper.hpp"
+#include "BaseSystem.h"
 
 namespace engine
 {
@@ -16,12 +13,6 @@ namespace engine
 
 			void __create() override;
 			void __update(float fDt) override;
-		private:
-			system::window::CKeyDecoder mKeys;
-		private:
-			void onKeyInput(CEvent& event);
-			void onMouseInput(CEvent& event);
-			void onAxisInput(CEvent& event);
 		};
 	}
 }

@@ -23,8 +23,8 @@ namespace engine
 			alignas(16) glm::vec3 direction;
 			alignas(16) glm::vec3 color;
 			alignas(4) float intencity;
-			alignas(4) float innerConeAngle;
-			alignas(4) float outerConeAngle;
+			alignas(4) float innerAngle;
+			alignas(4) float outerAngle;
 			alignas(4) bool toTarget{ true };
 		};
 

@@ -9,6 +9,7 @@ add_subdirectory("external")
 file(GLOB_RECURSE ENGINE_LOADERS_SOURCE "loaders/*.cpp" "loaders/*.c" "loaders/*.cc" "loaders/*.h" "loaders/*.hpp")
 file(GLOB_RECURSE ENGINE_PARSE_SOURCE "parse/*.cpp" "parse/*.c" "parse/*.cc" "parse/*.h" "parse/*.hpp")
 file(GLOB_RECURSE ENGINE_ECS_SOURCE "ecs/*.cpp" "ecs/*.c" "ecs/*.cc" "ecs/*.h" "ecs/*.hpp")
+file(GLOB_RECURSE ENGINE_EVENT_SOURCE "event/*.cpp" "event/*.c" "event/*.cc" "event/*.h" "event/*.event")
 file(GLOB_RECURSE ENGINE_GRAPHICS_SOURCE "graphics/*.cpp" "graphics/*.c" "graphics/*.cc" "graphics/*.h" "graphics/*.hpp")
 file(GLOB_RECURSE ENGINE_AUDIO_SOURCE "audio/*.cpp" "audio/*.c" "audio/*.cc" "audio/*.h" "audio/*.hpp")
 file(GLOB_RECURSE ENGINE_SYSTEM_SOURCE "system/*.cpp" "system/*.c" "system/*.cc" "system/*.h" "system/*.hpp")
@@ -21,6 +22,7 @@ add_library(${PROJECT_NAME} STATIC
 ${ENGINE_LOADERS_SOURCE}
 ${ENGINE_PARSE_SOURCE}
 ${ENGINE_ECS_SOURCE}
+${ENGINE_EVENT_SOURCE}
 ${ENGINE_GRAPHICS_SOURCE} 
 ${ENGINE_AUDIO_SOURCE}
 ${ENGINE_SYSTEM_SOURCE}

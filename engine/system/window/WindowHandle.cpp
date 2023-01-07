@@ -111,7 +111,7 @@ bool CWindowHandle::begin()
             CEvent eevent(Events::Input::Mouse);
             eevent.setParam(Events::Input::MouseX, static_cast<float>(event.motion.x));
             eevent.setParam(Events::Input::MouseY, static_cast<float>(event.motion.y));
-            EGCoordinator->sendEvent(eevent);
+            EGEngine->sendEvent(eevent);
         } break;
 
         case SDL_FINGERDOWN:
@@ -151,7 +151,7 @@ bool CWindowHandle::begin()
     {
         CEvent eevent(Events::Input::Key);
         eevent.setParam(Events::Input::Key, mKeys);
-        EGCoordinator->sendEvent(eevent);
+        EGEngine->sendEvent(eevent);
     }
 
     return bRunning;

@@ -8,21 +8,19 @@
 #include "ecs/components/TransformComponent.h"
 #include "ecs/components/CameraComponent.h"
 
+#include "ecs/helper.hpp"
+
 using namespace engine::ecs;
 using namespace engine::graphics;
 
 void CEnvironmentSystem::__create()
 {
-	for (auto& entity : mEntities)
+	auto view = EGCoordinator.view<FSkyboxComponent>();
+	for (auto [entity, skybox] : view.each())
 	{
-		auto& skybox = EGCoordinator->getComponent<FSkyboxComponent>(entity);
-
 		skybox.brdflut = computeBRDFLUT(512);
 		skybox.irradiance = computeIrradiance(skybox.origin, 64);
 		skybox.prefiltred = computePrefiltered(skybox.origin, 512);
-
-		EGCoordinator->setActiveEnvironment(entity);
-		return;
 	}
 }
 
@@ -31,44 +29,39 @@ void CEnvironmentSystem::__update(float fDt)
 	auto& stage = EGGraphics->getRenderStage("deferred");
 	auto commandBuffer = EGGraphics->getCommandBuffer();
 
-	auto activeCamera = EGCoordinator->getActiveCamera();
+	auto ecamera = get_active_camera(EGCoordinator);
+	auto& camera = EGCoordinator.get<FCameraComponent>(ecamera);
+	auto& cameraTransform = EGCoordinator.get<FTransformComponent>(ecamera);
 
-	if (activeCamera)
+	stage->begin(commandBuffer);
+
+	auto view = EGCoordinator.view<FTransformComponent, FSkyboxComponent>();
+	for (auto [entity, transform, skybox] : view.each())
 	{
-		auto& camera = EGCoordinator->getComponent<FCameraComponent>(activeCamera.value());
-		auto& cameraTransform = EGCoordinator->getComponent <FTransformComponent>(activeCamera.value());
+		auto& vbo = EGGraphics->getVertexBuffer(skybox.vbo_id);
 
-		stage->begin(commandBuffer);
+		vbo->bind(commandBuffer);
 
-		for (auto& entity : mEntities)
+		auto& pShader = EGGraphics->getShader(skybox.shader_id);
+		if (pShader)
 		{
-			auto& transform = EGCoordinator->getComponent<FTransformComponent>(entity);
-			auto& skybox = EGCoordinator->getComponent<FSkyboxComponent>(entity);
-			auto& vbo = EGGraphics->getVertexBuffer(skybox.vbo_id);
+			auto model = transform.getModel();
+			auto normal = glm::transpose(glm::inverse(model));
 
-			vbo->bind(commandBuffer);
+			auto& pUBO = pShader->getUniformBuffer("FUniformData");
+			pUBO->set("model", model);
+			pUBO->set("view", camera.view);
+			pUBO->set("projection", camera.projection);
+			pUBO->set("normal", normal);
+			pUBO->set("viewDir", cameraTransform.position);
+			pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent());
+			pUBO->set("frustumPlanes", camera.frustum.getFrustumSides());
 
-			auto& pShader = EGGraphics->getShader(skybox.shader_id);
-			if (pShader)
-			{
-				auto model = transform.getModel();
-				auto normal = glm::transpose(glm::inverse(model));
+			pShader->addTexture("samplerCubeMap", skybox.origin);
 
-				auto& pUBO = pShader->getUniformBuffer("FUniformData");
-				pUBO->set("model", model);
-				pUBO->set("view", camera.view);
-				pUBO->set("projection", camera.projection);
-				pUBO->set("normal", normal);
-				pUBO->set("viewDir", cameraTransform.position);
-				pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent());
-				pUBO->set("frustumPlanes", camera.frustum.getFrustumSides());
+			pShader->predraw(commandBuffer);
 
-				pShader->addTexture("samplerCubeMap", skybox.origin);
-
-				pShader->predraw(commandBuffer);
-
-				commandBuffer.drawIndexed(vbo->getLastIndex(), 1, 0, 0, 0);
-			}
+			commandBuffer.drawIndexed(vbo->getLastIndex(), 1, 0, 0, 0);
 		}
 	}
 }

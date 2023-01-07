@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ecs/core/System.hpp"
-#include "ecs/core/Event.hpp"
+#include "BaseSystem.h"
+#include "event/Event.hpp"
 
 #include "ecs/components/CameraComponent.h"
 #include "ecs/components/TransformComponent.h"

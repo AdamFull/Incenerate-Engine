@@ -8,30 +8,30 @@ using namespace engine::game;
 
 CSceneNode::CSceneNode()
 {
-	entity = EGCoordinator->createEntity();
-	EGCoordinator->addComponent(entity, FTransformComponent{});
-	log_debug("Entity with id {} was created", entity);
+	entity = EGCoordinator.create();
+	EGCoordinator.emplace<FTransformComponent>(entity, FTransformComponent{});
+	log_debug("Entity with id {} was created", static_cast<uint32_t>(entity));
 }
 
 CSceneNode::CSceneNode(const std::string& name)
 {
 	srName = name;
-	entity = EGCoordinator->createEntity();
-	EGCoordinator->addComponent(entity, FTransformComponent{});
-	log_debug("Entity with id {} and name {} was created", entity, name);
+	entity = EGCoordinator.create();
+	EGCoordinator.emplace<FTransformComponent>(entity, FTransformComponent{});
+	log_debug("Entity with id {} and name {} was created", static_cast<uint32_t>(entity), name);
 }
 
 CSceneNode::~CSceneNode()
 {
 	vChildren.clear();
-	EGCoordinator->destroyEntity(entity);
+	EGCoordinator.destroy(entity);
 	pParent = nullptr;
-	log_debug("Entity with id {} was destroyed", entity);
+	log_debug("Entity with id {} was destroyed", static_cast<uint32_t>(entity));
 }
 
-std::stack<Entity> CSceneNode::relative(Entity id)
+std::stack<entt::entity> CSceneNode::relative(entt::entity id)
 {
-	std::stack<Entity> relatives;
+	std::stack<entt::entity> relatives;
 	CSceneNode* pNode = find(id, true).get();
 	while (pNode)
 	{
@@ -42,7 +42,7 @@ std::stack<Entity> CSceneNode::relative(Entity id)
 	return relatives;
 }
 
-void CSceneNode::exchange(CSceneNode* other, Entity id)
+void CSceneNode::exchange(CSceneNode* other, entt::entity id)
 {
 	attach(other->detach(id));
 }
@@ -82,7 +82,7 @@ std::unique_ptr<CSceneNode> CSceneNode::detach(const std::string& name)
 	);
 }
 
-std::unique_ptr<CSceneNode> CSceneNode::detach(Entity id)
+std::unique_ptr<CSceneNode> CSceneNode::detach(entt::entity id)
 {
 	return detach(
 		__find(
@@ -106,7 +106,7 @@ std::unique_ptr<CSceneNode> CSceneNode::detach(child_container_t::const_iterator
 	return pDetached;
 }
 
-const std::unique_ptr<CSceneNode>& CSceneNode::find(Entity id, bool bDeep) const
+const std::unique_ptr<CSceneNode>& CSceneNode::find(entt::entity id, bool bDeep) const
 {
 	return *__find([&id](const std::unique_ptr<CSceneNode>& node) { return id == node->getEntity(); }, bDeep);
 }
@@ -116,14 +116,14 @@ const std::unique_ptr<CSceneNode>& CSceneNode::find(const std::string& name, boo
 	return *__find([&name](const std::unique_ptr<CSceneNode>& node) { return name == node->getName(); }, bDeep);
 }
 
-const bool CSceneNode::isVisible(Entity id) const
+const bool CSceneNode::isVisible(entt::entity id) const
 {
 	// Wrong
 	auto& found = find(id);
 	return found ? found->isVisible() : false;
 }
 
-const bool CSceneNode::isEnabled(Entity id) const
+const bool CSceneNode::isEnabled(entt::entity id) const
 {
 	// Wrong
 	auto& found = find(id);

@@ -35,7 +35,7 @@ namespace engine
 			glm::vec2 viewportDim{};
 
 			bool moved{ true };
-			bool active{ true };
+			bool active{ false };
 		};
 
 		void to_json(nlohmann::json& json, const FCameraComponent& type);

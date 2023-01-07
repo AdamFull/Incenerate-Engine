@@ -22,10 +22,10 @@ CEngine::CEngine()
 
 CEngine::~CEngine()
 {
+	vSystems.clear();
 	pRoot = nullptr;
 	pGraphics = nullptr;
 	pWindow = nullptr;
-	pCoordinator = nullptr;
 	log_debug("Engine was shutdown.");
 }
 
@@ -37,8 +37,7 @@ void CEngine::create()
 	FEngineCreateInfo createInfo;
 	fs::read_json("engine/config.cfg", createInfo);
 
-	pCoordinator = std::make_unique<CCoordinator>();
-	pCoordinator->create();
+	pEventManager = std::make_unique<CEventManager>();
 
 	pWindow = std::make_unique<CWindowHandle>();
 	pWindow->create(createInfo.window);
@@ -77,9 +76,9 @@ void CEngine::beginEngineLoop()
 	pGraphics->shutdown();
 }
 
-const coordinator_t& CEngine::getCoordinator() const
+entt::registry& CEngine::getCoordinator()
 {
-	return pCoordinator;
+	return coordinator;
 }
 
 const winptr_t& CEngine::getWindow() const
@@ -95,4 +94,14 @@ const graphptr_t& CEngine::getGraphics() const
 const scenegraph_t& CEngine::getSceneGraph() const
 {
 	return pRoot;
+}
+
+void CEngine::sendEvent(CEvent& event)
+{
+	pEventManager->sendEvent(event);
+}
+
+void CEngine::sendEvent(EventId eventId)
+{
+	pEventManager->sendEvent(eventId);
 }

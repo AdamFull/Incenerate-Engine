@@ -14,13 +14,6 @@ CAPIHandle::CAPIHandle(winhandle_t window)
 
 CAPIHandle::~CAPIHandle()
 {
-    pRenderStageManager = nullptr;
-    pVertexBufferManager = nullptr;
-    pMaterialManager = nullptr;
-    pShaderManager = nullptr;
-    pImageManager = nullptr;
-    pDevice = nullptr;
-    pLoader = nullptr;
 }
 
 void CAPIHandle::create(const FEngineCreateInfo& createInfo)
@@ -136,10 +129,10 @@ void CAPIHandle::reCreate()
 
     log_debug("ReCreating swapchain.");
 
+    pDevice->GPUWait();
+
     while (pWindow->isMinimized())
         pWindow->begin();
-
-    pDevice->GPUWait();
 
     pDevice->recreateSwapchain();
     screenExtent = pDevice->getExtent();
@@ -156,6 +149,12 @@ void CAPIHandle::reCreate()
 void CAPIHandle::shutdown()
 {
     pDevice->GPUWait();
+
+    pRenderStageManager = nullptr;
+    pVertexBufferManager = nullptr;
+    pMaterialManager = nullptr;
+    pShaderManager = nullptr;
+    pImageManager = nullptr;
 }
 
 vk::CommandBuffer CAPIHandle::begin()
