@@ -1,7 +1,6 @@
 #include "SceneGraph.hpp"
 
 #include "Engine.h"
-#include "ecs/components/TransformComponent.h"
 
 using namespace engine::ecs;
 using namespace engine::game;
@@ -29,17 +28,20 @@ CSceneNode::~CSceneNode()
 	log_debug("Entity with id {} was destroyed", static_cast<uint32_t>(entity));
 }
 
-std::stack<entt::entity> CSceneNode::relative(entt::entity id)
+FTransformComponent CSceneNode::getTransform()
 {
-	std::stack<entt::entity> relatives;
-	CSceneNode* pNode = find(id, true).get();
-	while (pNode)
-	{
-		relatives.emplace(pNode->entity);
-		pNode = pNode->pParent;
-	}
+	auto transform = EGCoordinator.get<FTransformComponent>(entity);
+	if (pParent)
+		transform += pParent->getTransform();
+	return transform;
+}
 
-	return relatives;
+glm::mat4 CSceneNode::getModel()
+{
+	auto transform = EGCoordinator.get<FTransformComponent>(entity);
+	if (pParent)
+		return pParent->getModel() * transform.getModel();
+	return transform.getModel();
 }
 
 void CSceneNode::exchange(CSceneNode* other, entt::entity id)

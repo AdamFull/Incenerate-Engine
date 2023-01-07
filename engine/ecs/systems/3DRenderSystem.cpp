@@ -28,21 +28,13 @@ void C3DRenderSystem::__update(float fDt)
 	auto& camera = EGCoordinator.get<FCameraComponent>(ecamera);
 	auto& cameraTransform = EGCoordinator.get<FTransformComponent>(ecamera);
 
-	auto view = EGCoordinator.view<FTransformComponent, FMeshComponent>();
-	for (auto [entity, transform, mesh] : view.each())
+	auto view = EGCoordinator.view<FMeshComponent>();
+	for (auto [entity, mesh] : view.each())
 	{
-		FTransformComponent relative;
-
 		auto& vbo = EGGraphics->getVertexBuffer(mesh.vbo_id);
 
-		auto relatives = EGSceneGraph->relative(entity);
-		while (!relatives.empty())
-		{
-			auto& front = relatives.top();
-			auto& rt = EGCoordinator.get<FTransformComponent>(front);
-			relative += rt;
-			relatives.pop();
-		}
+		auto& pNode = EGSceneGraph->find(entity, true);
+		auto model = pNode->getModel();
 
 		vbo->bind(commandBuffer);
 
@@ -61,7 +53,6 @@ void C3DRenderSystem::__update(float fDt)
 					auto& pShader = EGGraphics->getShader(pMaterial->getShader());
 					if (pShader)
 					{
-						auto model = relative.getModel();
 						auto normal = glm::transpose(glm::inverse(model));
 
 						auto& pUBO = pShader->getUniformBuffer("FUniformData");

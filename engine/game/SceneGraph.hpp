@@ -6,6 +6,8 @@
 #include <queue>
 #include <entt/entity/fwd.hpp>
 
+#include "ecs/components/TransformComponent.h"
+
 namespace engine
 {
 	namespace game
@@ -18,7 +20,8 @@ namespace engine
 			CSceneNode(const std::string& name);
 			~CSceneNode();
 
-			std::stack<entt::entity> relative(entt::entity id);
+			ecs::FTransformComponent getTransform();
+			glm::mat4 getModel();
 
 			void exchange(CSceneNode* other, entt::entity id);
 			void exchange(CSceneNode* other, const std::string& name);
