@@ -29,7 +29,7 @@ const std::unique_ptr<CShader>& CShaderObject::getShader()
 	return pShader;
 }
 
-void CShaderObject::create(size_t usages)
+void CShaderObject::create(uint32_t subpass, size_t usages)
 {
 	usageCount = usages;
 
@@ -38,7 +38,7 @@ void CShaderObject::create(size_t usages)
 	{
 	case vk::PipelineBindPoint::eGraphics: {
 		pPipeline = std::make_unique<CGraphicsPipeline>(pDevice);
-		pPipeline->create(this, EGGraphics->getFramebuffer(programCI.srStage)->getRenderPass(), 0);
+		pPipeline->create(this, EGGraphics->getFramebuffer(programCI.srStage)->getRenderPass(), subpass);
 	} break;
 	case vk::PipelineBindPoint::eCompute: {
 		pPipeline = std::make_unique<CComputePipeline>(pDevice);

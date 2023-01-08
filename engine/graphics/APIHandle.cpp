@@ -35,6 +35,63 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     screenExtent = pDevice->getExtent();
     commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
+    auto depth_format = EGGraphics->getDevice()->getDepthFormat();
+
+    {
+        mStageInfos["shadow"].srName = "shadow";
+        mStageInfos["shadow"].viewport.offset = vk::Offset2D(0, 0);
+        mStageInfos["shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        mStageInfos["shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, MAX_SPOT_LIGHT_COUNT);
+        mStageInfos["shadow"].vDescriptions.emplace_back("direct_shadowmap_tex");
+        mStageInfos["shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArrayCube, MAX_POINT_LIGHT_COUNT);
+        mStageInfos["shadow"].vDescriptions.emplace_back("omni_shadowmap_tex");
+        mStageInfos["shadow"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eBottomOfPipe,
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                ),
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+                )
+            )
+        );
+        mStageInfos["shadow"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    1,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eFragmentShader,
+                    vk::AccessFlagBits::eShaderRead
+                )
+            )
+        );
+        mStageInfos["shadow"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eFragmentShader,
+                    vk::AccessFlagBits::eShaderRead
+                )
+            )
+        );
+
+        auto stageId = EGGraphics->addRenderStage("shadow");
+        auto& pStage = EGGraphics->getRenderStage(stageId);
+        pStage->create(mStageInfos["shadow"]);
+    }
 
     {
         mStageInfos["deferred"].srName = "deferred";
@@ -43,7 +100,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         mStageInfos["deferred"].bFlipViewport = true;
         mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "packed_tex", vk::Format::eR32G32B32A32Uint, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "emission_tex", vk::Format::eB10G11R11UfloatPack32, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", EGGraphics->getDevice()->getDepthFormat(), vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled });
         mStageInfos["deferred"].vOutputs.emplace_back("packed_tex");
         mStageInfos["deferred"].vOutputs.emplace_back("emission_tex");
         mStageInfos["deferred"].vDescriptions.emplace_back("depth_tex");
@@ -180,6 +237,9 @@ void CAPIHandle::reCreate()
     CWindowHandle::bWasResized = false;
     for (auto& [name, stage] : mStageInfos)
     {
+        if (name == "shadow")
+            continue;
+
         stage.viewport.extent = pDevice->getExtent();
         auto& pStage = pRenderStageManager->get(name);
         pStage->reCreate(stage);
@@ -282,6 +342,12 @@ size_t CAPIHandle::addShader(const std::string& name, const std::string& shadert
         pMaterial->setShader(shader_id);
     }
 
+    return shader_id;
+}
+
+size_t CAPIHandle::addShader(const std::string& name, const std::string& shadertype, const std::map<std::string, std::string>& defines, uint32_t subpass)
+{
+    auto shader_id = addShader(name, pLoader->load(shadertype, defines, subpass));
     return shader_id;
 }
 

@@ -50,7 +50,7 @@
   {
     "name": "GltfScene",
     "components": {
-      "gltfscene": "models/sponza/sponza.gltf"
+      "gltfscene": "models/simplescene/SimpleScene.gltf"
     },
     "children": [
       {

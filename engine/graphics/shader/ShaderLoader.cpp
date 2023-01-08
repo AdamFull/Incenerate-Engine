@@ -27,22 +27,29 @@ void CShaderLoader::create(const std::string& srShaderPath)
 
 std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size_t mat_id)
 {
+	std::map<std::string, std::string> defines;
+	size_t usages{ 1 };
+	if (mat_id != invalid_index)
+	{
+		auto& pMaterial = EGGraphics->getMaterial(mat_id);
+		auto& params = pMaterial->getParameters();
+		usages = pMaterial->getUsageCount();
+
+		for (auto& definition : params.vCompileDefinitions)
+			defines.emplace(definition, "");
+	}
+
+	return load(name, defines, 0, usages);
+}
+
+std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, const std::map<std::string, std::string>& defines, uint32_t subpass, size_t usages)
+{
 	auto it = programCI.find(name);
 	if (it != programCI.end())
 	{
 		std::stringstream defineBlock;
-		size_t usages{ 1 };
-		if (mat_id != invalid_index)
-		{
-			auto& pMaterial = EGGraphics->getMaterial(mat_id);
-			auto& params = pMaterial->getParameters();
-			usages = pMaterial->getUsageCount();
-			
-			for (auto& definition : params.vCompileDefinitions)
-				defineBlock << "#define " << definition << '\n';
-		}
-
-		auto api = EGGraphics->getAPI();
+		for(auto& [name, value] : defines)
+			defineBlock << "#define " << name << " " << value << '\n';
 
 		auto pShaderObject = std::make_unique<CShaderObject>(pDevice);
 		auto& pShader = pShaderObject->pShader;
@@ -55,17 +62,17 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size
 		if (!it->second.tesselation)
 		{
 			auto remit = std::remove_if(stages.begin(), stages.end(),
-				[](const std::string& stage) 
+				[](const std::string& stage)
 				{
 					auto ext = stage.substr(stage.find_last_of(".") + 1);
-					return ext == "tesc" || ext == "tese";
+			return ext == "tesc" || ext == "tese";
 				});
 
-			if(remit != stages.end())
+			if (remit != stages.end())
 				stages.erase(remit, stages.end());
 		}
-			
 
+		auto api = EGGraphics->getAPI();
 		for (auto& stage : stages)
 		{
 			if (auto compiled = pCompiler->compile(stage, defineBlock.str(), api))
@@ -76,7 +83,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size
 
 		pShaderObject->programCI = it->second;
 
-		pShaderObject->create(usages);
+		pShaderObject->create(subpass, usages);
 
 		return pShaderObject;
 	}

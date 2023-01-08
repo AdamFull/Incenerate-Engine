@@ -4,6 +4,11 @@
 using namespace engine::ecs;
 using namespace engine::system::window;
 
+CPostProcessSystem::~CPostProcessSystem()
+{
+	
+}
+
 void CPostProcessSystem::__create()
 {
 	shader_id = EGGraphics->addShader("post_process", "post_process");

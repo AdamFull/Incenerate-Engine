@@ -6,10 +6,10 @@ namespace engine
 {
 	namespace ecs
 	{
-		class CPostProcessSystem : public ISystem
+		class COmniShadowSystem : public ISystem
 		{
 		public:
-			virtual ~CPostProcessSystem() override;
+			virtual ~COmniShadowSystem() override = default;
 
 			void __create() override;
 			void __update(float fDt) override;

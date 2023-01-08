@@ -29,7 +29,7 @@ namespace engine
 			CShaderObject(CDevice* device);
 			~CShaderObject();
 
-			void create(size_t usages = 1);
+			void create(uint32_t subpass = 0, size_t usages = 1);
 			void predraw(vk::CommandBuffer& commandBuffer);
 			void dispatch(size_t size);
 			void dispatch(vk::CommandBuffer& commandBuffer, size_t size);

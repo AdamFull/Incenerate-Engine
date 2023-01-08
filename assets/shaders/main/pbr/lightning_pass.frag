@@ -9,8 +9,8 @@
 #include "light_models/sascha_williems.glsl"
 
 //#include "../shadows/projection/cascade_shadows.glsl"
-//#include "../shadows/projection/directional_shadows.glsl"
-//#include "../shadows/projection/omni_shadows.glsl"
+#include "../shadows/projection/directional_shadows.glsl"
+#include "../shadows/projection/omni_shadows.glsl"
 
 #include "../lightning_base.glsl"
 #include "../../shader_util.glsl"
@@ -26,8 +26,8 @@ layout (binding = 5) uniform sampler2D depth_tex;
 //layout (binding = 6) uniform sampler2D ssr_tex;
 
 //layout (binding = 7) uniform sampler2DArray cascade_shadowmap_tex;
-//layout (binding = 8) uniform sampler2DArrayShadow direct_shadowmap_tex;
-//layout (binding = 9) uniform samplerCubeArrayShadow omni_shadowmap_tex;
+layout (binding = 8) uniform sampler2DArrayShadow direct_shadowmap_tex;
+layout (binding = 9) uniform samplerCubeArrayShadow omni_shadowmap_tex;
 
 //--------------------In/Out locations--------------------
 layout (location = 0) in vec2 inUV;
@@ -90,8 +90,8 @@ vec3 calculateSpotlight(FSpotLight light, int index, vec3 worldPosition, vec3 al
 	float heightAttenuation = smoothstep(100.0, 0.0f, dist);
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 	
-	//float shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
-	float shadow_factor = 1.0;
+	float shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
+	//float shadow_factor = 1.0;
 
 	return light.color * light.intencity * color * spotEffect * heightAttenuation * shadow_factor;
 }
@@ -104,8 +104,8 @@ vec3 calculatePointLight(FPointLight light, int index, vec3 worldPosition, vec3 
 	float atten = clamp(1.0 - pow(dist, 2.0f)/pow(light.radius, 2.0f), 0.0f, 1.0f); atten *= atten;
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 
-	//float shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index);
-	float shadow_factor = 1.0;
+	float shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index);
+	//float shadow_factor = 1.0;
 
 	return light.color * atten * color * light.intencity * shadow_factor;
 }

@@ -263,6 +263,7 @@ void CDevice::createDevice()
     deviceFeatures.tessellationShader = true;
     deviceFeatures.fragmentStoresAndAtomics = true;
     deviceFeatures.logicOp = true;
+    deviceFeatures.imageCubeArray = true;
     deviceFeatures.depthClamp = true;
 
     auto createInfo = vk::DeviceCreateInfo{};

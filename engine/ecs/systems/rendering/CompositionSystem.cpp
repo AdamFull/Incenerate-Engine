@@ -22,11 +22,11 @@ void CCompositionSystem::__create()
 void CCompositionSystem::__update(float fDt)
 {
 	uint32_t directoonal_light_count{ 0 };
-	std::array<FDirectionalLightCommit, 1> directional_lights;
+	std::array<FDirectionalLightCommit, MAX_DIRECTIONAL_LIGHT_COUNT> directional_lights;
 	uint32_t point_light_count{ 0 };
-	std::array<FPointLightCommit, 16> point_lights;
+	std::array<FPointLightCommit, MAX_POINT_LIGHT_COUNT> point_lights;
 	uint32_t spot_light_count{ 0 };
-	std::array<FSpotLightCommit, 15> spot_lights;
+	std::array<FSpotLightCommit, MAX_SPOT_LIGHT_COUNT> spot_lights;
 
 	// Collecting directional lights
 	{
@@ -110,6 +110,12 @@ void CCompositionSystem::__update(float fDt)
 
 	auto& depth = EGGraphics->getImage("depth_tex_" + std::to_string(index));
 	pShader->addTexture("depth_tex", depth->getDescriptor());
+
+	auto& directsm = EGGraphics->getImage("direct_shadowmap_tex_" + std::to_string(index));
+	pShader->addTexture("direct_shadowmap_tex", directsm->getDescriptor());
+
+	auto& omnism = EGGraphics->getImage("omni_shadowmap_tex_" + std::to_string(index));
+	pShader->addTexture("omni_shadowmap_tex", omnism->getDescriptor());
 
 	auto& pUBO = pShader->getUniformBuffer("UBODeferred");
 	pUBO->set("invViewProjection", glm::inverse(camera.projection * camera.view));
