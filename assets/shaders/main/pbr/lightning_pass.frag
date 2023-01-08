@@ -37,6 +37,8 @@ layout (location = 0) out vec4 outFragcolor;
 layout(std140, binding = 12) uniform UBODeferred
 {
 	mat4 invViewProjection;
+	mat4 invProjMatrix;
+	mat4 invViewMatrix;
 	mat4 view;
 	vec4 viewPos;
 	int directionalLightCount;
@@ -113,8 +115,10 @@ void main()
 	// ---Get G-Buffer values---
 
 	//Load depth and world position
+	vec2 invUV = vec2(inUV.x, 1-inUV.y);
 	float depth = texture(depth_tex, inUV).r;
-	vec3 inWorldPos = getPositionFromDepth(inUV, depth, ubo.invViewProjection);
+	vec3 inWorldPos = getPositionFromDepth(invUV, depth, ubo.invViewProjection);
+	//vec3 inWorldPos = WorldPosFromDepth(invUV, depth, ubo.invProjMatrix, ubo.invViewMatrix);
 
 	vec3 normal = vec3(0.0);
 	vec3 albedo = vec3(0.0);

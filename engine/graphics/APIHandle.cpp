@@ -52,7 +52,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
                 FCIDependencyDesc(
                     VK_SUBPASS_EXTERNAL,
                     vk::PipelineStageFlagBits::eBottomOfPipe,
-                    vk::AccessFlags{}
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
                 ),
                 FCIDependencyDesc(
                     0,
@@ -85,10 +85,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         mStageInfos["composition"].srName = "composition";
         mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
         mStageInfos["composition"].viewport.extent = EGGraphics->getDevice()->getExtent();
-        mStageInfos["composition"].bFlipViewport = true;
-        //stageCI.bFlipViewport = true;
-        mStageInfos["composition"].vImages.emplace_back(FCIImage{ "present_khr", EGGraphics->getDevice()->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
-        mStageInfos["composition"].vOutputs.emplace_back("present_khr");
+        mStageInfos["composition"].vImages.emplace_back(FCIImage{ "postprocess_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["composition"].vOutputs.emplace_back("postprocess_tex");
         mStageInfos["composition"].vDescriptions.emplace_back("");
         mStageInfos["composition"].vDependencies.emplace_back(
             FCIDependency(
@@ -104,10 +102,51 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
                 )
             )
         );
+        mStageInfos["composition"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                )
+            )
+        );
 
         auto stageId = EGGraphics->addRenderStage("composition");
         auto& pStage = EGGraphics->getRenderStage(stageId);
         pStage->create(mStageInfos["composition"]);
+    }
+
+    {
+        mStageInfos["postprocess"].srName = "postprocess";
+        mStageInfos["postprocess"].viewport.offset = vk::Offset2D(0, 0);
+        mStageInfos["postprocess"].viewport.extent = EGGraphics->getDevice()->getExtent();
+        mStageInfos["postprocess"].vImages.emplace_back(FCIImage{ "present_khr", EGGraphics->getDevice()->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
+        mStageInfos["postprocess"].vOutputs.emplace_back("present_khr");
+        mStageInfos["postprocess"].vDescriptions.emplace_back("");
+        mStageInfos["postprocess"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eAllGraphics,
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                )
+            )
+        );
+
+        auto stageId = EGGraphics->addRenderStage("postprocess");
+        auto& pStage = EGGraphics->getRenderStage(stageId);
+        pStage->create(mStageInfos["postprocess"]);
     }
     
 

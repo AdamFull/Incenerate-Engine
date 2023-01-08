@@ -14,6 +14,13 @@ namespace engine
 {
 	namespace graphics
 	{
+		// Bad solution
+		struct FShaderInstance
+		{
+			std::unique_ptr<CDescriptorHandler> pDescriptorSet;
+			std::map<std::string, std::unique_ptr<CHandler>> mBuffers;
+		};
+
 		class CShaderObject
 		{
 		public:
@@ -57,8 +64,8 @@ namespace engine
 			std::unique_ptr<CShader> pShader;
 			std::unique_ptr<CPipeline> pPipeline;
 			std::map<std::string, vk::DescriptorImageInfo> mTextures;
-			std::vector<std::unique_ptr<CDescriptorHandler>> vDescriptorSets;
-			std::map<std::string, std::unique_ptr<CHandler>> mBuffers;
+			std::vector<std::unique_ptr<FShaderInstance>> vInstances;
+			
 			std::map<std::string, std::unique_ptr<CPushHandler>> mPushBlocks;
 
 			FProgramCreateInfo programCI;

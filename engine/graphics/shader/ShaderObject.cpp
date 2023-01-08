@@ -48,9 +48,28 @@ void CShaderObject::create(size_t usages)
 
 	for (size_t usage = 0; usage < usageCount; usage++)
 	{
-		auto pDescriptorSet = std::make_unique<CDescriptorHandler>(pDevice);
-		pDescriptorSet->create(this);
-		vDescriptorSets.emplace_back(std::move(pDescriptorSet));
+		auto pInstance = std::make_unique<FShaderInstance>();
+		pInstance->pDescriptorSet = std::make_unique<CDescriptorHandler>(pDevice);
+		pInstance->pDescriptorSet->create(this);
+
+		for (auto& [name, uniform] : pShader->getUniformBlocks())
+		{
+			std::unique_ptr<CHandler> pUniform;
+			switch (uniform.getDescriptorType())
+			{
+			case vk::DescriptorType::eUniformBuffer: {
+				pUniform = std::make_unique<CUniformHandler>(pDevice);
+				pUniform->create(uniform);
+			} break;
+			case vk::DescriptorType::eStorageBuffer: {
+				pUniform = std::make_unique<CStorageHandler>(pDevice);
+				pUniform->create(uniform);
+			} break;
+			}
+
+			pInstance->mBuffers.emplace(name, std::move(pUniform));
+		}
+		vInstances.emplace_back(std::move(pInstance));
 	}
 	
 
@@ -60,45 +79,27 @@ void CShaderObject::create(size_t usages)
 		pBlock->create(push);
 		mPushBlocks.emplace(name, std::move(pBlock));
 	}
-
-	for (auto& [name, uniform] : pShader->getUniformBlocks())
-	{
-		std::unique_ptr<CHandler> pUniform;
-		switch (uniform.getDescriptorType())
-		{
-		case vk::DescriptorType::eUniformBuffer: {
-			pUniform = std::make_unique<CUniformHandler>(pDevice);
-			pUniform->create(uniform);
-		} break;
-		case vk::DescriptorType::eStorageBuffer: {
-			pUniform = std::make_unique<CStorageHandler>(pDevice);
-			pUniform->create(uniform);
-		} break;
-		}
-
-		mBuffers.emplace(name, std::move(pUniform));
-	}
 }
 
 void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
 {
-	auto& pDescriptorSet = vDescriptorSets.at(currentUsage);
+	auto& pInstance = vInstances.at(currentUsage);
 
-	pDescriptorSet->reset();
-	for (auto& [name, uniform] : mBuffers)
+	pInstance->pDescriptorSet->reset();
+	for (auto& [name, uniform] : pInstance->mBuffers)
 	{
 		auto& buffer = uniform->getBuffer();
 		auto& descriptor = buffer->getDescriptor();
-		pDescriptorSet->set(name, descriptor);
+		pInstance->pDescriptorSet->set(name, descriptor);
 		uniform->flush();
 	}
 
 	for (auto& [key, texture] : mTextures)
-		pDescriptorSet->set(key, texture);
-	pDescriptorSet->update();
+		pInstance->pDescriptorSet->set(key, texture);
+	pInstance->pDescriptorSet->update();
 	mTextures.clear();
 
-	pDescriptorSet->bind(commandBuffer);
+	pInstance->pDescriptorSet->bind(commandBuffer);
 	pPipeline->bind(commandBuffer);
 
 	currentUsage = (currentUsage + 1) % usageCount;
@@ -142,8 +143,10 @@ vk::DescriptorImageInfo& CShaderObject::getTexture(const std::string& attachment
 
 const std::unique_ptr<CHandler>& CShaderObject::getUniformBuffer(const std::string& name)
 {
-	auto uniformBlock = mBuffers.find(name);
-	if (uniformBlock != mBuffers.end())
+	auto& pInstance = vInstances.at(currentUsage);
+
+	auto uniformBlock = pInstance->mBuffers.find(name);
+	if (uniformBlock != pInstance->mBuffers.end())
 		return uniformBlock->second;
 	return nullptr;
 }

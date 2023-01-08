@@ -35,9 +35,9 @@
         "components": {
           "pointlight": {
             "color": {
-              "x": 1.0,
+              "x": 0.5,
               "y": 1.0,
-              "z": 0.0
+              "z": 0.5
             },
             "intencity": 1.5,
             "radius": 10.0,
@@ -50,7 +50,7 @@
   {
     "name": "GltfScene",
     "components": {
-      "gltfscene": "models/simplescene/SimpleScene.gltf"
+      "gltfscene": "models/sponza/sponza.gltf"
     },
     "children": [
       {
@@ -62,16 +62,6 @@
               "y": 0.0,
               "z": 0.0
             }
-          },
-          "pointlight": {
-            "color": {
-              "x": 1.0,
-              "y": 1.0,
-              "z": 0.0
-            },
-            "intencity": 1.5,
-            "radius": 10.0,
-            "castShadows": false
           },
           "audio": {
             "source": "test2.wav"

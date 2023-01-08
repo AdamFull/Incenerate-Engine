@@ -50,15 +50,28 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size
 		for (const auto& [defineName, defineValue] : it->second.defines)
 			defineBlock << "#define " << defineName << " " << defineValue << '\n';
 
-		for (auto& stage : it->second.stages)
+
+		auto stages = it->second.stages;
+		if (!it->second.tesselation)
 		{
-			auto ext = stage.substr(stage.find_last_of(".") + 1);
-			if (!it->second.tesselation && ext != "tesc" && ext != "tese")
-			{
-				if (auto compiled = pCompiler->compile(stage, defineBlock.str(), api))
-					pShader->addStage(compiled->shaderCode, compiled->shaderStage);
-			}
+			auto remit = std::remove_if(stages.begin(), stages.end(),
+				[](const std::string& stage) 
+				{
+					auto ext = stage.substr(stage.find_last_of(".") + 1);
+					return ext == "tesc" || ext == "tese";
+				});
+
+			if(remit != stages.end())
+				stages.erase(remit, stages.end());
 		}
+			
+
+		for (auto& stage : stages)
+		{
+			if (auto compiled = pCompiler->compile(stage, defineBlock.str(), api))
+				pShader->addStage(compiled->shaderCode, compiled->shaderStage);
+		}
+
 		pShader->buildReflection();
 
 		pShaderObject->programCI = it->second;

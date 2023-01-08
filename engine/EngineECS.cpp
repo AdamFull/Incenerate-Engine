@@ -17,6 +17,7 @@
 #include "ecs/systems/3DRenderSystem.h"
 #include "ecs/systems/2DRenderSystem.h"
 #include "ecs/systems/CompositionSystem.h"
+#include "ecs/systems/PostProcessSystem.h"
 #include "ecs/systems/CameraControlSystem.h"
 #include "ecs/systems/InputSystem.h"
 #include "ecs/systems/ScriptingSystem.h"
@@ -35,6 +36,7 @@ void CEngine::initEntityComponentSystem()
 	vSystems.emplace_back(std::make_unique<CEnvironmentSystem>());
 	vSystems.emplace_back(std::make_unique<C3DRenderSystem>());
 	vSystems.emplace_back(std::make_unique<CCompositionSystem>());
+	vSystems.emplace_back(std::make_unique<CPostProcessSystem>());
 
 	//vSystems.emplace_back(std::make_unique<C2DRenderSystem>());
 }

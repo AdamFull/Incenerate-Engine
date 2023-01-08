@@ -4,6 +4,8 @@ using namespace engine::audio;
 
 CAudioCore::~CAudioCore()
 {
+    pAudioSourceManager = nullptr;
+
     if (!alcCall(alcMakeContextCurrent, contextMadeCurrent, pDevice, nullptr))
         log_error("Failed to change current context.");
 

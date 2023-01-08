@@ -17,7 +17,7 @@
 
 layout (binding = 0) uniform sampler2D samplerColor;
 //layout (binding = 1) uniform sampler2D velocity_tex;
-layout (binding = 2) uniform sampler2D samplerBrightness;
+//layout (binding = 2) uniform sampler2D samplerBrightness;
 
 layout (location = 0) in vec2 inUV;
 
@@ -66,7 +66,7 @@ void main()
         fragcolor = texture(samplerColor, inUV).rgb;
 
     //fragcolor = motionBlur.rgb;
-    vec3 brightness = texture(samplerBrightness, inUV).rgb;
+    //vec3 brightness = texture(samplerBrightness, inUV).rgb;
     //fragcolor = mix(fragcolor, brightness, 0.4);
 
     //Exposure

@@ -260,6 +260,7 @@ void CDevice::createDevice()
     deviceFeatures.fillModeNonSolid = true;
     deviceFeatures.multiViewport = true;
     deviceFeatures.geometryShader = true;
+    deviceFeatures.tessellationShader = true;
     deviceFeatures.fragmentStoresAndAtomics = true;
     deviceFeatures.logicOp = true;
     deviceFeatures.depthClamp = true;

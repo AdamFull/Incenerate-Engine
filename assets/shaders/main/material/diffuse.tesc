@@ -17,7 +17,6 @@ layout(std140, binding = 7) uniform UBOMaterial
 layout(std140, binding = 0) uniform FUniformData 
 {
   	mat4 model;
-	mat4 model_old;
   	mat4 view;
   	mat4 projection;
   	mat4 normal;

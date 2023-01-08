@@ -10,7 +10,6 @@ namespace engine
 		{
 			size_t begin_index, index_count;
 			size_t begin_vertex, vertex_count;
-			size_t vertex_buffer{ invalid_index };
 			size_t material{ invalid_index };
 
 			bool bWasCulled{ false };
