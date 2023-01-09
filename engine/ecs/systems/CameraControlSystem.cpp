@@ -18,10 +18,12 @@ _Ty rangeToRange(_Ty input, _Ty in_min, _Ty in_max, _Ty out_min, _Ty out_max)
 
 void CCameraControlSystem::__create()
 {
+	auto& registry = EGCoordinator;
+
 	EGEngine->addEventListener(Events::Input::Key, this, &CCameraControlSystem::onKeyInput);
 	EGEngine->addEventListener(Events::Input::Mouse, this, &CCameraControlSystem::onMouseInput);
 
-	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	auto view = registry.view<FTransformComponent, FCameraComponent>();
 	for (auto [entity, transform, camera] : view.each())
 	{
 		camera.active = true;
@@ -32,9 +34,9 @@ void CCameraControlSystem::__create()
 
 void CCameraControlSystem::__update(float fDt)
 {
-	dt = fDt;
+	auto& registry = EGCoordinator;
 
-	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	auto view = registry.view<FTransformComponent, FCameraComponent>();
 	for (auto [entity, transform, camera] : view.each())
 	{
 		if (camera.active)
@@ -63,6 +65,8 @@ void CCameraControlSystem::__update(float fDt)
 			camera.frustum.update(camera.view, camera.projection);
 		}
 	}
+
+	dt = fDt;
 }
 
 void CCameraControlSystem::recalculateProjection(FCameraComponent& camera)
@@ -99,6 +103,8 @@ void CCameraControlSystem::onKeyInput(CEvent& event)
 
 void CCameraControlSystem::onMouseInput(CEvent& event)
 {
+	auto& registry = EGCoordinator;
+
 	auto fx = event.getParam<float>(Events::Input::MouseX);
 	auto fy = event.getParam<float>(Events::Input::MouseY);
 
@@ -114,7 +120,7 @@ void CCameraControlSystem::onMouseInput(CEvent& event)
 	if (!bRotationPass)
 		return;
 
-	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	auto view = registry.view<FTransformComponent, FCameraComponent>();
 	for (auto [entity, transform, camera] : view.each())
 	{
 		if (camera.active)
@@ -152,9 +158,10 @@ void CCameraControlSystem::onMouseInput(CEvent& event)
 
 void CCameraControlSystem::moveForward(bool bInv)
 {
+	auto& registry = EGCoordinator;
 	float dir = bInv ? -1.f : 1.f;
 
-	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	auto view = registry.view<FTransformComponent, FCameraComponent>();
 	for (auto [entity, transform, camera] : view.each())
 	{
 		if (camera.active)
@@ -167,9 +174,10 @@ void CCameraControlSystem::moveForward(bool bInv)
 
 void CCameraControlSystem::moveRight(bool bInv)
 {
+	auto& registry = EGCoordinator;
 	float dir = bInv ? -1.f : 1.f;
 
-	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	auto view = registry.view<FTransformComponent, FCameraComponent>();
 	for (auto [entity, transform, camera] : view.each())
 	{
 		if (camera.active)
@@ -182,9 +190,10 @@ void CCameraControlSystem::moveRight(bool bInv)
 
 void CCameraControlSystem::moveUp(bool bInv)
 {
+	auto& registry = EGCoordinator;
 	float dir = bInv ? -1.f : 1.f;
 
-	auto view = EGCoordinator.view<FTransformComponent, FCameraComponent>();
+	auto view = registry.view<FTransformComponent, FCameraComponent>();
 	for (auto [entity, transform, camera] : view.each())
 	{
 		if (camera.active)

@@ -5,8 +5,6 @@
 
 #include <utility/logger/logger.h>
 
-#include <string>
-
 namespace al
 {
     static bool CheckError()

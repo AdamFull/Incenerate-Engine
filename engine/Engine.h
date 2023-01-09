@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include <utility/upattern.hpp>
 
 #include "EngineStructures.h"
@@ -25,7 +23,6 @@ namespace engine
 {
 	using winptr_t = std::unique_ptr<system::window::CWindowHandle>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
-	using scenegraph_t = std::unique_ptr<game::CSceneNode>;
 	using audiocore_t = std::unique_ptr<audio::CAudioCore>;
 
 	class CEngine : public utl::singleton<CEngine>
@@ -45,7 +42,7 @@ namespace engine
 		const winptr_t& getWindow() const;
 		const graphptr_t& getGraphics() const;
 		const audiocore_t& getAudio() const;
-		const scenegraph_t& getSceneGraph() const;
+		const entt::entity& getSceneGraph() const;
 
 		// Event methods
 		template<class... _Args>
@@ -60,7 +57,7 @@ namespace engine
 	private:
 		void initEntityComponentSystem();
 	private:
-		scenegraph_t pRoot;
+		entt::entity root;
 		entt::registry coordinator;
 		std::unique_ptr<CEventManager> pEventManager;
 		winptr_t pWindow;

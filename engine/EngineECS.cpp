@@ -13,6 +13,7 @@
 #include "ecs/components/ScriptComponent.h"
 
 // Systems
+#include "ecs/systems/HierarchySystem.h"
 #include "ecs/systems/AudioSystem.h"
 #include "ecs/systems/rendering/shadows/ShadowPassSystem.h"
 #include "ecs/systems/rendering/EnvironmentSystem.h"
@@ -29,7 +30,7 @@ using namespace engine::ecs;
 
 void CEngine::initEntityComponentSystem()
 {
-
+	vSystems.emplace_back(std::make_unique<CHierarchySystem>());
 	vSystems.emplace_back(std::make_unique<CInputSystem>());
 	vSystems.emplace_back(std::make_unique<CScriptingSystem>());
 	vSystems.emplace_back(std::make_unique<CCameraControlSystem>());

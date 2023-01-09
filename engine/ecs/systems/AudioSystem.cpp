@@ -4,6 +4,7 @@
 
 #include "ecs/components/AudioComponent.h"
 #include "ecs/components/CameraComponent.h"
+#include "ecs/components/TransformComponent.h"
 
 using namespace engine::ecs;
 using namespace engine::audio;
@@ -20,16 +21,15 @@ void CAudioSystem::__create()
 
 void CAudioSystem::__update(float fDt)
 {
+	auto& registry = EGCoordinator;
+
 	{
-		auto view = EGCoordinator.view<FCameraComponent>();
-		for (auto [entity, camera] : view.each())
+		auto view = registry.view<FTransformComponent, FCameraComponent>();
+		for (auto [entity, transform, camera] : view.each())
 		{
 			if (camera.active)
 			{
-				auto& pNode = EGSceneGraph->find(entity, true);
-				auto transform = pNode->getTransform();
-
-				alCall(alListener3f, AL_POSITION, transform.position.x, transform.position.y, transform.position.z);
+				alCall(alListener3f, AL_POSITION, transform.rposition.x, transform.rposition.y, transform.rposition.z);
 				float orient[6] = { camera.forward.x, camera.forward.y, camera.forward.z, camera.right.x, camera.right.y, camera.right.z};
 				alCall(alListenerfv, AL_ORIENTATION, orient);
 			}
@@ -37,16 +37,13 @@ void CAudioSystem::__update(float fDt)
 	}
 	
 	{
-		auto view = EGCoordinator.view<FAudioComponent>();
-		for (auto [entity, audio] : view.each())
+		auto view = registry.view<FTransformComponent, FAudioComponent>();
+		for (auto [entity, transform, audio] : view.each())
 		{
-			auto& pNode = EGSceneGraph->find(entity, true);
-			auto transform = pNode->getTransform();
-
 			auto& pSource = EGAudio->getSource(audio.asource);
 
 			pSource->setGain(audio.gain);
-			pSource->setPosition(transform.position);
+			pSource->setPosition(transform.rposition);
 			pSource->setPitch(audio.pitch);
 
 			if (!audio.shouldStop && !audio.playing)

@@ -2,12 +2,6 @@
 
 #include "external/utility/tiny_gltf.h"
 
-#include "game/SceneGraph.hpp"
-
-#include <filesystem>
-#include <vector>
-
-
 namespace engine
 {
 	namespace loaders
@@ -15,13 +9,13 @@ namespace engine
 		class CGltfLoader
 		{
 		public:
-			void load(const std::string& source, const std::unique_ptr<game::CSceneNode>& pRoot);
+			void load(const std::string& source, const entt::entity& pRoot);
 
 		private:
-			void loadNode(const std::unique_ptr<game::CSceneNode>& pNode, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, float globalscale);
-			void loadMeshComponent(const std::unique_ptr<game::CSceneNode>& pNode, const tinygltf::Node& node, const tinygltf::Model& model);
-			void loadCameraComponent(const std::unique_ptr<game::CSceneNode>& pNode, const tinygltf::Node& node, const tinygltf::Model& model);
-			void loadLightComponent(const std::unique_ptr<game::CSceneNode>& pNode, uint32_t light_index, const tinygltf::Node& node, const tinygltf::Model& model);
+			void loadNode(const entt::entity& entity, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, float globalscale);
+			void loadMeshComponent(const entt::entity& entity, const tinygltf::Node& node, const tinygltf::Model& model);
+			void loadCameraComponent(const entt::entity& entity, const tinygltf::Node& node, const tinygltf::Model& model);
+			void loadLightComponent(const entt::entity& entity, uint32_t light_index, const tinygltf::Node& node, const tinygltf::Model& model);
 
 			void loadMaterials(const tinygltf::Model& model);
 			void loadTextures(const tinygltf::Model& model);

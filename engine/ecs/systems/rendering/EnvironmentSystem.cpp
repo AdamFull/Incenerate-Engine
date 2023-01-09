@@ -15,7 +15,9 @@ using namespace engine::graphics;
 
 void CEnvironmentSystem::__create()
 {
-	auto view = EGCoordinator.view<FSkyboxComponent>();
+	auto& registry = EGCoordinator;
+
+	auto view = registry.view<FSkyboxComponent>();
 	for (auto [entity, skybox] : view.each())
 	{
 		skybox.brdflut = computeBRDFLUT(512);
@@ -26,16 +28,18 @@ void CEnvironmentSystem::__create()
 
 void CEnvironmentSystem::__update(float fDt)
 {
+	auto& registry = EGCoordinator;
+
 	auto& stage = EGGraphics->getRenderStage("deferred");
 	auto commandBuffer = EGGraphics->getCommandBuffer();
 
-	auto ecamera = get_active_camera(EGCoordinator);
-	auto& camera = EGCoordinator.get<FCameraComponent>(ecamera);
-	auto& cameraTransform = EGCoordinator.get<FTransformComponent>(ecamera);
+	auto ecamera = get_active_camera(registry);
+	auto& camera = registry.get<FCameraComponent>(ecamera);
+	auto& cameraTransform = registry.get<FTransformComponent>(ecamera);
 
 	stage->begin(commandBuffer);
 
-	auto view = EGCoordinator.view<FTransformComponent, FSkyboxComponent>();
+	auto view = registry.view<FTransformComponent, FSkyboxComponent>();
 	for (auto [entity, transform, skybox] : view.each())
 	{
 		auto& vbo = EGGraphics->getVertexBuffer(skybox.vbo_id);
@@ -45,15 +49,14 @@ void CEnvironmentSystem::__update(float fDt)
 		auto& pShader = EGGraphics->getShader(skybox.shader_id);
 		if (pShader)
 		{
-			auto model = transform.getModel();
-			auto normal = glm::transpose(glm::inverse(model));
+			auto normal = glm::transpose(glm::inverse(transform.model));
 
 			auto& pUBO = pShader->getUniformBuffer("FUniformData");
-			pUBO->set("model", model);
+			pUBO->set("model", transform.model);
 			pUBO->set("view", camera.view);
 			pUBO->set("projection", camera.projection);
 			pUBO->set("normal", normal);
-			pUBO->set("viewDir", cameraTransform.position);
+			pUBO->set("viewDir", cameraTransform.rposition);
 			pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent());
 			pUBO->set("frustumPlanes", camera.frustum.getFrustumSides());
 

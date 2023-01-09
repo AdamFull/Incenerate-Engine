@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility/uparse.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace engine
 {
@@ -12,38 +13,20 @@ namespace engine
 
 			glm::vec3 position{ 0.f };
 			glm::vec3 rotation{ 0.f };
-			glm::vec3 scale{ 1.f, 1.f, 1.f };
+			glm::vec3 scale{ 1.f };
+			glm::vec3 rposition{ 0.f };
+			glm::vec3 rrotation{ 0.f };
+			glm::vec3 rscale{ 1.f };
+			glm::mat4 model{ 1.f };
 
-			FTransformComponent& operator+=(const FTransformComponent& rhs)
+			void update()
 			{
-				this->scale *= rhs.scale;
-				this->position = this->position * rhs.scale + rhs.position;
-				this->rotation += rhs.rotation;
-				return *this;
-			}
-
-			inline const glm::vec3& getPosition() const { return position; }
-			inline void setPosition(const glm::vec3& _position) { this->position = _position; }
-
-			inline const glm::vec3& getRotation() const { return rotation; }
-			inline void setRotation(const glm::vec3& _rotation) { this->rotation = _rotation; }
-
-			inline const glm::vec3& getScale() const { return scale; }
-			inline void setScale(const glm::vec3& _scale) { this->scale = _scale; }
-
-			const glm::mat4 getModel()
-			{
-				glm::mat4 model{ 1.0 };
-				model = glm::translate(model, position);
-				if (rotation.x != 0)
-					model = glm::rotate(model, rotation.x, glm::vec3(1.0, 0.0, 0.0));
-				if (rotation.y != 0)
-					model = glm::rotate(model, rotation.y, glm::vec3(0.0, 1.0, 0.0));
-				if (rotation.z != 0)
-					model = glm::rotate(model, rotation.z, glm::vec3(0.0, 0.0, 1.0));
-				model = glm::scale(model, scale);
-
-				return model;
+				glm::vec3 skew;
+				glm::quat qrotation;
+				glm::vec4 perspective;
+				glm::decompose(model, rscale, qrotation, rposition, skew, perspective);
+				qrotation = glm::conjugate(qrotation);
+				rrotation = glm::eulerAngles(qrotation);
 			}
 		};
 

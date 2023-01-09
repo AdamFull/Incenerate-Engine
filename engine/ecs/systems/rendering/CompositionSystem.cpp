@@ -21,6 +21,8 @@ void CCompositionSystem::__create()
 
 void CCompositionSystem::__update(float fDt)
 {
+	auto& registry = EGCoordinator;
+
 	uint32_t directoonal_light_count{ 0 };
 	std::array<FDirectionalLightCommit, MAX_DIRECTIONAL_LIGHT_COUNT> directional_lights;
 	uint32_t point_light_count{ 0 };
@@ -30,14 +32,11 @@ void CCompositionSystem::__update(float fDt)
 
 	// Collecting directional lights
 	{
-		auto view = EGCoordinator.view<FDirectionalLightComponent>();
-		for (auto [entity, light] : view.each())
+		auto view = registry.view<FTransformComponent, FDirectionalLightComponent>();
+		for (auto [entity, transform, light] : view.each())
 		{
-			auto& pNode = EGSceneGraph->find(entity, true);
-			auto transform = pNode->getTransform();
-
 			FDirectionalLightCommit commit;
-			commit.direction = transform.rotation;
+			commit.direction = transform.rrotation;
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 
@@ -47,14 +46,11 @@ void CCompositionSystem::__update(float fDt)
 	
 	// Collecting point lights
 	{
-		auto view = EGCoordinator.view<FPointLightComponent>();
-		for (auto [entity, light] : view.each())
+		auto view = registry.view<FTransformComponent, FPointLightComponent>();
+		for (auto [entity, transform, light] : view.each())
 		{
-			auto& pNode = EGSceneGraph->find(entity, true);
-			auto transform = pNode->getTransform();
-
 			FPointLightCommit commit;
-			commit.position = transform.position;
+			commit.position = transform.rposition;
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.radius = light.radius;
@@ -65,15 +61,12 @@ void CCompositionSystem::__update(float fDt)
 
 	// Collecting spot lights
 	{
-		auto view = EGCoordinator.view<FSpotLightComponent>();
-		for (auto [entity, light] : view.each())
+		auto view = registry.view<FTransformComponent, FSpotLightComponent>();
+		for (auto [entity, transform, light] : view.each())
 		{
-			auto& pNode = EGSceneGraph->find(entity, true);
-			auto transform = pNode->getTransform();
-
 			FSpotLightCommit commit;
-			commit.position = transform.position;
-			commit.direction = transform.rotation;
+			commit.position = transform.rposition;
+			commit.direction = transform.rrotation;
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.innerAngle = light.innerAngle;
@@ -89,13 +82,12 @@ void CCompositionSystem::__update(float fDt)
 	auto index = EGGraphics->getDevice()->getCurrentFrame();
 
 	// TODO: add empty or default skybox
-	auto eskybox = get_active_skybox(EGCoordinator);
-	auto& skybox = EGCoordinator.get<FSkyboxComponent>(eskybox);
+	auto eskybox = get_active_skybox(registry);
+	auto& skybox = registry.get<FSkyboxComponent>(eskybox);
 
-	auto ecamera = get_active_camera(EGCoordinator);
-	auto& camera = EGCoordinator.get<FCameraComponent>(ecamera);
-	auto& pNode = EGSceneGraph->find(ecamera, true);
-	auto transform = pNode->getTransform();
+	auto ecamera = get_active_camera(registry);
+	auto& camera = registry.get<FCameraComponent>(ecamera);
+	auto& transform = registry.get<FTransformComponent>(ecamera);
 
 	// Setting up predraw data
 	pShader->addTexture("brdflut_tex", skybox.brdflut);
@@ -122,7 +114,7 @@ void CCompositionSystem::__update(float fDt)
 	pUBO->set("invProjMatrix", glm::inverse(camera.projection));
 	pUBO->set("invViewMatrix", glm::inverse(camera.view));
 	pUBO->set("view", camera.view);
-	pUBO->set("viewPos", glm::vec4(transform.position, 1.0));
+	pUBO->set("viewPos", glm::vec4(transform.rposition, 1.0));
 	pUBO->set("directionalLightCount", directoonal_light_count);
 	pUBO->set("spotLightCount", spot_light_count);
 	pUBO->set("pointLightCount", point_light_count);

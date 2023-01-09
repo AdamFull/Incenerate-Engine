@@ -4,6 +4,7 @@
 
 #include "ecs/components/SpotLightComponent.h"
 #include "ecs/components/MeshComponent.h"
+#include "ecs/components/TransformComponent.h"
 
 using namespace engine::ecs;
 
@@ -14,20 +15,20 @@ void CDirectionalShadowSystem::__create()
 
 void CDirectionalShadowSystem::__update(float fDt)
 {
+	auto& registry = EGCoordinator;
+
 	uint32_t spot_light_count{ 0 };
 	std::array<glm::mat4, MAX_SPOT_LIGHT_COUNT> spot_light_matrices;
 
 	// Calculating spot light matrices
 	{
-		auto view = EGCoordinator.view<FSpotLightComponent>();
-		for (auto [entity, light] : view.each())
+		auto view = registry.view<FTransformComponent, FSpotLightComponent>();
+		for (auto [entity, transform, light] : view.each())
 		{
 			const glm::vec3 dp(0.0000001f);
-			auto& pNode = EGSceneGraph->find(entity, true);
-			auto transform = pNode->getTransform();
 
 			glm::mat4 shadowProj = glm::perspective(light.innerAngle, 1.0f, 0.1f, 64.f);
-			glm::mat4 shadowView = glm::lookAt(transform.position + dp, transform.rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::mat4 shadowView = glm::lookAt(transform.rposition + dp, transform.rrotation, glm::vec3(0.0f, 1.0f, 0.0f));
 
 			spot_light_matrices[spot_light_count++] = shadowProj * shadowView;
 		}
@@ -41,20 +42,17 @@ void CDirectionalShadowSystem::__update(float fDt)
 	pUniform->set("passedLights", spot_light_count);
 	pShader->predraw(commandBuffer);
 
-	auto view = EGCoordinator.view<FMeshComponent>();
-	for (auto [entity, mesh] : view.each())
+	auto view = registry.view<FTransformComponent, FMeshComponent>();
+	for (auto [entity, transform, mesh] : view.each())
 	{
 		auto& vbo = EGGraphics->getVertexBuffer(mesh.vbo_id);
-
-		auto& pNode = EGSceneGraph->find(entity, true);
-		auto model = pNode->getModel();
 
 		vbo->bind(commandBuffer);
 
 		for (auto& meshlet : mesh.vMeshlets)
 		{
 			auto& pPush = pShader->getPushBlock("modelData");
-			pPush->set("model", model);
+			pPush->set("model", transform.model);
 			pPush->flush(commandBuffer);
 
 			commandBuffer.drawIndexed(meshlet.index_count, 1, meshlet.begin_index, 0, 0);

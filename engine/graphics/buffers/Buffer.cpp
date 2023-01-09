@@ -2,9 +2,6 @@
 
 #include "APIHandle.h"
 
-#include <set>
-#include <vector>
-
 using namespace engine::graphics;
 
 std::unique_ptr<CBuffer> CBuffer::MakeBuffer(CDevice* device, size_t size, size_t count,

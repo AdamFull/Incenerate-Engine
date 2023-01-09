@@ -21,28 +21,26 @@ void C3DRenderSystem::__create()
 
 void C3DRenderSystem::__update(float fDt)
 {
+	auto& registry = EGCoordinator;
+
 	auto& stage = EGGraphics->getRenderStage("deferred");
 	auto commandBuffer = EGGraphics->getCommandBuffer();
 
-	auto ecamera = get_active_camera(EGCoordinator);
-	auto& camera = EGCoordinator.get<FCameraComponent>(ecamera);
-	auto& cameraTransform = EGCoordinator.get<FTransformComponent>(ecamera);
+	auto ecamera = get_active_camera(registry);
+	auto& camera = registry.get<FCameraComponent>(ecamera);
+	auto& cameraTransform = registry.get<FTransformComponent>(ecamera);
 
-	auto view = EGCoordinator.view<FMeshComponent>();
-	for (auto [entity, mesh] : view.each())
+	auto view = registry.view<FTransformComponent, FMeshComponent>();
+	for (auto [entity, transform, mesh] : view.each())
 	{
 		auto& vbo = EGGraphics->getVertexBuffer(mesh.vbo_id);
-
-		auto& pNode = EGSceneGraph->find(entity, true);
-		auto transform = pNode->getTransform();
-		auto model = transform.getModel();
 
 		vbo->bind(commandBuffer);
 
 		for (auto& meshlet : mesh.vMeshlets)
 		{
 			bool needToRender{ true };
-			needToRender = camera.frustum.checkBox(transform.position + meshlet.dimensions.min * transform.scale, transform.position + meshlet.dimensions.max * transform.scale);
+			needToRender = camera.frustum.checkBox(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
 			meshlet.bWasCulled = needToRender;
 
 			if (needToRender)
@@ -54,14 +52,14 @@ void C3DRenderSystem::__update(float fDt)
 					auto& pShader = EGGraphics->getShader(pMaterial->getShader());
 					if (pShader)
 					{
-						auto normal = glm::transpose(glm::inverse(model));
+						auto normal = glm::transpose(glm::inverse(transform.model));
 
 						auto& pUBO = pShader->getUniformBuffer("FUniformData");
-						pUBO->set("model", model);
+						pUBO->set("model", transform.model);
 						pUBO->set("view", camera.view);
 						pUBO->set("projection", camera.projection);
 						pUBO->set("normal", normal);
-						pUBO->set("viewDir", cameraTransform.position);
+						pUBO->set("viewDir", cameraTransform.rposition);
 						pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent());
 						pUBO->set("frustumPlanes", camera.frustum.getFrustumSides());
 

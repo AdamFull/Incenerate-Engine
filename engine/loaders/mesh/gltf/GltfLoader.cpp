@@ -4,8 +4,11 @@
 
 #include "GltfLoader.h"
 #include "Engine.h"
+#include "game/SceneGraph.hpp"
+
 #include "graphics/rendering/material/Material.h"
 
+#include "ecs/components/HierarchyComponent.h"
 #include "ecs/components/TransformComponent.h"
 #include "ecs/components/CameraComponent.h"
 #include "ecs/components/MeshComponent.h"
@@ -40,7 +43,7 @@ bool loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::s
     return false;//tinygltf::LoadImageData(image, imageIndex, error, warning, req_width, req_height, bytes, size, userData);
 }
 
-void CGltfLoader::load(const std::string& source, const std::unique_ptr<CSceneNode>& pRoot)
+void CGltfLoader::load(const std::string& source, const entt::entity& root)
 {
     tinygltf::Model gltfModel;
     tinygltf::TinyGLTF gltfContext;
@@ -70,7 +73,7 @@ void CGltfLoader::load(const std::string& source, const std::unique_ptr<CSceneNo
         for (size_t i = 0; i < scene.nodes.size(); i++)
         {
             const tinygltf::Node node = gltfModel.nodes[scene.nodes[i]];
-            loadNode(pRoot, node, scene.nodes[i], gltfModel, 1.0);
+            loadNode(root, node, scene.nodes[i], gltfModel, 1.0);
         }
 
         auto& pVBO = EGGraphics->getVertexBuffer(vbo_id);
@@ -81,13 +84,16 @@ void CGltfLoader::load(const std::string& source, const std::unique_ptr<CSceneNo
     }
 }
 
-void CGltfLoader::loadNode(const std::unique_ptr<CSceneNode>& pParent, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, float globalscale)
+void CGltfLoader::loadNode(const entt::entity& parent, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, float globalscale)
 {
-    auto obj_name = node.name.empty() ? pParent->getName() + "_" + std::to_string(nodeIndex) : node.name;
-    auto pObject = std::make_unique<CSceneNode>(obj_name);
-    auto entity = pObject->getEntity();
+    auto& registry = EGCoordinator;
 
-    auto& transform = EGCoordinator.get<FTransformComponent>(entity);
+    auto& phierarchy = registry.get<FHierarchyComponent>(parent);
+
+    auto obj_name = node.name.empty() ? phierarchy.name + "_" + std::to_string(nodeIndex) : node.name;
+    auto entity = scenegraph::create_node(obj_name);
+
+    auto& transform = registry.get<FTransformComponent>(entity);
 
     // Loading position data
     if (node.translation.size() == 3)
@@ -107,11 +113,11 @@ void CGltfLoader::loadNode(const std::unique_ptr<CSceneNode>& pParent, const tin
     if (node.children.size() > 0)
     {
         for (auto i = 0; i < node.children.size(); i++)
-            loadNode(pObject, model.nodes[node.children[i]], node.children[i], model, globalscale);
+            loadNode(entity, model.nodes[node.children[i]], node.children[i], model, globalscale);
     }
 
-    if (node.mesh > -1) loadMeshComponent(pObject, node, model);
-    if (node.camera > -1) loadCameraComponent(pObject, node, model);
+    if (node.mesh > -1) loadMeshComponent(entity, node, model);
+    if (node.camera > -1) loadCameraComponent(entity, node, model);
 
     if (!node.extensions.empty())
     {
@@ -120,19 +126,19 @@ void CGltfLoader::loadNode(const std::unique_ptr<CSceneNode>& pParent, const tin
         {
             auto& extension = light_support->second;
             auto source = extension.Get("light");
-            loadLightComponent(pObject, source.GetNumberAsInt(), node, model);
+            loadLightComponent(entity, source.GetNumberAsInt(), node, model);
         }
     }
 
-    pParent->attach(std::move(pObject));
+    scenegraph::attach_child(parent, entity);
 }
 
-void CGltfLoader::loadMeshComponent(const std::unique_ptr<CSceneNode>& pNode, const tinygltf::Node& node, const tinygltf::Model& model)
+void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::Node& node, const tinygltf::Model& model)
 {
+    auto& registry = EGCoordinator;
     const tinygltf::Mesh mesh = model.meshes[node.mesh];
     auto& pVBO = EGGraphics->getVertexBuffer(vbo_id);
 
-    //auto entity = pNode->getEntity();
     FMeshComponent meshComponent;
 
     for (size_t j = 0; j < mesh.primitives.size(); j++)
@@ -328,11 +334,12 @@ void CGltfLoader::loadMeshComponent(const std::unique_ptr<CSceneNode>& pNode, co
 
     meshComponent.vbo_id = vbo_id;
 
-    EGCoordinator.emplace<FMeshComponent>(pNode->getEntity(), meshComponent);
+    registry.emplace<FMeshComponent>(parent, meshComponent);
 }
 
-void CGltfLoader::loadCameraComponent(const std::unique_ptr<CSceneNode>& pNode, const tinygltf::Node& node, const tinygltf::Model& model)
+void CGltfLoader::loadCameraComponent(const entt::entity& parent, const tinygltf::Node& node, const tinygltf::Model& model)
 {
+    auto& registry = EGCoordinator;
     const tinygltf::Camera camera = model.cameras[node.camera];
     FCameraComponent cameraComponent;
 
@@ -352,13 +359,13 @@ void CGltfLoader::loadCameraComponent(const std::unique_ptr<CSceneNode>& pNode, 
         cameraComponent.farPlane = camera.perspective.zfar;
     }
 
-    EGCoordinator.emplace<FCameraComponent>(pNode->getEntity(), cameraComponent);
+    registry.emplace<FCameraComponent>(parent, cameraComponent);
 }
 
-void CGltfLoader::loadLightComponent(const std::unique_ptr<CSceneNode>& pNode, uint32_t light_index, const tinygltf::Node& node, const tinygltf::Model& model)
+void CGltfLoader::loadLightComponent(const entt::entity& parent, uint32_t light_index, const tinygltf::Node& node, const tinygltf::Model& model)
 {
+    auto& registry = EGCoordinator;
     const tinygltf::Light light = model.lights[light_index];
-    auto entiry = pNode->getEntity();
 
     glm::vec3 color;
 
@@ -372,7 +379,7 @@ void CGltfLoader::loadLightComponent(const std::unique_ptr<CSceneNode>& pNode, u
         FDirectionalLightComponent lightComponent;
         lightComponent.color = color;
         lightComponent.intencity = light.intensity;
-        EGCoordinator.emplace<FDirectionalLightComponent>(entiry, lightComponent);
+        registry.emplace<FDirectionalLightComponent>(parent, lightComponent);
     }
     else if (light.type == "spot")
     {
@@ -381,7 +388,7 @@ void CGltfLoader::loadLightComponent(const std::unique_ptr<CSceneNode>& pNode, u
         lightComponent.innerAngle = light.spot.innerConeAngle;
         lightComponent.outerAngle = light.spot.outerConeAngle;
         lightComponent.intencity = light.intensity;
-        EGCoordinator.emplace<FSpotLightComponent>(entiry, lightComponent);
+        registry.emplace<FSpotLightComponent>(parent, lightComponent);
     }
     else if (light.type == "point")
     {
@@ -389,7 +396,7 @@ void CGltfLoader::loadLightComponent(const std::unique_ptr<CSceneNode>& pNode, u
         lightComponent.color = color;
         lightComponent.intencity = light.intensity;
         lightComponent.radius = light.range;
-        EGCoordinator.emplace<FPointLightComponent>(entiry, lightComponent);
+        registry.emplace<FPointLightComponent>(parent, lightComponent);
     }
 }
 

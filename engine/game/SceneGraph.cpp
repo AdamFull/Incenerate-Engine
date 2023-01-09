@@ -5,129 +5,93 @@
 using namespace engine::ecs;
 using namespace engine::game;
 
-CSceneNode::CSceneNode()
+#include "ecs/components/TransformComponent.h"
+#include "ecs/components/HierarchyComponent.h"
+#include "ecs/components/AudioComponent.h"
+#include "ecs/components/SkyboxComponent.h"
+#include "ecs/components/MeshComponent.h"
+#include "ecs/components/SpriteComponent.h"
+
+entt::entity scenegraph::create_node(const std::string& name)
 {
-	entity = EGCoordinator.create();
-	EGCoordinator.emplace<FTransformComponent>(entity, FTransformComponent{});
+	auto& registry = EGCoordinator;
+
+	auto entity = registry.create();
+	registry.emplace<FTransformComponent>(entity, FTransformComponent{});
+	registry.emplace<FHierarchyComponent>(entity, FHierarchyComponent{ name });
 	log_debug("Entity with id {} was created", static_cast<uint32_t>(entity));
+	return entity;
 }
 
-CSceneNode::CSceneNode(const std::string& name)
+void scenegraph::destroy_node(entt::entity node)
 {
-	srName = name;
-	entity = EGCoordinator.create();
-	EGCoordinator.emplace<FTransformComponent>(entity, FTransformComponent{});
-	log_debug("Entity with id {} and name {} was created", static_cast<uint32_t>(entity), name);
-}
+	auto& registry = EGCoordinator;
+	
+	auto& hierarchy = registry.get<FHierarchyComponent>(node);
 
-CSceneNode::~CSceneNode()
-{
-	vChildren.clear();
-	EGCoordinator.destroy(entity);
-	pParent = nullptr;
-	log_debug("Entity with id {} was destroyed", static_cast<uint32_t>(entity));
-}
+	for (auto& child : hierarchy.children)
+		destroy_node(child);
 
-FTransformComponent CSceneNode::getTransform()
-{
-	auto transform = EGCoordinator.get<FTransformComponent>(entity);
-	if (pParent)
-		transform += pParent->getTransform();
-	return transform;
-}
+	if (auto audio = registry.try_get<FAudioComponent>(node))
+		EGAudio->removeSource(audio->asource);
 
-glm::mat4 CSceneNode::getModel()
-{
-	auto transform = EGCoordinator.get<FTransformComponent>(entity);
-	if (pParent)
-		return pParent->getModel() * transform.getModel();
-	return transform.getModel();
-}
-
-void CSceneNode::exchange(CSceneNode* other, entt::entity id)
-{
-	attach(other->detach(id));
-}
-
-void CSceneNode::exchange(CSceneNode* other, const std::string& name)
-{
-	attach(other->detach(name));
-}
-
-void CSceneNode::exchange(CSceneNode* other, CSceneNode* child)
-{
-	attach(
-		other->detach(
-			__find(
-				[&child](const std::unique_ptr<CSceneNode>& node) { 
-					return child->getEntity() == node->getEntity(); 
-				}
-			)
-		)
-	);
-}
-
-void CSceneNode::attach(std::unique_ptr<CSceneNode>&& node)
-{
-	vChildren.emplace_back(std::move(node));
-	vChildren.back()->pParent = this;
-}
-
-std::unique_ptr<CSceneNode> CSceneNode::detach(const std::string& name)
-{
-	return detach(
-		__find(
-			[&name](const std::unique_ptr<CSceneNode>& node) {
-				return name == node->getName();
-			}
-		)
-	);
-}
-
-std::unique_ptr<CSceneNode> CSceneNode::detach(entt::entity id)
-{
-	return detach(
-		__find(
-			[&id](const std::unique_ptr<CSceneNode>& node) {
-				return id == node->getEntity();
-			}
-		)
-	);
-}
-
-std::unique_ptr<CSceneNode> CSceneNode::detach(child_container_t::const_iterator node)
-{
-	std::unique_ptr<CSceneNode> pDetached;
-
-	if (node != vChildren.cend())
+	if (auto sky = registry.try_get<FSkyboxComponent>(node))
 	{
-		pDetached = std::move(const_cast<std::unique_ptr<CSceneNode>&>((*node)));
-		vChildren.erase(node);
+		EGGraphics->removeImage(sky->origin);
+		EGGraphics->removeImage(sky->brdflut);
+		EGGraphics->removeImage(sky->irradiance);
+		EGGraphics->removeImage(sky->prefiltred);
+		EGGraphics->removeVertexBuffer(sky->vbo_id);
 	}
 
-	return pDetached;
+	if (auto sprite = registry.try_get<FSpriteComponent>(node))
+		EGGraphics->removeImage(sprite->image);
+
+	hierarchy.parent = entt::null;
+	hierarchy.children.clear();
+
+	log_debug("Entity with id {} was destroyed", static_cast<uint32_t>(node));
 }
 
-const std::unique_ptr<CSceneNode>& CSceneNode::find(entt::entity id, bool bDeep) const
+void scenegraph::attach_child(entt::entity parent, entt::entity child)
 {
-	return *__find([&id](const std::unique_ptr<CSceneNode>& node) { return id == node->getEntity(); }, bDeep);
+	auto& registry = EGCoordinator;
+
+	auto& phierarchy = registry.get<FHierarchyComponent>(parent);
+	phierarchy.children.emplace_back(child);
+
+	auto& chierarchy = registry.get<FHierarchyComponent>(child);
+	chierarchy.parent = parent;
 }
 
-const std::unique_ptr<CSceneNode>& CSceneNode::find(const std::string& name, bool bDeep) const
+void scenegraph::detach_child(entt::entity parent, entt::entity child)
 {
-	return *__find([&name](const std::unique_ptr<CSceneNode>& node) { return name == node->getName(); }, bDeep);
+	auto& registry = EGCoordinator;
+
+	auto& phierarchy = registry.get<FHierarchyComponent>(parent);
+	auto cit = std::find(phierarchy.children.begin(), phierarchy.children.end(), child);
+
+	if (cit != phierarchy.children.end())
+		phierarchy.children.erase(cit);
+	else
+		log_error("Entity with is {} is not child of {}", static_cast<uint32_t>(child), static_cast<uint32_t>(parent));
+
+	auto& chierarchy = registry.get<FHierarchyComponent>(child);
+	chierarchy.parent = entt::null;
 }
 
-const bool CSceneNode::isVisible(entt::entity id) const
+void scenegraph::detach_child(entt::entity child)
 {
-	// Wrong
-	auto& found = find(id);
-	return found ? found->isVisible() : false;
+	auto& registry = EGCoordinator;
+	auto& chierarchy = registry.get<FHierarchyComponent>(child);
+
+	detach_child(chierarchy.parent, child);
 }
 
-const bool CSceneNode::isEnabled(entt::entity id) const
+void scenegraph::parent_exchange(entt::entity new_parent, entt::entity child)
 {
-	// Wrong
-	auto& found = find(id);
-	return found ? found->isEnabled() : false;
+	auto& registry = EGCoordinator;
+	auto& chierarchy = registry.get<FHierarchyComponent>(child);
+	detach_child(chierarchy.parent, child);
+	attach_child(new_parent, child);
 }

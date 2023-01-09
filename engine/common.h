@@ -14,6 +14,11 @@
 #include <thread>
 #include <unordered_map>
 #include <map>
+#include <set>
+#include <list>
+#include <vector>
+
+#include <entt/fwd.hpp>
 
 #include "fdecl.h"
 

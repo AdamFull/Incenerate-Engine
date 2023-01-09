@@ -24,7 +24,7 @@ CEngine::CEngine()
 CEngine::~CEngine()
 {
 	vSystems.clear();
-	pRoot = nullptr;
+	scenegraph::destroy_node(root);
 	pGraphics = nullptr;
 	pWindow = nullptr;
 	log_debug("Engine was shutdown.");
@@ -51,7 +51,7 @@ void CEngine::create()
 
 	initEntityComponentSystem();
 
-	pRoot = CSceneLoader::load("scene.json");
+	root = CSceneLoader::load("scene.json");
 
 	for (const auto& system : vSystems)
 		system->create();
@@ -99,9 +99,9 @@ const audiocore_t& CEngine::getAudio() const
 	return pAudio;
 }
 
-const scenegraph_t& CEngine::getSceneGraph() const
+const entt::entity& CEngine::getSceneGraph() const
 {
-	return pRoot;
+	return root;
 }
 
 void CEngine::sendEvent(CEvent& event)

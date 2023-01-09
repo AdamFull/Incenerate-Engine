@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SceneGraph.hpp"
 #include <utility/uparse.hpp>
 
 namespace engine
@@ -28,11 +27,11 @@ namespace engine
 		class CSceneLoader
 		{
 		public:
-			static std::unique_ptr<CSceneNode> load(const std::string& scenepath);
-			static void save(const std::unique_ptr<CSceneNode>& pRoot, const std::string& scenepath);
+			static entt::entity load(const std::string& scenepath);
+			static void save(const entt::entity& root, const std::string& scenepath);
 		private:
-			static void loadNodes(const std::unique_ptr<CSceneNode>& pParent, const std::vector<FSceneObjectRaw>& vObjects);
-			static void serializeNodes(const std::unique_ptr<CSceneNode>& pParent, std::vector<FSceneObjectRaw>& vObjects);
+			static void loadNodes(const entt::entity& parent, const std::vector<FSceneObjectRaw>& vObjects);
+			static void serializeNodes(const entt::entity& parent, std::vector<FSceneObjectRaw>& vObjects);
 		};
 	}
 }

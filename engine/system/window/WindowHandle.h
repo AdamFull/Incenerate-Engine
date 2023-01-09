@@ -3,7 +3,6 @@
 #include <SDL3/SDL.h>
 #undef main
 
-#include <vector>
 #include "EngineStructures.h"
 #include "KeycodeHelper.hpp"
 

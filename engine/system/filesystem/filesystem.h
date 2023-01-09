@@ -1,9 +1,6 @@
 #pragma once
 
 #include <utility/json.hpp>
-#include <filesystem>
-#include <string>
-#include <vector>
 
 namespace engine
 {

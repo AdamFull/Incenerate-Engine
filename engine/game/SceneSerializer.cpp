@@ -1,9 +1,11 @@
 #include "SceneSerializer.h"
 
 #include "Engine.h"
+#include "SceneGraph.hpp"
 
 #include "system/filesystem/filesystem.h"
 
+#include "ecs/components/HierarchyComponent.h"
 #include "ecs/components/AudioComponent.h"
 #include "ecs/components/MeshComponent.h"
 #include "ecs/components/TransformComponent.h"
@@ -49,125 +51,130 @@ using namespace engine::loaders;
 using namespace engine::graphics;
 using namespace engine::audio;
 
-std::unique_ptr<CSceneNode> CSceneLoader::load(const std::string& scenepath)
+entt::entity CSceneLoader::load(const std::string& scenepath)
 {
 	std::vector<FSceneObjectRaw> vScene;
 	fs::read_json(scenepath, vScene);
 
-	auto pRoot = std::make_unique<CSceneNode>("root");
+	auto root = scenegraph::create_node("root");
 
-	loadNodes(pRoot, vScene);
+	loadNodes(root, vScene);
 
-	return pRoot;
+	return root;
 }
 
-void CSceneLoader::save(const std::unique_ptr<CSceneNode>& pRoot, const std::string& scenepath)
+void CSceneLoader::save(const entt::entity& root, const std::string& scenepath)
 {
 	std::vector<FSceneObjectRaw> vScene;
 
-	for (auto& child : pRoot->getChildren())
+	auto& registry = EGCoordinator;
+	auto& hierarchy = registry.get<FHierarchyComponent>(root);
+
+	for (auto& child : hierarchy.children)
 		serializeNodes(child, vScene);
 
 	fs::write_json(scenepath, vScene, 2);
 }
 
-void CSceneLoader::loadNodes(const std::unique_ptr<CSceneNode>& pParent, const std::vector<FSceneObjectRaw>& vObjects)
+void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FSceneObjectRaw>& vObjects)
 {
+	auto& registry = EGCoordinator;
+
 	for (auto& object : vObjects)
 	{
-		auto pNode = std::make_unique<CSceneNode>(object.srName);
-		auto entity = pNode->getEntity();
+		auto node = scenegraph::create_node(object.srName);
 		
 		for (auto& [name, component] : object.mComponents)
 		{
 			if (name == "transform")
 			{
-				auto& transform = EGCoordinator.get<FTransformComponent>(entity);
+				auto& transform = registry.get<FTransformComponent>(node);
 				transform = component.get<FTransformComponent>();
 			}
 
 			if (name == "camera")
-				EGCoordinator.emplace<FCameraComponent>(entity, component.get<FCameraComponent>());
+				registry.emplace<FCameraComponent>(node, component.get<FCameraComponent>());
 
 			if (name == "audio")
 			{
 				auto audio = component.get<FAudioComponent>();
 				auto pAudio = std::make_unique<CAudioSource>(audio.source);
-				audio.asource = EGAudio->addSource(pNode->getName(), std::move(pAudio));
-				EGCoordinator.emplace<FAudioComponent>(entity, audio);
+				audio.asource = EGAudio->addSource(object.srName, std::move(pAudio));
+				registry.emplace<FAudioComponent>(node, audio);
 			}
 
 			if (name == "skybox")
 			{
 				auto skybox = component.get<FSkyboxComponent>();
-				skybox.origin = EGGraphics->addImage(pNode->getName(), skybox.source);
-				skybox.vbo_id = EGGraphics->addVertexBuffer(pNode->getName());
-				skybox.shader_id = EGGraphics->addShader(pNode->getName(), "skybox");
+				skybox.origin = EGGraphics->addImage(object.srName, skybox.source);
+				skybox.vbo_id = EGGraphics->addVertexBuffer(object.srName);
+				skybox.shader_id = EGGraphics->addShader(object.srName, "skybox");
 
 				auto& pVBO = EGGraphics->getVertexBuffer(skybox.vbo_id);
 				pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
 				pVBO->create();
 
-				EGCoordinator.emplace<FSkyboxComponent>(entity, skybox);
+				registry.emplace<FSkyboxComponent>(node, skybox);
 			}
 				
 
 			if (name == "sprite")
-				EGCoordinator.emplace<FSpriteComponent>(entity, component.get<FSpriteComponent>());
+				registry.emplace<FSpriteComponent>(node, component.get<FSpriteComponent>());
 
 			if (name == "gltfscene")
 			{
 				auto source = component.get<std::string>();
-				CMeshLoader::load(source, pNode);
+				CMeshLoader::load(source, node);
 			}
 
 			if (name == "directionallight")
-				EGCoordinator.emplace<FDirectionalLightComponent>(entity, component.get<FDirectionalLightComponent>());
+				registry.emplace<FDirectionalLightComponent>(node, component.get<FDirectionalLightComponent>());
 
 			if (name == "pointlight")
-				EGCoordinator.emplace<FPointLightComponent>(entity, component.get<FPointLightComponent>());
+				registry.emplace<FPointLightComponent>(node, component.get<FPointLightComponent>());
 
 			if (name == "spotlight")
-				EGCoordinator.emplace<FSpotLightComponent>(entity, component.get<FSpotLightComponent>());
+				registry.emplace<FSpotLightComponent>(node, component.get<FSpotLightComponent>());
 
 			if (name == "script")
-				EGCoordinator.emplace<FScriptComponent>(entity, component.get<FScriptComponent>());
+				registry.emplace<FScriptComponent>(node, component.get<FScriptComponent>());
 		}
 
-		loadNodes(pNode, object.vChildren);
-		
-		pParent->attach(std::move(pNode));
+		loadNodes(node, object.vChildren);
+
+		scenegraph::attach_child(parent, node);
 	}
 }
 
-void CSceneLoader::serializeNodes(const std::unique_ptr<CSceneNode>& pParent, std::vector<FSceneObjectRaw>& vObjects)
+void CSceneLoader::serializeNodes(const entt::entity& parent, std::vector<FSceneObjectRaw>& vObjects)
 {
-	FSceneObjectRaw object;
-	object.srName = pParent->getName();
+	auto& registry = EGCoordinator;
 
-	auto entity = pParent->getEntity();
-	if (auto transform = EGCoordinator.try_get<FTransformComponent>(entity))
+	FSceneObjectRaw object;
+
+	auto& phierarchy = registry.get<FHierarchyComponent>(parent);
+	object.srName = phierarchy.name;
+
+	if (auto transform = registry.try_get<FTransformComponent>(parent))
 		object.mComponents.emplace("transform", nlohmann::json(*transform));
-	if (auto camera = EGCoordinator.try_get<FCameraComponent>(entity))
+	if (auto camera = registry.try_get<FCameraComponent>(parent))
 		object.mComponents.emplace("camera", nlohmann::json(*camera));
-	if (auto audio = EGCoordinator.try_get<FAudioComponent>(entity))
+	if (auto audio = registry.try_get<FAudioComponent>(parent))
 		object.mComponents.emplace("audio", nlohmann::json(*audio));
-	if (auto skybox = EGCoordinator.try_get<FSkyboxComponent>(entity))
+	if (auto skybox = registry.try_get<FSkyboxComponent>(parent))
 		object.mComponents.emplace("skybox", nlohmann::json(*skybox));
-	if (auto sprite = EGCoordinator.try_get<FSpriteComponent>(entity))
+	if (auto sprite = registry.try_get<FSpriteComponent>(parent))
 		object.mComponents.emplace("sprite", nlohmann::json(*sprite));
-	if (auto directionallight = EGCoordinator.try_get<FDirectionalLightComponent>(entity))
+	if (auto directionallight = registry.try_get<FDirectionalLightComponent>(parent))
 		object.mComponents.emplace("directionallight", nlohmann::json(*directionallight));
-	if (auto pointlight = EGCoordinator.try_get<FPointLightComponent>(entity))
+	if (auto pointlight = registry.try_get<FPointLightComponent>(parent))
 		object.mComponents.emplace("pointlight", nlohmann::json(*pointlight));
-	if (auto spotlight = EGCoordinator.try_get<FSpotLightComponent>(entity))
+	if (auto spotlight = registry.try_get<FSpotLightComponent>(parent))
 		object.mComponents.emplace("spotlight", nlohmann::json(*spotlight));
-	if (auto script = EGCoordinator.try_get<FScriptComponent>(entity))
+	if (auto script = registry.try_get<FScriptComponent>(parent))
 		object.mComponents.emplace("script", nlohmann::json(*script));
 
-	//TODO: serialize nodes here
-
-	for (auto& child : pParent->getChildren())
+	for (auto& child : phierarchy.children)
 		serializeNodes(child, object.vChildren);
 
 	vObjects.emplace_back(object);
