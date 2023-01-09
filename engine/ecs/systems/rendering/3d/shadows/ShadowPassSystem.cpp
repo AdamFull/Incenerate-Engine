@@ -20,8 +20,14 @@ void CShadowPassSystem::__update(float fDt)
 
 	stage->begin(commandBuffer);
 
+	uint32_t subpasses{ 0 };
 	for (auto& system : vSubSystems)
+	{
 		system->update(fDt);
+		if(subpasses < vSubSystems.size() - 1)
+			commandBuffer.nextSubpass(vk::SubpassContents::eInline);
+		subpasses++;
+	}
 
 	stage->end(commandBuffer);
 }

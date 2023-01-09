@@ -6,16 +6,15 @@ namespace engine
 {
 	namespace ecs
 	{
-		class C3DRenderSystem : public ISystem
+		class CDeferredPassSystem : public ISystem
 		{
 		public:
-			C3DRenderSystem();
-			virtual ~C3DRenderSystem() override = default;
+			virtual ~CDeferredPassSystem() override = default;
 
 			void __create() override;
 			void __update(float fDt) override;
 		private:
-			std::vector <std::unique_ptr<ISystem>> vSubSystems;
+			std::vector<std::unique_ptr<ISystem>> vSubSystems;
 		};
 	}
 }

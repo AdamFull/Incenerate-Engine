@@ -58,6 +58,4 @@ void CDirectionalShadowSystem::__update(float fDt)
 			commandBuffer.drawIndexed(meshlet.index_count, 1, meshlet.begin_index, 0, 0);
 		}
 	}
-
-	commandBuffer.nextSubpass(vk::SubpassContents::eInline);
 }

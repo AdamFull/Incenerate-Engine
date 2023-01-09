@@ -30,14 +30,11 @@ void CEnvironmentSystem::__update(float fDt)
 {
 	auto& registry = EGCoordinator;
 
-	auto& stage = EGGraphics->getRenderStage("deferred");
 	auto commandBuffer = EGGraphics->getCommandBuffer();
 
 	auto ecamera = get_active_camera(registry);
 	auto& camera = registry.get<FCameraComponent>(ecamera);
 	auto& cameraTransform = registry.get<FTransformComponent>(ecamera);
-
-	stage->begin(commandBuffer);
 
 	auto view = registry.view<FTransformComponent, FSkyboxComponent>();
 	for (auto [entity, transform, skybox] : view.each())
