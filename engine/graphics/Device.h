@@ -80,8 +80,8 @@ namespace engine
 
             inline std::vector<vk::ImageView>& getImageViews() { return vImageViews; }
             inline vk::Format getImageFormat() { return imageFormat; };
-            vk::Extent2D getExtent(bool automatic = false);
             float getAspect(bool automatic = false);
+            vk::Extent2D getExtent(bool automatic = false);
             uint32_t getFramesInFlight() { return framesInFlight; }
             uint32_t getCurrentFrame() { return currentFrame; }
 
@@ -295,10 +295,11 @@ namespace engine
 
             //Swapchain
             vk::Format imageFormat;
-            vk::Extent2D swapchainExtent;
+            vk::Extent2D swapchainExtent, viewportExtent;
             vk::SwapchainKHR swapChain{ VK_NULL_HANDLE };
 
             vk::Extent2D viewportExtent;
+            bool bViewportRebuild{ false };
 
             std::vector<vk::Image> vImages;
             std::vector<vk::ImageView> vImageViews;

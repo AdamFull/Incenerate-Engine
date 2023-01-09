@@ -910,9 +910,34 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
     return res;
 }
 
+float CDevice::getAspect(bool automatic)
+{
+    auto ext = getExtent(automatic);
+    return static_cast<float>(ext.width) / static_cast<float>(ext.height);
+}
+
 vk::Extent2D CDevice::getExtent(bool automatic)
 {
+    //if (automatic)
+    //{
+    //    switch (engineMode)
+    //    {
+    //    case ELaunchMode::eEditor: return viewportExtent; break;
+    //    case ELaunchMode::eGame: return swapchainExtent; break;
+    //    }
+    //}
     return swapchainExtent;
+}
+
+void CDevice::setViewportExtent(vk::Extent2D extent)
+{
+    if (extent != viewportExtent)
+    {
+        bViewportRebuild = true;
+        viewportExtent = extent;
+    }
+    else
+        bViewportRebuild = false;
 }
 
 CAPIHandle* CDevice::getAPI()

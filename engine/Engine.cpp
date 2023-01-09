@@ -6,6 +6,7 @@
 #include "game/SceneSerializer.h"
 
 using namespace engine;
+using namespace engine::editor;
 using namespace engine::ecs;
 using namespace engine::game;
 using namespace engine::graphics;
@@ -39,6 +40,9 @@ void CEngine::create()
 	fs::read_json("engine/config.cfg", createInfo);
 
 	pEventManager = std::make_unique<CEventManager>();
+
+	pEditor = std::make_unique<CEditor>();
+	pEditor->create();
 
 	pAudio = std::make_unique<CAudioCore>();
 	pAudio->create();

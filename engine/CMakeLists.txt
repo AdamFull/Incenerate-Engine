@@ -6,6 +6,7 @@ set(EXTERNALS_PATH "${ENGINE_ROOT}/external")
 
 add_subdirectory("external")
 
+file(GLOB_RECURSE ENGINE_EDITOR_SOURCE "editor/*.cpp" "editor/*.c" "editor/*.cc" "editor/*.h" "editor/*.hpp")
 file(GLOB_RECURSE ENGINE_LOADERS_SOURCE "loaders/*.cpp" "loaders/*.c" "loaders/*.cc" "loaders/*.h" "loaders/*.hpp")
 file(GLOB_RECURSE ENGINE_PARSE_SOURCE "parse/*.cpp" "parse/*.c" "parse/*.cc" "parse/*.h" "parse/*.hpp")
 file(GLOB_RECURSE ENGINE_ECS_SOURCE "ecs/*.cpp" "ecs/*.c" "ecs/*.cc" "ecs/*.h" "ecs/*.hpp")
@@ -19,6 +20,7 @@ file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc" "*.h" "*.hpp")
 include_directories(${Vulkan_INCLUDE_DIR})
 
 add_library(${PROJECT_NAME} STATIC 
+${ENGINE_EDITOR_SOURCE}
 ${ENGINE_LOADERS_SOURCE}
 ${ENGINE_PARSE_SOURCE}
 ${ENGINE_ECS_SOURCE}

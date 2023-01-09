@@ -26,6 +26,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ktx)
 add_subdirectory(openal-soft)
 target_link_libraries(${PROJECT_NAME} PUBLIC OpenAL)
 
+add_subdirectory(imgui)
+target_link_libraries(${PROJECT_NAME} PUBLIC imgui)
+
 if(ANDROID)
     add_definitions(-DVULKAN_HPP_TYPESAFE_CONVERSION -DVMA_IMPLEMENTATION -DVMA_STATS_STRING_ENABLED=0)
     set(VULKAN_DIR ${ANDROID_NDK}/sources/third_party/vulkan/src)
