@@ -58,6 +58,8 @@ namespace engine
 			ERenderStageAvaliableFlagBits eFlag;
 			FCIViewport viewport;
 			bool bFlipViewport{ false };
+			bool bIgnoreRecreation{ false };
+			bool bViewportDependent{ false };
 			std::vector<FCIImage> vImages;
 			std::vector<std::string> vOutputs;
 			std::vector<std::string> vDescriptions;

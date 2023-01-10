@@ -129,6 +129,8 @@ void CDevice::create(const FEngineCreateInfo& createInfo)
     createMemoryAllocator(createInfo);
     createPipelineCache();
     createSwapchain();
+
+    viewportExtent = swapchainExtent;
 }
 
 void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
@@ -918,14 +920,8 @@ float CDevice::getAspect(bool automatic)
 
 vk::Extent2D CDevice::getExtent(bool automatic)
 {
-    //if (automatic)
-    //{
-    //    switch (engineMode)
-    //    {
-    //    case ELaunchMode::eEditor: return viewportExtent; break;
-    //    case ELaunchMode::eGame: return swapchainExtent; break;
-    //    }
-    //}
+    if (automatic && EGEngine->isEditorMode())
+        return viewportExtent;
     return swapchainExtent;
 }
 

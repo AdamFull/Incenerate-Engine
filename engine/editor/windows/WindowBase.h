@@ -4,14 +4,21 @@ namespace engine
 {
 	namespace editor
 	{
-		class CEditorWindow
+		class IEditorWindow
 		{
 		public:
-			virtual ~CEditorWindow() {}
+			virtual ~IEditorWindow() {}
 
 			virtual void create() = 0;
-			virtual void draw() = 0;
+			virtual void draw();
+
+			const std::string& getName() const { return name; }
+			const bool isOpen() const { return bIsOpen; }
+			void toggleEnable() { bIsOpen = !bIsOpen; }
 		protected:
+			virtual void __draw() = 0;
+
+			std::string name;
 			bool bIsOpen{ true };
 		};
 	}

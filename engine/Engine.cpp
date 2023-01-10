@@ -41,9 +41,6 @@ void CEngine::create()
 
 	pEventManager = std::make_unique<CEventManager>();
 
-	pEditor = std::make_unique<CEditor>();
-	pEditor->create();
-
 	pAudio = std::make_unique<CAudioCore>();
 	pAudio->create();
 
@@ -52,6 +49,9 @@ void CEngine::create()
 
 	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
 	pGraphics->create(createInfo);
+
+	pEditor = std::make_unique<CEditor>();
+	pEditor->create();
 
 	initEntityComponentSystem();
 
@@ -98,6 +98,11 @@ const graphptr_t& CEngine::getGraphics() const
 	return pGraphics;
 }
 
+const editorptr_t& CEngine::getEditor() const
+{
+	return pEditor;
+}
+
 const audiocore_t& CEngine::getAudio() const
 {
 	return pAudio;
@@ -106,6 +111,11 @@ const audiocore_t& CEngine::getAudio() const
 const entt::entity& CEngine::getSceneGraph() const
 {
 	return root;
+}
+
+const bool CEngine::isEditorMode() const
+{
+	return bEditorMode;
 }
 
 void CEngine::sendEvent(CEvent& event)

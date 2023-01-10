@@ -7,13 +7,14 @@ namespace engine
 {
 	namespace editor
 	{
-		class CEditorViewport : public CEditorWindow
+		class CEditorViewport : public IEditorWindow
 		{
 		public:
+			CEditorViewport(const std::string& sname) { name = sname; }
 			virtual ~CEditorViewport() override;
 
 			void create() override;
-			void draw() override;
+			void __draw() override;
 		private:
 			void drawViewport(float offsetx, float offsety);
 			void drawManipulator(float offsetx, float offsety, float sizex, float sizey);

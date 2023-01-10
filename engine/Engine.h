@@ -9,7 +9,6 @@
 #include "event/EventManager.hpp"
 #include "editor/Editor.h"
 
-#include <entt/entt.hpp>
 #include "game/SceneGraph.hpp"
 #include "ecs/systems/BaseSystem.h"
 
@@ -48,6 +47,8 @@ namespace engine
 		const audiocore_t& getAudio() const;
 		const entt::entity& getSceneGraph() const;
 
+		const bool isEditorMode() const;
+
 		// Event methods
 		template<class... _Args>
 		void addEventListener(EventId eventId, _Args&& ...args)
@@ -68,6 +69,7 @@ namespace engine
 		winptr_t pWindow;
 		graphptr_t pGraphics;
 		audiocore_t pAudio;
+		bool bEditorMode{ true };
 
 		std::vector<std::unique_ptr<ecs::ISystem>> vSystems;
 	};

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "windows/WindowBase.h"
+
 namespace engine
 {
 	namespace editor
@@ -7,7 +9,9 @@ namespace engine
 		class CEditor
 		{
 		public:
+			~CEditor();
 			void create();
+			void newFrame();
 
 			void selectObject(const entt::entity& object);
 			void deselectObject(const entt::entity& object);
@@ -19,7 +23,10 @@ namespace engine
 
 			vk::DescriptorPool& getDescriptorPool();
 		private:
+			void baseInitialize();
+		private:
 			entt::entity selected{ entt::null };
+			std::vector<std::unique_ptr<IEditorWindow>> vEditorWindows;
 			vk::DescriptorPool descriptorPool{};
 		};
 	}

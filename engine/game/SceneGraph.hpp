@@ -17,6 +17,7 @@ namespace engine
 			static void attach_child(entt::entity parent, entt::entity child);
 			static void detach_child(entt::entity parent, entt::entity child);
 			static void detach_child(entt::entity child);
+			static entt::entity duplicate_node(entt::entity child);
 			static void parent_exchange(entt::entity new_parent, entt::entity child);
 		};
 	}

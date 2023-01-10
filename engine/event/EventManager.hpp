@@ -16,6 +16,6 @@ namespace engine
 		void sendEvent(EventId eventId);
 
 	private:
-		std::unordered_map<EventId, std::list<utl::function<void(CEvent&)>>> listeners;
+		std::unordered_map<EventId, std::vector<utl::function<void(CEvent&)>>> listeners;
 	};
 }

@@ -29,7 +29,7 @@ namespace engine
 			~CAPIHandle();
 
 			void create(const FEngineCreateInfo& createInfo);
-			void reCreate();
+			void reCreate(bool bSwapchain, bool bViewport);
 			void shutdown();
 
 			vk::CommandBuffer begin();

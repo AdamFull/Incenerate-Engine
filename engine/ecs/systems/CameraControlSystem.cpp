@@ -34,6 +34,7 @@ void CCameraControlSystem::__create()
 
 void CCameraControlSystem::__update(float fDt)
 {
+	auto& device = EGGraphics->getDevice();
 	auto& registry = EGCoordinator;
 
 	auto view = registry.view<FTransformComponent, FCameraComponent>();
@@ -41,17 +42,17 @@ void CCameraControlSystem::__update(float fDt)
 	{
 		if (camera.active)
 		{
-			auto width = CWindowHandle::iWidth;
-			auto height = CWindowHandle::iHeight;
+			auto extent = device->getExtent(true);
+			camera.aspect = device->getAspect(true);
 
 			camera.forward = glm::normalize(transform.rotation);
 			camera.right = glm::normalize(glm::cross(camera.forward, glm::vec3{ 0.0, 1.0, 0.0 }));
 			camera.up = glm::normalize(glm::cross(camera.right, camera.forward));
 
-			if (width != camera.viewportDim.x && height != camera.viewportDim.y)
+			if (extent.width != camera.viewportDim.x && extent.height != camera.viewportDim.y)
 			{
-				camera.viewportDim.x = width;
-				camera.viewportDim.y = height;
+				camera.viewportDim.x = extent.width;
+				camera.viewportDim.y = extent.height;
 
 				recalculateProjection(camera);
 			}

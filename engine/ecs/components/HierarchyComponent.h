@@ -11,7 +11,7 @@ namespace engine
 
 			std::string name;
 			entt::entity parent{ entt::null };
-			std::list<entt::entity> children;
+			std::vector<entt::entity> children;
 		};
 	}
 }

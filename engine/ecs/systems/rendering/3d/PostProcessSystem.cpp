@@ -41,5 +41,7 @@ void CPostProcessSystem::__update(float fDt)
 	stage->begin(commandBuffer);
 	pShader->predraw(commandBuffer);
 	commandBuffer.draw(3, 1, 0, 0);
+
+	EGEditor->newFrame();
 	stage->end(commandBuffer);
 }

@@ -35,24 +35,17 @@ void CEditorViewport::create()
 	pDescriptorSet->create(vk::PipelineBindPoint::eGraphics, pBackend->PipelineLayout, EGEditor->getDescriptorPool(), pBackend->DescriptorSetLayout);
 }
 
-void CEditorViewport::draw()
+void CEditorViewport::__draw()
 {
-	if (bIsOpen)
-	{
-		if (ImGui::Begin("Viewport", &bIsOpen))
-		{
-			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-			ImVec2 viewportPanelPos = ImGui::GetWindowPos();
-			auto textDrawPos = ImGui::GetCursorStartPos();
+	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+	ImVec2 viewportPanelPos = ImGui::GetWindowPos();
+	auto textDrawPos = ImGui::GetCursorStartPos();
 
-			drawViewport(viewportPanelSize.x, viewportPanelSize.y);
-			drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
-			drawOverlay(textDrawPos.x, textDrawPos.y);
+	drawViewport(viewportPanelSize.x, viewportPanelSize.y);
+	drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+	drawOverlay(textDrawPos.x, textDrawPos.y);
 
-			ImGui::End();
-			ImGui::PopStyleVar();
-		}
-	}
+	ImGui::End();
 }
 
 void CEditorViewport::drawViewport(float offsetx, float offsety)
@@ -77,13 +70,13 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 {
 	bool snap{ false };
 
-	if (ImGui::IsKeyPressed('T'))
+	if (ImGui::IsKeyPressed(ImGuiKey_T))
 		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-	if (ImGui::IsKeyPressed('R'))
+	if (ImGui::IsKeyPressed(ImGuiKey_R))
 		mCurrentGizmoOperation = ImGuizmo::ROTATE;
-	if (ImGui::IsKeyPressed('E'))
+	if (ImGui::IsKeyPressed(ImGuiKey_E))
 		mCurrentGizmoOperation = ImGuizmo::SCALE;
-	if (ImGui::IsKeyPressed('Z'))
+	if (ImGui::IsKeyPressed(ImGuiKey_V))
 		snap = true;
 
 	float snapValue = 0.5f;

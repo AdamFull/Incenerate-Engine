@@ -18,7 +18,7 @@
 #include <list>
 #include <vector>
 
-#include <entt/fwd.hpp>
+#include <entt/entt.hpp>
 
 #include "fdecl.h"
 

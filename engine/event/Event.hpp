@@ -23,6 +23,7 @@ namespace engine
 	namespace Events::Graphics
 	{
 		const ParamId ReCreate = "Events::Graphics::ReCreate"_hash;
+		const ParamId ViewportReCreate = "Events::Graphics::ViewportReCreate"_hash;
 	}
 
 	namespace Events::Input

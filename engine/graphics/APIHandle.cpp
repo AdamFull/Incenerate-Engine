@@ -35,12 +35,16 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     screenExtent = pDevice->getExtent();
     commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
-    auto depth_format = EGGraphics->getDevice()->getDepthFormat();
+
+    auto& device = EGGraphics->getDevice();
+    auto depth_format = device->getDepthFormat();
+    
 
     {
         mStageInfos["shadow"].srName = "shadow";
         mStageInfos["shadow"].viewport.offset = vk::Offset2D(0, 0);
         mStageInfos["shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        mStageInfos["shadow"].bIgnoreRecreation = true;
         mStageInfos["shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, MAX_SPOT_LIGHT_COUNT);
         mStageInfos["shadow"].vDescriptions.emplace_back("direct_shadowmap_tex");
         mStageInfos["shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArrayCube, MAX_POINT_LIGHT_COUNT);
@@ -96,8 +100,9 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     {
         mStageInfos["deferred"].srName = "deferred";
         mStageInfos["deferred"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["deferred"].viewport.extent = EGGraphics->getDevice()->getExtent();
+        mStageInfos["deferred"].viewport.extent = device->getExtent(true);
         mStageInfos["deferred"].bFlipViewport = true;
+        mStageInfos["deferred"].bViewportDependent = true;
         mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "packed_tex", vk::Format::eR32G32B32A32Uint, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "emission_tex", vk::Format::eB10G11R11UfloatPack32, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled });
@@ -141,7 +146,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     {
         mStageInfos["composition"].srName = "composition";
         mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["composition"].viewport.extent = EGGraphics->getDevice()->getExtent();
+        mStageInfos["composition"].viewport.extent = device->getExtent(true);
+        mStageInfos["composition"].bViewportDependent = true;
         mStageInfos["composition"].vImages.emplace_back(FCIImage{ "postprocess_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         mStageInfos["composition"].vOutputs.emplace_back("postprocess_tex");
         mStageInfos["composition"].vDescriptions.emplace_back("");
@@ -182,8 +188,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     {
         mStageInfos["postprocess"].srName = "postprocess";
         mStageInfos["postprocess"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["postprocess"].viewport.extent = EGGraphics->getDevice()->getExtent();
-        mStageInfos["postprocess"].vImages.emplace_back(FCIImage{ "present_khr", EGGraphics->getDevice()->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
+        mStageInfos["postprocess"].viewport.extent = device->getExtent();
+        mStageInfos["postprocess"].vImages.emplace_back(FCIImage{ "present_khr", device->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
         mStageInfos["postprocess"].vOutputs.emplace_back("present_khr");
         mStageInfos["postprocess"].vDescriptions.emplace_back("");
         mStageInfos["postprocess"].vDependencies.emplace_back(
@@ -210,7 +216,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     log_info("Graphics core initialized.");
 }
 
-void CAPIHandle::reCreate()
+void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
 {
     //ReCreation guide
     // 
@@ -231,19 +237,31 @@ void CAPIHandle::reCreate()
     while (pWindow->isMinimized())
         pWindow->begin();
 
-    pDevice->recreateSwapchain();
-    screenExtent = pDevice->getExtent();
-    imageIndex = 0;
-    CWindowHandle::bWasResized = false;
+    if (bSwapchain)
+    {
+        pDevice->recreateSwapchain();
+        screenExtent = pDevice->getExtent();
+        imageIndex = 0;
+        CWindowHandle::bWasResized = false;
+    }
+
     for (auto& [name, stage] : mStageInfos)
     {
-        if (name == "shadow")
+        if (stage.bIgnoreRecreation)
             continue;
 
-        stage.viewport.extent = pDevice->getExtent();
+        if (bViewport && !bSwapchain && !stage.bViewportDependent)
+            continue;
+
+        stage.viewport.extent = pDevice->getExtent(stage.bViewportDependent);
         auto& pStage = pRenderStageManager->get(name);
         pStage->reCreate(stage);
     }
+
+    EGEngine->sendEvent(Events::Graphics::ReCreate);
+
+    if (bViewport)
+        EGEngine->sendEvent(Events::Graphics::ViewportReCreate);
 }
 
 void CAPIHandle::shutdown()
@@ -261,7 +279,7 @@ vk::CommandBuffer CAPIHandle::begin()
 {
     vk::CommandBuffer commandBuffer{};
     try { commandBuffer = beginFrame(); }
-    catch (vk::OutOfDateKHRError err) { reCreate(); }
+    catch (vk::OutOfDateKHRError err) { reCreate(true, true); }
     catch (vk::SystemError err) { log_error("Failed to acquire swap chain image!"); }
     return commandBuffer;
 }
@@ -274,7 +292,7 @@ void CAPIHandle::end()
     catch (vk::SystemError err) { log_error("failed to present swap chain image!"); }
 
     if (resultPresent == vk::Result::eSuboptimalKHR || resultPresent == vk::Result::eErrorOutOfDateKHR || CWindowHandle::bWasResized)
-        reCreate();
+        reCreate(true, true);
 
     pDevice->updateCommandPools();
 }
@@ -468,15 +486,19 @@ const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::strin
 
 vk::CommandBuffer CAPIHandle::beginFrame()
 {
+    bool bSwapchain{ false }, bViewport{ pDevice->isViewportResized() };
+
     log_cerror(!frameStarted, "Can't call beginFrame while already in progress");
     vk::Result res = pDevice->acquireNextImage(&imageIndex);
     if (res == vk::Result::eErrorOutOfDateKHR)
-    {
-        reCreate();
-        return nullptr;
-    }
-    else if (res == vk::Result::eSuboptimalKHR) {
+        bSwapchain = true;
+    else if (res == vk::Result::eSuboptimalKHR)
         log_error("Failed to acquire swap chain image!");
+
+    if (bSwapchain || bViewport)
+    {
+        reCreate(bSwapchain, bViewport);
+        return nullptr;
     }
 
     frameStarted = true;

@@ -74,6 +74,8 @@ namespace engine
 
             inline VmaAllocator& getVMAAllocator() { return vmaAlloc; }
 
+            const vk::PipelineCache& getPipelineCache() const { return pipelineCache; }
+
             /**************************************************Swapchain********************************************/
             vk::Result acquireNextImage(uint32_t* imageIndex);
             vk::Result submitCommandBuffers(const vk::CommandBuffer* commandBuffer, uint32_t* imageIndex, vk::QueueFlagBits queueBit);
@@ -84,6 +86,8 @@ namespace engine
             vk::Extent2D getExtent(bool automatic = false);
             uint32_t getFramesInFlight() { return framesInFlight; }
             uint32_t getCurrentFrame() { return currentFrame; }
+
+            const bool isViewportResized() const { return bViewportRebuild; }
 
             void setViewportExtent(vk::Extent2D extent);
 
@@ -297,8 +301,6 @@ namespace engine
             vk::Format imageFormat;
             vk::Extent2D swapchainExtent, viewportExtent;
             vk::SwapchainKHR swapChain{ VK_NULL_HANDLE };
-
-            vk::Extent2D viewportExtent;
             bool bViewportRebuild{ false };
 
             std::vector<vk::Image> vImages;
