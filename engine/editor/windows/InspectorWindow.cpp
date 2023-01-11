@@ -4,6 +4,7 @@
 
 #include <imgui/imgui.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
+#include <imgui/IconsFontAwesome6.h>
 #include "editor/CustomControls.h"
 
 #include "ecs/components/TransformComponent.h"
@@ -31,7 +32,7 @@ void try_show_edit(const std::string& name, const entt::entity& entity, _Pred&& 
 		ImGui::Text(name.c_str());
 
 		ImGui::SameLine(ImGui::GetWindowWidth() - 30);
-		if (ImGui::Button("X"))
+		if (ImGui::Button("X##remove"))
 			registry.remove<_Ty>(entity);
 
 		predicate(object);
@@ -153,7 +154,7 @@ void CEditorInspector::__draw()
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
 			});
 
-		if (ImGui::Button("+", ImVec2(-1.f, 0.f)))
+		if (ImGui::Button("+##add_component", ImVec2(-1.f, 0.f)))
 			ImGui::OpenPopup("add_component_popup");
 	}
 }

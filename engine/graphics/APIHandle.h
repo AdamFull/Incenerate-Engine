@@ -98,7 +98,6 @@ namespace engine
 
 			uint32_t imageIndex{ 0 };
 			bool frameStarted{ false };
-			vk::Extent2D screenExtent{};
 			std::unique_ptr<CCommandBuffer> commandBuffers;
 		};
 	}

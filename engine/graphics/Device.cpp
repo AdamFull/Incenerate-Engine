@@ -448,12 +448,16 @@ void CDevice::updateCommandPools()
 void CDevice::recreateSwapchain()
 {
     log_debug("Recreating vulkan swapchain.");
-
+    
     commandPools.clear();
     cleanupSwapchain();
     createSwapchain();
     currentFrame = 0;
-    viewportExtent = swapchainExtent;
+}
+
+void CDevice::nillViewportFlag()
+{
+    bViewportRebuild = false;
 }
 
 uint32_t CDevice::getVulkanVersion(ERenderApi eAPI)
@@ -932,8 +936,6 @@ void CDevice::setViewportExtent(vk::Extent2D extent)
         bViewportRebuild = true;
         viewportExtent = extent;
     }
-    else
-        bViewportRebuild = false;
 }
 
 CAPIHandle* CDevice::getAPI()

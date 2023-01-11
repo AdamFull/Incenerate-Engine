@@ -5,6 +5,9 @@
 
 #include <imgui/imgui.h>
 #include <imgui/ImGuizmo.h>
+#include <imgui/IconsFontAwesome6.h>
+
+#include "system/filesystem/filesystem.h"
 
 #include "windows/ViewportWindow.h"
 #include "windows/HierarchyWindow.h"
@@ -13,6 +16,7 @@
 
 using namespace engine;
 using namespace engine::graphics;
+using namespace engine::system;
 using namespace engine::system::window;
 using namespace engine::editor;
 
@@ -27,7 +31,7 @@ CEditor::~CEditor()
 void CEditor::create()
 {
     auto& device = EGGraphics->getDevice();
-    auto& fb = EGGraphics->getFramebuffer("postprocess");
+    auto& fb = EGGraphics->getFramebuffer("present");
 
     vk::DescriptorPoolSize pool_sizes[] =
     {
@@ -56,6 +60,7 @@ void CEditor::create()
     baseInitialize();
 
     // Register windows
+    vEditorWindows.emplace_back(std::make_unique<CEditorViewport>("Viewport"));
     vEditorWindows.emplace_back(std::make_unique<CEditorHierarchy>("Hierarchy"));
     vEditorWindows.emplace_back(std::make_unique<CEditorInspector>("Inspector"));
     vEditorWindows.emplace_back(std::make_unique<CEditorContentBrowser>("Content browser"));
@@ -90,7 +95,7 @@ void CEditor::create()
        overlay->create();
 }
 
-void CEditor::newFrame()
+void CEditor::newFrame(float fDt)
 {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -103,7 +108,7 @@ void CEditor::newFrame()
 
     if (ImGui::BeginMainMenuBar())
     {
-        if (ImGui::BeginMenu("File"))
+        if (ImGui::BeginMenu(ICON_FA_FILE " File"))
         {
             if (ImGui::MenuItem("New scene", "CTRL+N")) {}
             if (ImGui::MenuItem("Open scene", "CTRL+O")) {}
@@ -111,7 +116,7 @@ void CEditor::newFrame()
             if (ImGui::MenuItem("Save current as...", "CTRL+ALT+S")) {}
             if (ImGui::MenuItem("Save all")) {}
             ImGui::Separator();
-            if (ImGui::MenuItem("Exit", "CTRL+Q")) {}
+            if (ImGui::MenuItem(ICON_FA_POWER_OFF " Exit", "CTRL+Q")) {}
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit"))
@@ -245,4 +250,14 @@ void CEditor::baseInitialize()
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     io.DisplaySize = ImVec2(CWindowHandle::iWidth, CWindowHandle::iHeight);
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+
+    io.Fonts->AddFontDefault();
+
+    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+    ImFontConfig icons_config; 
+    icons_config.MergeMode = true; 
+    icons_config.PixelSnapH = true;
+
+    auto fontfile = (fs::get_workdir() / "engine" / "font" / FONT_ICON_FILE_NAME_FAR).string();
+    io.Fonts->AddFontFromFileTTF(fontfile.c_str(), 13.0f, &icons_config, icons_ranges);
 }

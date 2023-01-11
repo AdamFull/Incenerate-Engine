@@ -16,6 +16,7 @@ namespace engine
 			void create() override;
 			void __draw() override;
 		private:
+			//void onViewportReCreate(CEvent& event);
 			void drawViewport(float offsetx, float offsety);
 			void drawManipulator(float offsetx, float offsety, float sizex, float sizey);
 			void drawOverlay(float offsetx, float offsety);

@@ -51,7 +51,6 @@ void CEngine::create()
 	pGraphics->create(createInfo);
 
 	pEditor = std::make_unique<CEditor>();
-	pEditor->create();
 
 	initEntityComponentSystem();
 
@@ -71,7 +70,10 @@ void CEngine::beginEngineLoop()
 
 	while (pWindow->begin())
 	{
-		pGraphics->begin();
+		auto commandBuffer = pGraphics->begin();
+		if (!commandBuffer)
+			continue;
+
 		for (const auto& system : vSystems)
 			system->update(dt);
 		pGraphics->end();

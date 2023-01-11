@@ -21,7 +21,7 @@ void CPostProcessSystem::__update(float fDt)
 	auto& pShader = EGGraphics->getShader(shader_id);
 	auto index = EGGraphics->getDevice()->getCurrentFrame();
 
-	auto& postprocess = EGGraphics->getImage("postprocess_tex_" + std::to_string(index));
+	auto& postprocess = EGGraphics->getImage("composition_tex_" + std::to_string(index));
 	pShader->addTexture("samplerColor", postprocess->getDescriptor());
 
 	auto& pPush = pShader->getPushBlock("ubo");
@@ -42,6 +42,5 @@ void CPostProcessSystem::__update(float fDt)
 	pShader->predraw(commandBuffer);
 	commandBuffer.draw(3, 1, 0, 0);
 
-	EGEditor->newFrame();
 	stage->end(commandBuffer);
 }

@@ -1,6 +1,7 @@
 #include "ContentBrowserWindow.h"
 
 #include <imgui/imgui.h>
+#include <imgui/IconsFontAwesome6.h>
 
 #include "system/filesystem/filesystem.h"
 
@@ -37,13 +38,24 @@ void CEditorContentBrowser::__draw()
 
 	for (auto& path : vCurrentDirData)
 	{
+		auto ext = path.extension().string();
 		auto relativePath = std::filesystem::relative(path, workdir);
 		auto filename = relativePath.filename().string();
 		auto isDirectory = std::filesystem::is_directory(path);
 
+		const char* icon{ nullptr };
+		if (isDirectory)
+			icon = ICON_FA_FOLDER"##";
+		else if (ext == ".ktx" || ext == ".ktx2")
+			icon = ICON_FA_IMAGE"##";
+		else if (ext == ".wav" || ext == ".ogg")
+			icon = ICON_FA_FILE_AUDIO"##";
+		else
+			icon = ICON_FA_FILE"##";
+
 		ImGui::PushID(filename.c_str());
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-		ImGui::Button(("##" + filename).c_str(), { thumbnailSize, thumbnailSize });
+		ImGui::Button((icon + filename).c_str(), { thumbnailSize, thumbnailSize });
 		ImGui::PopStyleColor();
 
 		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))

@@ -4,6 +4,7 @@
 
 #include <imgui/imgui.h>
 #include <imgui/ImGuizmo.h>
+#include <imgui/IconsFontAwesome6.h>
 #include <editor/imgui_impl_vulkan.h>
 
 #include "ecs/components/TransformComponent.h"
@@ -22,6 +23,15 @@ static const float identityMatrix[16] =
 0.f, 0.f, 0.f, 1.f };
 
 ImGuizmo::OPERATION mCurrentGizmoOperation{ ImGuizmo::TRANSLATE };
+
+void AlignForWidth(float width, float alignment = 0.5f)
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+	float avail = ImGui::GetContentRegionAvail().x;
+	float off = (avail - width) * alignment;
+	if (off > 0.0f)
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+}
 
 CEditorViewport::~CEditorViewport()
 {
@@ -44,14 +54,13 @@ void CEditorViewport::__draw()
 	drawViewport(viewportPanelSize.x, viewportPanelSize.y);
 	drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
 	drawOverlay(textDrawPos.x, textDrawPos.y);
-
-	ImGui::End();
 }
 
 void CEditorViewport::drawViewport(float offsetx, float offsety)
 {
+	auto& device = EGGraphics->getDevice();
 	auto frame = EGGraphics->getDevice()->getCurrentFrame();
-	auto& image = EGGraphics->getImage("output_image_" + std::to_string(frame));
+	auto& image = EGGraphics->getImage("postprocess_tex_" + std::to_string(frame));
 	
 	vk::WriteDescriptorSet write{};
 	write.descriptorType = vk::DescriptorType::eCombinedImageSampler;
@@ -63,7 +72,24 @@ void CEditorViewport::drawViewport(float offsetx, float offsety)
 	ImGui::Image(pDescriptorSet->get(), ImVec2{ offsetx, offsety });
 
 	if (!ImGui::IsAnyItemActive())
-		EGGraphics->getDevice()->setViewportExtent(vk::Extent2D{(uint32_t)offsetx, (uint32_t)offsety});
+		device->setViewportExtent(vk::Extent2D{(uint32_t)offsetx, (uint32_t)offsety});
+
+	ImGui::SetCursorPos(ImVec2(0.f, 0.f));
+	
+	ImGuiStyle& style = ImGui::GetStyle();
+	float width = 0.0f;
+	width += ImGui::CalcTextSize(ICON_FA_CIRCLE_PAUSE "##btn_pause").x;
+	width += style.ItemSpacing.x;
+	width += ImGui::CalcTextSize(ICON_FA_CIRCLE_PLAY "##btn_play").x;
+	width += style.ItemSpacing.x;
+	width += ImGui::CalcTextSize(ICON_FA_CIRCLE_STOP "##btn_stop").x;
+	AlignForWidth(width);
+	
+	if (ImGui::Button(ICON_FA_CIRCLE_PAUSE "##btn_pause"));
+	ImGui::SameLine();
+	if (ImGui::Button(ICON_FA_CIRCLE_PLAY "##btn_play"));
+	ImGui::SameLine();
+	if (ImGui::Button(ICON_FA_CIRCLE_STOP "##btn_stop"));
 }
 
 void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex, float sizey)

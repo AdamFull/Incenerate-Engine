@@ -24,6 +24,7 @@ namespace engine
 			void updateCommandPools();
 
             void recreateSwapchain();
+            void nillViewportFlag();
 
             inline void GPUWait() { vkDevice.waitIdle(); }
 

@@ -56,7 +56,7 @@ void CMeshSystem::__update(float fDt)
 						pUBO->set("projection", camera.projection);
 						pUBO->set("normal", normal);
 						pUBO->set("viewDir", cameraTransform.rposition);
-						pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent());
+						pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent(true));
 						pUBO->set("frustumPlanes", camera.frustum.getFrustumSides());
 
 						auto& pSurface = pShader->getUniformBuffer("UBOMaterial");

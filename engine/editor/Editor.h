@@ -11,7 +11,7 @@ namespace engine
 		public:
 			~CEditor();
 			void create();
-			void newFrame();
+			void newFrame(float fDt);
 
 			void selectObject(const entt::entity& object);
 			void deselectObject(const entt::entity& object);

@@ -16,7 +16,7 @@ CWindowHandle::~CWindowHandle()
 
 void CWindowHandle::create(const FWindowCreateInfo& createInfo)
 {
-    uint32_t flags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
+    uint32_t flags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
     iWidth = createInfo.width;
     iHeight = createInfo.height;

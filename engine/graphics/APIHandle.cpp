@@ -31,8 +31,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
     pLoader = std::make_unique<CShaderLoader>(pDevice.get());
     pLoader->create(createInfo.srShaders);
-
-    screenExtent = pDevice->getExtent();
+    
     commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
 
@@ -148,8 +147,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
         mStageInfos["composition"].viewport.extent = device->getExtent(true);
         mStageInfos["composition"].bViewportDependent = true;
-        mStageInfos["composition"].vImages.emplace_back(FCIImage{ "postprocess_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["composition"].vOutputs.emplace_back("postprocess_tex");
+        mStageInfos["composition"].vImages.emplace_back(FCIImage{ "composition_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["composition"].vOutputs.emplace_back("composition_tex");
         mStageInfos["composition"].vDescriptions.emplace_back("");
         mStageInfos["composition"].vDependencies.emplace_back(
             FCIDependency(
@@ -188,9 +187,10 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     {
         mStageInfos["postprocess"].srName = "postprocess";
         mStageInfos["postprocess"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["postprocess"].viewport.extent = device->getExtent();
-        mStageInfos["postprocess"].vImages.emplace_back(FCIImage{ "present_khr", device->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
-        mStageInfos["postprocess"].vOutputs.emplace_back("present_khr");
+        mStageInfos["postprocess"].viewport.extent = device->getExtent(true);
+        mStageInfos["postprocess"].bViewportDependent = true;
+        mStageInfos["postprocess"].vImages.emplace_back(FCIImage{ "postprocess_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["postprocess"].vOutputs.emplace_back("postprocess_tex");
         mStageInfos["postprocess"].vDescriptions.emplace_back("");
         mStageInfos["postprocess"].vDependencies.emplace_back(
             FCIDependency(
@@ -206,12 +206,52 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
                 )
             )
         );
+        mStageInfos["postprocess"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                )
+            )
+        );
 
         auto stageId = EGGraphics->addRenderStage("postprocess");
         auto& pStage = EGGraphics->getRenderStage(stageId);
         pStage->create(mStageInfos["postprocess"]);
     }
     
+    {
+        mStageInfos["present"].srName = "present";
+        mStageInfos["present"].viewport.offset = vk::Offset2D(0, 0);
+        mStageInfos["present"].viewport.extent = device->getExtent();
+        mStageInfos["present"].vImages.emplace_back(FCIImage{ "present_khr", device->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
+        mStageInfos["present"].vOutputs.emplace_back("present_khr");
+        mStageInfos["present"].vDescriptions.emplace_back("");
+        mStageInfos["present"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eAllGraphics,
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                )
+            )
+        );
+
+        auto stageId = EGGraphics->addRenderStage("present");
+        auto& pStage = EGGraphics->getRenderStage(stageId);
+        pStage->create(mStageInfos["present"]);
+    }
 
     log_info("Graphics core initialized.");
 }
@@ -240,7 +280,6 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
     if (bSwapchain)
     {
         pDevice->recreateSwapchain();
-        screenExtent = pDevice->getExtent();
         imageIndex = 0;
         CWindowHandle::bWasResized = false;
     }
@@ -262,6 +301,8 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
 
     if (bViewport)
         EGEngine->sendEvent(Events::Graphics::ViewportReCreate);
+
+    pDevice->nillViewportFlag();
 }
 
 void CAPIHandle::shutdown()
@@ -488,6 +529,13 @@ vk::CommandBuffer CAPIHandle::beginFrame()
 {
     bool bSwapchain{ false }, bViewport{ pDevice->isViewportResized() };
 
+    // Here we able to recreate viewport
+    if (bViewport)
+    {
+        reCreate(bSwapchain, bViewport);
+        return nullptr;
+    }
+
     log_cerror(!frameStarted, "Can't call beginFrame while already in progress");
     vk::Result res = pDevice->acquireNextImage(&imageIndex);
     if (res == vk::Result::eErrorOutOfDateKHR)
@@ -495,9 +543,10 @@ vk::CommandBuffer CAPIHandle::beginFrame()
     else if (res == vk::Result::eSuboptimalKHR)
         log_error("Failed to acquire swap chain image!");
 
-    if (bSwapchain || bViewport)
+    // But here we able to recreate swapchain
+    if (bSwapchain)
     {
-        reCreate(bSwapchain, bViewport);
+        reCreate(bSwapchain, true);
         return nullptr;
     }
 
