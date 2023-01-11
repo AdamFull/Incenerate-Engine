@@ -13,6 +13,7 @@ CAudioSource::CAudioSource(const std::string& filepath)
 
 CAudioSource::~CAudioSource()
 {
+	stop();
 	alCall(alDeleteSources, 1, &alSource);
 	alCall(alDeleteBuffers, 1, &alBuffer);
 }

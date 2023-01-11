@@ -9,11 +9,11 @@ namespace engine
 		struct FSpotLightComponent
 		{
 			glm::vec3 color;
-			float intencity;
-			float innerAngle;
-			float outerAngle;
-			bool toTarget{ true };
-			bool castShadows{ true };
+			float intencity{ 1.f };
+			float innerAngle{ 0.92f };
+			float outerAngle{ 0.98f };
+			bool toTarget{ false };
+			bool castShadows{ false };
 		};
 
 		struct FSpotLightCommit

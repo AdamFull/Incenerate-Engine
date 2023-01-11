@@ -66,7 +66,7 @@ layout(std140, binding = 7) uniform UBOMaterial
 	float tessellationStrength;
 } material;
 
-const float minRoughness = 0.0;
+const float minRoughness = 0.01;
 
 //https://github.com/bwasty/gltf-viewer/blob/master/src/shaders/pbr-frag.glsl
 void main() 
@@ -96,7 +96,7 @@ void main()
 	metallic = metallic * metalRough.b;
 #endif
 	roughness = clamp(roughness, minRoughness, 1.0);
-    metallic = clamp(metallic, 0.0, 1.0);
+    metallic = clamp(metallic, 0.01, 1.0);
 	pbr_map = vec4(roughness, metallic, 0.0, 0.0);
 
 //NORMALS
@@ -130,12 +130,16 @@ void main()
 //AMBIENT OCCLUSION
 #ifdef HAS_OCCLUSIONMAP
 	pbr_map.b = texture(occlusion_tex, texCoord).r * material.occlusionStrenth;
+#else
+	pbr_map.b = 1.0;
 #endif
 
 //EMISSION
-	vec4 emission = vec4(0.0);
+	vec4 emission = 
 #ifdef HAS_EMISSIVEMAP
-    emission = vec4(texture(emissive_tex, texCoord).rgb * material.emissiveFactor, 1.0);
+    vec4(texture(emissive_tex, texCoord).rgb * material.emissiveFactor, 1.0);
+#else
+	vec4(inColor * material.emissiveFactor, 1.0);
 #endif
 
 	outPack = packTextures(normal_map, albedo_map, pbr_map);

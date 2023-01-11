@@ -19,7 +19,6 @@ namespace engine
 
 			FFrustum frustum;
 
-			float aspect{ 1.7f };
 			float fieldOfView{ 45.f };
 			float nearPlane{ 0.1f };
 			float farPlane{ 128.f }; 

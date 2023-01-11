@@ -56,18 +56,20 @@ void CEditorContentBrowser::__draw()
 			icon = ICON_FA_IMAGE;
 		else if (ext == ".wav" || ext == ".ogg")
 			icon = ICON_FA_FILE_AUDIO;
+		else if (ext == ".lua")
+			icon = ICON_FA_FILE_CODE;
 		else
 			icon = ICON_FA_FILE;
 
 		ImGui::PushFont(pLargeIcons);
 		ImGui::PushID(filename.c_str());
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-		//auto double_clicked = ImGui::Selectable((icon + filename).c_str(), &bSelected, ImGuiSelectableFlags_AllowDoubleClick, { thumbnailSize, thumbnailSize });
-		ImGui::Button((icon + ("##" + filename)).c_str(), {thumbnailSize, thumbnailSize});
+		auto double_clicked = ImGui::Selectable((icon + ("##" + filename)).c_str(), &bSelected, ImGuiSelectableFlags_AllowDoubleClick, { thumbnailSize, thumbnailSize });
+		//ImGui::Button((icon + ("##" + filename)).c_str(), {thumbnailSize, thumbnailSize});
 		ImGui::PopStyleColor();
 		ImGui::PopFont();
 
-		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		if (double_clicked && ImGui::IsMouseDoubleClicked(0))
 		{
 			if (isDirectory)
 			{

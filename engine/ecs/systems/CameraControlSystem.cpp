@@ -26,7 +26,6 @@ void CCameraControlSystem::__create()
 	auto view = registry.view<FTransformComponent, FCameraComponent>();
 	for (auto [entity, transform, camera] : view.each())
 	{
-		camera.active = true;
 		camera.angleV = glm::degrees(-transform.rotation.y);
 		camera.angleH = glm::degrees(glm::atan(transform.rotation.z / transform.rotation.x));
 	}
@@ -43,7 +42,6 @@ void CCameraControlSystem::__update(float fDt)
 		if (camera.active)
 		{
 			auto extent = device->getExtent(true);
-			camera.aspect = device->getAspect(true);
 
 			camera.forward = glm::normalize(transform.rotation);
 			camera.right = glm::normalize(glm::cross(camera.forward, glm::vec3{ 0.0, 1.0, 0.0 }));
@@ -54,7 +52,7 @@ void CCameraControlSystem::__update(float fDt)
 				camera.viewportDim.x = extent.width;
 				camera.viewportDim.y = extent.height;
 
-				recalculateProjection(camera);
+				recalculateProjection(camera, extent.width, extent.height);
 			}
 
 			if (camera.moved)
@@ -70,9 +68,14 @@ void CCameraControlSystem::__update(float fDt)
 	dt = fDt;
 }
 
-void CCameraControlSystem::recalculateProjection(FCameraComponent& camera)
+void CCameraControlSystem::recalculateProjection(FCameraComponent& camera, float xmax, float ymax)
 {
-	camera.projection = glm::perspective(glm::radians(camera.fieldOfView), camera.aspect, camera.nearPlane, camera.farPlane);
+	if (camera.type == ECameraType::eOrthographic)
+		//camera.projection = glm::ortho(camera.xmag, camera.ymag, xmax, ymax, camera.nearPlane, camera.farPlane);
+		camera.projection = glm::ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
+	else
+		camera.projection = glm::perspective(glm::radians(camera.fieldOfView), xmax / ymax, camera.nearPlane, camera.farPlane);
+
 	camera.invProjection = glm::inverse(camera.projection);
 }
 

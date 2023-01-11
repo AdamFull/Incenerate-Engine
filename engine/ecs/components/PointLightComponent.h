@@ -9,9 +9,9 @@ namespace engine
 		struct FPointLightComponent
 		{
 			glm::vec3 color;
-			float intencity;
-			float radius;
-			bool castShadows{ true };
+			float intencity{ 1.f };
+			float radius{ 1.f };
+			bool castShadows{ false };
 		};
 
 		struct FPointLightCommit

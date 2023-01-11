@@ -16,6 +16,7 @@
 #include "ecs/components/SpotLightComponent.h"
 #include "ecs/components/SkyboxComponent.h"
 #include "ecs/components/ScriptComponent.h"
+#include "ecs/components/SceneComponent.h"
 
 #include "loaders/MeshLoader.h"
 
@@ -121,10 +122,12 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 			if (name == "sprite")
 				registry.emplace<FSpriteComponent>(node, component.get<FSpriteComponent>());
 
-			if (name == "gltfscene")
+			if (name == "scene")
 			{
-				auto source = component.get<std::string>();
-				CMeshLoader::load(source, node);
+				auto scene = component.get<FSceneComponent>();
+				CMeshLoader::load(scene.source, node);
+
+				registry.emplace<FSceneComponent>(node, scene);
 			}
 
 			if (name == "directionallight")
@@ -148,6 +151,7 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 
 void CSceneLoader::serializeNodes(const entt::entity& parent, std::vector<FSceneObjectRaw>& vObjects)
 {
+	bool bIgnoreChildren{ false };
 	auto& registry = EGCoordinator;
 
 	FSceneObjectRaw object;
@@ -157,6 +161,11 @@ void CSceneLoader::serializeNodes(const entt::entity& parent, std::vector<FScene
 
 	if (auto transform = registry.try_get<FTransformComponent>(parent))
 		object.mComponents.emplace("transform", nlohmann::json(*transform));
+	if (auto scene = registry.try_get<FSceneComponent>(parent))
+	{
+		object.mComponents.emplace("scene", nlohmann::json(*scene));
+		bIgnoreChildren = true;
+	}
 	if (auto camera = registry.try_get<FCameraComponent>(parent))
 		object.mComponents.emplace("camera", nlohmann::json(*camera));
 	if (auto audio = registry.try_get<FAudioComponent>(parent))
@@ -174,8 +183,11 @@ void CSceneLoader::serializeNodes(const entt::entity& parent, std::vector<FScene
 	if (auto script = registry.try_get<FScriptComponent>(parent))
 		object.mComponents.emplace("script", nlohmann::json(*script));
 
-	for (auto& child : phierarchy.children)
-		serializeNodes(child, object.vChildren);
+	if (!bIgnoreChildren)
+	{
+		for (auto& child : phierarchy.children)
+			serializeNodes(child, object.vChildren);
+	}
 
 	vObjects.emplace_back(object);
 }

@@ -14,7 +14,10 @@
 #include "windows/InspectorWindow.h"
 #include "windows/ContentBrowserWindow.h"
 
+#include "game/SceneSerializer.h"
+
 using namespace engine;
+using namespace engine::game;
 using namespace engine::graphics;
 using namespace engine::system;
 using namespace engine::system::window;
@@ -110,18 +113,18 @@ void CEditor::newFrame(float fDt)
     {
         if (ImGui::BeginMenu(ICON_FA_FILE " File"))
         {
-            if (ImGui::MenuItem("New scene", "CTRL+N")) {}
+            if (ImGui::MenuItem(ICON_FA_FILE_PEN " New scene", "CTRL+N")) {}
             if (ImGui::MenuItem("Open scene", "CTRL+O")) {}
-            if (ImGui::MenuItem("Save current", "CTRL+S")) {}
-            if (ImGui::MenuItem("Save current as...", "CTRL+ALT+S")) {}
-            if (ImGui::MenuItem("Save all")) {}
+            if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save current", "CTRL+S")) { CSceneLoader::save(EGSceneGraph, "scene.json"); }
+            if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save current as...", "CTRL+ALT+S")) {}
+            if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save all")) {}
             ImGui::Separator();
             if (ImGui::MenuItem(ICON_FA_POWER_OFF " Exit", "CTRL+Q")) {}
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+            if (ImGui::MenuItem(ICON_FA_ARROW_RIGHT" Undo", "CTRL+Z")) {}
             if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
             ImGui::Separator();
             if (ImGui::MenuItem("Cut", "CTRL+X")) {}

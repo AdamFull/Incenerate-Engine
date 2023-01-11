@@ -8,6 +8,7 @@
 #include "SpotLightComponent.h"
 #include "SkyboxComponent.h"
 #include "ScriptComponent.h"
+#include "SceneComponent.h"
 
 #include "parse/glmparse.h"
 
@@ -17,14 +18,11 @@ namespace engine
 	{
 		void to_json(nlohmann::json& json, const FAudioComponent& type)
 		{
-			json = nlohmann::json
-			{
-				{"source", type.source},
-				{"gain", type.gain},
-				{"pitch", type.pitch},
-				{"velocity", type.velocity},
-				{"loop", type.loop}
-			};
+			json = nlohmann::json{};
+			utl::serialize_from("source", json, type.source, !type.source.empty());
+			utl::serialize_from("gain", json, type.gain, type.gain != 1.f);
+			utl::serialize_from("pitch", json, type.pitch, type.pitch != 1.f);
+			utl::serialize_from("loop", json, type.loop, type.loop);
 		}
 
 		void from_json(const nlohmann::json& json, FAudioComponent& type)
@@ -39,13 +37,11 @@ namespace engine
 
 		void to_json(nlohmann::json& json, const FCameraComponent& type)
 		{
-			json = nlohmann::json
-			{
-				{"fov", type.fieldOfView},
-				{"near", type.nearPlane},
-				{"far", type.farPlane},
-				{"active", type.active}
-			};
+			json = nlohmann::json{};
+			utl::serialize_from("fov", json, type.fieldOfView, type.fieldOfView != 45.f);
+			utl::serialize_from("near", json, type.nearPlane, type.nearPlane != 0.1f);
+			utl::serialize_from("far", json, type.farPlane, type.farPlane != 128.f);
+			utl::serialize_from("active", json, type.active, type.active);
 		}
 
 		void from_json(const nlohmann::json& json, FCameraComponent& type)
@@ -59,12 +55,10 @@ namespace engine
 
 		void to_json(nlohmann::json& json, const FTransformComponent& type)
 		{
-			json = nlohmann::json
-			{
-				{"pos", type.position},
-				{"rot", type.rotation},
-				{"scale", type.scale}
-			};
+			json = nlohmann::json{};
+			utl::serialize_from("pos", json, type.position, type.position != glm::vec3(0.f));
+			utl::serialize_from("rot", json, type.rotation, type.rotation != glm::vec3(0.f));
+			utl::serialize_from("scale", json, type.scale, type.scale != glm::vec3(1.f));
 		}
 		
 		void from_json(const nlohmann::json& json, FTransformComponent& type)
@@ -77,12 +71,10 @@ namespace engine
 
 		void to_json(nlohmann::json& json, const FDirectionalLightComponent& type)
 		{
-			json = nlohmann::json
-			{
-				{"color", type.color},
-				{"intencity", type.intencity},
-				{"castShadows", type.castShadows}
-			};
+			json = nlohmann::json{};
+			utl::serialize_from("color", json, type.color, type.color != glm::vec3(0.f));
+			utl::serialize_from("intencity", json, type.intencity, type.intencity != 1.f);
+			utl::serialize_from("castShadows", json, type.castShadows, type.castShadows);
 		}
 
 		void from_json(const nlohmann::json& json, FDirectionalLightComponent& type)
@@ -95,13 +87,11 @@ namespace engine
 
 		void to_json(nlohmann::json& json, const FPointLightComponent& type)
 		{
-			json = nlohmann::json
-			{
-				{"color", type.color},
-				{"intencity", type.intencity},
-				{"radius", type.radius},
-				{"castShadows", type.castShadows}
-			};
+			json = nlohmann::json{};
+			utl::serialize_from("color", json, type.color, type.color != glm::vec3(0.f));
+			utl::serialize_from("intencity", json, type.intencity, type.intencity != 1.f);
+			utl::serialize_from("radius", json, type.radius, type.radius != 1.f);
+			utl::serialize_from("castShadows", json, type.castShadows, type.castShadows);
 		}
 
 		void from_json(const nlohmann::json& json, FPointLightComponent& type)
@@ -115,15 +105,13 @@ namespace engine
 
 		void to_json(nlohmann::json& json, const FSpotLightComponent& type)
 		{
-			json = nlohmann::json
-			{
-				{"color", type.color},
-				{"intencity", type.intencity},
-				{"innerAngle", type.innerAngle},
-				{"outerAngle", type.outerAngle},
-				{"toTarget", type.toTarget},
-				{"castShadows", type.castShadows}
-			};
+			json = nlohmann::json{};
+			utl::serialize_from("color", json, type.color, type.color != glm::vec3(0.f));
+			utl::serialize_from("intencity", json, type.intencity, type.intencity != 1.f);
+			utl::serialize_from("innerAngle", json, type.innerAngle, type.innerAngle != 0.92f);
+			utl::serialize_from("outerAngle", json, type.outerAngle, type.outerAngle != 0.98f);
+			utl::serialize_from("toTarget", json, type.toTarget, type.toTarget);
+			utl::serialize_from("castShadows", json, type.castShadows, type.castShadows);
 		}
 
 		void from_json(const nlohmann::json& json, FSpotLightComponent& type)
@@ -139,10 +127,8 @@ namespace engine
 
 		void to_json(nlohmann::json& json, const FSpriteComponent& type)
 		{
-			json = nlohmann::json
-			{
-				{"source", type.source}
-			};
+			json = nlohmann::json{};
+			utl::serialize_from("source", json, type.source, !type.source.empty());
 		}
 
 		void from_json(const nlohmann::json& json, FSpriteComponent& type)
@@ -153,10 +139,8 @@ namespace engine
 
 		void to_json(nlohmann::json& json, const FScriptComponent& type)
 		{
-			json = nlohmann::json
-			{
-				{"source", type.source}
-			};
+			json = nlohmann::json{};
+			utl::serialize_from("source", json, type.source, !type.source.empty());
 		}
 
 		void from_json(const nlohmann::json& json, FScriptComponent& type)
@@ -167,13 +151,23 @@ namespace engine
 
 		void to_json(nlohmann::json& json, const FSkyboxComponent& type)
 		{
-			json = nlohmann::json
-			{
-				{"source", type.source}
-			};
+			json = nlohmann::json{};
+			utl::serialize_from("source", json, type.source, !type.source.empty());
 		}
 
 		void from_json(const nlohmann::json& json, FSkyboxComponent& type)
+		{
+			utl::parse_to("source", json, type.source);
+		}
+
+
+		void to_json(nlohmann::json& json, const FSceneComponent& type)
+		{
+			json = nlohmann::json{};
+			utl::serialize_from("source", json, type.source, !type.source.empty());
+		}
+
+		void from_json(const nlohmann::json& json, FSceneComponent& type)
 		{
 			utl::parse_to("source", json, type.source);
 		}

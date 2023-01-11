@@ -1,37 +1,18 @@
 [
   {
-    "name": "Skybox",
+    "children": [],
     "components": {
       "skybox": {
         "source": "textures/cubemaps/SkyhighFluffycloudField4k.ktx2"
-      }
-    }
+      },
+      "transform": null
+    },
+    "name": "Skybox"
   },
   {
-    "name": "MainCamera",
-    "components": {
-      "transform": {
-        "pos": {
-          "x": -2.0,
-          "y": 2.0,
-          "z": -2.0
-        },
-        "rot": {
-          "x": 0.5,
-          "y": -0.5,
-          "z": 0.5
-        }
-      },
-      "camera": {
-        "fov": 45.0,
-        "near": 0.1,
-        "far": 128.0,
-        "active": true
-      }
-    },
     "children": [
       {
-        "name": "InCameraLight",
+        "children": [],
         "components": {
           "pointlight": {
             "color": {
@@ -41,32 +22,63 @@
             },
             "intencity": 1.5,
             "radius": 10.0
-          }
+          },
+          "transform": null
+        },
+        "name": "InCameraLight"
+      }
+    ],
+    "components": {
+      "camera": {
+        "active": true
+      },
+      "transform": {
+        "pos": {
+          "x": -24.179922103881836,
+          "y": 15.431492805480957,
+          "z": -38.47140121459961
+        },
+        "rot": {
+          "x": 0.28522437810897827,
+          "y": -0.38810715079307556,
+          "z": 0.8763675093650818
         }
       }
-    ]
+    },
+    "name": "MainCamera"
   },
   {
-    "name": "GltfScene",
-    "components": {
-      "gltfscene": "models/DamagedHelmet/glTF/DamagedHelmet.gltf"
-    },
     "children": [
       {
-        "name": "SceneLight",
+        "children": [],
         "components": {
+          "scene": {
+            "source": "models/gltf_tests/EmissiveStrengthTest/glTF/EmissiveStrengthTest.gltf"
+          },
+          "transform": null
+        },
+        "name": "EmissiveStrengthTest"
+      },
+      {
+        "children": [],
+        "components": {
+          "scene": {
+            "source": "models/gltf_tests/EnvironmentTest/glTF/EnvironmentTest.gltf"
+          },
           "transform": {
             "pos": {
-              "x": 0.0,
+              "x": -20.0,
               "y": 0.0,
               "z": 0.0
             }
-          },
-          "audio": {
-            "source": "test2.wav"
           }
-        }
+        },
+        "name": "EnvironmentTest"
       }
-    ]
+    ],
+    "components": {
+      "transform": null
+    },
+    "name": "GltfTests"
   }
 ]

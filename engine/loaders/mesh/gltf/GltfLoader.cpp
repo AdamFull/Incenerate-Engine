@@ -27,6 +27,33 @@ using namespace engine::graphics;
 using namespace engine::game;
 using namespace engine::ecs;
 
+
+std::string url_decode(const std::string& str)
+{
+    std::string ret;
+    char ch;
+    int i, ii, len = str.length();
+
+    for (i = 0; i < len; i++) 
+    {
+        if (str[i] != '%') 
+        {
+            if (str[i] == '+')
+                ret += ' ';
+            else
+                ret += str[i];
+        }
+        else 
+        {
+            sscanf(str.substr(i + 1, 2).c_str(), "%x", &ii);
+            ch = static_cast<char>(ii);
+            ret += ch;
+            i = i + 2;
+        }
+    }
+    return ret;
+}
+
 // Based on https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanglTFModel.cpp
 bool loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* userData)
 {
@@ -410,7 +437,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         if (mat.values.find("baseColorTexture") != mat.values.end())
         {
             auto texture = mat.values.at("baseColorTexture");
-            pMaterial->addTexture("color_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Srgb));
+            pMaterial->addTexture("color_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
             params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP");
         }
 
@@ -513,7 +540,7 @@ void CGltfLoader::loadTextures(const tinygltf::Model& model)
         }
 
         auto& image = model.images.at(image_index); 
-        auto texture_path = std::filesystem::weakly_canonical(fsParentPath / image.uri);
+        auto texture_path = std::filesystem::weakly_canonical(fsParentPath / url_decode(image.uri));
         vTextures.emplace_back(texture_path.string(), isBasisU);
     }
 }

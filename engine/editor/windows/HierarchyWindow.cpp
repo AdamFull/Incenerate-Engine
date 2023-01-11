@@ -101,7 +101,7 @@ void CEditorHierarchy::buildHierarchy(const entt::entity& entity)
         if (hierarchy.children.empty())
             flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         else
-            icon = ICON_FA_CUBES;
+            icon = ICON_FA_CLIPBOARD;
 
         ImGui::PushID(static_cast<uint32_t>(entity));
         bool isOpen = ImGui::TreeNodeEx((icon + hierarchy.name).c_str(), flags);

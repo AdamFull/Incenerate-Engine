@@ -46,23 +46,23 @@ void CAudioSystem::__update(float fDt)
 			pSource->setPosition(transform.rposition);
 			pSource->setPitch(audio.pitch);
 
-			if (!audio.shouldStop && !audio.playing)
-			{
-				pSource->play();
-				audio.playing = true;
-			}
-
-			if(audio.shouldStop)
-			{
-				pSource->stop();
-				audio.playing = false;
-			}
-
-			if (audio.playing)
-			{
-				auto state = pSource->getState();
-				audio.shouldStop = state == EAudioSourceState::eStopped;
-			}
+			//if (!audio.shouldStop && !audio.playing)
+			//{
+			//	pSource->play();
+			//	audio.playing = true;
+			//}
+			//
+			//if(audio.shouldStop)
+			//{
+			//	pSource->stop();
+			//	audio.playing = false;
+			//}
+			//
+			//if (audio.playing)
+			//{
+			//	auto state = pSource->getState();
+			//	audio.shouldStop = state == EAudioSourceState::eStopped;
+			//}
 		}
 	}
 }
