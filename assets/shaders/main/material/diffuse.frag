@@ -122,12 +122,10 @@ void main()
 
 	vec3 normal_map = vec3(0.0);
 #ifdef HAS_NORMALMAP
-	normal_map = getTangentSpaceNormalMap(normal_tex, tbn, texCoord, material.normalScale);
+	normal_map = getTangentSpaceNormalMap(normal_tex, tbn, texCoord, material.normalScale, false);
 #else
 	normal_map = tbn[2].xyz;
 #endif
-
-	//normal_map *= (2.0 * float(gl_FrontFacing) - 1.0);
 
 //AMBIENT OCCLUSION
 #ifdef HAS_OCCLUSIONMAP

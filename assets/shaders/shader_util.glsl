@@ -1,6 +1,20 @@
 #ifndef SHADER_UTIL
 #define SHADER_UTIL
 
+vec4 SRGBtoLINEAR(in vec4 srgbIn, bool srgb)
+{
+    if(srgb)
+    {
+        vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
+	    vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
+	    return vec4(linOut,srgbIn.w);;
+    }
+    else
+    {
+        return srgbIn;
+    }
+}
+
 // From http://filmicworlds.com/blog/filmic-tonemapping-operators/
 vec3 Uncharted2Tonemap(vec3 color)
 {
@@ -14,9 +28,9 @@ vec3 Uncharted2Tonemap(vec3 color)
 	return ((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F))-E/F;
 }
 
-vec3 getTangentSpaceNormalMap(sampler2D samplerNormal, mat3 TBN, vec2 uv, float scale)
+vec3 getTangentSpaceNormalMap(sampler2D samplerNormal, mat3 TBN, vec2 uv, float scale, bool srgb)
 {
-	vec3 normalColor = texture(samplerNormal, uv).rgb;
+	vec3 normalColor = SRGBtoLINEAR(texture(samplerNormal, uv), srgb).rgb;
     normalColor = normalize(TBN * ((2.0 * normalColor - 1.0) * vec3(scale, scale, 1.0)));
 	return normalColor;
 }

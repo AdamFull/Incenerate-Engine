@@ -71,6 +71,7 @@ void CMeshSystem::__update(float fDt)
 							pSurface->set("roughnessFactor", params.roughnessFactor);
 							pSurface->set("tessellationFactor", params.tessellationFactor);
 							pSurface->set("tessellationStrength", params.tessStrength);
+							pSurface->set("isSrgb", params.tessStrength);
 						}
 
 						for (auto& [name, id] : pMaterial->getTextures())

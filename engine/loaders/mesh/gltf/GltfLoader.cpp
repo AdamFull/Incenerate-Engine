@@ -31,16 +31,16 @@ using namespace engine::ecs;
 bool loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* userData)
 {
     // KTX files will be handled by our own code
-    if (image->uri.find_last_of(".") != std::string::npos)
-    {
-        if (image->uri.substr(image->uri.find_last_of(".") + 1) == "ktx")
-            return true;
-        if (image->uri.substr(image->uri.find_last_of(".") + 1) == "ktx2")
-            return true;
+    //if (image->uri.find_last_of(".") != std::string::npos)
+    //{
+    //    if (image->uri.substr(image->uri.find_last_of(".") + 1) == "ktx")
+    //        return true;
+    //    if (image->uri.substr(image->uri.find_last_of(".") + 1) == "ktx2")
+    //        return true;
+    //
+    //}
 
-    }
-
-    return false;//tinygltf::LoadImageData(image, imageIndex, error, warning, req_width, req_height, bytes, size, userData);
+    return true;//tinygltf::LoadImageData(image, imageIndex, error, warning, req_width, req_height, bytes, size, userData);
 }
 
 void CGltfLoader::load(const std::string& source, const entt::entity& root)
@@ -410,14 +410,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         if (mat.values.find("baseColorTexture") != mat.values.end())
         {
             auto texture = mat.values.at("baseColorTexture");
-            pMaterial->addTexture("color_tex", vTextures.at(texture.TextureIndex()));
+            pMaterial->addTexture("color_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Srgb));
             params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP");
         }
 
         if (mat.values.find("metallicRoughnessTexture") != mat.values.end())
         {
             auto texture = mat.values.at("metallicRoughnessTexture");
-            pMaterial->addTexture("rmah_tex", vTextures.at(texture.TextureIndex()));
+            pMaterial->addTexture("rmah_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
             params.vCompileDefinitions.emplace_back("HAS_METALLIC_ROUGHNESS");
         }
 
@@ -425,7 +425,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         {
             auto texture = mat.additionalValues.at("normalTexture");
             params.normalScale = static_cast<float>(texture.TextureScale());
-            pMaterial->addTexture("normal_tex", vTextures.at(texture.TextureIndex()));
+            pMaterial->addTexture("normal_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
             params.vCompileDefinitions.emplace_back("HAS_NORMALMAP");
         }
 
@@ -433,7 +433,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         {
             auto texture = mat.additionalValues.at("occlusionTexture");
             params.occlusionStrenth = static_cast<float>(texture.TextureStrength());
-            pMaterial->addTexture("occlusion_tex", vTextures.at(texture.TextureIndex()));
+            pMaterial->addTexture("occlusion_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
             params.vCompileDefinitions.emplace_back("HAS_OCCLUSIONMAP");
         }
 
@@ -448,14 +448,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
             if (strength != std::end(texture.json_double_value))
                 params.tessStrength = strength->second;
 
-            pMaterial->addTexture("height_tex", vTextures.at(texture.TextureIndex()));
+            pMaterial->addTexture("height_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
             params.vCompileDefinitions.emplace_back("HAS_HEIGHTMAP");
         }
 
         if (mat.additionalValues.find("emissiveTexture") != mat.additionalValues.end())
         {
             auto texture = mat.additionalValues.at("emissiveTexture");
-            pMaterial->addTexture("emissive_tex", vTextures.at(texture.TextureIndex()));
+            pMaterial->addTexture("emissive_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Srgb));
             params.vCompileDefinitions.emplace_back("HAS_EMISSIVEMAP");
         }
 
@@ -498,6 +498,7 @@ void CGltfLoader::loadTextures(const tinygltf::Model& model)
 {
     for (auto& texture : model.textures)
     {
+        bool isBasisU{ false };
         auto image_index = texture.source;
         if (image_index < 0 && !texture.extensions.empty())
         {
@@ -507,13 +508,26 @@ void CGltfLoader::loadTextures(const tinygltf::Model& model)
                 auto& extension = basisu_support->second;
                 auto source = extension.Get("source");
                 image_index = source.GetNumberAsInt();
+                isBasisU = true;
             }
         }
 
         auto& image = model.images.at(image_index); 
         auto texture_path = std::filesystem::weakly_canonical(fsParentPath / image.uri);
-        auto tex_name = texture.name.empty() ? texture_path.filename().string() : texture.name;
-        vTextures.emplace_back(EGGraphics->addImage(tex_name, texture_path.string()));
-        assert((vTextures.back() != invalid_index) && "Pizda");
+        vTextures.emplace_back(texture_path.string(), isBasisU);
     }
+}
+
+size_t CGltfLoader::loadTexture(const std::pair<std::filesystem::path, bool>& texpair, vk::Format oformat)
+{
+    auto& device = EGGraphics->getDevice();
+    auto pImage = std::make_unique<CImage>(device.get());
+
+    if (texpair.second)
+        pImage->create(texpair.first); 
+    else
+        pImage->create(texpair.first, oformat);
+
+    auto name = texpair.first.filename().string();
+    return EGGraphics->addImage(name, std::move(pImage));
 }

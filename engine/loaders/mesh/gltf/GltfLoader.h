@@ -19,8 +19,9 @@ namespace engine
 
 			void loadMaterials(const tinygltf::Model& model);
 			void loadTextures(const tinygltf::Model& model);
+			size_t loadTexture(const std::pair<std::filesystem::path, bool>& texpair, vk::Format override);
 		private:
-			std::vector<size_t> vTextures;
+			std::vector<std::pair<std::filesystem::path, bool>> vTextures;
 			std::vector<size_t> vMaterials;
 
 			size_t vbo_id{ invalid_index };

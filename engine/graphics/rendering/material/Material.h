@@ -25,6 +25,7 @@ namespace engine
 			float tessStrength{ 0.f };
 			std::vector<std::string> vCompileDefinitions;
 			bool doubleSided{ false };
+			bool isSrgb{ false };
 		};
 
 		class CMaterial

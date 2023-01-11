@@ -49,7 +49,7 @@
   {
     "name": "GltfScene",
     "components": {
-      "gltfscene": "models/simplescene/SimpleScene.gltf"
+      "gltfscene": "models/DamagedHelmet/glTF/DamagedHelmet.gltf"
     },
     "children": [
       {

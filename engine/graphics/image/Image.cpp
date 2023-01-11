@@ -31,10 +31,20 @@ void CImage::create(const std::filesystem::path& srPath, vk::ImageUsageFlags fla
 {
     enableAnisotropy = VK_TRUE;
     std::unique_ptr<FImageCreateInfo> texture;
-    auto supportedFormats = pDevice->getTextureCompressionFormats();
 
-    std::vector<vk::Format> supportedUniversal;
-    CImageLoader::load(srPath.c_str(), texture, supportedUniversal);
+    CImageLoader::load(srPath.c_str(), texture);
+
+    loadFromMemory(texture, texture->pixFormat, flags, aspect, addressMode, filter);
+}
+
+void CImage::create(const std::filesystem::path& srPath, vk::Format format, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode, vk::Filter filter)
+{
+    enableAnisotropy = VK_TRUE;
+    std::unique_ptr<FImageCreateInfo> texture;
+
+    CImageLoader::load(srPath.c_str(), texture);
+
+    texture->pixFormat = format;
 
     loadFromMemory(texture, texture->pixFormat, flags, aspect, addressMode, filter);
 }
@@ -206,9 +216,31 @@ void CImage::writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
 
     transitionImageLayout(vk::ImageLayout::eTransferDstOptimal, aspect);
 
-    if (info->generateMipmaps)
+    std::vector<vk::BufferImageCopy> vRegions;
+
+    if (!info->mipOffsets.empty())
     {
-        std::vector<vk::BufferImageCopy> vRegions;
+        for (uint32_t layer = 0; layer < _instCount; layer++)
+        {
+            auto& layer_offsets = info->mipOffsets[layer];
+            for (uint32_t level = 0; level < _mipLevels; level++)
+            {
+                size_t offset = layer_offsets.at(level);
+                vk::BufferImageCopy region = {};
+                region.imageSubresource.aspectMask = aspect;
+                region.imageSubresource.mipLevel = level;
+                region.imageSubresource.baseArrayLayer = layer;
+                region.imageSubresource.layerCount = _layerCount;
+                region.imageExtent.width = info->baseWidth >> level;
+                region.imageExtent.height = info->baseHeight >> level;
+                region.imageExtent.depth = info->baseDepth;
+                region.bufferOffset = offset;
+                vRegions.push_back(region);
+            }
+        }
+    }
+    else
+    {
         vk::BufferImageCopy region = {};
         region.imageSubresource.aspectMask = aspect;
         region.imageSubresource.mipLevel = 0;
@@ -219,41 +251,15 @@ void CImage::writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
         region.imageExtent.depth = info->baseDepth;
         region.bufferOffset = 0;
         vRegions.push_back(region);
+    }
 
-        auto buffer = stagingBuffer->getBuffer();
-        pDevice->copyBufferToImage(buffer, _image, vRegions);
+    auto buffer = stagingBuffer->getBuffer();
+    pDevice->copyBufferToImage(buffer, _image, vRegions);
+
+    if (info->generateMipmaps)
         generateMipmaps(_image, _mipLevels, format, _extent.width, _extent.height, aspect);
-    }
     else
-    {
-        if (!info->mipOffsets.empty())
-        {
-            std::vector<vk::BufferImageCopy> vRegions;
-            for (uint32_t layer = 0; layer < _instCount; layer++)
-            {
-                auto& layer_offsets = info->mipOffsets[layer];
-                for (uint32_t level = 0; level < _mipLevels; level++)
-                {
-                    size_t offset = layer_offsets.at(level);
-                    vk::BufferImageCopy region = {};
-                    region.imageSubresource.aspectMask = aspect;
-                    region.imageSubresource.mipLevel = level;
-                    region.imageSubresource.baseArrayLayer = layer;
-                    region.imageSubresource.layerCount = _layerCount;
-                    region.imageExtent.width = info->baseWidth >> level;
-                    region.imageExtent.height = info->baseHeight >> level;
-                    region.imageExtent.depth = info->baseDepth;
-                    region.bufferOffset = offset;
-                    vRegions.push_back(region);
-                }
-            }
-
-            auto buffer = stagingBuffer->getBuffer();
-            pDevice->copyBufferToImage(buffer, _image, vRegions);
-        }
-
         transitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal, aspect);
-    }
 }
 
 void CImage::loadFromMemory(std::unique_ptr<FImageCreateInfo>& info, vk::Format format, vk::ImageUsageFlags flags,

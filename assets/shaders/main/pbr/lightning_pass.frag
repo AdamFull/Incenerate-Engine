@@ -192,7 +192,7 @@ void main()
 		vec3 ambient = (kD * diffuse + specular) * occlusion;
 
 		// Ambient part
-		fragcolor = ambient + (emission * 4.0) + Lo;
+		fragcolor = ambient + (emission * 1.0) + Lo;
 	}
 	else
 	{
