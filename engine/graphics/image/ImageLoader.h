@@ -1,7 +1,5 @@
 #pragma once
 
-#include "system/filesystem/filesystem.h"
-
 namespace engine
 {
 	namespace graphics
@@ -41,10 +39,11 @@ namespace engine
         class CImageLoader
         {
         public:
-            static void load(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, const std::vector<vk::Format>& supportedFormats, const std::filesystem::path& parentPath = system::fs::get_workdir());
+            static void load(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI);
         private:
+            static void loadSTB(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI);
             static void loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI);
-            static void loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, const std::vector<vk::Format>& supportedFormats);
+            static void loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI);
             static void loadDDS(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI);
             static EImageFormat getTextureFormat(const std::filesystem::path& fsPath);
         };

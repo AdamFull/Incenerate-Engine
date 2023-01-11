@@ -94,6 +94,23 @@ void CEditorInspector::__draw()
 			[](auto* object)
 			{
 				ImGui::InputText("Source", &object->source);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						auto source = std::filesystem::path(path);
+						auto ext = source.extension();
+
+						if (ext == ".wav" || ext == ".ogg")
+						{
+							// Update skybox here
+							object->source = source.string();
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
 				ImGui::GDragFloat("Gain", &object->gain, 0.01f, 0.01f, 10.f);
 				ImGui::GDragFloat("Pitch", &object->pitch, 0.01f, 0.01f, 10.f);
 				ImGui::GCheckbox("Loop", &object->loop);
@@ -118,12 +135,44 @@ void CEditorInspector::__draw()
 			[](auto* object)
 			{
 				ImGui::InputText("Script", &object->source);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						auto source = std::filesystem::path(path);
+						auto ext = source.extension();
+
+						if (ext == ".lua")
+						{
+							// Update skybox here
+							object->source = source.string();
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
 			});
 
 		try_show_edit<FSkyboxComponent>("Skybox", selected,
 			[](auto* object)
 			{
 				ImGui::InputText("Source", &object->source);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						auto source = std::filesystem::path(path);
+						auto ext = source.extension();
+
+						if (ext == ".ktx" || ext == ".ktx2")
+						{
+							// Update skybox here
+							object->source = source.string();
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
 			});
 
 		try_show_edit<FDirectionalLightComponent>("Directional light", selected,

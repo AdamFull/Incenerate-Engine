@@ -1,5 +1,7 @@
 #include "ContentBrowserWindow.h"
 
+#include "Engine.h"
+
 #include <imgui/imgui.h>
 #include <imgui/IconsFontAwesome6.h>
 
@@ -36,6 +38,10 @@ void CEditorContentBrowser::__draw()
 
 	ImGui::Columns(columnCount, 0, false);
 
+	auto pLargeIcons = EGEditor->getLargeIcons();
+
+	
+	bool bSelected{ false };
 	for (auto& path : vCurrentDirData)
 	{
 		auto ext = path.extension().string();
@@ -45,21 +51,21 @@ void CEditorContentBrowser::__draw()
 
 		const char* icon{ nullptr };
 		if (isDirectory)
-			icon = ICON_FA_FOLDER"##";
+			icon = ICON_FA_FOLDER;
 		else if (ext == ".ktx" || ext == ".ktx2")
-			icon = ICON_FA_IMAGE"##";
+			icon = ICON_FA_IMAGE;
 		else if (ext == ".wav" || ext == ".ogg")
-			icon = ICON_FA_FILE_AUDIO"##";
+			icon = ICON_FA_FILE_AUDIO;
 		else
-			icon = ICON_FA_FILE"##";
+			icon = ICON_FA_FILE;
 
+		ImGui::PushFont(pLargeIcons);
 		ImGui::PushID(filename.c_str());
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-		ImGui::Button((icon + filename).c_str(), { thumbnailSize, thumbnailSize });
+		//auto double_clicked = ImGui::Selectable((icon + filename).c_str(), &bSelected, ImGuiSelectableFlags_AllowDoubleClick, { thumbnailSize, thumbnailSize });
+		ImGui::Button((icon + ("##" + filename)).c_str(), {thumbnailSize, thumbnailSize});
 		ImGui::PopStyleColor();
-
-		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-			int iiisisi = 0;
+		ImGui::PopFont();
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 		{
@@ -74,7 +80,7 @@ void CEditorContentBrowser::__draw()
 		{
 			const wchar_t* itemPath = relativePath.c_str();
 			ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
-			ImGui::Text(relativePath.string().c_str());
+			ImGui::Text((icon+(" "+relativePath.string())).c_str());
 			ImGui::EndDragDropSource();
 		}
 

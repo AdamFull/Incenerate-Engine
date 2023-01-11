@@ -251,13 +251,23 @@ void CEditor::baseInitialize()
     io.DisplaySize = ImVec2(CWindowHandle::iWidth, CWindowHandle::iHeight);
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
-    io.Fonts->AddFontDefault();
-
-    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-    ImFontConfig icons_config; 
-    icons_config.MergeMode = true; 
-    icons_config.PixelSnapH = true;
+    
 
     auto fontfile = (fs::get_workdir() / "engine" / "font" / FONT_ICON_FILE_NAME_FAR).string();
-    io.Fonts->AddFontFromFileTTF(fontfile.c_str(), 13.0f, &icons_config, icons_ranges);
+
+    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+    ImFontConfig icons_config;
+    icons_config.MergeMode = true;
+    icons_config.PixelSnapH = true;
+    icons_config.GlyphMaxAdvanceX = 13.f;
+    icons_config.GlyphOffset.y = 13.f / 4.f;
+
+    pSmallIcons = io.Fonts->AddFontDefault();
+    io.Fonts->AddFontFromFileTTF(fontfile.c_str(), 13.f, &icons_config, icons_ranges);
+
+    icons_config.GlyphMaxAdvanceX = 48.f;
+    icons_config.GlyphOffset.y = 48.f / 4.f;
+
+    pLargeIcons = io.Fonts->AddFontDefault();
+    io.Fonts->AddFontFromFileTTF(fontfile.c_str(), 48.f, &icons_config, icons_ranges);
 }

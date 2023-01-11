@@ -1,14 +1,23 @@
 #include "ImageLoader.h"
 
-#include <utility/logger/logger.h>
-
 #include <ktx.h>
 #include <ktxvulkan.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+#include <utility/logger/logger.h>
+
+#include "system/filesystem/filesystem.h"
+
+
+
+using namespace engine::system;
 using namespace engine::graphics;
 
-void CImageLoader::load(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, const std::vector<vk::Format>& supportedFormats, const std::filesystem::path& parentPath)
+void CImageLoader::load(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI)
 {
+    auto parentPath = fs::get_workdir();
     imageCI = std::make_unique<FImageCreateInfo>();
 
     auto fsFullPath = parentPath / fsPath;
@@ -16,11 +25,39 @@ void CImageLoader::load(const std::filesystem::path& fsPath, std::unique_ptr<FIm
     switch (texFormat)
     {
     case EImageFormat::eKTX: { loadKTX(fsFullPath, imageCI); } break;
-    case EImageFormat::eKTX2: { loadKTX2(fsFullPath, imageCI, supportedFormats); } break;
+    case EImageFormat::eKTX2: { loadKTX2(fsFullPath, imageCI); } break;
     case EImageFormat::eDDS: { loadDDS(fsFullPath, imageCI); } break;
 
-    default: break;
+    default: { loadSTB(fsFullPath, imageCI); } break;
     }
+}
+
+void CImageLoader::loadSTB(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI)
+{
+    auto filename = fsPath.string();
+
+    int width{ 0 }, height{ 0 }, channels{ 0 };
+    auto data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+
+    imageCI->baseWidth = width;
+    imageCI->baseHeight = height;
+    imageCI->baseDepth = 1;
+    imageCI->dataSize = width * height * 4;
+
+    imageCI->pData = std::make_unique<uint8_t[]>(imageCI->dataSize);
+    std::memcpy(imageCI->pData.get(), data, imageCI->dataSize);
+    
+    imageCI->isArray = false;
+    imageCI->isCompressed = false;
+    imageCI->isCubemap = false;
+    imageCI->generateMipmaps = true;
+    imageCI->numDimensions = 2;
+    imageCI->numLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+    imageCI->numLevels = 1;
+    imageCI->numLayers = 1;
+    imageCI->numFaces = 1;
+
+    stbi_image_free(data);
 }
 
 void CImageLoader::loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI)
@@ -63,7 +100,7 @@ void CImageLoader::loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<
     ktxTexture_Destroy(kTexture);
 }
 
-void CImageLoader::loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, const std::vector<vk::Format>& supportedFormats)
+void CImageLoader::loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI)
 {
     ktxTexture2* kTexture{ nullptr };
 

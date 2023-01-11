@@ -2,6 +2,8 @@
 
 #include "windows/WindowBase.h"
 
+struct ImFont;
+
 namespace engine
 {
 	namespace editor
@@ -22,10 +24,16 @@ namespace engine
 			const entt::entity& getLastSelection() const;
 
 			vk::DescriptorPool& getDescriptorPool();
+
+			ImFont* getLargeIcons() { return pLargeIcons; }
 		private:
 			void baseInitialize();
 		private:
 			entt::entity selected{ entt::null };
+
+			ImFont* pSmallIcons{ nullptr };
+			ImFont* pLargeIcons{ nullptr };
+
 			std::vector<std::unique_ptr<IEditorWindow>> vEditorWindows;
 			vk::DescriptorPool descriptorPool{};
 		};
