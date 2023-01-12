@@ -13,7 +13,7 @@ namespace engine
 			virtual ~CEditorContentBrowser() override = default;
 
 			void create() override;
-			void __draw() override;
+			void __draw(float fDt) override;
 		private:
 			void update_path(const std::filesystem::path& npath);
 		private:

@@ -17,6 +17,7 @@ using namespace engine::graphics;
 void CCompositionSystem::__create()
 {
 	shader_id = EGGraphics->addShader("pbr_composition", "pbr_composition");
+	brdflut_id = EGGraphics->computeBRDFLUT(512);
 }
 
 void CCompositionSystem::__update(float fDt)
@@ -90,7 +91,7 @@ void CCompositionSystem::__update(float fDt)
 	auto& transform = registry.get<FTransformComponent>(ecamera);
 
 	// Setting up predraw data
-	pShader->addTexture("brdflut_tex", skybox.brdflut);
+	pShader->addTexture("brdflut_tex", brdflut_id);
 	pShader->addTexture("irradiance_tex", skybox.irradiance);
 	pShader->addTexture("prefiltred_tex", skybox.prefiltred);
 

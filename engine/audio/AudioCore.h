@@ -13,6 +13,7 @@ namespace engine
 			~CAudioCore();
 
 			void create();
+			void update();
 			void shutdown();
 
 			size_t addSource(const std::string& name, const std::string& filepath);

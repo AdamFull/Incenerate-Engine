@@ -43,7 +43,6 @@ void scenegraph::destroy_node(entt::entity node)
 	if (auto sky = registry.try_get<FSkyboxComponent>(node))
 	{
 		EGGraphics->removeImage(sky->origin);
-		EGGraphics->removeImage(sky->brdflut);
 		EGGraphics->removeImage(sky->irradiance);
 		EGGraphics->removeImage(sky->prefiltred);
 		EGGraphics->removeVertexBuffer(sky->vbo_id);

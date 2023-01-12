@@ -14,12 +14,12 @@ namespace engine
 			virtual ~CEditorViewport() override;
 
 			void create() override;
-			void __draw() override;
+			void __draw(float fDt) override;
 		private:
 			//void onViewportReCreate(CEvent& event);
 			void drawViewport(float offsetx, float offsety);
 			void drawManipulator(float offsetx, float offsety, float sizex, float sizey);
-			void drawOverlay(float offsetx, float offsety);
+			void drawOverlay(float offsetx, float offsety, float fDt);
 
 		private:
 			std::unique_ptr<graphics::CDescriptorSet> pDescriptorSet;

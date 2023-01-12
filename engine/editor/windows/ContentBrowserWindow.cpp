@@ -20,7 +20,7 @@ void CEditorContentBrowser::create()
 	update_path(workdir);
 }
 
-void CEditorContentBrowser::__draw()
+void CEditorContentBrowser::__draw(float fDt)
 {
 	if (currentPath != workdir)
 	{

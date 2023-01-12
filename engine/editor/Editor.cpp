@@ -152,7 +152,7 @@ void CEditor::newFrame(float fDt)
 
     //ImGui::ShowDemoWindow();
     for (auto& overlay : vEditorWindows)
-        overlay->draw();
+        overlay->draw(fDt);
 
     auto commandBuffer = EGGraphics->getCommandBuffer();
     ImGuiIO& io = ImGui::GetIO();

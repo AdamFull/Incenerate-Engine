@@ -100,7 +100,7 @@ void CEditorViewport::create()
 	pDescriptorSet->create(vk::PipelineBindPoint::eGraphics, pBackend->PipelineLayout, EGEditor->getDescriptorPool(), pBackend->DescriptorSetLayout);
 }
 
-void CEditorViewport::__draw()
+void CEditorViewport::__draw(float fDt)
 {
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	ImVec2 viewportPanelPos = ImGui::GetWindowPos();
@@ -108,7 +108,7 @@ void CEditorViewport::__draw()
 
 	drawViewport(viewportPanelSize.x, viewportPanelSize.y);
 	drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
-	drawOverlay(textDrawPos.x, textDrawPos.y);
+	drawOverlay(textDrawPos.x, textDrawPos.y, fDt);
 }
 
 void CEditorViewport::drawViewport(float offsetx, float offsety)
@@ -201,7 +201,7 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 	}
 }
 
-void CEditorViewport::drawOverlay(float offsetx, float offsety)
+void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 {
 	ImGui::SetCursorPos(ImVec2(offsetx, offsety));
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
@@ -211,8 +211,7 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety)
 
 	auto& io = ImGui::GetIO();
 	char overlay[64];
-	float fFrameTime = 1000.0f / io.Framerate;
-	sprintf(overlay, "dt: %.3f | FPS: %.3f", fFrameTime, io.Framerate);
+	sprintf(overlay, "dt: %.3f | FPS: %.3f", fDt, 1.f / fDt);
 	ImGui::Text(overlay);
 
 	auto& physical = EGGraphics->getDevice()->getPhysical();

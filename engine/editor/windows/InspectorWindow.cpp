@@ -39,8 +39,6 @@ void try_show_edit(const std::string& name, const entt::entity& entity, _EditPre
 			removepred(object);
 			registry.remove<_Ty>(entity);
 		}
-			
-			
 
 		editpred(object);
 
@@ -63,10 +61,9 @@ void try_add_menu_item(const std::string& name, const entt::entity& entity)
 
 void CEditorInspector::create()
 {
-
 }
 
-void CEditorInspector::__draw()
+void CEditorInspector::__draw(float fDt)
 {
 	auto& registry = EGCoordinator;
 	auto& selected = EGEditor->getLastSelection();
@@ -105,7 +102,7 @@ void CEditorInspector::__draw()
 			[this](auto* object) { cameraEdit(object); },
 			[](auto*) {});
 		try_show_edit<FMeshComponent>("Mesh", selected, 
-			[](auto* object) {}, [](auto*) {});
+			[](auto*) {}, [](auto*) {});
 		try_show_edit<FScriptComponent>("Script", selected, 
 			[this](auto* object) { scriptEdit(object); },
 			[this](auto* object) { scriptRemove(object); });
@@ -262,18 +259,21 @@ void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
 
 			if (ext == ".ktx" || ext == ".ktx2")
 			{
-				if (object->loaded)
+				if (object->source != source)
 				{
-					EGGraphics->removeImage(object->irradiance);
-					EGGraphics->removeImage(object->prefiltred);
-					EGGraphics->removeImage(object->origin);
+					if (object->loaded)
+					{
+						EGGraphics->removeImage(object->prefiltred);
+						EGGraphics->removeImage(object->irradiance);
+						EGGraphics->removeImage(object->origin);
+					}
+
+					object->source = source.string();
+
+					object->origin = EGGraphics->addImage(object->source, object->source);
+					object->irradiance = EGGraphics->computeIrradiance(object->origin, 64);
+					object->prefiltred = EGGraphics->computePrefiltered(object->origin, 512);
 				}
-
-				object->source = source.string();
-
-				object->origin = EGGraphics->addImage(object->source, object->source);
-				object->irradiance = EGGraphics->computeIrradiance(object->origin, 64);
-				object->prefiltred = EGGraphics->computePrefiltered(object->origin, 512);
 			}
 		}
 		ImGui::EndDragDropTarget();
@@ -284,7 +284,6 @@ void CEditorInspector::skyboxRemove(FSkyboxComponent* object)
 {
 	if (object->loaded)
 	{
-		EGGraphics->removeImage(object->brdflut);
 		EGGraphics->removeImage(object->irradiance);
 		EGGraphics->removeImage(object->prefiltred);
 		EGGraphics->removeImage(object->origin);

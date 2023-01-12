@@ -71,12 +71,17 @@ void CEngine::beginEngineLoop()
 	while (pWindow->begin())
 	{
 		auto commandBuffer = pGraphics->begin();
+		
 		if (!commandBuffer)
 			continue;
 
 		for (const auto& system : vSystems)
 			system->update(dt);
+
 		pGraphics->end();
+
+		pAudio->update();
+		pGraphics->update();
 
 		dt = sw.stop<float>();
 	}

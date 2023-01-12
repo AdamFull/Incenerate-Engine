@@ -263,6 +263,18 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     log_info("Graphics core initialized.");
 }
 
+void CAPIHandle::update()
+{
+    if (imageIndex == pDevice->getFramesInFlight() - 1)
+    {
+        pImageManager->perform_deletion();
+        pShaderManager->perform_deletion();
+        pMaterialManager->perform_deletion();
+        pVertexBufferManager->perform_deletion();
+        pRenderStageManager->perform_deletion();
+    }
+}
+
 void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
 {
     //ReCreation guide

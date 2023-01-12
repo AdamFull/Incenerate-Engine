@@ -4,13 +4,13 @@
 
 using namespace engine::editor;
 
-void IEditorWindow::draw()
+void IEditorWindow::draw(float fDt)
 {
 	if (bIsOpen)
 	{
 		if (ImGui::Begin(name.c_str(), &bIsOpen))
 		{
-			__draw();
+			__draw(fDt);
 			ImGui::End();
 		}
 	}

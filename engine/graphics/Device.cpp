@@ -864,9 +864,7 @@ std::vector<vk::Format> CDevice::getTextureCompressionFormats()
 
 vk::Result CDevice::acquireNextImage(uint32_t* imageIndex)
 {
-    vk::Result res = vkDevice.waitForFences(1, &vInFlightFences[currentFrame], VK_TRUE, (std::numeric_limits<uint64_t>::max)());
-    log_cerror(VkHelper::check(res), "Waiting for fences error.");
-    res = vkDevice.acquireNextImageKHR(swapChain, (std::numeric_limits<uint64_t>::max)(), vImageAvailableSemaphores[currentFrame], nullptr, imageIndex);
+    vk::Result res = vkDevice.acquireNextImageKHR(swapChain, (std::numeric_limits<uint64_t>::max)(), vImageAvailableSemaphores[currentFrame], nullptr, imageIndex);
     return res;
 }
 
@@ -911,6 +909,9 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
 
     auto& present = qPresentQueue;
     res = present.presentKHR(presentInfo);
+
+    res = vkDevice.waitForFences(1, &vInFlightFences[currentFrame], VK_TRUE, (std::numeric_limits<uint64_t>::max)());
+    log_cerror(VkHelper::check(res), "Waiting for fences error.");
 
     currentFrame = (currentFrame + 1) % framesInFlight;
 

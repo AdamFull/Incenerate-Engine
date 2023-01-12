@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WindowBase.h"
+#include "event/Event.hpp"
 #include "ecs/components/fwd.h"
 
 namespace engine
@@ -14,7 +15,7 @@ namespace engine
 			virtual ~CEditorInspector() override = default;
 
 			void create() override;
-			void __draw() override;
+			void __draw(float fDt) override;
 		private:
 			void audioEdit(ecs::FAudioComponent* object);
 			void audioRemove(ecs::FAudioComponent* object);

@@ -29,6 +29,7 @@ namespace engine
 			~CAPIHandle();
 
 			void create(const FEngineCreateInfo& createInfo);
+			void update();
 			void reCreate(bool bSwapchain, bool bViewport);
 			void shutdown();
 

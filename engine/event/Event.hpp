@@ -24,6 +24,7 @@ namespace engine
 	{
 		const ParamId ReCreate = "Events::Graphics::ReCreate"_hash;
 		const ParamId ViewportReCreate = "Events::Graphics::ViewportReCreate"_hash;
+		const ParamId PerformDelete = "Events::Graphics::PerformDelete"_hash;
 	}
 
 	namespace Events::Input

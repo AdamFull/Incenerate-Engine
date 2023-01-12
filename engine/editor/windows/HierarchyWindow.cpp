@@ -18,7 +18,7 @@ void CEditorHierarchy::create()
 
 }
 
-void CEditorHierarchy::__draw()
+void CEditorHierarchy::__draw(float fDt)
 {
     auto& registry = EGCoordinator;
     auto root = EGSceneGraph;

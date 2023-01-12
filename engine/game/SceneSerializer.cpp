@@ -107,7 +107,6 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 			{
 				auto skybox = component.get<FSkyboxComponent>();
 				skybox.origin = EGGraphics->addImage(object.srName, skybox.source);
-				skybox.brdflut = EGGraphics->computeBRDFLUT(512);
 				skybox.irradiance = EGGraphics->computeIrradiance(skybox.origin, 64);
 				skybox.prefiltred = EGGraphics->computePrefiltered(skybox.origin, 512);
 				skybox.vbo_id = EGGraphics->addVertexBuffer(object.srName);

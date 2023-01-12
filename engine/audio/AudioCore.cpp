@@ -36,6 +36,11 @@ void CAudioCore::create()
         log_error("Could not set Distance Model to AL_INVERSE_DISTANCE_CLAMPED");
 }
 
+void CAudioCore::update()
+{
+    pAudioSourceManager->perform_deletion();
+}
+
 void CAudioCore::shutdown()
 {
 }

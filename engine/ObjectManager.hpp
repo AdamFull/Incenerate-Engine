@@ -9,6 +9,11 @@ namespace engine
 	class CObjectManager
 	{
 	public:
+		~CObjectManager()
+		{
+			perform_deletion();
+		}
+
 		size_t add(const std::string& name, std::unique_ptr<_Ty>&& object)
 		{
 			mNameToId.emplace(name, next_id);
@@ -30,6 +35,7 @@ namespace engine
 			if (objit != mIdToObject.end())
 			{
 				qFreedIds.push(id);
+				qDelete.push(std::move(objit->second));
 				mIdToObject.erase(objit);
 
 				auto nameit = std::find_if(mNameToId.begin(), mNameToId.end(), [id](const auto& kv) { return kv.second == id; });
@@ -52,6 +58,12 @@ namespace engine
 			if (objit != mIdToObject.end())
 				return objit->second;
 			return nullptr;
+		}
+
+		void perform_deletion()
+		{
+			while (!qDelete.empty())
+				qDelete.pop();
 		}
 
 	private:
@@ -77,6 +89,7 @@ namespace engine
 
 	private:
 		size_t next_id{ 0 };
+		std::queue<std::unique_ptr<_Ty>> qDelete;
 		std::queue<size_t> qFreedIds;
 		std::map<std::string, size_t> mNameToId;
 		std::map<size_t, std::unique_ptr<_Ty>> mIdToObject;
