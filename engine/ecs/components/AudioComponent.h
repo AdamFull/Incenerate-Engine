@@ -8,6 +8,9 @@ namespace engine
 	{
 		struct FAudioComponent
 		{
+			~FAudioComponent();
+			void create();
+
 			std::string source;
 			size_t asource;
 

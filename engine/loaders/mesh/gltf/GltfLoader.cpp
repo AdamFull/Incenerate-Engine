@@ -166,7 +166,8 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
     const tinygltf::Mesh mesh = model.meshes[node.mesh];
     auto& pVBO = EGGraphics->getVertexBuffer(vbo_id);
 
-    FMeshComponent meshComponent;
+    registry.emplace<FMeshComponent>(parent, FMeshComponent{});
+    auto& meshComponent = registry.get<FMeshComponent>(parent);
 
     for (size_t j = 0; j < mesh.primitives.size(); j++)
     {
@@ -360,8 +361,6 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
     }
 
     meshComponent.vbo_id = vbo_id;
-
-    registry.emplace<FMeshComponent>(parent, meshComponent);
 }
 
 void CGltfLoader::loadCameraComponent(const entt::entity& parent, const tinygltf::Node& node, const tinygltf::Model& model)

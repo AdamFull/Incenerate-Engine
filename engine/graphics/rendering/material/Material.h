@@ -31,6 +31,8 @@ namespace engine
 		class CMaterial
 		{
 		public:
+			~CMaterial();
+
 			void setParameters(FMaterial&& mat);
 			FMaterial& getParameters() { return parameters; }
 
@@ -47,7 +49,7 @@ namespace engine
 			FMaterial parameters;
 			std::map<std::string, size_t> mTextures;
 			size_t usageCount{ 0 };
-			size_t iShader{ invalid_index };
+			size_t shader_id{ invalid_index };
 		};
 	}
 }

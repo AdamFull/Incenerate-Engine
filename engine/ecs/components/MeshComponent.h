@@ -33,8 +33,11 @@ namespace engine
 
 		struct FMeshComponent
 		{
+			~FMeshComponent();
+
 			size_t vbo_id{ invalid_index };
 			std::vector<FMeshlet> vMeshlets;
+			bool loaded{ false };
 		};
 	}
 }

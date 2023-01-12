@@ -20,11 +20,12 @@
 #include "ecs/components/SceneComponent.h"
 
 using namespace engine::editor;
+using namespace engine::game;
 using namespace engine::audio;
 using namespace engine::ecs;
 
-template<class _Ty, class _EditPred, class _RemPred>
-void try_show_edit(const std::string& name, const entt::entity& entity, _EditPred&& editpred, _RemPred&& removepred)
+template<class _Ty, class _EditPred>
+void try_show_edit(const std::string& name, const entt::entity& entity, _EditPred&& editpred)
 {
 	using namespace engine;
 	auto& registry = EGCoordinator;
@@ -35,10 +36,7 @@ void try_show_edit(const std::string& name, const entt::entity& entity, _EditPre
 
 		ImGui::SameLine(ImGui::GetWindowWidth() - 30);
 		if (ImGui::Button("X##remove"))
-		{
-			removepred(object);
 			registry.remove<_Ty>(entity);
-		}
 
 		editpred(object);
 
@@ -96,22 +94,17 @@ void CEditorInspector::__draw(float fDt)
 		ImGui::Separator();
 
 		try_show_edit<FAudioComponent>("Audio", selected, 
-			[this](auto* object) { audioEdit(object); },
-			[this](auto* object) { audioRemove(object); });
+			[this](auto* object) { audioEdit(object); });
 		try_show_edit<FCameraComponent>("Camera", selected, 
-			[this](auto* object) { cameraEdit(object); },
-			[](auto*) {});
+			[this](auto* object) { cameraEdit(object); });
 		try_show_edit<FMeshComponent>("Mesh", selected, 
-			[](auto*) {}, [](auto*) {});
+			[](auto*) {});
 		try_show_edit<FScriptComponent>("Script", selected, 
-			[this](auto* object) { scriptEdit(object); },
-			[this](auto* object) { scriptRemove(object); });
+			[this](auto* object) { scriptEdit(object); });
 		try_show_edit<FSkyboxComponent>("Skybox", selected, 
-			[this](auto* object) { skyboxEdit(object); },
-			[this](auto* object) { skyboxRemove(object); });
+			[this](auto* object) { skyboxEdit(object); });
 		try_show_edit<FSceneComponent>("Scene", selected, 
-			[this](auto* object) { sceneEdit(object); },
-			[this](auto* object) { sceneRemove(object); });
+			[this](auto* object) { sceneEdit(object); });
 
 		try_show_edit<FDirectionalLightComponent>("Directional light", selected,
 			[](auto* object)
@@ -119,7 +112,7 @@ void CEditorInspector::__draw(float fDt)
 				ImGui::GColorEdit3("Color", object->color);
 				ImGui::GDragFloat("Intencity", &object->intencity, 0.01f, 0.01f, 50.f);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
-			}, [](auto*) {});
+			});
 
 		try_show_edit<FSpotLightComponent>("Spot light", selected,
 			[](auto* object)
@@ -130,7 +123,7 @@ void CEditorInspector::__draw(float fDt)
 				ImGui::GDragFloat("Outer angle", &object->outerAngle, 0.01f, 0.01f);
 				ImGui::GCheckbox("To target", &object->toTarget);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
-			}, [](auto*) {});
+			});
 
 		try_show_edit<FPointLightComponent>("Point light", selected,
 			[](auto* object)
@@ -139,7 +132,7 @@ void CEditorInspector::__draw(float fDt)
 				ImGui::GDragFloat("Intencity", &object->intencity, 0.01f, 0.01f, 50.f);
 				ImGui::GDragFloat("Radius", &object->radius, 0.01f, 0.01f);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
-			}, [](auto*) {});
+			});
 
 		if (ImGui::Button("+##add_component", ImVec2(-1.f, 0.f)))
 			ImGui::OpenPopup("add_component_popup");
@@ -160,11 +153,19 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 
 			if (ext == ".wav" || ext == ".ogg")
 			{
-				audioRemove(object);
-				object->source = source.string();
+				if (object->source != source)
+				{
+					object->source = source.string();
 
-				auto pAudio = std::make_unique<CAudioSource>(object->source);
-				object->asource = EGAudio->addSource(source.filename().string(), std::move(pAudio));
+					if (object->loaded)
+					{
+						EGAudio->removeSource(object->asource);
+						auto pAudio = std::make_unique<CAudioSource>(object->source);
+						object->asource = EGAudio->addSource(source.filename().string(), std::move(pAudio));
+					}
+					else
+						object->create();
+				}
 			}
 		}
 		ImGui::EndDragDropTarget();
@@ -202,13 +203,6 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 	}
 }
 
-void CEditorInspector::audioRemove(FAudioComponent* object)
-{
-	if (object->loaded)
-		EGAudio->removeSource(object->asource);
-	object->loaded = false;
-}
-
 // camera editor
 void CEditorInspector::cameraEdit(FCameraComponent* object)
 {
@@ -241,11 +235,6 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 	}
 }
 
-void CEditorInspector::scriptRemove(FScriptComponent* object)
-{
-
-}
-
 void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
 {
 	ImGui::InputText("Source", &object->source);
@@ -261,18 +250,18 @@ void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
 			{
 				if (object->source != source)
 				{
+					object->source = source.string();
 					if (object->loaded)
 					{
 						EGGraphics->removeImage(object->prefiltred);
 						EGGraphics->removeImage(object->irradiance);
 						EGGraphics->removeImage(object->origin);
+						object->origin = EGGraphics->addImage(object->source, object->source);
+						object->irradiance = EGGraphics->computeIrradiance(object->origin, 64);
+						object->prefiltred = EGGraphics->computePrefiltered(object->origin, 512);
 					}
-
-					object->source = source.string();
-
-					object->origin = EGGraphics->addImage(object->source, object->source);
-					object->irradiance = EGGraphics->computeIrradiance(object->origin, 64);
-					object->prefiltred = EGGraphics->computePrefiltered(object->origin, 512);
+					else
+						object->create();
 				}
 			}
 		}
@@ -280,20 +269,11 @@ void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
 	}
 }
 
-void CEditorInspector::skyboxRemove(FSkyboxComponent* object)
-{
-	if (object->loaded)
-	{
-		EGGraphics->removeImage(object->irradiance);
-		EGGraphics->removeImage(object->prefiltred);
-		EGGraphics->removeImage(object->origin);
-		EGGraphics->removeVertexBuffer(object->vbo_id);
-		EGGraphics->removeShader(object->shader_id);
-	}
-}
-
 void CEditorInspector::sceneEdit(FSceneComponent* object)
 {
+	auto& registry = EGCoordinator;
+	auto self = EGEditor->getLastSelection();
+
 	ImGui::InputText("Source", &object->source);
 	if (ImGui::BeginDragDropTarget())
 	{
@@ -305,15 +285,21 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 
 			if (ext == ".gltf" || ext == ".glb")
 			{
-				// Update skybox here
-				object->source = source.string();
+				if (object->source != source)
+				{
+					object->source = source.string();
+					if (object->loaded)
+					{
+						auto& hierarchy = registry.get<FHierarchyComponent>(object->self);
+						for (auto& child : hierarchy.children)
+							scenegraph::destroy_node(child);
+						object->create(self);
+					}
+					else
+						object->create(self);
+				}
 			}
 		}
 		ImGui::EndDragDropTarget();
 	}
-}
-
-void CEditorInspector::sceneRemove(FSceneComponent* object)
-{
-
 }

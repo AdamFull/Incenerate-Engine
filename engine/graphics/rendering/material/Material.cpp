@@ -4,6 +4,14 @@
 
 using namespace engine::graphics;
 
+CMaterial::~CMaterial()
+{
+	EGGraphics->removeShader(shader_id);
+
+	for (auto& [name, id] : mTextures)
+		EGGraphics->removeImage(id);
+}
+
 void CMaterial::setParameters(FMaterial&& mat)
 {
 	parameters = std::move(mat);
@@ -24,12 +32,12 @@ const size_t CMaterial::getTexture(const std::string& srTexture) const
 
 void CMaterial::setShader(size_t index)
 {
-	iShader = index;
+	shader_id = index;
 }
 
 const size_t CMaterial::getShader() const
 {
-	return iShader;
+	return shader_id;
 }
 
 void CMaterial::incrementUsageCount()

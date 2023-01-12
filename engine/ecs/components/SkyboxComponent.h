@@ -8,6 +8,9 @@ namespace engine
 	{
 		struct FSkyboxComponent
 		{
+			~FSkyboxComponent();
+			void create();
+
 			std::string source;
 			size_t vbo_id{ invalid_index };
 			size_t shader_id{ invalid_index };

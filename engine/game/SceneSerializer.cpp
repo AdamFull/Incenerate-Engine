@@ -18,10 +18,6 @@
 #include "ecs/components/ScriptComponent.h"
 #include "ecs/components/SceneComponent.h"
 
-#include "loaders/MeshLoader.h"
-
-#include "audio/AudioSource.h"
-
 namespace engine
 {
 	namespace game
@@ -46,7 +42,6 @@ namespace engine
 using namespace engine::ecs;
 using namespace engine::game;
 using namespace engine::system;
-using namespace engine::loaders;
 using namespace engine::graphics;
 using namespace engine::audio;
 
@@ -96,28 +91,16 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 
 			if (name == "audio")
 			{
-				auto audio = component.get<FAudioComponent>();
-				auto pAudio = std::make_unique<CAudioSource>(audio.source);
-				audio.asource = EGAudio->addSource(object.srName, std::move(pAudio));
-				audio.loaded = true;
-				registry.emplace<FAudioComponent>(node, audio);
+				registry.emplace<FAudioComponent>(node, component.get<FAudioComponent>());
+				auto& audio = registry.get<FAudioComponent>(node);
+				audio.create();
 			}
 
 			if (name == "skybox")
 			{
-				auto skybox = component.get<FSkyboxComponent>();
-				skybox.origin = EGGraphics->addImage(object.srName, skybox.source);
-				skybox.irradiance = EGGraphics->computeIrradiance(skybox.origin, 64);
-				skybox.prefiltred = EGGraphics->computePrefiltered(skybox.origin, 512);
-				skybox.vbo_id = EGGraphics->addVertexBuffer(object.srName);
-				skybox.shader_id = EGGraphics->addShader(object.srName, "skybox");
-				skybox.loaded = true;
-
-				auto& pVBO = EGGraphics->getVertexBuffer(skybox.vbo_id);
-				pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
-				pVBO->create();
-
-				registry.emplace<FSkyboxComponent>(node, skybox);
+				registry.emplace<FSkyboxComponent>(node, std::move(component.get<FSkyboxComponent>()));
+				auto& skybox = registry.get<FSkyboxComponent>(node);
+				skybox.create();
 			}
 				
 
@@ -126,11 +109,9 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 
 			if (name == "scene")
 			{
-				auto scene = component.get<FSceneComponent>();
-				CMeshLoader::load(scene.source, node);
-				scene.loaded = true;
-
-				registry.emplace<FSceneComponent>(node, scene);
+				registry.emplace<FSceneComponent>(node, component.get<FSceneComponent>());
+				auto& scene = registry.get<FSceneComponent>(node);
+				scene.create(node);
 			}
 
 			if (name == "directionallight")

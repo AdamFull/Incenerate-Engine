@@ -37,20 +37,6 @@ void scenegraph::destroy_node(entt::entity node)
 	for (auto& child : hierarchy.children)
 		destroy_node(child);
 
-	if (auto audio = registry.try_get<FAudioComponent>(node))
-		EGAudio->removeSource(audio->asource);
-
-	if (auto sky = registry.try_get<FSkyboxComponent>(node))
-	{
-		EGGraphics->removeImage(sky->origin);
-		EGGraphics->removeImage(sky->irradiance);
-		EGGraphics->removeImage(sky->prefiltred);
-		EGGraphics->removeVertexBuffer(sky->vbo_id);
-	}
-
-	if (auto sprite = registry.try_get<FSpriteComponent>(node))
-		EGGraphics->removeImage(sprite->image);
-
 	detach_child(node);
 	hierarchy.children.clear();
 
