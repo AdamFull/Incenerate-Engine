@@ -28,12 +28,10 @@ namespace engine
 	{
 		void to_json(nlohmann::json& json, const FSceneObjectRaw& type)
 		{
-			json = nlohmann::json
-			{
-				{"name", type.srName},
-				{"components", type.mComponents},
-				{"children", type.vChildren}
-			};
+			json = nlohmann::json();
+			utl::serialize_from("name", json, type.srName, !type.srName.empty());
+			utl::serialize_from("components", json, type.mComponents, !type.mComponents.empty());
+			utl::serialize_from("children", json, type.vChildren, !type.vChildren.empty());
 		}
 
 		void from_json(const nlohmann::json& json, FSceneObjectRaw& type)

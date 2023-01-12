@@ -57,6 +57,7 @@ namespace engine
 			std::unordered_map<std::string, size_t>& getImages(uint32_t index) { return mFramebufferImages[index]; }
 			std::unordered_map<std::string, size_t>& getCurrentImages();
 			size_t getDepthImage() { return depthImageIDX; }
+			const std::vector<vk::AttachmentDescription>& getAttachmentDescriptions() const { return vAttachDesc; };
 
 			vk::SubpassDescription& getDescription() { return vSubpassDesc.front(); }
 

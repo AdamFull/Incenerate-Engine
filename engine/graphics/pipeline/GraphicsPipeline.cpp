@@ -5,6 +5,8 @@
 #include "APIStructures.h"
 #include "Engine.h"
 
+#include <vulkan/vulkan_format_traits.hpp>
+
 using namespace engine::graphics;
 
 CGraphicsPipeline::CGraphicsPipeline(CDevice* device)
@@ -28,6 +30,8 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     auto dynamicStateEnables = pShader->getDynamicStateEnables();
     auto enableTesselation = pShader->getTesselationFlag();
     auto topology = pShader->getPrimitiveTopology();
+    auto alphaBlend = pShader->isBlendAlpha();
+    auto doubleSided = pShader->isDoubleSided();
 
     auto attributeDescription = FVertex::getAttributeDescriptions();
     auto bindingDescription = FVertex::getBindingDescription();
@@ -42,9 +46,35 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
         vertexInputCI.pVertexBindingDescriptions = &bindingDescription;
         vertexInputCI.pVertexAttributeDescriptions = attributeDescription.data();
     }
+
+    uint32_t colorAttachmentCount{ 0 };
+    auto depthformat = EGGraphics->getDevice()->getDepthFormat();
+    auto& framebuffer = EGGraphics->getFramebuffer(pShader->getStage());
+    auto descriptions = framebuffer->getAttachmentDescriptions();
+
+    std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments;
+    for (auto& desc : descriptions)
+    {
+        if (desc.format == depthformat)
+            continue;
+
+        bool hasAlpha = desc.format == vk::Format::eR8G8B8A8Srgb;
+
+        vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
+        colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+        colorBlendAttachment.blendEnable = alphaBlend && hasAlpha;
+        colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
+        colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+        colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
+        colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+        colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
+        colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;
+
+        colorBlendAttachments.emplace_back(colorBlendAttachment);
+        colorAttachmentCount++;
+    }
     
-    auto attachmentCount = EGGraphics->getFramebuffer(pShader->getStage())->getDescription().colorAttachmentCount;
-    bool isDepthOnly = attachmentCount == 0;
+    bool isDepthOnly = colorAttachmentCount == 0;
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.topology = enableTesselation ? vk::PrimitiveTopology::ePatchList : vk::PrimitiveTopology::eTriangleList;
@@ -56,28 +86,12 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = vk::PolygonMode::eFill;
     rasterizer.lineWidth = 1.0f;
-    rasterizer.cullMode = culling;
+    rasterizer.cullMode = doubleSided ? vk::CullModeFlagBits::eNone : culling;
     rasterizer.frontFace = frontface;
     rasterizer.depthBiasEnable = VK_FALSE;
 
     vk::PipelineMultisampleStateCreateInfo multisampling{};
     multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1;
-
-    std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments;
-    for (uint32_t i = 0; i < attachmentCount; i++)
-    {
-        vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
-        colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-        colorBlendAttachment.blendEnable = VK_FALSE;
-        colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
-        colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
-        colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
-        colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
-        colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
-        colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;
-
-        colorBlendAttachments.emplace_back(colorBlendAttachment);
-    }
 
     vk::PipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.logicOpEnable = VK_FALSE;

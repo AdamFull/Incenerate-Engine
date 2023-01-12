@@ -267,6 +267,7 @@ void CDevice::createDevice()
     deviceFeatures.logicOp = true;
     deviceFeatures.imageCubeArray = true;
     deviceFeatures.depthClamp = true;
+    deviceFeatures.independentBlend = true;
 
     auto createInfo = vk::DeviceCreateInfo{};
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());

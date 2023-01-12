@@ -6,11 +6,14 @@
 #include "ecs/components/MeshComponent.h"
 #include "ecs/components/TransformComponent.h"
 
+using namespace engine::graphics;
 using namespace engine::ecs;
 
 void CDirectionalShadowSystem::__create()
 {
-	shader_id = EGGraphics->addShader("directional_shadow_pass", "directional_shadow_pass", { {"INVOCATION_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)} });
+	FShaderSpecials specials;
+	specials.defines = { {"INVOCATION_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)} };
+	shader_id = EGGraphics->addShader("directional_shadow_pass", "directional_shadow_pass", specials);
 }
 
 void CDirectionalShadowSystem::__update(float fDt)

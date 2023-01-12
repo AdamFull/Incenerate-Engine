@@ -5,18 +5,21 @@ layout(binding = 1) uniform samplerCube samplerCubeMap;
 
 layout(location = 0) in vec3 inWorldPos;
 
-layout(location = 0) out uvec4 outPack;
-layout(location = 1) out vec4 outEmissive;
+layout(location = 0) out vec4 outAlbedo;
+layout(location = 1) out vec4 outNormal;
+layout(location = 2) out vec4 outMRAH;
+layout(location = 3) out vec4 outEmissive;
 
 
 #include "../../shader_util.glsl"
 
 void main() 
 {
-	vec3 normal_map = vec3(0.0);
 	//vec3 albedo_map = pow(texture(samplerCubeMap, inWorldPos).rgb, vec3(1.2));
 	//albedo_map = Uncharted2Tonemap(albedo_map);
-	vec3 albedo_map = texture(samplerCubeMap, inWorldPos).rgb;
-	outPack = packTextures(normal_map, albedo_map, vec4(0.0));
+
+	outAlbedo = texture(samplerCubeMap, inWorldPos);
+	outNormal = vec4(0.0);
+	outMRAH = vec4(0.0);
 	outEmissive = vec4(0.0);
 }

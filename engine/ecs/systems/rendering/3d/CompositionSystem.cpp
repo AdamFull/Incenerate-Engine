@@ -94,8 +94,14 @@ void CCompositionSystem::__update(float fDt)
 	pShader->addTexture("irradiance_tex", skybox.irradiance);
 	pShader->addTexture("prefiltred_tex", skybox.prefiltred);
 
-	auto& packed = EGGraphics->getImage("packed_tex_" + std::to_string(index));
-	pShader->addTexture("packed_tex", packed->getDescriptor());
+	auto& albedo = EGGraphics->getImage("albedo_tex_" + std::to_string(index));
+	pShader->addTexture("albedo_tex", albedo->getDescriptor());
+
+	auto& normal = EGGraphics->getImage("normal_tex_" + std::to_string(index));
+	pShader->addTexture("normal_tex", normal->getDescriptor());
+
+	auto& mrah = EGGraphics->getImage("mrah_tex_" + std::to_string(index));
+	pShader->addTexture("mrah_tex", mrah->getDescriptor());
 
 	auto& emission = EGGraphics->getImage("emission_tex_" + std::to_string(index));
 	pShader->addTexture("emission_tex", emission->getDescriptor());

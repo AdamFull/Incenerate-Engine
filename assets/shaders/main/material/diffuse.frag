@@ -37,8 +37,10 @@ layout(location = 3) in vec3 inNormal;
 layout (location = 4) in vec4 inTangent;
 #endif
 
-layout(location = 0) out uvec4 outPack;
-layout(location = 1) out vec4 outEmissive;
+layout(location = 0) out vec4 outAlbedo;
+layout(location = 1) out vec4 outNormal;
+layout(location = 2) out vec4 outMRAH;
+layout(location = 3) out vec4 outEmissive;
 
 #include "../../shader_util.glsl"
 
@@ -78,13 +80,14 @@ void main()
 #endif
 	float alpha = material.alphaCutoff;
 //BASECOLOR
-	vec3 albedo_map = vec3(0.0);
+	vec4 albedo_map = vec4(1.0);
 #ifdef HAS_BASECOLORMAP
-	albedo_map = texture(color_tex, texCoord).rgb * material.baseColorFactor.rgb;
+	albedo_map = texture(color_tex, texCoord);
+	albedo_map = vec4(albedo_map.rgb * material.baseColorFactor.rgb, albedo_map.a);
 #else
-	albedo_map = material.baseColorFactor.rgb;
+	albedo_map = vec4(albedo_map.rgb * material.baseColorFactor.rgb, albedo_map.a);
 #endif
-	albedo_map *= inColor;
+	albedo_map *= vec4(inColor, 1.0);
 
 //METALLIC ROUGHNESS
 	vec4 pbr_map = vec4(0.0);
@@ -142,6 +145,8 @@ void main()
 	vec4(inColor * material.emissiveFactor, 1.0);
 #endif
 
-	outPack = packTextures(normal_map, albedo_map, pbr_map);
+	outAlbedo = albedo_map;
+	outNormal = vec4(normal_map, 1.0);
+	outMRAH = pbr_map;
 	outEmissive = emission;
 }

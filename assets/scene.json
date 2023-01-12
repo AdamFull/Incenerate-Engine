@@ -1,6 +1,5 @@
 [
   {
-    "children": [],
     "components": {
       "skybox": {
         "source": "textures/cubemaps/SkyhighFluffycloudField4k.ktx2"
@@ -10,38 +9,20 @@
     "name": "Skybox"
   },
   {
-    "children": [
-      {
-        "children": [],
-        "components": {
-          "pointlight": {
-            "color": {
-              "x": 0.5,
-              "y": 1.0,
-              "z": 0.5
-            },
-            "intencity": 1.5,
-            "radius": 10.0
-          },
-          "transform": null
-        },
-        "name": "InCameraLight"
-      }
-    ],
     "components": {
       "camera": {
         "active": true
       },
       "transform": {
         "pos": {
-          "x": -24.179922103881836,
-          "y": 15.431492805480957,
-          "z": -38.47140121459961
+          "x": 3.7887556552886963,
+          "y": 7.41056489944458,
+          "z": -21.777414321899414
         },
         "rot": {
-          "x": 0.28522437810897827,
-          "y": -0.38810715079307556,
-          "z": 0.8763675093650818
+          "x": 0.024857236072421074,
+          "y": -0.22554966807365417,
+          "z": 0.9739145040512085
         }
       }
     },
@@ -50,30 +31,127 @@
   {
     "children": [
       {
-        "children": [],
         "components": {
           "scene": {
-            "source": "models/gltf_tests/EmissiveStrengthTest/glTF/EmissiveStrengthTest.gltf"
-          },
-          "transform": null
-        },
-        "name": "EmissiveStrengthTest"
-      },
-      {
-        "children": [],
-        "components": {
-          "scene": {
-            "source": "models/gltf_tests/EnvironmentTest/glTF/EnvironmentTest.gltf"
+            "source": "models/gltf_tests/Duck/glTF/Duck.gltf"
           },
           "transform": {
             "pos": {
-              "x": -20.0,
-              "y": 0.0,
-              "z": 0.0
+              "x": 14.762375831604004,
+              "y": -2.9528956413269043
+            },
+            "scale": {
+              "x": 0.07000000029802322,
+              "y": 0.07000000029802322,
+              "z": 0.07000000029802322
             }
           }
         },
-        "name": "EnvironmentTest"
+        "name": "Duck"
+      },
+      {
+        "components": {
+          "scene": {
+            "source": "models/gltf_tests/BoomBox/glTF/BoomBox.gltf"
+          },
+          "transform": {
+            "pos": {
+              "x": 6.474181175231934,
+              "y": 0.5660626888275146,
+              "z": -0.25632402300834656
+            },
+            "rot": {
+              "y": 3.144397497177124,
+              "z": -3.141592264175415
+            },
+            "scale": {
+              "x": 120.0,
+              "y": 120.0,
+              "z": 120.0
+            }
+          }
+        },
+        "name": "BoomBox"
+      },
+      {
+        "components": {
+          "scene": {
+            "source": "models/gltf_tests/Box With Spaces/glTF/Box With Spaces.gltf"
+          },
+          "transform": {
+            "pos": {
+              "x": 2.955031156539917,
+              "y": 0.783545196056366
+            }
+          }
+        },
+        "name": "Box With Spaces"
+      },
+      {
+        "components": {
+          "scene": {
+            "source": "models/gltf_tests/DamagedHelmet/glTF/DamagedHelmet.gltf"
+          },
+          "transform": {
+            "pos": {
+              "x": -0.282270222902298,
+              "y": 0.7198569178581238,
+              "z": -0.5556703209877014
+            },
+            "rot": {
+              "x": 1.7090827226638794,
+              "y": -0.01327325776219368,
+              "z": -1.5870977640151978
+            },
+            "scale": {
+              "x": 1.6399999856948853,
+              "y": 1.6400001049041748,
+              "z": 1.6399999856948853
+            }
+          }
+        },
+        "name": "DamagedHelmet"
+      },
+      {
+        "components": {
+          "scene": {
+            "source": "models/gltf_tests/FlightHelmet/glTF/FlightHelmet.gltf"
+          },
+          "transform": {
+            "pos": {
+              "x": -3.00110125541687,
+              "y": -0.7664282321929932,
+              "z": 0.004178949166089296
+            },
+            "rot": {
+              "y": 3.140000104904175
+            },
+            "scale": {
+              "x": 4.764564037322998,
+              "y": 4.764564514160156,
+              "z": 4.764564037322998
+            }
+          }
+        },
+        "name": "FlightHelmet"
+      },
+      {
+        "components": {
+          "scene": {
+            "source": "models/gltf_tests/SciFiHelmet/glTF/SciFiHelmet.gltf"
+          },
+          "transform": {
+            "pos": {
+              "x": -6.138533592224121,
+              "y": 0.44184809923171997,
+              "z": 0.000836620747577399
+            },
+            "rot": {
+              "y": 3.141247510910034
+            }
+          }
+        },
+        "name": "SciFiHelmet"
       }
     ],
     "components": {

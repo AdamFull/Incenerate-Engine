@@ -6,11 +6,15 @@
 #include "ecs/components/MeshComponent.h"
 #include "ecs/components/TransformComponent.h"
 
+using namespace engine::graphics;
 using namespace engine::ecs;
 
 void COmniShadowSystem::__create()
 {
-	shader_id = EGGraphics->addShader("omni_shadow_pass", "omni_shadow_pass", { {"INVOCATION_COUNT", std::to_string(MAX_POINT_LIGHT_COUNT)} }, 1);
+	FShaderSpecials specials;
+	specials.defines = { {"INVOCATION_COUNT", std::to_string(MAX_POINT_LIGHT_COUNT)} };
+	specials.subpass = 1;
+	shader_id = EGGraphics->addShader("omni_shadow_pass", "omni_shadow_pass", specials);
 }
 
 void COmniShadowSystem::__update(float fDt)

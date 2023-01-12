@@ -53,11 +53,12 @@ namespace engine
 			bool getTesselationFlag() const { return programCI.tesselation; }
 			bool isVertexFree() const { return programCI.vertexfree; }
 			const std::string& getStage() const { return programCI.srStage; }
+			const bool isBlendAlpha() const { return bAlphaBlend; }
+			const bool isDoubleSided() const { return bDoubleSided; }
 
 			const std::unique_ptr<CShader>& getShader();
 		private:
 			CDevice* pDevice{ nullptr };
-			uint32_t iVBOid{ 0 };
 			size_t usageCount{ 1 };
 			size_t currentUsage{ 0 };
 
@@ -69,6 +70,8 @@ namespace engine
 			std::map<std::string, std::unique_ptr<CPushHandler>> mPushBlocks;
 
 			FProgramCreateInfo programCI;
+			bool bAlphaBlend{ false };
+			bool bDoubleSided{ false };
 		};
 	}
 }

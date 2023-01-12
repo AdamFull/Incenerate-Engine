@@ -52,7 +52,7 @@ void scenegraph::destroy_node(entt::entity node)
 	if (auto sprite = registry.try_get<FSpriteComponent>(node))
 		EGGraphics->removeImage(sprite->image);
 
-	hierarchy.parent = entt::null;
+	detach_child(node);
 	hierarchy.children.clear();
 
 	registry.destroy(node);

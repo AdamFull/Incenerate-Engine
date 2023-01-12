@@ -1,6 +1,7 @@
 #include "ShaderLoader.h"
 
 #include "Engine.h"
+#include "graphics/rendering/material/Material.h"
 #include "system/filesystem/filesystem.h"
 
 constexpr const char* shader_config_path = "shaders.json";
@@ -27,31 +28,34 @@ void CShaderLoader::create(const std::string& srShaderPath)
 
 std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size_t mat_id)
 {
-	std::map<std::string, std::string> defines;
-	size_t usages{ 1 };
+	FShaderSpecials specials;
+
 	if (mat_id != invalid_index)
 	{
 		auto& pMaterial = EGGraphics->getMaterial(mat_id);
 		auto& params = pMaterial->getParameters();
-		usages = pMaterial->getUsageCount();
+		specials.usages = pMaterial->getUsageCount();
+		specials.doubleSided = params.doubleSided;
+		specials.alphaBlend = params.alphaMode == FMaterial::EAlphaMode::EBLEND;
 
 		for (auto& definition : params.vCompileDefinitions)
-			defines.emplace(definition, "");
+			specials.defines.emplace(definition, "");
 	}
 
-	return load(name, defines, 0, usages);
+	return load(name, specials);
 }
 
-std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, const std::map<std::string, std::string>& defines, uint32_t subpass, size_t usages)
+std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, const FShaderSpecials& specials)
 {
 	auto it = programCI.find(name);
 	if (it != programCI.end())
 	{
 		std::stringstream defineBlock;
-		for(auto& [name, value] : defines)
+		for(auto& [name, value] : specials.defines)
 			defineBlock << "#define " << name << " " << value << '\n';
 
 		auto pShaderObject = std::make_unique<CShaderObject>(pDevice);
+		pShaderObject->bAlphaBlend = specials.alphaBlend;
 		auto& pShader = pShaderObject->pShader;
 
 		for (const auto& [defineName, defineValue] : it->second.defines)
@@ -83,7 +87,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 
 		pShaderObject->programCI = it->second;
 
-		pShaderObject->create(subpass, usages);
+		pShaderObject->create(specials.subpass, specials.usages);
 
 		return pShaderObject;
 	}

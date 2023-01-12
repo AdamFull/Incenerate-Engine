@@ -20,14 +20,16 @@ layout (binding = 0) uniform sampler2D brdflut_tex;
 layout (binding = 1) uniform samplerCube irradiance_tex;
 layout (binding = 2) uniform samplerCube prefiltred_tex;
 
-layout (binding = 3) uniform usampler2D packed_tex;
-layout (binding = 4) uniform sampler2D emission_tex;
-layout (binding = 5) uniform sampler2D depth_tex;
+layout (binding = 3) uniform sampler2D albedo_tex;
+layout (binding = 4) uniform sampler2D normal_tex;
+layout (binding = 5) uniform sampler2D mrah_tex;
+layout (binding = 6) uniform sampler2D emission_tex;
+layout (binding = 7) uniform sampler2D depth_tex;
 //layout (binding = 6) uniform sampler2D ssr_tex;
 
 //layout (binding = 7) uniform sampler2DArray cascade_shadowmap_tex;
-layout (binding = 8) uniform sampler2DArrayShadow direct_shadowmap_tex;
-layout (binding = 9) uniform samplerCubeArrayShadow omni_shadowmap_tex;
+layout (binding = 9) uniform sampler2DArrayShadow direct_shadowmap_tex;
+layout (binding = 10) uniform samplerCubeArrayShadow omni_shadowmap_tex;
 
 //--------------------In/Out locations--------------------
 layout (location = 0) in vec2 inUV;
@@ -120,13 +122,9 @@ void main()
 	vec3 inWorldPos = getPositionFromDepth(invUV, depth, ubo.invViewProjection);
 	//vec3 inWorldPos = WorldPosFromDepth(invUV, depth, ubo.invProjMatrix, ubo.invViewMatrix);
 
-	vec3 normal = vec3(0.0);
-	vec3 albedo = vec3(0.0);
-	vec4 mrah = vec4(0.0);
-
-	// Loading texture pack
-	uvec4 packed_data = texture(packed_tex, inUV);
-	unpackTextures(packed_data, normal, albedo, mrah);
+	vec3 normal = texture(normal_tex, inUV).rgb;
+	vec3 albedo = texture(albedo_tex, inUV).rgb;
+	vec4 mrah = texture(mrah_tex, inUV);
 
 	albedo = pow(albedo, vec3(2.2));
 	vec3 emission = texture(emission_tex, inUV).rgb;

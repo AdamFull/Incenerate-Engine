@@ -102,10 +102,14 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         mStageInfos["deferred"].viewport.extent = device->getExtent(true);
         mStageInfos["deferred"].bFlipViewport = true;
         mStageInfos["deferred"].bViewportDependent = true;
-        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "packed_tex", vk::Format::eR32G32B32A32Uint, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "emission_tex", vk::Format::eB10G11R11UfloatPack32, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "albedo_tex", vk::Format::eR8G8B8A8Srgb, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "normal_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "mrah_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "emission_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["deferred"].vOutputs.emplace_back("packed_tex");
+        mStageInfos["deferred"].vOutputs.emplace_back("albedo_tex");
+        mStageInfos["deferred"].vOutputs.emplace_back("normal_tex");
+        mStageInfos["deferred"].vOutputs.emplace_back("mrah_tex");
         mStageInfos["deferred"].vOutputs.emplace_back("emission_tex");
         mStageInfos["deferred"].vDescriptions.emplace_back("depth_tex");
         mStageInfos["deferred"].vDependencies.emplace_back(
@@ -404,9 +408,9 @@ size_t CAPIHandle::addShader(const std::string& name, const std::string& shadert
     return shader_id;
 }
 
-size_t CAPIHandle::addShader(const std::string& name, const std::string& shadertype, const std::map<std::string, std::string>& defines, uint32_t subpass)
+size_t CAPIHandle::addShader(const std::string& name, const std::string& shadertype, const FShaderSpecials& specials)
 {
-    auto shader_id = addShader(name, pLoader->load(shadertype, defines, subpass));
+    auto shader_id = addShader(name, pLoader->load(shadertype, specials));
     return shader_id;
 }
 

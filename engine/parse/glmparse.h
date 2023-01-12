@@ -156,26 +156,4 @@ namespace glm
     //glm::dvec1
     void to_json(nlohmann::json& json, const dvec1& type);
     void from_json(const nlohmann::json& json, dvec1& type);
-
-
-    //glm::mat4
-    void to_json(nlohmann::json& json, const mat4& type);
-    void from_json(const nlohmann::json& json, mat4& type);
-    //glm::mat3
-    void to_json(nlohmann::json& json, const mat3& type);
-    void from_json(const nlohmann::json& json, mat3& type);
-    //glm::mat2
-    void to_json(nlohmann::json& json, const mat2& type);
-    void from_json(const nlohmann::json& json, mat2& type);
-
-
-    //glm::dmat4
-    void to_json(nlohmann::json& json, const dmat4& type);
-    void from_json(const nlohmann::json& json, dmat4& type);
-    //glm::dmat3
-    void to_json(nlohmann::json& json, const dmat3& type);
-    void from_json(const nlohmann::json& json, dmat3& type);
-    //glm::dmat2
-    void to_json(nlohmann::json& json, const dmat2& type);
-    void from_json(const nlohmann::json& json, dmat2& type);
 }
