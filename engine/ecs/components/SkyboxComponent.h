@@ -15,6 +15,7 @@ namespace engine
 			size_t brdflut{ invalid_index };
 			size_t prefiltred{ invalid_index };
 			size_t irradiance{ invalid_index };
+			bool loaded{ false };
 		};
 
 		void to_json(nlohmann::json& json, const FSkyboxComponent& type);

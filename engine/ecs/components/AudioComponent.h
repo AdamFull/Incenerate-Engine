@@ -17,6 +17,7 @@ namespace engine
 			bool loop{ false };
 			bool playing{ false };
 			bool shouldStop{ false };
+			bool loaded{ false };
 		};
 
 		void to_json(nlohmann::json& json, const FAudioComponent& type);

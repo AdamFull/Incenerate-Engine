@@ -67,12 +67,12 @@ void CAudioSource::play()
 
 void CAudioSource::pause()
 {
-	alCall(alSourceStop, alSource);
+	alCall(alSourcePause, alSource);
 }
 
 void CAudioSource::stop()
 {
-	alCall(alSourceRewind, alSource);
+	alCall(alSourceStop, alSource);
 }
 
 void CAudioSource::rewind()
@@ -105,13 +105,13 @@ void CAudioSource::setLooping(bool loop)
 	alCall(alSourcei, alSource, AL_LOOPING, loop);
 }
 
-double CAudioSource::getLenInSec()
+float CAudioSource::getLenInSec()
 {
-	double byteRate = static_cast<double>(byteRate);
-	return static_cast<double>(totalSize) / byteRate;
+	auto rt = static_cast<float>(byteRate);
+	return static_cast<float>(totalSize) / rt;
 }
 
-double CAudioSource::getPosInSec()
+float CAudioSource::getPosInSec()
 {
 	float offset;
 	alCall(alGetSourcef, alSource, AL_SEC_OFFSET, &offset);

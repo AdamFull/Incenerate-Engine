@@ -99,6 +99,7 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 				auto audio = component.get<FAudioComponent>();
 				auto pAudio = std::make_unique<CAudioSource>(audio.source);
 				audio.asource = EGAudio->addSource(object.srName, std::move(pAudio));
+				audio.loaded = true;
 				registry.emplace<FAudioComponent>(node, audio);
 			}
 
@@ -106,8 +107,12 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 			{
 				auto skybox = component.get<FSkyboxComponent>();
 				skybox.origin = EGGraphics->addImage(object.srName, skybox.source);
+				skybox.brdflut = EGGraphics->computeBRDFLUT(512);
+				skybox.irradiance = EGGraphics->computeIrradiance(skybox.origin, 64);
+				skybox.prefiltred = EGGraphics->computePrefiltered(skybox.origin, 512);
 				skybox.vbo_id = EGGraphics->addVertexBuffer(object.srName);
 				skybox.shader_id = EGGraphics->addShader(object.srName, "skybox");
+				skybox.loaded = true;
 
 				auto& pVBO = EGGraphics->getVertexBuffer(skybox.vbo_id);
 				pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
@@ -124,6 +129,7 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 			{
 				auto scene = component.get<FSceneComponent>();
 				CMeshLoader::load(scene.source, node);
+				scene.loaded = true;
 
 				registry.emplace<FSceneComponent>(node, scene);
 			}

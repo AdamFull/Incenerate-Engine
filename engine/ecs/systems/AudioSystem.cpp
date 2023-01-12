@@ -42,9 +42,13 @@ void CAudioSystem::__update(float fDt)
 		{
 			auto& pSource = EGAudio->getSource(audio.asource);
 
-			pSource->setGain(audio.gain);
-			pSource->setPosition(transform.rposition);
-			pSource->setPitch(audio.pitch);
+			if (pSource)
+			{
+				pSource->setGain(audio.gain);
+				pSource->setPosition(transform.rposition);
+				pSource->setPitch(audio.pitch);
+			}
+			
 
 			//if (!audio.shouldStop && !audio.playing)
 			//{

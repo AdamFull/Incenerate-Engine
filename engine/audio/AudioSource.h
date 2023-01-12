@@ -33,8 +33,8 @@ namespace engine
 			void setVelocity(const glm::vec3& position);
 			void setLooping(bool loop);
 
-			double getLenInSec();
-			double getPosInSec();
+			float getLenInSec();
+			float getPosInSec();
 			void setOffsetSec(float offset);
 
 			EAudioSourceState getState();

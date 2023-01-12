@@ -4,7 +4,13 @@
       "skybox": {
         "source": "textures/cubemaps/SkyhighFluffycloudField4k.ktx2"
       },
-      "transform": null
+      "transform": {
+        "scale": {
+          "x": 10.0,
+          "y": 10.0,
+          "z": 10.0
+        }
+      }
     },
     "name": "Skybox"
   },
@@ -15,14 +21,14 @@
       },
       "transform": {
         "pos": {
-          "x": 3.7887556552886963,
-          "y": 7.41056489944458,
-          "z": -21.777414321899414
+          "x": -14.94108772277832,
+          "y": 22.499984741210938,
+          "z": -14.409996032714844
         },
         "rot": {
-          "x": 0.024857236072421074,
-          "y": -0.22554966807365417,
-          "z": 0.9739145040512085
+          "x": 0.8091818690299988,
+          "y": -0.584559977054596,
+          "z": -0.05928264930844307
         }
       }
     },
@@ -152,6 +158,23 @@
           }
         },
         "name": "SciFiHelmet"
+      },
+      {
+        "components": {
+          "audio": {
+            "source": "audio\\misiko.wav"
+          },
+          "scene": {
+            "source": "models\\sponza\\sponza.gltf"
+          },
+          "transform": {
+            "pos": {
+              "x": 5.808545112609863,
+              "z": -21.110916137695313
+            }
+          }
+        },
+        "name": "Sponza"
       }
     ],
     "components": {

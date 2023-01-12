@@ -64,12 +64,11 @@ void CEditorContentBrowser::__draw()
 		ImGui::PushFont(pLargeIcons);
 		ImGui::PushID(filename.c_str());
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-		auto double_clicked = ImGui::Selectable((icon + ("##" + filename)).c_str(), &bSelected, ImGuiSelectableFlags_AllowDoubleClick, { thumbnailSize, thumbnailSize });
-		//ImGui::Button((icon + ("##" + filename)).c_str(), {thumbnailSize, thumbnailSize});
+		auto double_clicked = ImGui::Button((icon + ("##" + filename)).c_str(), {thumbnailSize, thumbnailSize});
 		ImGui::PopStyleColor();
 		ImGui::PopFont();
 
-		if (double_clicked && ImGui::IsMouseDoubleClicked(0))
+		if (double_clicked && ImGui::IsItemHovered())
 		{
 			if (isDirectory)
 			{

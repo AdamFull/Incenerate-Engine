@@ -17,12 +17,14 @@
 #include "ecs/components/DirectionalLightComponent.h"
 #include "ecs/components/PointLightComponent.h"
 #include "ecs/components/SpotLightComponent.h"
+#include "ecs/components/SceneComponent.h"
 
 using namespace engine::editor;
+using namespace engine::audio;
 using namespace engine::ecs;
 
-template<class _Ty, class _Pred>
-void try_show_edit(const std::string& name, const entt::entity& entity, _Pred&& predicate)
+template<class _Ty, class _EditPred, class _RemPred>
+void try_show_edit(const std::string& name, const entt::entity& entity, _EditPred&& editpred, _RemPred&& removepred)
 {
 	using namespace engine;
 	auto& registry = EGCoordinator;
@@ -33,9 +35,14 @@ void try_show_edit(const std::string& name, const entt::entity& entity, _Pred&& 
 
 		ImGui::SameLine(ImGui::GetWindowWidth() - 30);
 		if (ImGui::Button("X##remove"))
+		{
+			removepred(object);
 			registry.remove<_Ty>(entity);
+		}
+			
+			
 
-		predicate(object);
+		editpred(object);
 
 		ImGui::PopID();
 		ImGui::Separator();
@@ -78,6 +85,7 @@ void CEditorInspector::__draw()
 			try_add_menu_item<FDirectionalLightComponent>("Directional light", selected);
 			try_add_menu_item<FSpotLightComponent>("Spot light", selected);
 			try_add_menu_item<FPointLightComponent>("Point light", selected);
+			try_add_menu_item<FSceneComponent>("Scene", selected);
 			ImGui::EndPopup();
 		}
 
@@ -91,89 +99,22 @@ void CEditorInspector::__draw()
 		ImGui::Separator();
 
 		try_show_edit<FAudioComponent>("Audio", selected, 
-			[](auto* object)
-			{
-				ImGui::InputText("Source", &object->source);
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
-						auto source = std::filesystem::path(path);
-						auto ext = source.extension();
-
-						if (ext == ".wav" || ext == ".ogg")
-						{
-							// Update skybox here
-							object->source = source.string();
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
-
-				ImGui::GDragFloat("Gain", &object->gain, 0.01f, 0.01f, 10.f);
-				ImGui::GDragFloat("Pitch", &object->pitch, 0.01f, 0.01f, 10.f);
-				ImGui::GCheckbox("Loop", &object->loop);
-			});
-
+			[this](auto* object) { audioEdit(object); },
+			[this](auto* object) { audioRemove(object); });
 		try_show_edit<FCameraComponent>("Camera", selected, 
-			[](auto* object)
-			{
-				ImGui::GDragFloat("FoV", &object->fieldOfView, 0.01f, 0.01f, 180.f);
-				ImGui::GDragFloat("Near", &object->nearPlane, 0.01f, 0.01f, 1024.f);
-				ImGui::GDragFloat("Far", &object->farPlane, 0.01f, 0.01f, 2048.f);
-				ImGui::GDragFloat("Sensitivity", &object->sensitivity, 0.01f, 1.f, 50.f);
-				ImGui::GCheckbox("Active", &object->active);
-			});
-
-		try_show_edit<FMeshComponent>("Mesh", selected,
-			[](auto* object)
-			{
-			});
-
-		try_show_edit<FScriptComponent>("Script", selected,
-			[](auto* object)
-			{
-				ImGui::InputText("Script", &object->source);
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
-						auto source = std::filesystem::path(path);
-						auto ext = source.extension();
-
-						if (ext == ".lua")
-						{
-							// Update skybox here
-							object->source = source.string();
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
-			});
-
-		try_show_edit<FSkyboxComponent>("Skybox", selected,
-			[](auto* object)
-			{
-				ImGui::InputText("Source", &object->source);
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
-						auto source = std::filesystem::path(path);
-						auto ext = source.extension();
-
-						if (ext == ".ktx" || ext == ".ktx2")
-						{
-							// Update skybox here
-							object->source = source.string();
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
-			});
+			[this](auto* object) { cameraEdit(object); },
+			[](auto*) {});
+		try_show_edit<FMeshComponent>("Mesh", selected, 
+			[](auto* object) {}, [](auto*) {});
+		try_show_edit<FScriptComponent>("Script", selected, 
+			[this](auto* object) { scriptEdit(object); },
+			[this](auto* object) { scriptRemove(object); });
+		try_show_edit<FSkyboxComponent>("Skybox", selected, 
+			[this](auto* object) { skyboxEdit(object); },
+			[this](auto* object) { skyboxRemove(object); });
+		try_show_edit<FSceneComponent>("Scene", selected, 
+			[this](auto* object) { sceneEdit(object); },
+			[this](auto* object) { sceneRemove(object); });
 
 		try_show_edit<FDirectionalLightComponent>("Directional light", selected,
 			[](auto* object)
@@ -181,7 +122,7 @@ void CEditorInspector::__draw()
 				ImGui::GColorEdit3("Color", object->color);
 				ImGui::GDragFloat("Intencity", &object->intencity, 0.01f, 0.01f, 50.f);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
-			});
+			}, [](auto*) {});
 
 		try_show_edit<FSpotLightComponent>("Spot light", selected,
 			[](auto* object)
@@ -192,7 +133,7 @@ void CEditorInspector::__draw()
 				ImGui::GDragFloat("Outer angle", &object->outerAngle, 0.01f, 0.01f);
 				ImGui::GCheckbox("To target", &object->toTarget);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
-			});
+			}, [](auto*) {});
 
 		try_show_edit<FPointLightComponent>("Point light", selected,
 			[](auto* object)
@@ -201,9 +142,179 @@ void CEditorInspector::__draw()
 				ImGui::GDragFloat("Intencity", &object->intencity, 0.01f, 0.01f, 50.f);
 				ImGui::GDragFloat("Radius", &object->radius, 0.01f, 0.01f);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
-			});
+			}, [](auto*) {});
 
 		if (ImGui::Button("+##add_component", ImVec2(-1.f, 0.f)))
 			ImGui::OpenPopup("add_component_popup");
 	}
+}
+
+// audio editor
+void CEditorInspector::audioEdit(FAudioComponent* object)
+{
+	ImGui::InputText("Source", &object->source);
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		{
+			const wchar_t* path = (const wchar_t*)payload->Data;
+			auto source = std::filesystem::path(path);
+			auto ext = source.extension();
+
+			if (ext == ".wav" || ext == ".ogg")
+			{
+				audioRemove(object);
+				object->source = source.string();
+
+				auto pAudio = std::make_unique<CAudioSource>(object->source);
+				object->asource = EGAudio->addSource(source.filename().string(), std::move(pAudio));
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+
+	ImGui::GDragFloat("Gain", &object->gain, 0.01f, 0.01f, 10.f);
+	ImGui::GDragFloat("Pitch", &object->pitch, 0.01f, 0.01f, 10.f);
+	ImGui::GCheckbox("Loop", &object->loop);
+
+	auto& pAudio = EGAudio->getSource(object->asource);
+	if (pAudio)
+	{
+		ImGui::Text("Player");
+
+		auto pos = pAudio->getPosInSec();
+		auto len = pAudio->getLenInSec();
+
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+
+		if (ImGui::SliderFloat("##player", &pos, 0.f, len, "%.2f sec"))
+			pAudio->setOffsetSec(pos);
+
+		if (ImGui::Button("Play"))
+			pAudio->play();
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Stop"))
+			pAudio->stop();
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Pause"))
+			pAudio->pause();
+	}
+}
+
+void CEditorInspector::audioRemove(FAudioComponent* object)
+{
+	if (object->loaded)
+		EGAudio->removeSource(object->asource);
+	object->loaded = false;
+}
+
+// camera editor
+void CEditorInspector::cameraEdit(FCameraComponent* object)
+{
+	ImGui::GDragFloat("FoV", &object->fieldOfView, 0.01f, 0.01f, 180.f);
+	ImGui::GDragFloat("Near", &object->nearPlane, 0.01f, 0.01f, 1024.f);
+	ImGui::GDragFloat("Far", &object->farPlane, 0.01f, 0.01f, 2048.f);
+	ImGui::GDragFloat("Sensitivity", &object->sensitivity, 0.01f, 1.f, 50.f);
+	ImGui::GCheckbox("Active", &object->active);
+}
+
+// script editor
+void CEditorInspector::scriptEdit(FScriptComponent* object)
+{
+	ImGui::InputText("Script", &object->source);
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		{
+			const wchar_t* path = (const wchar_t*)payload->Data;
+			auto source = std::filesystem::path(path);
+			auto ext = source.extension();
+
+			if (ext == ".lua")
+			{
+				// Update skybox here
+				object->source = source.string();
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+}
+
+void CEditorInspector::scriptRemove(FScriptComponent* object)
+{
+
+}
+
+void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
+{
+	ImGui::InputText("Source", &object->source);
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		{
+			const wchar_t* path = (const wchar_t*)payload->Data;
+			auto source = std::filesystem::path(path);
+			auto ext = source.extension();
+
+			if (ext == ".ktx" || ext == ".ktx2")
+			{
+				if (object->loaded)
+				{
+					EGGraphics->removeImage(object->irradiance);
+					EGGraphics->removeImage(object->prefiltred);
+					EGGraphics->removeImage(object->origin);
+				}
+
+				object->source = source.string();
+
+				object->origin = EGGraphics->addImage(object->source, object->source);
+				object->irradiance = EGGraphics->computeIrradiance(object->origin, 64);
+				object->prefiltred = EGGraphics->computePrefiltered(object->origin, 512);
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+}
+
+void CEditorInspector::skyboxRemove(FSkyboxComponent* object)
+{
+	if (object->loaded)
+	{
+		EGGraphics->removeImage(object->brdflut);
+		EGGraphics->removeImage(object->irradiance);
+		EGGraphics->removeImage(object->prefiltred);
+		EGGraphics->removeImage(object->origin);
+		EGGraphics->removeVertexBuffer(object->vbo_id);
+		EGGraphics->removeShader(object->shader_id);
+	}
+}
+
+void CEditorInspector::sceneEdit(FSceneComponent* object)
+{
+	ImGui::InputText("Source", &object->source);
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		{
+			const wchar_t* path = (const wchar_t*)payload->Data;
+			auto source = std::filesystem::path(path);
+			auto ext = source.extension();
+
+			if (ext == ".gltf" || ext == ".glb")
+			{
+				// Update skybox here
+				object->source = source.string();
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+}
+
+void CEditorInspector::sceneRemove(FSceneComponent* object)
+{
+
 }

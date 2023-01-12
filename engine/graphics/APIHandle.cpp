@@ -3,6 +3,9 @@
 #include "system/window/WindowHandle.h"
 #include "Engine.h"
 
+#include "image/Image2D.h"
+#include "image/ImageCubemap.h"
+
 using namespace engine::graphics;
 using namespace engine::ecs;
 using namespace engine::system::window;
@@ -527,6 +530,120 @@ const std::unique_ptr<CRenderStage>& CAPIHandle::getRenderStage(size_t id)
 const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::string& srName)
 {
     return getRenderStage(srName)->getFramebuffer();
+}
+
+size_t CAPIHandle::computeBRDFLUT(uint32_t size)
+{
+    auto brdfImage = std::make_unique<CImage2D>(pDevice.get());
+    brdfImage->create(
+        vk::Extent2D{ size, size },
+        vk::Format::eR16G16Sfloat,
+        vk::ImageLayout::eGeneral,
+        vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
+        vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
+        vk::ImageUsageFlagBits::eStorage);
+
+    auto output_id = addImage("brdflut", std::move(brdfImage));
+
+    auto shader_id = addShader("brdflut_generator", "brdflut_generator");
+    auto& pShader = getShader(shader_id);
+
+    pShader->addTexture("outColour", output_id);
+
+    pShader->dispatch(size);
+
+    removeShader(shader_id);
+
+    return output_id;
+}
+
+size_t CAPIHandle::computeIrradiance(size_t origin, uint32_t size)
+{
+    auto irradianceCubemap = std::make_unique<CImageCubemap>(pDevice.get());
+    irradianceCubemap->create(
+        vk::Extent2D{ size, size },
+        vk::Format::eR32G32B32A32Sfloat,
+        vk::ImageLayout::eGeneral,
+        vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
+        vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
+        vk::ImageUsageFlagBits::eStorage);
+
+    auto output_id = addImage("irradiance", std::move(irradianceCubemap));
+
+    auto shader_id = addShader("irradiancecube_generator", "irradiancecube_generator");
+    auto& pShader = getShader(shader_id);
+    pShader->addTexture("outColour", output_id);
+    pShader->addTexture("samplerColour", origin);
+
+    pShader->dispatch(size);
+
+    removeShader(shader_id);
+
+    return output_id;
+}
+
+size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
+{
+    auto prefilteredCubemap = std::make_unique<CImageCubemap>(pDevice.get());
+    prefilteredCubemap->create(
+        vk::Extent2D{ size, size },
+        vk::Format::eR16G16B16A16Sfloat,
+        vk::ImageLayout::eGeneral,
+        vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
+        vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
+        vk::ImageUsageFlagBits::eStorage,
+        vk::ImageAspectFlagBits::eColor,
+        vk::Filter::eLinear,
+        vk::SamplerAddressMode::eClampToEdge,
+        vk::SampleCountFlagBits::e1, true, false, true);
+
+    auto output_id = addImage("prefiltered", std::move(prefilteredCubemap));
+    auto& target = getImage(output_id);
+
+    auto shader_id = addShader("prefilteredmap_generator", "prefilteredmap_generator");
+    auto& pShader = getShader(shader_id);
+    auto& pPushConst = pShader->getPushBlock("object");
+
+    auto cmdBuf = CCommandBuffer(pDevice.get());
+    cmdBuf.create(false, vk::QueueFlagBits::eCompute);
+
+    for (uint32_t i = 0; i < target->getMipLevels(); i++)
+    {
+        vk::ImageView levelView = VK_NULL_HANDLE;
+        vk::ImageViewCreateInfo viewInfo{};
+        viewInfo.viewType = vk::ImageViewType::eCube;
+        viewInfo.format = target->getFormat();
+        viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        viewInfo.subresourceRange.baseMipLevel = i;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 6;
+        viewInfo.image = target->getImage();
+
+        vk::Result res = pDevice->create(viewInfo, &levelView);
+        assert(res == vk::Result::eSuccess && "Cannot create image view.");
+
+        cmdBuf.begin();
+        auto commandBuffer = cmdBuf.getCommandBuffer();
+
+        auto imageInfo = target->getDescriptor();
+        imageInfo.imageView = levelView;
+
+        pPushConst->set("roughness", static_cast<float>(i) / static_cast<float>(target->getMipLevels() - 1));
+        pPushConst->flush(commandBuffer);
+
+        pShader->addTexture("outColour", imageInfo);
+        pShader->addTexture("samplerColour", origin);
+
+        pShader->dispatch(commandBuffer, size);
+        cmdBuf.submitIdle();
+
+        pDevice->destroy(&levelView);
+    }
+
+    removeShader(shader_id);
+
+    return output_id;
 }
 
 vk::CommandBuffer CAPIHandle::beginFrame()

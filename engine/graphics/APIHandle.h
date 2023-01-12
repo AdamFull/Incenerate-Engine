@@ -78,6 +78,10 @@ namespace engine
 
 			const std::unique_ptr<CFramebuffer>& getFramebuffer(const std::string& srName);
 
+			size_t computeBRDFLUT(uint32_t size);
+			size_t computeIrradiance(size_t origin, uint32_t size);
+			size_t computePrefiltered(size_t origin, uint32_t size);
+
 		private:
 			vk::CommandBuffer beginFrame();
 			vk::Result endFrame();
