@@ -90,29 +90,17 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 				registry.emplace<FCameraComponent>(node, component.get<FCameraComponent>());
 
 			if (name == "audio")
-			{
 				registry.emplace<FAudioComponent>(node, component.get<FAudioComponent>());
-				auto& audio = registry.get<FAudioComponent>(node);
-				audio.create();
-			}
 
 			if (name == "skybox")
-			{
 				registry.emplace<FSkyboxComponent>(node, std::move(component.get<FSkyboxComponent>()));
-				auto& skybox = registry.get<FSkyboxComponent>(node);
-				skybox.create();
-			}
 				
 
 			if (name == "sprite")
 				registry.emplace<FSpriteComponent>(node, component.get<FSpriteComponent>());
 
 			if (name == "scene")
-			{
 				registry.emplace<FSceneComponent>(node, component.get<FSceneComponent>());
-				auto& scene = registry.get<FSceneComponent>(node);
-				scene.create(node);
-			}
 
 			if (name == "directionallight")
 				registry.emplace<FDirectionalLightComponent>(node, component.get<FDirectionalLightComponent>());

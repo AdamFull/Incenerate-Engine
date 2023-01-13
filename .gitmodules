@@ -22,6 +22,3 @@
 [submodule "engine/external/glmlib"]
 	path = engine/external/glmlib
 	url = https://github.com/g-truc/glm.git
-[submodule "engine/external/openal-soft"]
-	path = engine/external/openal-soft
-	url = https://github.com/kcat/openal-soft.git

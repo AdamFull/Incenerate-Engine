@@ -4,16 +4,7 @@ using namespace engine::audio;
 
 CAudioCore::~CAudioCore()
 {
-    pAudioSourceManager = nullptr;
-
-    if (!alcCall(alcMakeContextCurrent, contextMadeCurrent, pDevice, nullptr))
-        log_error("Failed to change current context.");
-
-    if (!alcCall(alcDestroyContext, pDevice, pContext))
-        log_error("Failed to destroy context.");
-
-    bool closed{ false };
-    alcCall(alcCloseDevice, closed, pDevice, pDevice);
+    
 }
 
 void CAudioCore::create()
@@ -43,6 +34,16 @@ void CAudioCore::update()
 
 void CAudioCore::shutdown()
 {
+    pAudioSourceManager = nullptr;
+
+    if (!alcCall(alcMakeContextCurrent, contextMadeCurrent, pDevice, nullptr))
+        log_error("Failed to change current context.");
+
+    if (!alcCall(alcDestroyContext, pDevice, pContext))
+        log_error("Failed to destroy context.");
+
+    bool closed{ false };
+    alcCall(alcCloseDevice, closed, pDevice, pDevice);
 }
 
 size_t CAudioCore::addSource(const std::string& name, const std::string& filepath)

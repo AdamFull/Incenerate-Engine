@@ -164,7 +164,14 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 						object->asource = EGAudio->addSource(source.filename().string(), std::move(pAudio));
 					}
 					else
-						object->create();
+					{
+						auto& registry = EGCoordinator;
+
+						FAudioComponent naudio{};
+						naudio.source = source.string();
+
+						registry.replace<FAudioComponent>(EGEditor->getLastSelection(), std::move(naudio));
+					}
 				}
 			}
 		}
@@ -261,7 +268,14 @@ void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
 						object->prefiltred = EGGraphics->computePrefiltered(object->origin, 512);
 					}
 					else
-						object->create();
+					{
+						auto& registry = EGCoordinator;
+
+						FSkyboxComponent nskybox{};
+						nskybox.source = source.string();
+
+						registry.replace<FSkyboxComponent>(EGEditor->getLastSelection(), std::move(nskybox));
+					}
 				}
 			}
 		}
@@ -290,13 +304,19 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 					object->source = source.string();
 					if (object->loaded)
 					{
-						auto& hierarchy = registry.get<FHierarchyComponent>(object->self);
+						auto& hierarchy = registry.get<FHierarchyComponent>(self);
 						for (auto& child : hierarchy.children)
 							scenegraph::destroy_node(child);
-						object->create(self);
 					}
 					else
-						object->create(self);
+					{
+						auto& registry = EGCoordinator;
+
+						FSceneComponent nscene{};
+						nscene.source = source.string();
+
+						registry.replace<FSceneComponent>(EGEditor->getLastSelection(), std::move(nscene));
+					}
 				}
 			}
 		}

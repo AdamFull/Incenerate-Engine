@@ -8,12 +8,8 @@ namespace engine
 	{
 		struct FSceneComponent
 		{
-			~FSceneComponent();
-			void create(entt::entity node);
-
 			std::string source;
 			bool loaded{ false };
-			entt::entity self;
 		};
 
 		void to_json(nlohmann::json& json, const FSceneComponent& type);

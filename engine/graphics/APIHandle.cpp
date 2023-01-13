@@ -17,6 +17,7 @@ CAPIHandle::CAPIHandle(winhandle_t window)
 
 CAPIHandle::~CAPIHandle()
 {
+    
 }
 
 void CAPIHandle::create(const FEngineCreateInfo& createInfo)
@@ -327,10 +328,9 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
 void CAPIHandle::shutdown()
 {
     pDevice->GPUWait();
-
     pRenderStageManager = nullptr;
-    pVertexBufferManager = nullptr;
     pMaterialManager = nullptr;
+    pVertexBufferManager = nullptr;
     pShaderManager = nullptr;
     pImageManager = nullptr;
 }

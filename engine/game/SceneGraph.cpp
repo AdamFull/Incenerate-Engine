@@ -10,6 +10,7 @@ using namespace engine::game;
 #include "ecs/components/AudioComponent.h"
 #include "ecs/components/SkyboxComponent.h"
 #include "ecs/components/MeshComponent.h"
+#include "ecs/components/SceneComponent.h"
 #include "ecs/components/SpriteComponent.h"
 #include "ecs/components/CameraComponent.h"
 #include "ecs/components/ScriptComponent.h"
@@ -34,8 +35,29 @@ void scenegraph::destroy_node(entt::entity node)
 	
 	auto& hierarchy = registry.get<FHierarchyComponent>(node);
 
-	for (auto& child : hierarchy.children)
+	while (!hierarchy.children.empty())
+	{
+		auto child = hierarchy.children.front();
 		destroy_node(child);
+	}
+
+	if (registry.try_get<FAudioComponent>(node))
+		registry.remove<FAudioComponent>(node);
+
+	if (registry.try_get<FSkyboxComponent>(node))
+		registry.remove<FSkyboxComponent>(node);
+
+	if (registry.try_get<FMeshComponent>(node))
+		registry.remove<FMeshComponent>(node);
+
+	if (registry.try_get<FSpriteComponent>(node))
+		registry.remove<FSpriteComponent>(node);
+	
+	if (registry.try_get<FScriptComponent>(node))
+		registry.remove<FScriptComponent>(node);
+	
+	if (registry.try_get<FSceneComponent>(node))
+		registry.remove<FSceneComponent>(node);
 
 	detach_child(node);
 	hierarchy.children.clear();
@@ -47,6 +69,12 @@ void scenegraph::destroy_node(entt::entity node)
 
 void scenegraph::attach_child(entt::entity parent, entt::entity child)
 {
+	if (parent == child)
+	{
+		log_warning("Trying to add parent to parent. Parent entity {}, child entity {}.", static_cast<uint32_t>(parent), static_cast<uint32_t>(child));
+		return;
+	}
+
 	auto& registry = EGCoordinator;
 
 	auto& phierarchy = registry.get<FHierarchyComponent>(parent);
@@ -58,6 +86,9 @@ void scenegraph::attach_child(entt::entity parent, entt::entity child)
 
 void scenegraph::detach_child(entt::entity parent, entt::entity child)
 {
+	if (parent == entt::null)
+		return;
+
 	auto& registry = EGCoordinator;
 
 	auto& phierarchy = registry.get<FHierarchyComponent>(parent);

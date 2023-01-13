@@ -24,11 +24,7 @@ CEngine::CEngine()
 
 CEngine::~CEngine()
 {
-	vSystems.clear();
-	scenegraph::destroy_node(root);
-	pGraphics = nullptr;
-	pWindow = nullptr;
-	log_debug("Engine was shutdown.");
+	
 }
 
 void CEngine::create()
@@ -86,13 +82,25 @@ void CEngine::beginEngineLoop()
 		dt = sw.stop<float>();
 	}
 
+	destruction();
+}
+
+void CEngine::destruction()
+{
+	vSystems.clear();
+	scenegraph::destroy_node(root);
+	
 	pAudio->shutdown();
 	pGraphics->shutdown();
+
+	pEditor = nullptr;
+
+	log_debug("Engine was shutdown.");
 }
 
 entt::registry& CEngine::getCoordinator()
 {
-	return coordinator;
+	return registry;
 }
 
 const winptr_t& CEngine::getWindow() const

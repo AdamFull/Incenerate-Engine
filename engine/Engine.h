@@ -60,10 +60,11 @@ namespace engine
 		void sendEvent(EventId eventId);
 
 	private:
+		void destruction();
 		void initEntityComponentSystem();
 	private:
 		entt::entity root;
-		entt::registry coordinator;
+		entt::registry registry;
 		std::unique_ptr<CEventManager> pEventManager;
 		editorptr_t pEditor;
 		winptr_t pWindow;
