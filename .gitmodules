@@ -10,9 +10,6 @@
 [submodule "engine/external/spirvcross"]
 	path = engine/external/spirvcross
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
-[submodule "engine/external/glslanglib"]
-	path = engine/external/glslanglib
-	url = https://github.com/KhronosGroup/glslang.git
 [submodule "engine/external/ktx"]
 	path = engine/external/ktx
 	url = https://github.com/KhronosGroup/KTX-Software.git
