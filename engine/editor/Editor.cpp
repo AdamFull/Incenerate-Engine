@@ -5,7 +5,9 @@
 
 #include <imgui/imgui.h>
 #include <imgui/ImGuizmo.h>
-#include <imgui/IconsFontAwesome6.h>
+#include <imgui/font/IconsMaterialDesignIcons.h>
+
+#include "EditorThemes.h"
 
 #include "system/filesystem/filesystem.h"
 
@@ -13,6 +15,19 @@
 #include "windows/HierarchyWindow.h"
 #include "windows/InspectorWindow.h"
 #include "windows/ContentBrowserWindow.h"
+
+#include "ecs/components/TransformComponent.h"
+#include "ecs/components/SpotLightComponent.h"
+#include "ecs/components/PointLightComponent.h"
+#include "ecs/components/DirectionalLightComponent.h"
+#include "ecs/components/AudioComponent.h"
+#include "ecs/components/CameraComponent.h"
+#include "ecs/components/MeshComponent.h"
+#include "ecs/components/SceneComponent.h"
+#include "ecs/components/ScriptComponent.h"
+#include "ecs/components/SkyboxComponent.h"
+#include "ecs/components/SpriteComponent.h"
+
 
 #include "game/SceneSerializer.h"
 
@@ -22,6 +37,7 @@ using namespace engine::graphics;
 using namespace engine::system;
 using namespace engine::system::window;
 using namespace engine::editor;
+using namespace engine::ecs;
 
 CEditor::~CEditor()
 {
@@ -96,6 +112,43 @@ void CEditor::create()
 
     for (auto& overlay : vEditorWindows)
        overlay->create();
+
+    // Other icons
+    mEditorIcons[icons::trash] = ICON_MDI_DELETE;
+    mEditorIcons[icons::play] = ICON_MDI_PLAY;
+    mEditorIcons[icons::pause] = ICON_MDI_PAUSE;
+    mEditorIcons[icons::stop] = ICON_MDI_STOP;
+    mEditorIcons[icons::undo] = ICON_MDI_UNDO;
+    mEditorIcons[icons::redo] = ICON_MDI_REDO;
+    mEditorIcons[icons::cut] = ICON_MDI_CONTENT_CUT;
+    mEditorIcons[icons::copy] = ICON_MDI_CONTENT_COPY;
+    mEditorIcons[icons::paste] = ICON_MDI_CONTENT_PASTE;
+    mEditorIcons[icons::save] = ICON_MDI_CONTENT_SAVE;
+    mEditorIcons[icons::save_all] = ICON_MDI_CONTENT_SAVE_ALL;
+    mEditorIcons[icons::close] = ICON_MDI_WINDOW_CLOSE;
+    mEditorIcons[icons::plus] = ICON_MDI_PLUS;
+    mEditorIcons[icons::node] = ICON_MDI_CUBE_SCAN;
+
+    // File icons
+    mEditorIcons[icons::folder] = ICON_MDI_FOLDER;
+    mEditorIcons[icons::file] = ICON_MDI_FILE;
+    mEditorIcons[icons::image_file] = ICON_MDI_IMAGE;
+    mEditorIcons[icons::audio_file] = ICON_MDI_FILE_MUSIC;
+    mEditorIcons[icons::script_file] = ICON_MDI_SCRIPT;
+    mEditorIcons[icons::mesh_file] = ICON_MDI_CUBE;
+
+    // Component icons
+    mEditorIcons[get_class_id<FTransformComponent>()] = ICON_MDI_AXIS; // ICON_MDI_VECTOR_LINE
+    mEditorIcons[get_class_id<FSpotLightComponent>()] = ICON_MDI_LIGHTBULB;
+    mEditorIcons[get_class_id<FPointLightComponent>()] = ICON_MDI_LIGHTBULB;
+    mEditorIcons[get_class_id<FDirectionalLightComponent>()] = ICON_MDI_LIGHTBULB;
+    mEditorIcons[get_class_id<FAudioComponent>()] = ICON_MDI_VOLUME_HIGH;
+    mEditorIcons[get_class_id<FCameraComponent>()] = ICON_MDI_CAMERA;
+    mEditorIcons[get_class_id<FMeshComponent>()] = ICON_MDI_SHAPE;
+    mEditorIcons[get_class_id<FSceneComponent>()] = ICON_MDI_SHAPE;
+    mEditorIcons[get_class_id<FScriptComponent>()] = ICON_MDI_SCRIPT;
+    mEditorIcons[get_class_id<FSkyboxComponent>()] = ICON_MDI_EARTH;
+    mEditorIcons[get_class_id<FSpriteComponent>()] = ICON_MDI_IMAGE;
 }
 
 void CEditor::newFrame(float fDt)
@@ -111,25 +164,28 @@ void CEditor::newFrame(float fDt)
 
     if (ImGui::BeginMainMenuBar())
     {
-        if (ImGui::BeginMenu(ICON_FA_FILE " File"))
+        if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem(ICON_FA_FILE_PEN " New scene", "CTRL+N")) {}
-            if (ImGui::MenuItem("Open scene", "CTRL+O")) {}
-            if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save current", "CTRL+S")) { CSceneLoader::save(EGSceneGraph, "scene.json"); }
-            if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save current as...", "CTRL+ALT+S")) {}
-            if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save all")) {}
+            if (ImGui::MenuItem("New project", "CTRL+N")) {}
+            if (ImGui::MenuItem("Open project", "CTRL+O")) {}
             ImGui::Separator();
-            if (ImGui::MenuItem(ICON_FA_POWER_OFF " Exit", "CTRL+Q")) {}
+            if (ImGui::MenuItem("New scene", "CTRL+SHIFT+N")) {}
+            if (ImGui::MenuItem("Open scene", "CTRL+SHIFT+O")) {}
+            ImGui::Separator();
+            if (ImGui::MenuItem((mEditorIcons[icons::save] + " Save").c_str(), "CTRL+S")) { CSceneLoader::save(EGSceneGraph, "scene.json"); }
+            if (ImGui::MenuItem((mEditorIcons[icons::save_all] + " Save all").c_str())) {}
+            ImGui::Separator();
+            if (ImGui::MenuItem((mEditorIcons[icons::close] + " Exit").c_str(), "CTRL+Q")) {}
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem(ICON_FA_ARROW_RIGHT" Undo", "CTRL+Z")) {}
-            if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+            if (ImGui::MenuItem((mEditorIcons[icons::undo] + " Undo").c_str(), "CTRL+Z")) {}
+            if (ImGui::MenuItem((mEditorIcons[icons::redo] + " Redo").c_str(), "CTRL+Y", false, false)) {}  // Disabled item
             ImGui::Separator();
-            if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-            if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-            if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+            if (ImGui::MenuItem((mEditorIcons[icons::cut] + " Cut").c_str(), "CTRL+X")) {}
+            if (ImGui::MenuItem((mEditorIcons[icons::copy] + " Copy").c_str(), "CTRL+C")) {}
+            if (ImGui::MenuItem((mEditorIcons[icons::paste] + " Paste").c_str(), "CTRL+V")) {}
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Window"))
@@ -139,6 +195,12 @@ void CEditor::newFrame(float fDt)
                 if (ImGui::MenuItem(overlay->getName().c_str(), nullptr, overlay->isOpen()))
                     overlay->toggleEnable();
             }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Style"))
+        {
+            if (ImGui::MenuItem("Standart")) { Themes::standart(); }
+            if (ImGui::MenuItem("Cinder")) { Themes::cinder(); }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Help"))
@@ -196,57 +258,13 @@ vk::DescriptorPool& CEditor::getDescriptorPool()
 	return descriptorPool;
 }
 
-void CEditor::baseInitialize()
+const std::string& CEditor::getIcon(uint32_t id)
 {
-    // Color scheme
-    ImGuiStyle& style = ImGui::GetStyle();
+    return mEditorIcons[id];
+}
 
-    style.WindowRounding = 5.3f;
-    style.PopupRounding = style.TabRounding = style.GrabRounding = style.FrameRounding = 2.3f;
-    style.ScrollbarRounding = 5.0f;
-    style.FrameBorderSize = 1.0f;
-    style.ItemSpacing.y = 6.5f;
-
-    style.Colors[ImGuiCol_Text] = { 0.73333335f, 0.73333335f, 0.73333335f, 1.00f };
-    style.Colors[ImGuiCol_TextDisabled] = { 0.34509805f, 0.34509805f, 0.34509805f, 1.00f };
-    style.Colors[ImGuiCol_WindowBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.94f };
-    style.Colors[ImGuiCol_ChildBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.00f };
-    style.Colors[ImGuiCol_PopupBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.94f };
-    style.Colors[ImGuiCol_Border] = { 0.33333334f, 0.33333334f, 0.33333334f, 0.50f };
-    style.Colors[ImGuiCol_BorderShadow] = { 0.15686275f, 0.15686275f, 0.15686275f, 0.00f };
-    style.Colors[ImGuiCol_FrameBg] = { 0.16862746f, 0.16862746f, 0.16862746f, 0.54f };
-    style.Colors[ImGuiCol_FrameBgHovered] = { 0.453125f, 0.67578125f, 0.99609375f, 0.67f };
-    style.Colors[ImGuiCol_FrameBgActive] = { 0.47058827f, 0.47058827f, 0.47058827f, 0.67f };
-    style.Colors[ImGuiCol_TitleBg] = { 0.04f, 0.04f, 0.04f, 1.00f };
-    style.Colors[ImGuiCol_TitleBgCollapsed] = { 0.16f, 0.29f, 0.48f, 1.00f };
-    style.Colors[ImGuiCol_TitleBgActive] = { 0.00f, 0.00f, 0.00f, 0.51f };
-    style.Colors[ImGuiCol_MenuBarBg] = { 0.27058825f, 0.28627452f, 0.2901961f, 0.80f };
-    style.Colors[ImGuiCol_ScrollbarBg] = { 0.27058825f, 0.28627452f, 0.2901961f, 0.60f };
-    style.Colors[ImGuiCol_ScrollbarGrab] = { 0.21960786f, 0.30980393f, 0.41960788f, 0.51f };
-    style.Colors[ImGuiCol_ScrollbarGrabHovered] = { 0.21960786f, 0.30980393f, 0.41960788f, 1.00f };
-    style.Colors[ImGuiCol_ScrollbarGrabActive] = { 0.13725491f, 0.19215688f, 0.2627451f, 0.91f };
-    // style->Colors[ImGuiCol_ComboBg]               = {0.1f, 0.1f, 0.1f, 0.99f};
-    style.Colors[ImGuiCol_CheckMark] = { 0.90f, 0.90f, 0.90f, 0.83f };
-    style.Colors[ImGuiCol_SliderGrab] = { 0.70f, 0.70f, 0.70f, 0.62f };
-    style.Colors[ImGuiCol_SliderGrabActive] = { 0.30f, 0.30f, 0.30f, 0.84f };
-    style.Colors[ImGuiCol_Button] = { 0.33333334f, 0.3529412f, 0.36078432f, 0.49f };
-    style.Colors[ImGuiCol_ButtonHovered] = { 0.21960786f, 0.30980393f, 0.41960788f, 1.00f };
-    style.Colors[ImGuiCol_ButtonActive] = { 0.13725491f, 0.19215688f, 0.2627451f, 1.00f };
-    style.Colors[ImGuiCol_Header] = { 0.33333334f, 0.3529412f, 0.36078432f, 0.53f };
-    style.Colors[ImGuiCol_HeaderHovered] = { 0.453125f, 0.67578125f, 0.99609375f, 0.67f };
-    style.Colors[ImGuiCol_HeaderActive] = { 0.47058827f, 0.47058827f, 0.47058827f, 0.67f };
-    style.Colors[ImGuiCol_Separator] = { 0.31640625f, 0.31640625f, 0.31640625f, 1.00f };
-    style.Colors[ImGuiCol_SeparatorHovered] = { 0.31640625f, 0.31640625f, 0.31640625f, 1.00f };
-    style.Colors[ImGuiCol_SeparatorActive] = { 0.31640625f, 0.31640625f, 0.31640625f, 1.00f };
-    style.Colors[ImGuiCol_ResizeGrip] = { 1.00f, 1.00f, 1.00f, 0.85f };
-    style.Colors[ImGuiCol_ResizeGripHovered] = { 1.00f, 1.00f, 1.00f, 0.60f };
-    style.Colors[ImGuiCol_ResizeGripActive] = { 1.00f, 1.00f, 1.00f, 0.90f };
-    style.Colors[ImGuiCol_PlotLines] = { 0.61f, 0.61f, 0.61f, 1.00f };
-    style.Colors[ImGuiCol_PlotLinesHovered] = { 1.00f, 0.43f, 0.35f, 1.00f };
-    style.Colors[ImGuiCol_PlotHistogram] = { 0.90f, 0.70f, 0.00f, 1.00f };
-    style.Colors[ImGuiCol_PlotHistogramHovered] = { 1.00f, 0.60f, 0.00f, 1.00f };
-    style.Colors[ImGuiCol_TextSelectedBg] = { 0.18431373f, 0.39607847f, 0.79215693f, 0.90f };
-
+void CEditor::baseInitialize()
+{   
     // Dimensions
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -254,22 +272,24 @@ void CEditor::baseInitialize()
     io.DisplaySize = ImVec2(CWindowHandle::iWidth, CWindowHandle::iHeight);
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
-    
+    Themes::standart();
+    auto fontfile = (fs::get_workdir(true) / "font" / FONT_ICON_FILE_NAME_MDI).string();
 
-    auto fontfile = (fs::get_workdir() / "engine" / "font" / FONT_ICON_FILE_NAME_FAR).string();
-
-    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+    static const ImWchar icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };
     ImFontConfig icons_config;
     icons_config.MergeMode = true;
     icons_config.PixelSnapH = true;
-    icons_config.GlyphMaxAdvanceX = 13.f;
-    icons_config.GlyphOffset.y = 13.f / 4.f;
+    icons_config.GlyphOffset.y = 1.0f;
+    icons_config.OversampleH = icons_config.OversampleV = 1;
+    icons_config.GlyphMinAdvanceX = 4.0f;
+    icons_config.SizePixels = 12.0f;
 
     pSmallIcons = io.Fonts->AddFontDefault();
     io.Fonts->AddFontFromFileTTF(fontfile.c_str(), 13.f, &icons_config, icons_ranges);
 
+    icons_config.GlyphOffset.y = 15.0f;
+    icons_config.SizePixels = 48.0f;
     icons_config.GlyphMaxAdvanceX = 48.f;
-    icons_config.GlyphOffset.y = 48.f / 4.f;
 
     pLargeIcons = io.Fonts->AddFontDefault();
     io.Fonts->AddFontFromFileTTF(fontfile.c_str(), 48.f, &icons_config, icons_ranges);

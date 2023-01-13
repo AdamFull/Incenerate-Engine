@@ -21,9 +21,9 @@ CShaderLoader::~CShaderLoader()
 	pDevice = nullptr;
 }
 
-void CShaderLoader::create(const std::string& srShaderPath)
+void CShaderLoader::create()
 {
-	fs::read_json(srShaderPath, programCI);
+	fs::read_json(shader_config_path, programCI, true);
 }
 
 std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size_t mat_id)
@@ -68,8 +68,8 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 			auto remit = std::remove_if(stages.begin(), stages.end(),
 				[](const std::string& stage)
 				{
-					auto ext = stage.substr(stage.find_last_of(".") + 1);
-			return ext == "tesc" || ext == "tese";
+					auto ext = fs::get_ext(stage);
+					return ext == ".tesc" || ext == ".tese";
 				});
 
 			if (remit != stages.end())

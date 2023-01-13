@@ -22,7 +22,7 @@ namespace engine
 			CShaderLoader(CDevice* device);
 			~CShaderLoader();
 
-			void create(const std::string& srShaderPath);
+			void create();
 			std::unique_ptr<CShaderObject> load(const std::string& name, size_t mat_id);
 			std::unique_ptr<CShaderObject> load(const std::string& name, const FShaderSpecials& specials);
 

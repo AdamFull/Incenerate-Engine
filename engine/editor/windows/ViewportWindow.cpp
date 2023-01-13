@@ -4,7 +4,6 @@
 
 #include <imgui/imgui.h>
 #include <imgui/ImGuizmo.h>
-#include <imgui/IconsFontAwesome6.h>
 #include <editor/imgui_impl_vulkan.h>
 
 #include "ecs/components/TransformComponent.h"
@@ -124,20 +123,24 @@ void CEditorViewport::drawViewport(float offsetx, float offsety)
 	write.descriptorCount = 1;
 	pDescriptorSet->update(write);
 
+	auto& pause_icon = EGEditor->getIcon(icons::pause);
+	auto& play_icon = EGEditor->getIcon(icons::play);
+	auto& stop_icon = EGEditor->getIcon(icons::stop);
+
 	ImGuiStyle& style = ImGui::GetStyle();
 	float width = 0.0f;
-	width += ImGui::CalcTextSize(ICON_FA_CIRCLE_PAUSE "##").x;
+	width += ImGui::CalcTextSize(pause_icon.c_str()).x;
 	width += style.ItemSpacing.x;
-	width += ImGui::CalcTextSize(ICON_FA_CIRCLE_PLAY "##").x;
+	width += ImGui::CalcTextSize(play_icon.c_str()).x;
 	width += style.ItemSpacing.x;
-	width += ImGui::CalcTextSize(ICON_FA_CIRCLE_STOP "##").x;
+	width += ImGui::CalcTextSize(stop_icon.c_str()).x;
 	AlignForWidth(width);
 
-	if (ImGui::Button(ICON_FA_CIRCLE_PAUSE "##btn_pause"));
+	if (ImGui::Button(pause_icon.c_str()));
 	ImGui::SameLine();
-	if (ImGui::Button(ICON_FA_CIRCLE_PLAY "##btn_play"));
+	if (ImGui::Button(play_icon.c_str()));
 	ImGui::SameLine();
-	if (ImGui::Button(ICON_FA_CIRCLE_STOP "##btn_stop"));
+	if (ImGui::Button(stop_icon.c_str()));
 
 	offsety = ImGui::GetContentRegionAvail().y;
 

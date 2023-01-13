@@ -34,7 +34,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 	pDevice->create(createInfo);
 
     pLoader = std::make_unique<CShaderLoader>(pDevice.get());
-    pLoader->create(createInfo.srShaders);
+    pLoader->create();
     
     commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());

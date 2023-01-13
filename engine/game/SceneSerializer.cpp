@@ -93,7 +93,7 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 				registry.emplace<FAudioComponent>(node, component.get<FAudioComponent>());
 
 			if (name == "skybox")
-				registry.emplace<FSkyboxComponent>(node, std::move(component.get<FSkyboxComponent>()));
+				registry.emplace<FSkyboxComponent>(node, component.get<FSkyboxComponent>());
 				
 
 			if (name == "sprite")

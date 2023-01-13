@@ -3,16 +3,32 @@
 #include "Engine.h"
 
 #include <imgui/imgui.h>
-#include <imgui/IconsFontAwesome6.h>
 
 #include "system/filesystem/filesystem.h"
 
+using namespace engine;
 using namespace engine::system;
 using namespace engine::editor;
 
 constexpr const float padding{ 16.0f };
 constexpr const float thumbnailSize{ 64.0f };
 constexpr const float cellSize{ thumbnailSize + padding };
+
+const std::string& getFileIcon(const std::string& filename, bool isDirectory)
+{
+	if (isDirectory)
+		return EGEditor->getIcon(icons::folder);
+	else if (fs::is_image_format(filename))
+		return EGEditor->getIcon(icons::image_file);
+	else if (fs::is_audio_format(filename))
+		return EGEditor->getIcon(icons::audio_file);
+	else if (fs::is_script_format(filename))
+		return EGEditor->getIcon(icons::script_file);
+	else if (fs::is_mesh_format(filename))
+		return EGEditor->getIcon(icons::mesh_file);
+
+	return EGEditor->getIcon(icons::file);
+}
 
 void CEditorContentBrowser::create()
 {
@@ -24,7 +40,8 @@ void CEditorContentBrowser::__draw(float fDt)
 {
 	if (currentPath != workdir)
 	{
-		if (ImGui::Button("<-"))
+		auto& undo = EGEditor->getIcon(icons::undo);
+		if (ImGui::Button(undo.c_str()))
 			update_path(currentPath.parent_path());
 		ImGui::SameLine();
 	}
@@ -40,26 +57,14 @@ void CEditorContentBrowser::__draw(float fDt)
 
 	auto pLargeIcons = EGEditor->getLargeIcons();
 
-	
 	bool bSelected{ false };
 	for (auto& path : vCurrentDirData)
 	{
-		auto ext = path.extension().string();
 		auto relativePath = std::filesystem::relative(path, workdir);
 		auto filename = relativePath.filename().string();
 		auto isDirectory = std::filesystem::is_directory(path);
 
-		const char* icon{ nullptr };
-		if (isDirectory)
-			icon = ICON_FA_FOLDER;
-		else if (ext == ".ktx" || ext == ".ktx2")
-			icon = ICON_FA_IMAGE;
-		else if (ext == ".wav" || ext == ".ogg")
-			icon = ICON_FA_FILE_AUDIO;
-		else if (ext == ".lua")
-			icon = ICON_FA_FILE_CODE;
-		else
-			icon = ICON_FA_FILE;
+		auto& icon = getFileIcon(filename, isDirectory);
 
 		ImGui::PushFont(pLargeIcons);
 		ImGui::PushID(filename.c_str());
@@ -72,8 +77,10 @@ void CEditorContentBrowser::__draw(float fDt)
 		{
 			if (isDirectory)
 			{
-				auto npath = currentPath / path.filename();
+				auto npath = currentPath / fs::get_filename(path);
 				update_path(npath);
+				ImGui::PopID();
+				break;
 			}
 		}
 
@@ -98,5 +105,10 @@ void CEditorContentBrowser::update_path(const std::filesystem::path& npath)
 	vCurrentDirData.clear();
 
 	for (auto& entry : std::filesystem::directory_iterator(currentPath))
-		vCurrentDirData.emplace_back(entry.path());
+	{
+		auto path = entry.path().string();
+		if(entry.is_directory() || fs::is_image_format(path) || fs::is_audio_format(path) || fs::is_script_format(path) || fs::is_mesh_format(path))
+			vCurrentDirData.emplace_back(path);
+	}
+		
 }

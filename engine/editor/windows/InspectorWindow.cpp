@@ -4,7 +4,6 @@
 
 #include <imgui/imgui.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
-#include <imgui/IconsFontAwesome6.h>
 #include "editor/CustomControls.h"
 
 #include "ecs/components/TransformComponent.h"
@@ -19,7 +18,13 @@
 #include "ecs/components/SpotLightComponent.h"
 #include "ecs/components/SceneComponent.h"
 
+#include "system/filesystem/filesystem.h"
+
+#include "loaders/MeshLoader.h"
+
 using namespace engine::editor;
+using namespace engine::system;
+using namespace engine::loaders;
 using namespace engine::game;
 using namespace engine::audio;
 using namespace engine::ecs;
@@ -31,11 +36,13 @@ void try_show_edit(const std::string& name, const entt::entity& entity, _EditPre
 	auto& registry = EGCoordinator;
 	if (auto object = registry.try_get<_Ty>(entity))
 	{
+		auto& icon = EGEditor->getIcon<_Ty>();
 		ImGui::PushID(name.c_str());
-		ImGui::Text(name.c_str());
+		ImGui::Text((icon + " " + name).c_str());
 
+		auto& trash = EGEditor->getIcon(icons::trash);
 		ImGui::SameLine(ImGui::GetWindowWidth() - 30);
-		if (ImGui::Button("X##remove"))
+		if (ImGui::Button(trash.c_str()))
 			registry.remove<_Ty>(entity);
 
 		editpred(object);
@@ -52,7 +59,8 @@ void try_add_menu_item(const std::string& name, const entt::entity& entity)
 	auto& registry = EGCoordinator;
 	if (!registry.try_get<_Ty>(entity))
 	{
-		if (ImGui::MenuItem(name.c_str()))
+		auto& icon = EGEditor->getIcon<_Ty>();
+		if (ImGui::MenuItem((icon + " " + name).c_str()))
 			registry.emplace<_Ty>(entity, _Ty{});
 	}
 }
@@ -68,7 +76,6 @@ void CEditorInspector::__draw(float fDt)
 
 	if (selected != entt::null)
 	{
-		auto& transform = registry.get<FTransformComponent>(selected);
 		auto& hierarchy = registry.get<FHierarchyComponent>(selected);
 
 		if (ImGui::BeginPopup("add_component_popup"))
@@ -89,21 +96,19 @@ void CEditorInspector::__draw(float fDt)
 		ImGui::InputText("Name", &hierarchy.name);
 		ImGui::Separator();
 
-		ImGui::Text("Transform component");
-		ImGui::GDragTransform(transform.position, transform.rotation, transform.scale);
-		ImGui::Separator();
-
-		try_show_edit<FAudioComponent>("Audio", selected, 
+		try_show_edit<FTransformComponent>("Transform", selected,
+			[this](auto* object) { ImGui::GDragTransform(object->position, object->rotation, object->scale); });
+		try_show_edit<FAudioComponent>("Audio", selected,
 			[this](auto* object) { audioEdit(object); });
-		try_show_edit<FCameraComponent>("Camera", selected, 
+		try_show_edit<FCameraComponent>("Camera", selected,
 			[this](auto* object) { cameraEdit(object); });
-		try_show_edit<FMeshComponent>("Mesh", selected, 
+		try_show_edit<FMeshComponent>("Mesh", selected,
 			[](auto*) {});
-		try_show_edit<FScriptComponent>("Script", selected, 
+		try_show_edit<FScriptComponent>("Script", selected,
 			[this](auto* object) { scriptEdit(object); });
-		try_show_edit<FSkyboxComponent>("Skybox", selected, 
+		try_show_edit<FSkyboxComponent>("Skybox", selected,
 			[this](auto* object) { skyboxEdit(object); });
-		try_show_edit<FSceneComponent>("Scene", selected, 
+		try_show_edit<FSceneComponent>("Scene", selected,
 			[this](auto* object) { sceneEdit(object); });
 
 		try_show_edit<FDirectionalLightComponent>("Directional light", selected,
@@ -134,7 +139,8 @@ void CEditorInspector::__draw(float fDt)
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
 			});
 
-		if (ImGui::Button("+##add_component", ImVec2(-1.f, 0.f)))
+		auto& plus = EGEditor->getIcon(icons::plus);
+		if (ImGui::Button(plus.c_str(), ImVec2(-1.f, 0.f)))
 			ImGui::OpenPopup("add_component_popup");
 	}
 }
@@ -149,9 +155,8 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 		{
 			const wchar_t* path = (const wchar_t*)payload->Data;
 			auto source = std::filesystem::path(path);
-			auto ext = source.extension();
 
-			if (ext == ".wav" || ext == ".ogg")
+			if (fs::is_audio_format(source))
 			{
 				if (object->source != source)
 				{
@@ -187,26 +192,30 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 	{
 		ImGui::Text("Player");
 
-		auto pos = pAudio->getPosInSec();
-		auto len = pAudio->getLenInSec();
-
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-
-		if (ImGui::SliderFloat("##player", &pos, 0.f, len, "%.2f sec"))
-			pAudio->setOffsetSec(pos);
-
-		if (ImGui::Button("Play"))
+		auto& play = EGEditor->getIcon(icons::play);
+		if (ImGui::Button(play.c_str()))
 			pAudio->play();
 
 		ImGui::SameLine();
 
-		if (ImGui::Button("Stop"))
+		auto& pause = EGEditor->getIcon(icons::pause);
+		if (ImGui::Button(pause.c_str()))
+			pAudio->pause();
+
+		ImGui::SameLine();
+
+		auto& stop = EGEditor->getIcon(icons::stop);
+		if (ImGui::Button(stop.c_str()))
 			pAudio->stop();
 
 		ImGui::SameLine();
 
-		if (ImGui::Button("Pause"))
-			pAudio->pause();
+		auto pos = pAudio->getPosInSec();
+		auto len = pAudio->getLenInSec();
+
+		// TODO: format time to mis:sec
+		if (ImGui::SliderFloat("##player", &pos, 0.f, len, "%.2f sec"))
+			pAudio->setOffsetSec(pos);
 	}
 }
 
@@ -234,8 +243,22 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 
 			if (ext == ".lua")
 			{
-				// Update skybox here
 				object->source = source.string();
+				if (object->loaded)
+				{
+
+				}
+				else
+				{
+					auto& registry = EGCoordinator;
+					auto self = EGEditor->getLastSelection();
+
+					FScriptComponent nskybox{};
+					nskybox.source = source.string();
+
+					registry.remove<FScriptComponent>(self);
+					registry.emplace<FScriptComponent>(self, std::move(nskybox));
+				}
 			}
 		}
 		ImGui::EndDragDropTarget();
@@ -270,11 +293,13 @@ void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
 					else
 					{
 						auto& registry = EGCoordinator;
+						auto self = EGEditor->getLastSelection();
 
 						FSkyboxComponent nskybox{};
 						nskybox.source = source.string();
 
-						registry.replace<FSkyboxComponent>(EGEditor->getLastSelection(), std::move(nskybox));
+						registry.remove<FSkyboxComponent>(self);
+						registry.emplace<FSkyboxComponent>(self, std::move(nskybox));
 					}
 				}
 			}
@@ -305,8 +330,13 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 					if (object->loaded)
 					{
 						auto& hierarchy = registry.get<FHierarchyComponent>(self);
-						for (auto& child : hierarchy.children)
+						while (!hierarchy.children.empty())
+						{
+							auto child = hierarchy.children.front();
 							scenegraph::destroy_node(child);
+						}
+
+						CMeshLoader::load(object->source, self);
 					}
 					else
 					{
@@ -315,7 +345,8 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 						FSceneComponent nscene{};
 						nscene.source = source.string();
 
-						registry.replace<FSceneComponent>(EGEditor->getLastSelection(), std::move(nscene));
+						registry.remove<FSceneComponent>(self);
+						registry.emplace<FSceneComponent>(self, std::move(nscene));
 					}
 				}
 			}

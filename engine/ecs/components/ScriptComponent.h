@@ -9,6 +9,7 @@ namespace engine
 		struct FScriptComponent
 		{
 			std::string source;
+			bool loaded{ false };
 		};
 
 		void to_json(nlohmann::json& json, const FScriptComponent& type);

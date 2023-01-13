@@ -34,7 +34,7 @@ public:
 		local_path = std::filesystem::weakly_canonical(directory / headerName);
 
 		std::string fileLoaded;
-		if (!fs::read_file(local_path, fileLoaded))
+		if (!fs::read_file(local_path, fileLoaded, true))
 		{
 			std::stringstream ss;
 			ss << "In shader file: " << includerName << " Shader Include could not be loaded: " << std::quoted(headerName);
@@ -52,7 +52,7 @@ public:
 		auto header = std::filesystem::path("shaders") / headerName;
 
 		std::string fileLoaded;
-		if (!fs::read_file(header, fileLoaded)) {
+		if (!fs::read_file(header, fileLoaded, true)) {
 			std::stringstream ss;
 			ss << "Shader Include could not be loaded: " << std::quoted(headerName);
 			log_error(ss.str());
@@ -295,7 +295,7 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 {
 	// TODO: shader caching works wrong
 	std::string data;
-	if (fs::read_file(path, data))
+	if (fs::read_file(path, data, true))
 	{
 		auto fname = path.filename().string();
 		auto hash = utl::const_hash(data.c_str());
@@ -432,10 +432,10 @@ std::optional<FCachedShader> CShaderCompiler::update(const std::string& name, co
 
 void CShaderCompiler::load_cache()
 {
-	fs::read_json(cache_file_name, cache);
+	fs::read_json(cache_file_name, cache, true);
 }
 
 void CShaderCompiler::save_cache()
 {
-	fs::write_json(cache_file_name, cache);
+	fs::write_json(cache_file_name, cache, -1, true);
 }

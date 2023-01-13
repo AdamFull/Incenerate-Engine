@@ -5,7 +5,6 @@
 #include "ecs/components/HierarchyComponent.h"
 
 #include <imgui/imgui.h>
-#include <imgui/IconsFontAwesome6.h>
 
 #include "game/SceneGraph.hpp"
 
@@ -85,7 +84,7 @@ void CEditorHierarchy::buildHierarchy(const entt::entity& entity)
 {
     if (entity != entt::null)
     {
-        const char* icon{ "" };
+        std::string icon{};
 
         uint32_t flags = ImGuiTreeNodeFlags_OpenOnArrow;
         auto& registry = EGCoordinator;
@@ -101,10 +100,10 @@ void CEditorHierarchy::buildHierarchy(const entt::entity& entity)
         if (hierarchy.children.empty())
             flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         else
-            icon = ICON_FA_CLIPBOARD;
+            icon = EGEditor->getIcon(icons::node);
 
         ImGui::PushID(static_cast<uint32_t>(entity));
-        bool isOpen = ImGui::TreeNodeEx((icon + hierarchy.name).c_str(), flags);
+        bool isOpen = ImGui::TreeNodeEx((icon + " " + hierarchy.name).c_str(), flags);
         ImGui::PopID();
 
         if(ImGui::IsItemClicked(0) || ImGui::IsItemClicked(1))

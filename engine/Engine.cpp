@@ -33,7 +33,7 @@ void CEngine::create()
 	log_info("Beginning engine initialization.");
 
 	FEngineCreateInfo createInfo;
-	fs::read_json("engine/config.cfg", createInfo);
+	fs::read_json("config.json", createInfo, true);
 
 	pEventManager = std::make_unique<CEventManager>();
 

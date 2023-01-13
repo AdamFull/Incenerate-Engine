@@ -1,39 +1,31 @@
 #pragma once
 
+#include <utility/upattern.hpp>
 #include <any>
 #include <unordered_map>
 
 namespace engine
 {
-	// Source: https://gist.github.com/Lee-R/3839813
-	constexpr std::uint32_t fnv1a_32(char const* s, std::size_t count)
-	{
-		return ((count ? fnv1a_32(s, count - 1) : 2166136261u) ^ s[count]) * 16777619u; // NOLINT (hicpp-signed-bitwise)
-	}
-
-	constexpr std::uint32_t operator "" _hash(char const* s, std::size_t count)
-	{
-		return fnv1a_32(s, count);
-	}
-
 	// Events
 	using EventId = uint32_t;
 	using ParamId = uint32_t;
 
 	namespace Events::Graphics
 	{
-		const ParamId ReCreate = "Events::Graphics::ReCreate"_hash;
-		const ParamId ViewportReCreate = "Events::Graphics::ViewportReCreate"_hash;
-		const ParamId PerformDelete = "Events::Graphics::PerformDelete"_hash;
+		using namespace utl;
+		const ParamId ReCreate = "Events::Graphics::ReCreate"_utl_hash;
+		const ParamId ViewportReCreate = "Events::Graphics::ViewportReCreate"_utl_hash;
+		const ParamId PerformDelete = "Events::Graphics::PerformDelete"_utl_hash;
 	}
 
 	namespace Events::Input
 	{
-		const ParamId Key = "Events::Input::Key"_hash;
-		const ParamId Mouse = "Events::Input::Mouse"_hash;
-		const ParamId MouseX = "Events::Input::MouseX"_hash;
-		const ParamId MouseY = "Events::Input::MouseY"_hash;
-		const ParamId Axis = "Events::Input::Axis"_hash;
+		using namespace utl;
+		const ParamId Key = "Events::Input::Key"_utl_hash;
+		const ParamId Mouse = "Events::Input::Mouse"_utl_hash;
+		const ParamId MouseX = "Events::Input::MouseX"_utl_hash;
+		const ParamId MouseY = "Events::Input::MouseY"_utl_hash;
+		const ParamId Axis = "Events::Input::Axis"_utl_hash;
 	}
 
 	class CEvent
