@@ -12,7 +12,7 @@ add_subdirectory(mimalloc)
 target_link_libraries(${PROJECT_NAME} PUBLIC mimalloc)
 
 add_subdirectory(SDL)
-target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3)
+target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2 SDL2::SDL2main)
 
 add_subdirectory(spirvcross)
 target_link_libraries(${PROJECT_NAME} PUBLIC spirv-cross-core spirv-cross-glsl)

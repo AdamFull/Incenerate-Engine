@@ -4,7 +4,7 @@
 
 #include <set>
 
-#include <SDL3/SDL_vulkan.h>
+#include <SDL_vulkan.h>
 #include <vulkan/vulkan_to_string.hpp>
 
 using namespace engine::graphics;
