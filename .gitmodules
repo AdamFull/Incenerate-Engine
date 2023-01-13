@@ -4,9 +4,6 @@
 [submodule "engine/external/glm"]
 	path = engine/external/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "engine/external/mimalloc"]
-	path = engine/external/mimalloc
-	url = https://github.com/microsoft/mimalloc.git
 [submodule "engine/external/spirvcross"]
 	path = engine/external/spirvcross
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
