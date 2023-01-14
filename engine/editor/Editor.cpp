@@ -149,6 +149,14 @@ void CEditor::create()
     mEditorIcons[get_class_id<FScriptComponent>()] = ICON_MDI_SCRIPT;
     mEditorIcons[get_class_id<FSkyboxComponent>()] = ICON_MDI_EARTH;
     mEditorIcons[get_class_id<FSpriteComponent>()] = ICON_MDI_IMAGE;
+
+    auto& registry = EGCoordinator;
+    camera = scenegraph::create_node("editor_camera");
+    registry.emplace<FCameraComponent>(camera, FCameraComponent{});
+
+    auto& transform = registry.get<FTransformComponent>(camera);
+    transform.position = glm::vec3(1.f, -1.f, 1.f);
+    transform.rotation = glm::vec3(0.01f, 0.01f, 0.01f);
 }
 
 void CEditor::newFrame(float fDt)
@@ -272,7 +280,7 @@ void CEditor::baseInitialize()
     io.DisplaySize = ImVec2(CWindowHandle::iWidth, CWindowHandle::iHeight);
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
-    Themes::standart();
+    Themes::cinder();
     auto fontfile = (fs::get_workdir(true) / "font" / FONT_ICON_FILE_NAME_MDI).string();
 
     static const ImWchar icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };

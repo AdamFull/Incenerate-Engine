@@ -31,6 +31,7 @@ void CHierarchySystem::__update(float fDt)
 		if (transform.rotation.z != 0)
 			transform.model = glm::rotate(transform.model, transform.rotation.z, glm::vec3(0.0, 0.0, 1.0));
 		transform.model = glm::scale(transform.model, transform.scale);
+		transform.update();
 	}
 
 	// Calculating relative transform

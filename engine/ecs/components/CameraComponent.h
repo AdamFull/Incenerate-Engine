@@ -30,6 +30,7 @@ namespace engine
 			float angleH{ 0.f };
 			float angleV{ 0.f };
 
+			glm::vec3 viewPos;
 			glm::mat4 view, invView, projection, invProjection;
 			glm::vec2 viewportDim{};
 			glm::vec3 up;
@@ -38,6 +39,7 @@ namespace engine
 
 			bool moved{ true };
 			bool active{ false };
+			bool controllable{ true };
 		};
 
 		void to_json(nlohmann::json& json, const FCameraComponent& type);

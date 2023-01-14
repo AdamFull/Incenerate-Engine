@@ -58,8 +58,9 @@ namespace engine
 
 			template<class _Ty>
 			const std::string& getIcon() { return getIcon(get_class_id<_Ty>()); }
-
 			const std::string& getIcon(uint32_t id);
+
+			const entt::entity& getCamera() const { return camera; }
 
 			ImFont* getLargeIcons() { return pLargeIcons; }
 		private:
@@ -71,6 +72,7 @@ namespace engine
 
 			void baseInitialize();
 		private:
+			entt::entity camera{ entt::null };
 			entt::entity selected{ entt::null };
 			std::map<uint32_t, std::string> mEditorIcons;
 

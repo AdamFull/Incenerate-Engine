@@ -19,8 +19,14 @@ namespace engine
 			void __update(float fDt) override;
 
 		private:
-			void recalculateProjection(FCameraComponent& camera, float xmax, float ymax);
-			void recalculateView(FCameraComponent& camera, FTransformComponent& transform);
+			static void updateCamera(FCameraComponent& camera, FTransformComponent& transform);
+			static void recalculateProjection(FCameraComponent& camera, float xmax, float ymax);
+			static void recalculateView(FCameraComponent& camera, FTransformComponent& transform);
+
+			void rotate(FCameraComponent& camera, FTransformComponent& transform);
+			void forward(FCameraComponent& camera, FTransformComponent& transform, float dir);
+			void right(FCameraComponent& camera, FTransformComponent& transform, float dir);
+			void up(FCameraComponent& camera, FTransformComponent& transform, float dir);
 
 			void onKeyInput(CEvent& event);
 			void onMouseInput(CEvent& event);

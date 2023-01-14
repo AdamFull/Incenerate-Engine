@@ -48,6 +48,10 @@ void CEngine::create()
 
 	pEditor = std::make_unique<CEditor>();
 
+	// Load it from config?
+	if (bEditorMode)
+		eState = EEngineState::eEditing;
+
 	initEntityComponentSystem();
 
 	root = CSceneLoader::load("scene.json");

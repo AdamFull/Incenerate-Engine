@@ -7,6 +7,7 @@
 #include <editor/imgui_impl_vulkan.h>
 
 #include "ecs/components/TransformComponent.h"
+#include "ecs/components/HierarchyComponent.h"
 #include "ecs/helper.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -101,9 +102,19 @@ void CEditorViewport::create()
 
 void CEditorViewport::__draw(float fDt)
 {
+	auto& registry = EGCoordinator;
+	auto editorMode = EGEngine->isEditorMode();
+	auto state = EGEngine->getState();
+
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	ImVec2 viewportPanelPos = ImGui::GetWindowPos();
 	auto textDrawPos = ImGui::GetCursorStartPos();
+
+	if (editorMode && state == EEngineState::eEditing)
+	{
+		if(auto camera = registry.try_get<FCameraComponent>(EGEditor->getCamera()))
+			camera->controllable = ImGui::IsWindowHovered(ImGuiFocusedFlags_RootAndChildWindows);
+	}
 
 	drawViewport(viewportPanelSize.x, viewportPanelSize.y);
 	drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
@@ -136,11 +147,24 @@ void CEditorViewport::drawViewport(float offsetx, float offsety)
 	width += ImGui::CalcTextSize(stop_icon.c_str()).x;
 	AlignForWidth(width);
 
-	if (ImGui::Button(pause_icon.c_str()));
+	auto state = EGEngine->getState();
+	auto disablePause = state == EEngineState::ePause || state == EEngineState::eEditing;
+
+	if (disablePause)
+		ImGui::BeginDisabled();
+
+	if (ImGui::Button(pause_icon.c_str()))
+		EGEngine->setState(EEngineState::ePause);
+
+	if (disablePause)
+		ImGui::EndDisabled();
+
 	ImGui::SameLine();
-	if (ImGui::Button(play_icon.c_str()));
+	if (ImGui::Button(play_icon.c_str()))
+		EGEngine->setState(EEngineState::ePlay);
 	ImGui::SameLine();
-	if (ImGui::Button(stop_icon.c_str()));
+	if (ImGui::Button(stop_icon.c_str()))
+		EGEngine->setState(EEngineState::eEditing);
 
 	offsety = ImGui::GetContentRegionAvail().y;
 
@@ -172,12 +196,22 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 	if (selected != entt::null)
 	{
 		auto& registry = EGCoordinator;
-		auto ecamera = get_active_camera(registry);
-		auto& camera = registry.get<FCameraComponent>(ecamera);
+		auto editorMode = EGEngine->isEditorMode();
+		auto state = EGEngine->getState();
+
+		FCameraComponent* camera{ nullptr };
+		if (editorMode && state == EEngineState::eEditing)
+			camera = registry.try_get<FCameraComponent>(EGEditor->getCamera());
+		else
+			camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
+
+		FTransformComponent* ptransform{ nullptr };
 
 		auto& transform = registry.get<FTransformComponent>(selected);
+		auto& hierarchy = registry.get<FHierarchyComponent>(selected);
 
-		//camera->setControl(ImGui::IsWindowHovered(ImGuiFocusedFlags_RootAndChildWindows));
+		if(hierarchy.parent != entt::null)
+			ptransform = registry.try_get<FTransformComponent>(hierarchy.parent);
 
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist();
@@ -185,8 +219,11 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 
 		glm::mat4 delta;
 
+		//if (ptransform)
+		//	delta = ptransform->model;
+
 		//Manipulating
-		if (ImGuizmo::Manipulate(glm::value_ptr(camera.view), glm::value_ptr(camera.projection), mCurrentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(transform.model), glm::value_ptr(delta), nullptr))
+		if (ImGuizmo::Manipulate(glm::value_ptr(camera->view), glm::value_ptr(camera->projection), mCurrentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(transform.model), glm::value_ptr(delta), snap ? snapValues : nullptr))
 		{
 			glm::vec3 translation, rotation, scale;
 			decompose(delta, translation, rotation, scale);
@@ -196,7 +233,7 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 
 			switch (mCurrentGizmoOperation)
 			{
-			case ImGuizmo::TRANSLATE: if(moved) transform.position += translation; break;
+			case ImGuizmo::TRANSLATE: transform.position += translation; break;
 			case ImGuizmo::ROTATE: transform.rotation += rotation; break;
 			case ImGuizmo::SCALE: transform.scale *= scale; break;
 			}

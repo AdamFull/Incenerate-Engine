@@ -22,6 +22,13 @@
 
 namespace engine
 {
+	enum class EEngineState
+	{
+		eEditing,
+		ePause,
+		ePlay
+	};
+
 	using editorptr_t = std::unique_ptr<editor::CEditor>;
 	using winptr_t = std::unique_ptr<system::window::CWindowHandle>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
@@ -49,6 +56,9 @@ namespace engine
 
 		const bool isEditorMode() const;
 
+		void setState(EEngineState state) { eState = state; }
+		EEngineState getState() { return eState; }
+
 		// Event methods
 		template<class... _Args>
 		void addEventListener(EventId eventId, _Args&& ...args)
@@ -66,6 +76,9 @@ namespace engine
 		entt::entity root;
 		entt::registry registry;
 		std::unique_ptr<CEventManager> pEventManager;
+
+		EEngineState eState;
+
 		editorptr_t pEditor;
 		winptr_t pWindow;
 		graphptr_t pGraphics;

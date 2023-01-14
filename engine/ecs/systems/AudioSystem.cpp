@@ -22,19 +22,28 @@ void CAudioSystem::__create()
 void CAudioSystem::__update(float fDt)
 {
 	auto& registry = EGCoordinator;
+	auto editorMode = EGEngine->isEditorMode();
+	auto state = EGEngine->getState();
 
+	if (editorMode && state == EEngineState::eEditing)
+	{
+		auto ecamera = EGEditor->getCamera();
+
+		auto& transform = registry.get<FTransformComponent>(ecamera);
+		auto& camera = registry.get<FCameraComponent>(ecamera);
+
+		updateListener(camera, transform);
+	}
+	else
 	{
 		auto view = registry.view<FTransformComponent, FCameraComponent>();
 		for (auto [entity, transform, camera] : view.each())
 		{
 			if (camera.active)
-			{
-				alCall(alListener3f, AL_POSITION, transform.rposition.x, transform.rposition.y, transform.rposition.z);
-				float orient[6] = { camera.forward.x, camera.forward.y, camera.forward.z, camera.right.x, camera.right.y, camera.right.z};
-				alCall(alListenerfv, AL_ORIENTATION, orient);
-			}
+				updateListener(camera, transform);
 		}
 	}
+
 	
 	{
 		auto view = registry.view<FTransformComponent, FAudioComponent>();
@@ -48,25 +57,13 @@ void CAudioSystem::__update(float fDt)
 				pSource->setPosition(transform.rposition);
 				pSource->setPitch(audio.pitch);
 			}
-			
-
-			//if (!audio.shouldStop && !audio.playing)
-			//{
-			//	pSource->play();
-			//	audio.playing = true;
-			//}
-			//
-			//if(audio.shouldStop)
-			//{
-			//	pSource->stop();
-			//	audio.playing = false;
-			//}
-			//
-			//if (audio.playing)
-			//{
-			//	auto state = pSource->getState();
-			//	audio.shouldStop = state == EAudioSourceState::eStopped;
-			//}
 		}
 	}
+}
+
+void CAudioSystem::updateListener(FCameraComponent& camera, FTransformComponent& transform)
+{
+	alCall(alListener3f, AL_POSITION, transform.rposition.x, transform.rposition.y, transform.rposition.z);
+	float orient[6] = { camera.forward.x, camera.forward.y, camera.forward.z, camera.right.x, camera.right.y, camera.right.z };
+	alCall(alListenerfv, AL_ORIENTATION, orient);
 }

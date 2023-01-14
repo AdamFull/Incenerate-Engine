@@ -37,15 +37,26 @@ void try_show_edit(const std::string& name, const entt::entity& entity, _EditPre
 	if (auto object = registry.try_get<_Ty>(entity))
 	{
 		auto& icon = EGEditor->getIcon<_Ty>();
+		
 		ImGui::PushID(name.c_str());
-		ImGui::Text((icon + " " + name).c_str());
-
+		auto pre_header = ImGui::GetCursorPos();
+		ImVec2 arter_content; 
+		if (ImGui::CollapsingHeader((icon + " " + name).c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap))
+		{
+			editpred(object);
+			arter_content = ImGui::GetCursorPos();
+		}
+			
 		auto& trash = EGEditor->getIcon(icons::trash);
-		ImGui::SameLine(ImGui::GetWindowWidth() - 30);
-		if (ImGui::Button(trash.c_str()))
-			registry.remove<_Ty>(entity);
-
-		editpred(object);
+		if constexpr (!std::is_same_v<_Ty, FTransformComponent>)
+		{
+			auto padding = ImGui::GetStyle().WindowPadding;
+			pre_header.x = ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(trash.c_str()).x + padding.x / 2.f;
+			ImGui::SetCursorPos(pre_header);
+			if (ImGui::Button(trash.c_str()))
+				registry.remove<_Ty>(entity);
+			ImGui::SetCursorPos(arter_content);
+		}
 
 		ImGui::PopID();
 		ImGui::Separator();
@@ -67,6 +78,7 @@ void try_add_menu_item(const std::string& name, const entt::entity& entity)
 
 void CEditorInspector::create()
 {
+	
 }
 
 void CEditorInspector::__draw(float fDt)
@@ -142,6 +154,57 @@ void CEditorInspector::__draw(float fDt)
 		auto& plus = EGEditor->getIcon(icons::plus);
 		if (ImGui::Button(plus.c_str(), ImVec2(-1.f, 0.f)))
 			ImGui::OpenPopup("add_component_popup");
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			{
+				const wchar_t* path = (const wchar_t*)payload->Data;
+				auto source = std::filesystem::path(path);
+
+				if (fs::is_audio_format(source))
+				{
+					if (!registry.try_get<FAudioComponent>(selected))
+					{
+						FAudioComponent naudio{};
+						naudio.source = source.string();
+
+						registry.emplace<FAudioComponent>(selected, std::move(naudio));
+					}
+				}
+				else if (fs::is_script_format(source))
+				{
+					if (!registry.try_get<FScriptComponent>(selected))
+					{
+						FScriptComponent nscript{};
+						nscript.source = source.string();
+
+						registry.emplace<FScriptComponent>(selected, std::move(nscript));
+					}
+				}
+				else if (fs::is_skybox_format(source))
+				{
+					if (!registry.try_get<FSkyboxComponent>(selected))
+					{
+						FSkyboxComponent nskybox{};
+						nskybox.source = source.string();
+
+						registry.emplace<FSkyboxComponent>(selected, std::move(nskybox));
+					}
+				}
+				else if (fs::is_mesh_format(source))
+				{
+					if (!registry.try_get<FSceneComponent>(selected))
+					{
+						FSceneComponent nscene{};
+						nscene.source = source.string();
+
+						registry.emplace<FSceneComponent>(selected, std::move(nscene));
+					}
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
 	}
 }
 
@@ -170,12 +233,14 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 					}
 					else
 					{
+						auto self = EGEditor->getLastSelection();
 						auto& registry = EGCoordinator;
 
 						FAudioComponent naudio{};
 						naudio.source = source.string();
 
-						registry.replace<FAudioComponent>(EGEditor->getLastSelection(), std::move(naudio));
+						registry.remove<FAudioComponent>(self);
+						registry.emplace<FAudioComponent>(self, std::move(naudio));
 					}
 				}
 			}
@@ -239,9 +304,8 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 		{
 			const wchar_t* path = (const wchar_t*)payload->Data;
 			auto source = std::filesystem::path(path);
-			auto ext = source.extension();
 
-			if (ext == ".lua")
+			if (fs::is_script_format(source))
 			{
 				object->source = source.string();
 				if (object->loaded)
@@ -274,9 +338,8 @@ void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
 		{
 			const wchar_t* path = (const wchar_t*)payload->Data;
 			auto source = std::filesystem::path(path);
-			auto ext = source.extension();
 
-			if (ext == ".ktx" || ext == ".ktx2")
+			if (fs::is_skybox_format(source))
 			{
 				if (object->source != source)
 				{
@@ -320,9 +383,8 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 		{
 			const wchar_t* path = (const wchar_t*)payload->Data;
 			auto source = std::filesystem::path(path);
-			auto ext = source.extension();
 
-			if (ext == ".gltf" || ext == ".glb")
+			if (fs::is_mesh_format(source))
 			{
 				if (object->source != source)
 				{

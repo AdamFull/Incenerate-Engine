@@ -84,6 +84,18 @@ bool fs::is_image_format(const std::filesystem::path& path)
     return is_image_format(utl::const_hash(ext.c_str(), ext.size()));
 }
 
+bool fs::is_ktx_format(const std::string& path)
+{
+    auto ext = get_ext(path);
+    return is_ktx_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
+bool fs::is_ktx_format(const std::filesystem::path& path)
+{
+    auto ext = get_ext(path);
+    return is_ktx_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
 bool fs::is_mesh_format(const std::string& path)
 {
     auto ext = get_ext(path);
@@ -149,6 +161,13 @@ bool fs::is_image_format(uint32_t format)
         format == format::dds || 
         format == format::png || 
         format == format::jpg;
+}
+
+bool fs::is_ktx_format(uint32_t format)
+{
+    return
+        format == format::ktx ||
+        format == format::ktx2;
 }
 
 bool fs::is_mesh_format(uint32_t format)

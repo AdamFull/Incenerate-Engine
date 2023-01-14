@@ -15,6 +15,7 @@ namespace engine
 			void __update(float fDt) override;
 		private:
 			size_t brdflut_id{ invalid_index };
+			size_t empty_cube_id{ invalid_index };
 			size_t shader_id{ invalid_index };
 			size_t stageId{ invalid_index };
 		};

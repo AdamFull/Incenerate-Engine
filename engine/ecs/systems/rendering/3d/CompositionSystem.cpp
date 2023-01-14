@@ -1,6 +1,7 @@
 #include "CompositionSystem.h"
 
 #include "Engine.h"
+#include "graphics/image/ImageCubemap.h"
 
 #include "ecs/components/SkyboxComponent.h"
 #include "ecs/components/CameraComponent.h"
@@ -16,13 +17,27 @@ using namespace engine::graphics;
 
 void CCompositionSystem::__create()
 {
+	auto& device = EGGraphics->getDevice();
 	shader_id = EGGraphics->addShader("pbr_composition", "pbr_composition");
 	brdflut_id = EGGraphics->computeBRDFLUT(512);
+
+	auto emptyCubemap = std::make_unique<CImageCubemap>(device.get());
+	emptyCubemap->create(
+		vk::Extent2D{ 16, 16 },
+		vk::Format::eR32G32B32A32Sfloat,
+		vk::ImageLayout::eGeneral,
+		vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
+		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
+		vk::ImageUsageFlagBits::eStorage);
+
+	empty_cube_id = EGGraphics->addImage("empty_cubemap", std::move(emptyCubemap));
 }
 
 void CCompositionSystem::__update(float fDt)
 {
 	auto& registry = EGCoordinator;
+	auto editorMode = EGEngine->isEditorMode();
+	auto state = EGEngine->getState();
 
 	uint32_t directoonal_light_count{ 0 };
 	std::array<FDirectionalLightCommit, MAX_DIRECTIONAL_LIGHT_COUNT> directional_lights;
@@ -82,58 +97,63 @@ void CCompositionSystem::__update(float fDt)
 	auto& pShader = EGGraphics->getShader(shader_id);
 	auto index = EGGraphics->getDevice()->getCurrentFrame();
 
-	// TODO: add empty or default skybox
 	auto eskybox = get_active_skybox(registry);
-	auto& skybox = registry.get<FSkyboxComponent>(eskybox);
+	FSkyboxComponent* skybox = registry.try_get<FSkyboxComponent>(eskybox);
 
-	auto ecamera = get_active_camera(registry);
-	auto& camera = registry.get<FCameraComponent>(ecamera);
-	auto& transform = registry.get<FTransformComponent>(ecamera);
+	FCameraComponent* camera{ nullptr };
 
-	// Setting up predraw data
-	pShader->addTexture("brdflut_tex", brdflut_id);
-	pShader->addTexture("irradiance_tex", skybox.irradiance);
-	pShader->addTexture("prefiltred_tex", skybox.prefiltred);
+	if (editorMode && state == EEngineState::eEditing)
+		camera = registry.try_get<FCameraComponent>(EGEditor->getCamera());
+	else
+		camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
 
-	auto& albedo = EGGraphics->getImage("albedo_tex_" + std::to_string(index));
-	pShader->addTexture("albedo_tex", albedo->getDescriptor());
+	if (camera)
+	{
+		// Setting up predraw data
+		pShader->addTexture("brdflut_tex", brdflut_id);
+		pShader->addTexture("irradiance_tex", skybox ? skybox->irradiance : empty_cube_id);
+		pShader->addTexture("prefiltred_tex", skybox ? skybox->prefiltred : empty_cube_id);
 
-	auto& normal = EGGraphics->getImage("normal_tex_" + std::to_string(index));
-	pShader->addTexture("normal_tex", normal->getDescriptor());
+		auto& albedo = EGGraphics->getImage("albedo_tex_" + std::to_string(index));
+		pShader->addTexture("albedo_tex", albedo->getDescriptor());
 
-	auto& mrah = EGGraphics->getImage("mrah_tex_" + std::to_string(index));
-	pShader->addTexture("mrah_tex", mrah->getDescriptor());
+		auto& normal = EGGraphics->getImage("normal_tex_" + std::to_string(index));
+		pShader->addTexture("normal_tex", normal->getDescriptor());
 
-	auto& emission = EGGraphics->getImage("emission_tex_" + std::to_string(index));
-	pShader->addTexture("emission_tex", emission->getDescriptor());
+		auto& mrah = EGGraphics->getImage("mrah_tex_" + std::to_string(index));
+		pShader->addTexture("mrah_tex", mrah->getDescriptor());
 
-	auto& depth = EGGraphics->getImage("depth_tex_" + std::to_string(index));
-	pShader->addTexture("depth_tex", depth->getDescriptor());
+		auto& emission = EGGraphics->getImage("emission_tex_" + std::to_string(index));
+		pShader->addTexture("emission_tex", emission->getDescriptor());
 
-	auto& directsm = EGGraphics->getImage("direct_shadowmap_tex_" + std::to_string(index));
-	pShader->addTexture("direct_shadowmap_tex", directsm->getDescriptor());
+		auto& depth = EGGraphics->getImage("depth_tex_" + std::to_string(index));
+		pShader->addTexture("depth_tex", depth->getDescriptor());
 
-	auto& omnism = EGGraphics->getImage("omni_shadowmap_tex_" + std::to_string(index));
-	pShader->addTexture("omni_shadowmap_tex", omnism->getDescriptor());
+		auto& directsm = EGGraphics->getImage("direct_shadowmap_tex_" + std::to_string(index));
+		pShader->addTexture("direct_shadowmap_tex", directsm->getDescriptor());
 
-	auto& pUBO = pShader->getUniformBuffer("UBODeferred");
-	pUBO->set("invViewProjection", glm::inverse(camera.projection * camera.view));
-	pUBO->set("invProjMatrix", glm::inverse(camera.projection));
-	pUBO->set("invViewMatrix", glm::inverse(camera.view));
-	pUBO->set("view", camera.view);
-	pUBO->set("viewPos", glm::vec4(transform.rposition, 1.0));
-	pUBO->set("directionalLightCount", directoonal_light_count);
-	pUBO->set("spotLightCount", spot_light_count);
-	pUBO->set("pointLightCount", point_light_count);
+		auto& omnism = EGGraphics->getImage("omni_shadowmap_tex_" + std::to_string(index));
+		pShader->addTexture("omni_shadowmap_tex", omnism->getDescriptor());
 
-	auto& pUBOLights = pShader->getUniformBuffer("UBOLights");
-	pUBOLights->set("directionalLights", directional_lights);
-	pUBOLights->set("spotLights", spot_lights);
-	pUBOLights->set("pointLights", point_lights);
+		auto& pUBO = pShader->getUniformBuffer("UBODeferred");
+		pUBO->set("invViewProjection", glm::inverse(camera->projection * camera->view));
+		pUBO->set("invProjMatrix", glm::inverse(camera->projection)); // TODO: delete
+		pUBO->set("invViewMatrix", glm::inverse(camera->view)); // TODO: delete
+		pUBO->set("view", camera->view); // TODO: delete
+		pUBO->set("viewPos", glm::vec4(camera->viewPos, 1.0));
+		pUBO->set("directionalLightCount", directoonal_light_count);
+		pUBO->set("spotLightCount", spot_light_count);
+		pUBO->set("pointLightCount", point_light_count);
 
-	// Drawing 
-	stage->begin(commandBuffer);
-	pShader->predraw(commandBuffer);
-	commandBuffer.draw(3, 1, 0, 0);
-	stage->end(commandBuffer);
+		auto& pUBOLights = pShader->getUniformBuffer("UBOLights");
+		pUBOLights->set("directionalLights", directional_lights);
+		pUBOLights->set("spotLights", spot_lights);
+		pUBOLights->set("pointLights", point_lights);
+
+		// Drawing 
+		stage->begin(commandBuffer);
+		pShader->predraw(commandBuffer);
+		commandBuffer.draw(3, 1, 0, 0);
+		stage->end(commandBuffer);
+	}
 }

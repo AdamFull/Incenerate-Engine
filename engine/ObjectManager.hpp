@@ -16,8 +16,16 @@ namespace engine
 
 		size_t add(const std::string& name, std::unique_ptr<_Ty>&& object)
 		{
+			auto id = get_id(name);
+			if (id != invalid_index)
+			{
+				mUsages[id].fetch_add(1, std::memory_order_relaxed);
+				return id;
+			}
+
 			mNameToId.emplace(name, next_id);
 			mIdToObject.emplace(next_id, std::move(object));
+			mUsages[next_id].fetch_add(1, std::memory_order_relaxed);
 			nextid();
 			return mNameToId[name];
 		}
@@ -34,21 +42,35 @@ namespace engine
 			auto objit = mIdToObject.find(id);
 			if (objit != mIdToObject.end())
 			{
-				qFreedIds.push(id);
-				qDelete.push(std::move(objit->second));
-				mIdToObject.erase(objit);
+				auto usages = mUsages.find(id);
+				usages->second.fetch_sub(1, std::memory_order_relaxed);
+				if (usages->second == 0ull)
+				{
+					qFreedIds.push(id);
+					qDelete.push(std::move(objit->second));
+					mIdToObject.erase(objit);
+					mUsages.erase(usages);
 
-				auto nameit = std::find_if(mNameToId.begin(), mNameToId.end(), [id](const auto& kv) { return kv.second == id; });
-				if (nameit != mNameToId.end())
-					mNameToId.erase(nameit);
+					auto nameit = std::find_if(mNameToId.begin(), mNameToId.end(), [id](const auto& kv) { return kv.second == id; });
+					if (nameit != mNameToId.end())
+						mNameToId.erase(nameit);
+				}
 			}
+		}
+
+		size_t get_id(const std::string& name)
+		{
+			auto nameit = mNameToId.find(name);
+			if (nameit != mNameToId.end())
+				return nameit->second;
+			return invalid_index;
 		}
 
 		const std::unique_ptr<_Ty>& get(const std::string& name)
 		{
-			auto nameit = mNameToId.find(name);
-			if (nameit != mNameToId.end())
-				return get(nameit->second);
+			auto id = get_id(name);
+			if (id != invalid_index)
+				return get(id);
 			return nullptr;
 		}
 
@@ -91,6 +113,7 @@ namespace engine
 		size_t next_id{ 0 };
 		std::queue<std::unique_ptr<_Ty>> qDelete;
 		std::queue<size_t> qFreedIds;
+		std::map<size_t, std::atomic<size_t>> mUsages;
 		std::map<std::string, size_t> mNameToId;
 		std::map<size_t, std::unique_ptr<_Ty>> mIdToObject;
 	};

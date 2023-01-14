@@ -361,6 +361,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
     }
 
     meshComponent.vbo_id = vbo_id;
+    meshComponent.loaded = true;
 }
 
 void CGltfLoader::loadCameraComponent(const entt::entity& parent, const tinygltf::Node& node, const tinygltf::Model& model)
@@ -515,7 +516,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
 
         // TODO: add instances in shader object
         pMaterial->setParameters(std::move(params));
-        auto mat_name = mat.name.empty() ? "material_" + fsParentPath.filename().string() + std::to_string(vMaterials.size()) : mat.name;
+        auto mat_name = mat.name.empty() ? fs::get_filename(fsParentPath) + "_" + std::to_string(vMaterials.size()) : mat.name;
         vMaterials.emplace_back(EGGraphics->addMaterial(mat_name, std::move(pMaterial)));
     }
 }
@@ -524,7 +525,7 @@ void CGltfLoader::loadTextures(const tinygltf::Model& model)
 {
     for (auto& texture : model.textures)
     {
-        bool isBasisU{ false };
+        bool isBasisU{  };
         auto image_index = texture.source;
         if (image_index < 0 && !texture.extensions.empty())
         {
@@ -540,7 +541,7 @@ void CGltfLoader::loadTextures(const tinygltf::Model& model)
 
         auto& image = model.images.at(image_index); 
         auto texture_path = std::filesystem::weakly_canonical(fsParentPath / url_decode(image.uri));
-        vTextures.emplace_back(texture_path.string(), isBasisU);
+        vTextures.emplace_back(texture_path.string(), isBasisU || fs::is_ktx_format(texture_path));
     }
 }
 
@@ -554,6 +555,6 @@ size_t CGltfLoader::loadTexture(const std::pair<std::filesystem::path, bool>& te
     else
         pImage->create(texpair.first, oformat);
 
-    auto name = texpair.first.filename().string();
+    auto name = fs::get_filename(texpair.first);
     return EGGraphics->addImage(name, std::move(pImage));
 }
