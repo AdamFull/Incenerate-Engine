@@ -1,6 +1,7 @@
-[submodule "engine/external/glm"]
-	path = engine/external/glm
-	url = https://github.com/g-truc/glm.git
 [submodule "engine/external/utility"]
 	path = engine/external/utility
 	url = https://github.com/AdamFull/utllib.git
+[submodule "engine/external/SDL"]
+	path = engine/external/SDL
+	url = https://github.com/libsdl-org/SDL.git
+	branch = SDL2
