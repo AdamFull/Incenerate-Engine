@@ -125,7 +125,7 @@ void main()
 
 	vec3 normal_map = vec3(0.0);
 #ifdef HAS_NORMALMAP
-	normal_map = getTangentSpaceNormalMap(normal_tex, tbn, texCoord, material.normalScale, false);
+	normal_map = getTangentSpaceNormalMap(normal_tex, tbn, texCoord, material.normalScale);
 #else
 	normal_map = tbn[2].xyz;
 #endif

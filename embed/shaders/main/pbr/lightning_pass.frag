@@ -125,14 +125,16 @@ void main()
 	vec3 albedo = texture(albedo_tex, inUV).rgb;
 	vec4 mrah = texture(mrah_tex, inUV);
 
+	bool calculateLightning = normal != vec3(0.0f);
+
+	normal = normalize(normal);
+
 	albedo = pow(albedo, vec3(2.2));
 	vec3 emission = texture(emission_tex, inUV).rgb;
 
 	float roughness = mrah.r;
 	float metallic = mrah.g;
 	float occlusion = mrah.b;
-
-	bool calculateLightning = normal != vec3(0.0f);
 
 	vec3 fragcolor = vec3(0.0f);
 	if(calculateLightning)
@@ -141,7 +143,7 @@ void main()
 		// Calculate direction from fragment to viewPosition
 		vec3 V = normalize(cameraPos - inWorldPos);
 		// Reflection vector
-		vec3 R = reflect(-V, normal);
+		vec3 R = -normalize(reflect(V, normal));
 
 		vec3 F0 = vec3(0.04f);
 		// Reflectance at normal incidence angle

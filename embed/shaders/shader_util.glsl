@@ -28,9 +28,9 @@ vec3 Uncharted2Tonemap(vec3 color)
 	return ((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F))-E/F;
 }
 
-vec3 getTangentSpaceNormalMap(sampler2D samplerNormal, mat3 TBN, vec2 uv, float scale, bool srgb)
+vec3 getTangentSpaceNormalMap(sampler2D samplerNormal, mat3 TBN, vec2 uv, float scale)
 {
-	vec3 normalColor = SRGBtoLINEAR(texture(samplerNormal, uv), srgb).rgb;
+	vec3 normalColor = texture(samplerNormal, uv).rgb;
     normalColor = normalize(TBN * ((2.0 * normalColor - 1.0) * vec3(scale, scale, 1.0)));
 	return normalColor;
 }

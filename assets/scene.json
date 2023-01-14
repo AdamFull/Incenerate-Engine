@@ -203,11 +203,14 @@
         "intencity": 5.0,
         "radius": 20.0
       },
+      "scene": {
+        "source": "models\\gltf_tests\\EnvironmentTest\\glTF\\EnvironmentTest.gltf"
+      },
       "transform": {
         "pos": {
-          "x": 2.8025593757629395,
+          "x": -2.9287400245666504,
           "y": 1.3628886938095093,
-          "z": -0.6635589599609375
+          "z": 16.215835571289063
         }
       }
     },
