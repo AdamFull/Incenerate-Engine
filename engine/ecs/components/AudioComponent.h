@@ -9,7 +9,7 @@ namespace engine
 		struct FAudioComponent
 		{
 			std::string source;
-			size_t asource;
+			size_t asource{ invalid_index };
 
 			float gain{ 1.f };
 			float pitch{ 1.f };

@@ -222,7 +222,7 @@ namespace ImGui
             Text(label.c_str());
 
             TableNextColumn();
-            BeginDisabled(!source.empty());
+            BeginDisabled(source.empty());
             result = Button(source.empty() ? "+" : source.c_str(), ImVec2(-1.f, 0.f));
             EndDisabled();
 

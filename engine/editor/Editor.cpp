@@ -170,6 +170,8 @@ void CEditor::newFrame(float fDt)
     for (auto& sevent : events)
         ImGui_ImplSDL2_ProcessEvent(&sevent);
 
+    //ImGui::ShowDemoWindow();
+
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))

@@ -2,6 +2,7 @@
   {
     "components": {
       "environment": {
+        "active": true,
         "source": "textures/cubemaps/SkyhighFluffycloudField4k.ktx2"
       },
       "transform": {
@@ -57,6 +58,9 @@
       },
       {
         "components": {
+          "audio": {
+            "source": "audio\\cyber.wav"
+          },
           "scene": {
             "source": "models/gltf_tests/BoomBox/glTF/BoomBox.gltf"
           },

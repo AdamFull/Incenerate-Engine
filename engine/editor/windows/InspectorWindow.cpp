@@ -3,7 +3,6 @@
 #include "Engine.h"
 
 #include <imgui/imgui.h>
-#include <imgui/misc/cpp/imgui_stdlib.h>
 #include "editor/CustomControls.h"
 
 #include "ecs/components/TransformComponent.h"
@@ -108,7 +107,7 @@ void CEditorInspector::__draw(float fDt)
 
 		ImGui::Separator();
 
-		ImGui::InputText("Name", &hierarchy.name);
+		ImGui::GTextInput("Name", &hierarchy.name);
 		ImGui::Separator();
 
 		try_show_edit<FTransformComponent>("Transform", selected,
@@ -216,7 +215,7 @@ void CEditorInspector::__draw(float fDt)
 // audio editor
 void CEditorInspector::audioEdit(FAudioComponent* object)
 {
-	ImGui::InputText("Source", &object->source);
+	ImGui::GAssetHolder("Source", fs::get_filename(object->source));
 	if (ImGui::BeginDragDropTarget())
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -279,12 +278,16 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 			pAudio->stop();
 
 		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
 		auto pos = pAudio->getPosInSec();
 		auto len = pAudio->getLenInSec();
 
 		// TODO: format time to mis:sec
-		if (ImGui::SliderFloat("##player", &pos, 0.f, len, "%.2f sec"))
+		uint32_t mins = (uint32_t)pos / 60u;
+		uint32_t secs = (uint32_t)pos % 60u;
+		auto formatted = std::format("{:02}:{:02}", mins, secs);
+		if (ImGui::SliderFloat("##player", &pos, 0.f, len, formatted.c_str()))
 			pAudio->setOffsetSec(pos);
 	}
 }
@@ -302,7 +305,7 @@ void CEditorInspector::cameraEdit(FCameraComponent* object)
 // script editor
 void CEditorInspector::scriptEdit(FScriptComponent* object)
 {
-	ImGui::InputText("Script", &object->source);
+	ImGui::GAssetHolder("Script", fs::get_filename(object->source));
 	if (ImGui::BeginDragDropTarget())
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -339,7 +342,7 @@ void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 	auto& registry = EGCoordinator;
 	auto self = EGEditor->getLastSelection();
 
-	ImGui::InputText("Source", &object->source);
+	ImGui::GAssetHolder("Source", fs::get_filename(object->source));
 	if (ImGui::BeginDragDropTarget())
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -386,7 +389,7 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 	auto& registry = EGCoordinator;
 	auto self = EGEditor->getLastSelection();
 
-	ImGui::InputText("Source", &object->source);
+	ImGui::GAssetHolder("Source", fs::get_filename(object->source));
 	if (ImGui::BeginDragDropTarget())
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
