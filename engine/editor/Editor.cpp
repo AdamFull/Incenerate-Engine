@@ -15,6 +15,7 @@
 #include "windows/HierarchyWindow.h"
 #include "windows/InspectorWindow.h"
 #include "windows/ContentBrowserWindow.h"
+#include "windows/ImageViewerWindow.h"
 
 #include "ecs/components/TransformComponent.h"
 #include "ecs/components/SpotLightComponent.h"
@@ -83,6 +84,7 @@ void CEditor::create()
     vEditorWindows.emplace_back(std::make_unique<CEditorHierarchy>("Hierarchy"));
     vEditorWindows.emplace_back(std::make_unique<CEditorInspector>("Inspector"));
     vEditorWindows.emplace_back(std::make_unique<CEditorContentBrowser>("Content browser"));
+    vEditorWindows.emplace_back(std::make_unique<CEditorImageViewer>("Image viewer"));
 
     ImGui_ImplSDL2_InitForVulkan(EGWindow->getWindowPointer());
     ImGui_ImplVulkan_InitInfo init_info = {};
@@ -136,6 +138,8 @@ void CEditor::create()
     mEditorIcons[icons::audio_file] = ICON_MDI_FILE_MUSIC;
     mEditorIcons[icons::script_file] = ICON_MDI_SCRIPT;
     mEditorIcons[icons::mesh_file] = ICON_MDI_CUBE;
+    mEditorIcons[icons::add_folder] = ICON_MDI_FOLDER_PLUS;
+    mEditorIcons[icons::add_file] = ICON_MDI_FILE_PLUS;
 
     // Component icons
     mEditorIcons[get_class_id<FTransformComponent>()] = ICON_MDI_AXIS; // ICON_MDI_VECTOR_LINE
@@ -209,8 +213,8 @@ void CEditor::newFrame(float fDt)
         }
         if (ImGui::BeginMenu("Style"))
         {
-            if (ImGui::MenuItem("Standart")) { Themes::standart(); }
             if (ImGui::MenuItem("Cinder")) { Themes::cinder(); }
+            if (ImGui::MenuItem("Darkblue")) { Themes::darkblue(); }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Help"))

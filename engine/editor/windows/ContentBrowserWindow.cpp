@@ -38,15 +38,54 @@ void CEditorContentBrowser::create()
 
 void CEditorContentBrowser::__draw(float fDt)
 {
+	auto& nfdr = EGEditor->getIcon(icons::add_folder);
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
+	{
+		if (ImGui::IsMouseClicked(1))
+			ImGui::OpenPopup("ContentBrowserSubmenu");
+	}
+
+	if (ImGui::BeginPopup("ContentBrowserSubmenu"))
+	{
+
+		if (ImGui::BeginMenu("create"))
+		{
+			if (ImGui::MenuItem((nfdr + " folder").c_str())); // Requires dialog
+			auto& script = EGEditor->getIcon(icons::script_file);
+			if (ImGui::MenuItem((script + " lua file").c_str()));
+			ImGui::EndMenu();
+		}
+
+		auto& copy = EGEditor->getIcon(icons::copy);
+		if (ImGui::MenuItem((copy + " copy").c_str(), "CTRL+C"));
+
+		auto& paste = EGEditor->getIcon(icons::paste);
+		if (ImGui::MenuItem((paste + " paste").c_str(), "CTRL+V"));
+
+		auto& del = EGEditor->getIcon(icons::trash);
+		if (ImGui::MenuItem((del + " delete").c_str(), "DEL"));
+
+		ImGui::EndPopup();
+	}
+
+	
+	if (ImGui::Button(nfdr.c_str()));
+	ImGui::SameLine();
+
+	auto& nfl = EGEditor->getIcon(icons::add_file);
+	if (ImGui::Button(nfl.c_str()));
+
 	if (currentPath != workdir)
 	{
+		ImGui::SameLine();
 		auto& undo = EGEditor->getIcon(icons::undo);
 		if (ImGui::Button(undo.c_str()))
 			update_path(currentPath.parent_path());
 		ImGui::SameLine();
+		ImGui::Text(relative.string().c_str());
 	}
 
-	ImGui::Text(relative.string().c_str());
+	ImGui::Separator();
 
 	float panelWidth = ImGui::GetContentRegionAvail().x;
 	int columnCount = (int)(panelWidth / cellSize);
@@ -81,6 +120,12 @@ void CEditorContentBrowser::__draw(float fDt)
 				update_path(npath);
 				ImGui::PopID();
 				break;
+			}
+			else if (fs::is_image_format(path))
+			{
+				CEvent eevent(Events::Editor::OpenImageViewer);
+				eevent.setParam(Events::Editor::OpenImageViewer, path);
+				EGEngine->sendEvent(eevent);
 			}
 		}
 

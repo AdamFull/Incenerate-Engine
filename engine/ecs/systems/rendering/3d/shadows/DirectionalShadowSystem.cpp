@@ -28,6 +28,9 @@ void CDirectionalShadowSystem::__update(float fDt)
 		auto view = registry.view<FTransformComponent, FSpotLightComponent>();
 		for (auto [entity, transform, light] : view.each())
 		{
+			if (!light.castShadows)
+				continue;
+
 			const glm::vec3 dp(0.0000001f);
 
 			glm::mat4 shadowProj = glm::perspective(light.innerAngle, 1.0f, 0.1f, 64.f);
@@ -37,28 +40,31 @@ void CDirectionalShadowSystem::__update(float fDt)
 		}
 	}
 
-	auto commandBuffer = EGGraphics->getCommandBuffer();
-	auto& pShader = EGGraphics->getShader(shader_id);
-
-	auto& pUniform = pShader->getUniformBuffer("UBOShadowmap");
-	pUniform->set("viewProjMat", spot_light_matrices);
-	pUniform->set("passedLights", spot_light_count);
-	pShader->predraw(commandBuffer);
-
-	auto view = registry.view<FTransformComponent, FMeshComponent>();
-	for (auto [entity, transform, mesh] : view.each())
+	if (spot_light_count > 0)
 	{
-		auto& vbo = EGGraphics->getVertexBuffer(mesh.vbo_id);
+		auto commandBuffer = EGGraphics->getCommandBuffer();
+		auto& pShader = EGGraphics->getShader(shader_id);
 
-		vbo->bind(commandBuffer);
+		auto& pUniform = pShader->getUniformBuffer("UBOShadowmap");
+		pUniform->set("viewProjMat", spot_light_matrices);
+		pUniform->set("passedLights", spot_light_count);
+		pShader->predraw(commandBuffer);
 
-		for (auto& meshlet : mesh.vMeshlets)
+		auto view = registry.view<FTransformComponent, FMeshComponent>();
+		for (auto [entity, transform, mesh] : view.each())
 		{
-			auto& pPush = pShader->getPushBlock("modelData");
-			pPush->set("model", transform.model);
-			pPush->flush(commandBuffer);
+			auto& vbo = EGGraphics->getVertexBuffer(mesh.vbo_id);
 
-			commandBuffer.drawIndexed(meshlet.index_count, 1, meshlet.begin_index, 0, 0);
+			vbo->bind(commandBuffer);
+
+			for (auto& meshlet : mesh.vMeshlets)
+			{
+				auto& pPush = pShader->getPushBlock("modelData");
+				pPush->set("model", transform.model);
+				pPush->flush(commandBuffer);
+
+				commandBuffer.drawIndexed(meshlet.index_count, 1, meshlet.begin_index, 0, 0);
+			}
 		}
 	}
 }

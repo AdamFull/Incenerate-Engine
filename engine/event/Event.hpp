@@ -10,6 +10,12 @@ namespace engine
 	using EventId = uint32_t;
 	using ParamId = uint32_t;
 
+	namespace Events::Editor
+	{
+		using namespace utl;
+		const ParamId OpenImageViewer = "Events::Editor::OpenImageViewer"_utl_hash;
+	}
+
 	namespace Events::Graphics
 	{
 		using namespace utl;

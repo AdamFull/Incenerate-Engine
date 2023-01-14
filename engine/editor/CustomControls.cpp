@@ -43,6 +43,8 @@ namespace ImGui
             TableNextColumn(); Text(label.c_str());
 
             TableNextColumn();
+
+            SetNextItemWidth(GetContentRegionAvail().x);
             bValueChanged = ColorEdit3(("##" + label).c_str(), glm::value_ptr(value), misc_flags);
 
             EndTable();
@@ -66,6 +68,7 @@ namespace ImGui
 
             TableNextColumn();
 
+            SetNextItemWidth(GetContentRegionAvail().x);
             bValueChanged = ColorEdit4(("##" + label).c_str(), glm::value_ptr(value), misc_flags);
             
             EndTable();
@@ -188,6 +191,8 @@ namespace ImGui
             PopStyleColor(3);
 
             SameLine();
+
+            SetNextItemWidth(GetContentRegionAvail().x);
             bValueChanged |= DragFloat("##N", value, step, min, max, "%.2f");
 
             PopStyleVar();

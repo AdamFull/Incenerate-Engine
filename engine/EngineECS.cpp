@@ -1,5 +1,7 @@
 #include "Engine.h"
 
+#include <utility/uthreading.hpp>
+
 // Components
 #include "ecs/components/AudioComponent.h"
 #include "ecs/components/MeshComponent.h"
@@ -26,9 +28,12 @@
 
 #include "ecs/helper.hpp"
 
+#include "system/filesystem/filesystem.h"
+
 #include "loaders/MeshLoader.h"
 
 using namespace engine;
+using namespace engine::system;
 using namespace engine::audio;
 using namespace engine::graphics;
 using namespace engine::loaders;
@@ -83,7 +88,7 @@ void construct_skybox(entt::registry& reg, entt::entity entity)
 
 	if (!skybox.loaded && !skybox.source.empty())
 	{
-		skybox.origin = EGGraphics->addImage(skybox.source, skybox.source);
+		skybox.origin = EGGraphics->addImage(fs::get_filename(skybox.source), skybox.source);
 		skybox.irradiance = EGGraphics->computeIrradiance(skybox.origin, 64);
 		skybox.prefiltred = EGGraphics->computePrefiltered(skybox.origin, 512);
 		skybox.vbo_id = EGGraphics->addVertexBuffer(skybox.source);

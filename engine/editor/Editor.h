@@ -37,6 +37,8 @@ namespace engine
 			constexpr uint32_t audio_file = "audio_file"_utl_hash;
 			constexpr uint32_t script_file = "script_file"_utl_hash;
 			constexpr uint32_t mesh_file = "mesh_file"_utl_hash;
+			constexpr uint32_t add_folder = "add_folder"_utl_hash;
+			constexpr uint32_t add_file = "add_file"_utl_hash;
 		}
 
 		class CEditor

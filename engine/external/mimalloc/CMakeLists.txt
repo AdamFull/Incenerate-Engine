@@ -450,24 +450,6 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mimalloc.pc"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig/")
 
 # -----------------------------------------------------------------------------
-# API surface testing
-# -----------------------------------------------------------------------------
-
-if (MI_BUILD_TESTS)
-  enable_testing()
-
-  foreach(TEST_NAME api api-fill stress)
-    add_executable(mimalloc-test-${TEST_NAME} test/test-${TEST_NAME}.c)
-    target_compile_definitions(mimalloc-test-${TEST_NAME} PRIVATE ${mi_defines})
-    target_compile_options(mimalloc-test-${TEST_NAME} PRIVATE ${mi_cflags})
-    target_include_directories(mimalloc-test-${TEST_NAME} PRIVATE include)
-    target_link_libraries(mimalloc-test-${TEST_NAME} PRIVATE mimalloc ${mi_libraries})
-
-    add_test(NAME test-${TEST_NAME} COMMAND mimalloc-test-${TEST_NAME})
-  endforeach()
-endif()
-
-# -----------------------------------------------------------------------------
 # Set override properties
 # -----------------------------------------------------------------------------
 if (MI_OVERRIDE)

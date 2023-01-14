@@ -39,9 +39,6 @@ layout (location = 0) out vec4 outFragcolor;
 layout(std140, binding = 12) uniform UBODeferred
 {
 	mat4 invViewProjection;
-	mat4 invProjMatrix;
-	mat4 invViewMatrix;
-	mat4 view;
 	vec4 viewPos;
 	int directionalLightCount;
 	int spotLightCount;
@@ -70,8 +67,7 @@ vec3 calculateDirectionalLight(FDirectionalLight light, vec3 worldPosition, vec3
 	L = normalize(L);
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 
-	vec3 viewPosition = (ubo.view * vec4(worldPosition, 1.0)).xyz;
-	//float shadow_factor = getCascadeShadow(cascade_shadowmap_tex, viewPosition, worldPosition, N, light);
+	//float shadow_factor = getCascadeShadow(cascade_shadowmap_tex, ubo.viewPos.xyz, worldPosition, N, light);
 	float shadow_factor = 1.0;
 
 	return light.color * light.intencity * color * shadow_factor;
@@ -92,8 +88,10 @@ vec3 calculateSpotlight(FSpotLight light, int index, vec3 worldPosition, vec3 al
 	float heightAttenuation = smoothstep(100.0, 0.0f, dist);
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 	
-	//float shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
 	float shadow_factor = 1.0;
+
+	if(light.castShadows)
+		shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
 
 	return light.color * light.intencity * color * spotEffect * heightAttenuation * shadow_factor;
 }
@@ -106,8 +104,10 @@ vec3 calculatePointLight(FPointLight light, int index, vec3 worldPosition, vec3 
 	float atten = clamp(1.0 - pow(dist, 2.0f)/pow(light.radius, 2.0f), 0.0f, 1.0f); atten *= atten;
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 
-	//float shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index);
 	float shadow_factor = 1.0;
+
+	if(light.castShadows)
+		shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index);
 
 	return light.color * atten * color * light.intencity * shadow_factor;
 }
@@ -120,7 +120,6 @@ void main()
 	vec2 invUV = vec2(inUV.x, 1-inUV.y);
 	float depth = texture(depth_tex, inUV).r;
 	vec3 inWorldPos = getPositionFromDepth(invUV, depth, ubo.invViewProjection);
-	//vec3 inWorldPos = WorldPosFromDepth(invUV, depth, ubo.invProjMatrix, ubo.invViewMatrix);
 
 	vec3 normal = texture(normal_tex, inUV).rgb;
 	vec3 albedo = texture(albedo_tex, inUV).rgb;

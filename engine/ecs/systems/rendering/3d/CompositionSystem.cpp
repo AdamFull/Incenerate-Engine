@@ -55,6 +55,7 @@ void CCompositionSystem::__update(float fDt)
 			commit.direction = transform.rrotation;
 			commit.color = light.color;
 			commit.intencity = light.intencity;
+			commit.castShadows = light.castShadows;
 
 			directional_lights[directoonal_light_count++] = commit;
 		}
@@ -70,6 +71,7 @@ void CCompositionSystem::__update(float fDt)
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.radius = light.radius;
+			commit.castShadows = light.castShadows;
 
 			point_lights[point_light_count++] = commit;
 		}
@@ -87,6 +89,8 @@ void CCompositionSystem::__update(float fDt)
 			commit.intencity = light.intencity;
 			commit.innerAngle = light.innerAngle;
 			commit.outerAngle = light.outerAngle;
+			commit.toTarget = light.toTarget;
+			commit.castShadows = light.castShadows;
 
 			spot_lights[spot_light_count++] = commit;
 		}
@@ -137,9 +141,6 @@ void CCompositionSystem::__update(float fDt)
 
 		auto& pUBO = pShader->getUniformBuffer("UBODeferred");
 		pUBO->set("invViewProjection", glm::inverse(camera->projection * camera->view));
-		pUBO->set("invProjMatrix", glm::inverse(camera->projection)); // TODO: delete
-		pUBO->set("invViewMatrix", glm::inverse(camera->view)); // TODO: delete
-		pUBO->set("view", camera->view); // TODO: delete
 		pUBO->set("viewPos", glm::vec4(camera->viewPos, 1.0));
 		pUBO->set("directionalLightCount", directoonal_light_count);
 		pUBO->set("spotLightCount", spot_light_count);

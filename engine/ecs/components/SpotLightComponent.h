@@ -25,7 +25,8 @@ namespace engine
 			alignas(4) float intencity;
 			alignas(4) float innerAngle;
 			alignas(4) float outerAngle;
-			alignas(4) bool toTarget{ true };
+			alignas(4) bool toTarget{ false };
+			alignas(4) bool castShadows;
 		};
 
 		void to_json(nlohmann::json& json, const FSpotLightComponent& type);

@@ -20,6 +20,7 @@ namespace engine
 			alignas(16) glm::vec3 color;
 			alignas(4) float intencity;
 			alignas(4) float radius;
+			alignas(4) bool castShadows;
 		};
 
 		void to_json(nlohmann::json& json, const FPointLightComponent& type);

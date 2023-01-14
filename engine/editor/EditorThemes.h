@@ -6,8 +6,8 @@ namespace engine
 	{
 		struct Themes
 		{
-			static void standart();
 			static void cinder();
+			static void darkblue();
 		};
 	}
 }

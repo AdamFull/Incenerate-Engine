@@ -110,15 +110,16 @@ void CEditorViewport::__draw(float fDt)
 	ImVec2 viewportPanelPos = ImGui::GetWindowPos();
 	auto textDrawPos = ImGui::GetCursorStartPos();
 
+	drawViewport(viewportPanelSize.x, viewportPanelSize.y);
+
 	if (editorMode && state == EEngineState::eEditing)
 	{
-		if(auto camera = registry.try_get<FCameraComponent>(EGEditor->getCamera()))
+		if (auto camera = registry.try_get<FCameraComponent>(EGEditor->getCamera()))
 			camera->controllable = ImGui::IsWindowHovered(ImGuiFocusedFlags_RootAndChildWindows);
-	}
 
-	drawViewport(viewportPanelSize.x, viewportPanelSize.y);
-	drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
-	drawOverlay(textDrawPos.x, textDrawPos.y, fDt);
+		drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+		drawOverlay(textDrawPos.x, textDrawPos.y, fDt);
+	}
 }
 
 void CEditorViewport::drawViewport(float offsetx, float offsety)
@@ -196,14 +197,8 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 	if (selected != entt::null)
 	{
 		auto& registry = EGCoordinator;
-		auto editorMode = EGEngine->isEditorMode();
-		auto state = EGEngine->getState();
 
-		FCameraComponent* camera{ nullptr };
-		if (editorMode && state == EEngineState::eEditing)
-			camera = registry.try_get<FCameraComponent>(EGEditor->getCamera());
-		else
-			camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
+		auto camera = registry.try_get<FCameraComponent>(EGEditor->getCamera());
 
 		FTransformComponent* ptransform{ nullptr };
 

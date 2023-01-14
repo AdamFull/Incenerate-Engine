@@ -55,6 +55,7 @@ namespace engine
 			const uint32_t getMipLevels() const { return _mipLevels; }
 			const vk::Format getFormat() const { return _format; }
 			const vk::Image& getImage() const { return _image; }
+			const vk::Extent3D& getExtent() const { return _extent; }
 
 		protected:
 			CDevice* pDevice{ nullptr };

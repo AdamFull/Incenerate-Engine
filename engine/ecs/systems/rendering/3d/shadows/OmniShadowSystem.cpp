@@ -32,6 +32,9 @@ void COmniShadowSystem::__update(float fDt)
 		auto view = registry.view<FTransformComponent, FPointLightComponent>();
 		for (auto [entity, transform, light] : view.each())
 		{
+			if (!light.castShadows)
+				continue;
+
 			uint32_t array_shift = point_light_count * 6;
 
 			point_light_matrices[point_light_count]		= shadowProj * glm::lookAt(transform.rposition, transform.rposition + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)); // POSITIVE_X
@@ -45,30 +48,33 @@ void COmniShadowSystem::__update(float fDt)
 		}
 	}
 
-	auto commandBuffer = EGGraphics->getCommandBuffer();
-	auto& pShader = EGGraphics->getShader(shader_id);
-
-	auto& pUniform = pShader->getUniformBuffer("UBOShadowmap");
-	pUniform->set("viewProjMat", point_light_matrices);
-	pUniform->set("lightPos", point_light_positions);
-	pUniform->set("passedLights", point_light_count);
-	pUniform->set("farPlane", 25.f);
-	pShader->predraw(commandBuffer);
-
-	auto view = registry.view<FTransformComponent, FMeshComponent>();
-	for (auto [entity, transform, mesh] : view.each())
+	if (point_light_count > 0)
 	{
-		auto& vbo = EGGraphics->getVertexBuffer(mesh.vbo_id);
+		auto commandBuffer = EGGraphics->getCommandBuffer();
+		auto& pShader = EGGraphics->getShader(shader_id);
 
-		vbo->bind(commandBuffer);
+		auto& pUniform = pShader->getUniformBuffer("UBOShadowmap");
+		pUniform->set("viewProjMat", point_light_matrices);
+		pUniform->set("lightPos", point_light_positions);
+		pUniform->set("passedLights", point_light_count);
+		pUniform->set("farPlane", 25.f);
+		pShader->predraw(commandBuffer);
 
-		for (auto& meshlet : mesh.vMeshlets)
+		auto view = registry.view<FTransformComponent, FMeshComponent>();
+		for (auto [entity, transform, mesh] : view.each())
 		{
-			auto& pPush = pShader->getPushBlock("modelData");
-			pPush->set("model", transform.model);
-			pPush->flush(commandBuffer);
+			auto& vbo = EGGraphics->getVertexBuffer(mesh.vbo_id);
 
-			commandBuffer.drawIndexed(meshlet.index_count, 1, meshlet.begin_index, 0, 0);
+			vbo->bind(commandBuffer);
+
+			for (auto& meshlet : mesh.vMeshlets)
+			{
+				auto& pPush = pShader->getPushBlock("modelData");
+				pPush->set("model", transform.model);
+				pPush->flush(commandBuffer);
+
+				commandBuffer.drawIndexed(meshlet.index_count, 1, meshlet.begin_index, 0, 0);
+			}
 		}
 	}
 }

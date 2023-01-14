@@ -62,7 +62,7 @@ float getOmniShadow(samplerCubeArrayShadow shadomwap_tex, vec3 fragPos, vec3 vie
 	bias = clamp(bias, 0.0, 0.003);
 	bias = 0.0025;
 
-	bool enablePCF = true;
+	bool enablePCF = false;
 	if (enablePCF)
 		shadow = omniShadowFilterPCF(shadomwap_tex, shadowClip, bias, layer);
 	else

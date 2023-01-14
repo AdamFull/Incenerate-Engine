@@ -1,12 +1,16 @@
 #include "APIHandle.h"
 
+#include <utility/uthreading.hpp>
+
 #include "system/window/WindowHandle.h"
+#include "system/filesystem/filesystem.h"
 #include "Engine.h"
 
 #include "image/Image2D.h"
 #include "image/ImageCubemap.h"
 
 using namespace engine::graphics;
+using namespace engine::system;
 using namespace engine::ecs;
 using namespace engine::system::window;
 
@@ -48,6 +52,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         mStageInfos["shadow"].viewport.offset = vk::Offset2D(0, 0);
         mStageInfos["shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
         mStageInfos["shadow"].bIgnoreRecreation = true;
+        mStageInfos["shadow"].bFlipViewport = false;
         mStageInfos["shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, MAX_SPOT_LIGHT_COUNT);
         mStageInfos["shadow"].vDescriptions.emplace_back("direct_shadowmap_tex");
         mStageInfos["shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArrayCube, MAX_POINT_LIGHT_COUNT);
@@ -379,8 +384,17 @@ size_t CAPIHandle::addImage(const std::string& name, std::unique_ptr<CImage>&& i
 
 size_t CAPIHandle::addImage(const std::string& name, const std::string& path)
 {
-    auto image = std::make_unique<CImage>(pDevice.get());
-    image->create(path);
+    std::unique_ptr<CImage> image = std::make_unique<CImage>(pDevice.get());
+    
+     if (pImageManager->get_id(name) == invalid_index)
+     {
+         if (fs::is_ktx_format(path))
+             image->create(path);
+         else
+             image->create(path, vk::Format::eR8G8B8A8Unorm);
+     }
+    
+    
     return addImage(name, std::move(image));
 }
 

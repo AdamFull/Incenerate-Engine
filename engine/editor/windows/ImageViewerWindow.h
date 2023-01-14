@@ -1,5 +1,6 @@
 #pragma once
 
+#include "event/Event.hpp"
 #include "WindowBase.h"
 #include "graphics/descriptors/DescriptorSet.h"
 
@@ -16,7 +17,7 @@ namespace engine
 			void create() override;
 			void __draw(float fDt) override;
 		private:
-
+			void OnOpenImage(CEvent& event);
 		private:
 			size_t openned_image{ invalid_index };
 			std::unique_ptr<graphics::CDescriptorSet> pDescriptorSet;
