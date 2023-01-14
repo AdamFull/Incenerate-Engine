@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "graphics/image/ImageCubemap.h"
 
-#include "ecs/components/SkyboxComponent.h"
+#include "ecs/components/EnvironmentComponent.h"
 #include "ecs/components/CameraComponent.h"
 #include "ecs/components/TransformComponent.h"
 #include "ecs/components/DirectionalLightComponent.h"
@@ -98,7 +98,7 @@ void CCompositionSystem::__update(float fDt)
 	auto index = EGGraphics->getDevice()->getCurrentFrame();
 
 	auto eskybox = get_active_skybox(registry);
-	FSkyboxComponent* skybox = registry.try_get<FSkyboxComponent>(eskybox);
+	FEnvironmentComponent* skybox = registry.try_get<FEnvironmentComponent>(eskybox);
 
 	FCameraComponent* camera{ nullptr };
 

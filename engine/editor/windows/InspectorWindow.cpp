@@ -12,15 +12,18 @@
 #include "ecs/components/CameraComponent.h"
 #include "ecs/components/MeshComponent.h"
 #include "ecs/components/ScriptComponent.h"
-#include "ecs/components/SkyboxComponent.h"
+#include "ecs/components/EnvironmentComponent.h"
 #include "ecs/components/DirectionalLightComponent.h"
 #include "ecs/components/PointLightComponent.h"
 #include "ecs/components/SpotLightComponent.h"
 #include "ecs/components/SceneComponent.h"
 
+#include "ecs/helper.hpp"
+
 #include "system/filesystem/filesystem.h"
 
 #include "loaders/MeshLoader.h"
+#include "loaders/ImageLoader.h"
 
 using namespace engine::editor;
 using namespace engine::system;
@@ -95,7 +98,7 @@ void CEditorInspector::__draw(float fDt)
 			try_add_menu_item<FAudioComponent>("Audio", selected);
 			try_add_menu_item<FCameraComponent>("Camera", selected);
 			try_add_menu_item<FScriptComponent>("Script", selected);
-			try_add_menu_item<FSkyboxComponent>("Skybox", selected);
+			try_add_menu_item<FEnvironmentComponent>("Environment", selected);
 			try_add_menu_item<FDirectionalLightComponent>("Directional light", selected);
 			try_add_menu_item<FSpotLightComponent>("Spot light", selected);
 			try_add_menu_item<FPointLightComponent>("Point light", selected);
@@ -118,7 +121,7 @@ void CEditorInspector::__draw(float fDt)
 			[](auto*) {});
 		try_show_edit<FScriptComponent>("Script", selected,
 			[this](auto* object) { scriptEdit(object); });
-		try_show_edit<FSkyboxComponent>("Skybox", selected,
+		try_show_edit<FEnvironmentComponent>("Environment", selected,
 			[this](auto* object) { skyboxEdit(object); });
 		try_show_edit<FSceneComponent>("Scene", selected,
 			[this](auto* object) { sceneEdit(object); });
@@ -184,12 +187,14 @@ void CEditorInspector::__draw(float fDt)
 				}
 				else if (fs::is_skybox_format(source))
 				{
-					if (!registry.try_get<FSkyboxComponent>(selected))
+					std::unique_ptr<FImageCreateInfo> pImageCI;
+					CImageLoader::load(source, pImageCI);
+					if (!registry.try_get<FEnvironmentComponent>(selected) && pImageCI->isCubemap)
 					{
-						FSkyboxComponent nskybox{};
+						FEnvironmentComponent nskybox{};
 						nskybox.source = source.string();
 
-						registry.emplace<FSkyboxComponent>(selected, std::move(nskybox));
+						registry.emplace<FEnvironmentComponent>(selected, std::move(nskybox));
 					}
 				}
 				else if (fs::is_mesh_format(source))
@@ -329,8 +334,11 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 	}
 }
 
-void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
+void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 {
+	auto& registry = EGCoordinator;
+	auto self = EGEditor->getLastSelection();
+
 	ImGui::InputText("Source", &object->source);
 	if (ImGui::BeginDragDropTarget())
 	{
@@ -341,7 +349,10 @@ void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
 
 			if (fs::is_skybox_format(source))
 			{
-				if (object->source != source)
+				std::unique_ptr<FImageCreateInfo> pImageCI;
+				CImageLoader::load(source, pImageCI);
+
+				if (object->source != source && pImageCI->isCubemap)
 				{
 					object->source = source.string();
 					if (object->loaded)
@@ -355,20 +366,19 @@ void CEditorInspector::skyboxEdit(FSkyboxComponent* object)
 					}
 					else
 					{
-						auto& registry = EGCoordinator;
-						auto self = EGEditor->getLastSelection();
-
-						FSkyboxComponent nskybox{};
+						FEnvironmentComponent nskybox{};
 						nskybox.source = source.string();
 
-						registry.remove<FSkyboxComponent>(self);
-						registry.emplace<FSkyboxComponent>(self, std::move(nskybox));
+						registry.remove<FEnvironmentComponent>(self);
+						registry.emplace<FEnvironmentComponent>(self, std::move(nskybox));
 					}
 				}
 			}
 		}
 		ImGui::EndDragDropTarget();
 	}
+	if(ImGui::GCheckbox("Active", &object->active) && object->active)
+		set_active_skybox(registry, self);
 }
 
 void CEditorInspector::sceneEdit(FSceneComponent* object)

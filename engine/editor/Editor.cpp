@@ -25,7 +25,7 @@
 #include "ecs/components/MeshComponent.h"
 #include "ecs/components/SceneComponent.h"
 #include "ecs/components/ScriptComponent.h"
-#include "ecs/components/SkyboxComponent.h"
+#include "ecs/components/EnvironmentComponent.h"
 #include "ecs/components/SpriteComponent.h"
 
 
@@ -147,7 +147,7 @@ void CEditor::create()
     mEditorIcons[get_class_id<FMeshComponent>()] = ICON_MDI_SHAPE;
     mEditorIcons[get_class_id<FSceneComponent>()] = ICON_MDI_SHAPE;
     mEditorIcons[get_class_id<FScriptComponent>()] = ICON_MDI_SCRIPT;
-    mEditorIcons[get_class_id<FSkyboxComponent>()] = ICON_MDI_EARTH;
+    mEditorIcons[get_class_id<FEnvironmentComponent>()] = ICON_MDI_EARTH;
     mEditorIcons[get_class_id<FSpriteComponent>()] = ICON_MDI_IMAGE;
 
     auto& registry = EGCoordinator;

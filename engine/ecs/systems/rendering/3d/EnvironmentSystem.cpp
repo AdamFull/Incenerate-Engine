@@ -4,7 +4,7 @@
 #include "graphics/image/Image2D.h"
 #include "graphics/image/ImageCubemap.h"
 
-#include "ecs/components/SkyboxComponent.h"
+#include "ecs/components/EnvironmentComponent.h"
 #include "ecs/components/TransformComponent.h"
 #include "ecs/components/CameraComponent.h"
 
@@ -34,32 +34,35 @@ void CEnvironmentSystem::__update(float fDt)
 
 	if (camera)
 	{
-		auto view = registry.view<FTransformComponent, FSkyboxComponent>();
+		auto view = registry.view<FTransformComponent, FEnvironmentComponent>();
 		for (auto [entity, transform, skybox] : view.each())
 		{
-			auto& vbo = EGGraphics->getVertexBuffer(skybox.vbo_id);
-
-			vbo->bind(commandBuffer);
-
-			auto& pShader = EGGraphics->getShader(skybox.shader_id);
-			if (pShader)
+			if (skybox.active && skybox.loaded)
 			{
-				auto normal = glm::transpose(glm::inverse(transform.model));
+				auto& vbo = EGGraphics->getVertexBuffer(skybox.vbo_id);
 
-				auto& pUBO = pShader->getUniformBuffer("FUniformData");
-				pUBO->set("model", transform.model);
-				pUBO->set("view", camera->view);
-				pUBO->set("projection", camera->projection);
-				pUBO->set("normal", normal);
-				pUBO->set("viewDir", camera->viewPos);
-				pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent(true));
-				pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
+				vbo->bind(commandBuffer);
 
-				pShader->addTexture("samplerCubeMap", skybox.origin);
+				auto& pShader = EGGraphics->getShader(skybox.shader_id);
+				if (pShader)
+				{
+					auto normal = glm::transpose(glm::inverse(transform.model));
 
-				pShader->predraw(commandBuffer);
+					auto& pUBO = pShader->getUniformBuffer("FUniformData");
+					pUBO->set("model", transform.model);
+					pUBO->set("view", camera->view);
+					pUBO->set("projection", camera->projection);
+					pUBO->set("normal", normal);
+					pUBO->set("viewDir", camera->viewPos);
+					pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent(true));
+					pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
 
-				commandBuffer.drawIndexed(vbo->getLastIndex(), 1, 0, 0, 0);
+					pShader->addTexture("samplerCubeMap", skybox.origin);
+
+					pShader->predraw(commandBuffer);
+
+					commandBuffer.drawIndexed(vbo->getLastIndex(), 1, 0, 0, 0);
+				}
 			}
 		}
 	}

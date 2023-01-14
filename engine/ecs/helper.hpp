@@ -1,7 +1,7 @@
 #pragma once
 
 #include "components/CameraComponent.h"
-#include "components/SkyboxComponent.h"
+#include "components/EnvironmentComponent.h"
 
 namespace engine
 {
@@ -18,10 +18,19 @@ namespace engine
 
 		static entt::entity get_active_skybox(const entt::registry& registry)
 		{
-			auto view = registry.view<FSkyboxComponent>();
+			auto view = registry.view<FEnvironmentComponent>();
 			for (auto [entity, skybox] : view.each())
+				if(skybox.active && skybox.loaded)
 					return entity;
 			return entt::null;
+		}
+
+		static void set_active_skybox(entt::registry& registry, const entt::entity& target)
+		{
+			auto view = registry.view<FEnvironmentComponent>();
+			for (auto [entity, skybox] : view.each())
+				if (skybox.active && entity != target)
+					skybox.active = false;
 		}
 	}
 }

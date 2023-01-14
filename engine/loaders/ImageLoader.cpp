@@ -13,9 +13,9 @@
 
 
 using namespace engine::system;
-using namespace engine::graphics;
+using namespace engine::loaders;
 
-void CImageLoader::load(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI)
+void CImageLoader::load(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     auto parentPath = fs::get_workdir();
     imageCI = std::make_unique<FImageCreateInfo>();
@@ -24,15 +24,15 @@ void CImageLoader::load(const std::filesystem::path& fsPath, std::unique_ptr<FIm
     auto texFormat = getTextureFormat(fsPath);
     switch (texFormat)
     {
-    case EImageFormat::eKTX: { loadKTX(fsFullPath, imageCI); } break;
-    case EImageFormat::eKTX2: { loadKTX2(fsFullPath, imageCI); } break;
-    case EImageFormat::eDDS: { loadDDS(fsFullPath, imageCI); } break;
+    case EImageFormat::eKTX: { loadKTX(fsFullPath, imageCI, header); } break;
+    case EImageFormat::eKTX2: { loadKTX2(fsFullPath, imageCI, header); } break;
+    case EImageFormat::eDDS: { loadDDS(fsFullPath, imageCI, header); } break;
 
-    default: { loadSTB(fsFullPath, imageCI); } break;
+    default: { loadSTB(fsFullPath, imageCI, header); } break;
     }
 }
 
-void CImageLoader::loadSTB(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI)
+void CImageLoader::loadSTB(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     auto filename = fsPath.string();
 
@@ -44,8 +44,11 @@ void CImageLoader::loadSTB(const std::filesystem::path& fsPath, std::unique_ptr<
     imageCI->baseDepth = 1;
     imageCI->dataSize = width * height * 4;
 
-    imageCI->pData = std::make_unique<uint8_t[]>(imageCI->dataSize);
-    std::memcpy(imageCI->pData.get(), data, imageCI->dataSize);
+    if (!header)
+    {
+        imageCI->pData = std::make_unique<uint8_t[]>(imageCI->dataSize);
+        std::memcpy(imageCI->pData.get(), data, imageCI->dataSize);
+    }
     
     imageCI->isArray = false;
     imageCI->isCompressed = false;
@@ -60,7 +63,7 @@ void CImageLoader::loadSTB(const std::filesystem::path& fsPath, std::unique_ptr<
     stbi_image_free(data);
 }
 
-void CImageLoader::loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI)
+void CImageLoader::loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     ktxTexture* kTexture{ nullptr };
 
@@ -80,9 +83,13 @@ void CImageLoader::loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<
     imageCI->numFaces = kTexture->numFaces;
 
     imageCI->dataSize = kTexture->dataSize;
-    imageCI->pData = std::make_unique<uint8_t[]>(imageCI->dataSize);
-    std::memcpy(imageCI->pData.get(), kTexture->pData, imageCI->dataSize);
 
+    if (!header)
+    {
+        imageCI->pData = std::make_unique<uint8_t[]>(imageCI->dataSize);
+        std::memcpy(imageCI->pData.get(), kTexture->pData, imageCI->dataSize);
+    }
+    
     imageCI->pixFormat = static_cast<vk::Format>(ktxTexture_GetVkFormat(kTexture));
 
     auto numLayers = imageCI->isCubemap ? imageCI->numFaces : imageCI->numLayers;
@@ -100,7 +107,7 @@ void CImageLoader::loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<
     ktxTexture_Destroy(kTexture);
 }
 
-void CImageLoader::loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI)
+void CImageLoader::loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     ktxTexture2* kTexture{ nullptr };
 
@@ -119,15 +126,18 @@ void CImageLoader::loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr
     imageCI->numLayers = kTexture->numLayers;
     imageCI->numFaces = kTexture->numFaces;
 
-    if (ktxTexture2_NeedsTranscoding(kTexture))
+    if (!header)
     {
-        ktxresult = ktxTexture2_TranscodeBasis(kTexture, KTX_TTF_BC7_RGBA, 0);
-        log_cerror(ktxresult == KTX_SUCCESS, "Failed to transcode texture.");
-    }
+        if (ktxTexture2_NeedsTranscoding(kTexture))
+        {
+            ktxresult = ktxTexture2_TranscodeBasis(kTexture, KTX_TTF_BC7_RGBA, 0);
+            log_cerror(ktxresult == KTX_SUCCESS, "Failed to transcode texture.");
+        }
 
-    imageCI->dataSize = kTexture->dataSize;
-    imageCI->pData = std::make_unique<uint8_t[]>(imageCI->dataSize);
-    std::memcpy(imageCI->pData.get(), kTexture->pData, imageCI->dataSize);
+        imageCI->dataSize = kTexture->dataSize;
+        imageCI->pData = std::make_unique<uint8_t[]>(imageCI->dataSize);
+        std::memcpy(imageCI->pData.get(), kTexture->pData, imageCI->dataSize);
+    }    
 
     imageCI->pixFormat = static_cast<vk::Format>(kTexture->vkFormat);
 
@@ -146,7 +156,7 @@ void CImageLoader::loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr
     ktxTexture_Destroy((ktxTexture*)kTexture);
 }
 
-void CImageLoader::loadDDS(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI)
+void CImageLoader::loadDDS(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
 
 }

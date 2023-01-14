@@ -10,7 +10,7 @@
 #include "ecs/components/DirectionalLightComponent.h"
 #include "ecs/components/PointLightComponent.h"
 #include "ecs/components/SpotLightComponent.h"
-#include "ecs/components/SkyboxComponent.h"
+#include "ecs/components/EnvironmentComponent.h"
 #include "ecs/components/ScriptComponent.h"
 #include "ecs/components/SceneComponent.h"
 
@@ -23,6 +23,8 @@
 #include "ecs/systems/CameraControlSystem.h"
 #include "ecs/systems/InputSystem.h"
 #include "ecs/systems/ScriptingSystem.h"
+
+#include "ecs/helper.hpp"
 
 #include "loaders/MeshLoader.h"
 
@@ -77,7 +79,7 @@ void destroy_scene(entt::registry& reg, entt::entity entity)
 
 void construct_skybox(entt::registry& reg, entt::entity entity)
 {
-	auto& skybox = reg.get<FSkyboxComponent>(entity);
+	auto& skybox = reg.get<FEnvironmentComponent>(entity);
 
 	if (!skybox.loaded && !skybox.source.empty())
 	{
@@ -91,12 +93,13 @@ void construct_skybox(entt::registry& reg, entt::entity entity)
 		auto& pVBO = EGGraphics->getVertexBuffer(skybox.vbo_id);
 		pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
 		pVBO->create();
+		set_active_skybox(reg, entity);
 	}
 }
 
 void destroy_skybox(entt::registry& reg, entt::entity entity)
 {
-	auto& skybox = reg.get<FSkyboxComponent>(entity);
+	auto& skybox = reg.get<FEnvironmentComponent>(entity);
 
 	if (skybox.loaded)
 	{
@@ -135,8 +138,8 @@ void CEngine::initEntityComponentSystem()
 	registry.on_construct<FSceneComponent>().connect<&construct_scene>();
 	registry.on_destroy<FSceneComponent>().connect<&destroy_scene>();
 
-	registry.on_construct<FSkyboxComponent>().connect<&construct_skybox>();
-	registry.on_destroy<FSkyboxComponent>().connect<&destroy_skybox>();
+	registry.on_construct<FEnvironmentComponent>().connect<&construct_skybox>();
+	registry.on_destroy<FEnvironmentComponent>().connect<&destroy_skybox>();
 
 	registry.on_construct<FAudioComponent>().connect<&construct_audio>();
 	registry.on_destroy<FAudioComponent>().connect<&destroy_audio>();

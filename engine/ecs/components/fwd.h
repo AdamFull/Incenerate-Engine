@@ -10,7 +10,7 @@ namespace engine
 		struct FHierarchyComponent;
 		struct FPointLightComponent;
 		struct FSceneComponent;
-		struct FSkyboxComponent;
+		struct FEnvironmentComponent;
 		struct FScriptComponent;
 		struct FSpotLightComponent;
 		struct FSpriteComponent;

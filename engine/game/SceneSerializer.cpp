@@ -14,7 +14,7 @@
 #include "ecs/components/DirectionalLightComponent.h"
 #include "ecs/components/PointLightComponent.h"
 #include "ecs/components/SpotLightComponent.h"
-#include "ecs/components/SkyboxComponent.h"
+#include "ecs/components/EnvironmentComponent.h"
 #include "ecs/components/ScriptComponent.h"
 #include "ecs/components/SceneComponent.h"
 
@@ -92,8 +92,8 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 			if (name == "audio")
 				registry.emplace<FAudioComponent>(node, component.get<FAudioComponent>());
 
-			if (name == "skybox")
-				registry.emplace<FSkyboxComponent>(node, component.get<FSkyboxComponent>());
+			if (name == "environment")
+				registry.emplace<FEnvironmentComponent>(node, component.get<FEnvironmentComponent>());
 				
 
 			if (name == "sprite")
@@ -142,8 +142,8 @@ void CSceneLoader::serializeNodes(const entt::entity& parent, std::vector<FScene
 		object.mComponents.emplace("camera", nlohmann::json(*camera));
 	if (auto audio = registry.try_get<FAudioComponent>(parent))
 		object.mComponents.emplace("audio", nlohmann::json(*audio));
-	if (auto skybox = registry.try_get<FSkyboxComponent>(parent))
-		object.mComponents.emplace("skybox", nlohmann::json(*skybox));
+	if (auto environment = registry.try_get<FEnvironmentComponent>(parent))
+		object.mComponents.emplace("environment", nlohmann::json(*environment));
 	if (auto sprite = registry.try_get<FSpriteComponent>(parent))
 		object.mComponents.emplace("sprite", nlohmann::json(*sprite));
 	if (auto directionallight = registry.try_get<FDirectionalLightComponent>(parent))

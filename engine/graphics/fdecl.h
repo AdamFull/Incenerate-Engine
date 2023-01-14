@@ -24,7 +24,6 @@ namespace engine
 		class CImage2DArray;
 		class CImageCubemap;
 		class CImageCubemapArray;
-		class CImageLoader;
 
 		class CHandler;
 		class CPushHandler;

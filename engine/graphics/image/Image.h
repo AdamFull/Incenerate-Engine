@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ImageLoader.h"
+#include "loaders/ImageLoader.h"
 
 namespace engine
 {
@@ -27,11 +27,11 @@ namespace engine
 
 			void generateMipmaps(vk::Image& image, uint32_t mipLevels, vk::Format format, uint32_t width, uint32_t height, vk::ImageAspectFlags aspectFlags);
 
-			void initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Format format, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode,
+			void initializeTexture(std::unique_ptr<loaders::FImageCreateInfo>& info, vk::Format format, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode,
 				vk::Filter filter, vk::SampleCountFlagBits samples);
 
-			void writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format format, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor);
-			void loadFromMemory(std::unique_ptr<FImageCreateInfo>& info, vk::Format format,
+			void writeImageData(std::unique_ptr<loaders::FImageCreateInfo>& info, vk::Format format, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor);
+			void loadFromMemory(std::unique_ptr<loaders::FImageCreateInfo>& info, vk::Format format,
 				vk::ImageUsageFlags flags = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
 				vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor, vk::SamplerAddressMode addressMode = vk::SamplerAddressMode::eRepeat,
 				vk::Filter filter = vk::Filter::eLinear);
@@ -40,7 +40,7 @@ namespace engine
 			void transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLayout newLayout, vk::ImageAspectFlags aspectFlags, bool use_mips = true, uint32_t base_mip = 0);
 			void transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags aspectFlags, bool use_mips = true, uint32_t base_mip = 0);
 
-			bool isSupportedDimension(std::unique_ptr<FImageCreateInfo>& info);
+			bool isSupportedDimension(std::unique_ptr<loaders::FImageCreateInfo>& info);
 
 			void blitImage(vk::CommandBuffer& commandBuffer, vk::ImageLayout dstLayout, vk::ImageAspectFlags aspectFlags, uint32_t level, int32_t mipWidth, int32_t mipHeight);
 

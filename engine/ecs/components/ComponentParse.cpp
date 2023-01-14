@@ -6,7 +6,7 @@
 #include "DirectionalLightComponent.h"
 #include "PointLightComponent.h"
 #include "SpotLightComponent.h"
-#include "SkyboxComponent.h"
+#include "EnvironmentComponent.h"
 #include "ScriptComponent.h"
 #include "SceneComponent.h"
 #include "HierarchyComponent.h"
@@ -155,15 +155,17 @@ namespace engine
 		}
 
 
-		void to_json(nlohmann::json& json, const FSkyboxComponent& type)
+		void to_json(nlohmann::json& json, const FEnvironmentComponent& type)
 		{
 			json = nlohmann::json{};
 			utl::serialize_from("source", json, type.source, !type.source.empty());
+			utl::serialize_from("active", json, type.active, type.active);
 		}
 
-		void from_json(const nlohmann::json& json, FSkyboxComponent& type)
+		void from_json(const nlohmann::json& json, FEnvironmentComponent& type)
 		{
 			utl::parse_to("source", json, type.source);
+			utl::parse_to("active", json, type.active);
 		}
 
 

@@ -2,7 +2,7 @@
 
 namespace engine
 {
-	namespace graphics
+	namespace loaders
 	{
 		enum class EImageFormat
 		{
@@ -39,12 +39,12 @@ namespace engine
         class CImageLoader
         {
         public:
-            static void load(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI);
+            static void load(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header = false);
         private:
-            static void loadSTB(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI);
-            static void loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI);
-            static void loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI);
-            static void loadDDS(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI);
+            static void loadSTB(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            static void loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            static void loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            static void loadDDS(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
             static EImageFormat getTextureFormat(const std::filesystem::path& fsPath);
         };
 	}

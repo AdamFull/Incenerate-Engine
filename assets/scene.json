@@ -1,7 +1,7 @@
 [
   {
     "components": {
-      "skybox": {
+      "environment": {
         "source": "textures/cubemaps/SkyhighFluffycloudField4k.ktx2"
       },
       "transform": {

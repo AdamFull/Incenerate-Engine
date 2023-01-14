@@ -20,7 +20,7 @@ namespace engine
 			void audioEdit(ecs::FAudioComponent* object);
 			void cameraEdit(ecs::FCameraComponent* object);
 			void scriptEdit(ecs::FScriptComponent* object);
-			void skyboxEdit(ecs::FSkyboxComponent* object);
+			void skyboxEdit(ecs::FEnvironmentComponent* object);
 			void sceneEdit(ecs::FSceneComponent* object);
 		};
 	}

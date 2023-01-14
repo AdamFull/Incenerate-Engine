@@ -6,7 +6,7 @@ namespace engine
 {
 	namespace ecs
 	{
-		struct FSkyboxComponent
+		struct FEnvironmentComponent
 		{
 			std::string source;
 			size_t vbo_id{ invalid_index };
@@ -15,9 +15,10 @@ namespace engine
 			size_t prefiltred{ invalid_index };
 			size_t irradiance{ invalid_index };
 			bool loaded{ false };
+			bool active{ true };
 		};
 
-		void to_json(nlohmann::json& json, const FSkyboxComponent& type);
-		void from_json(const nlohmann::json& json, FSkyboxComponent& type);
+		void to_json(nlohmann::json& json, const FEnvironmentComponent& type);
+		void from_json(const nlohmann::json& json, FEnvironmentComponent& type);
 	}
 }

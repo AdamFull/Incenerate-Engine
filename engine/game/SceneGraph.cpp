@@ -8,7 +8,7 @@ using namespace engine::game;
 #include "ecs/components/TransformComponent.h"
 #include "ecs/components/HierarchyComponent.h"
 #include "ecs/components/AudioComponent.h"
-#include "ecs/components/SkyboxComponent.h"
+#include "ecs/components/EnvironmentComponent.h"
 #include "ecs/components/MeshComponent.h"
 #include "ecs/components/SceneComponent.h"
 #include "ecs/components/SpriteComponent.h"
@@ -44,8 +44,8 @@ void scenegraph::destroy_node(entt::entity node)
 	if (registry.try_get<FAudioComponent>(node))
 		registry.remove<FAudioComponent>(node);
 
-	if (registry.try_get<FSkyboxComponent>(node))
-		registry.remove<FSkyboxComponent>(node);
+	if (registry.try_get<FEnvironmentComponent>(node))
+		registry.remove<FEnvironmentComponent>(node);
 
 	if (registry.try_get<FMeshComponent>(node))
 		registry.remove<FMeshComponent>(node);
