@@ -3,6 +3,8 @@
 #include "Engine.h"
 #include "system/window/WindowHandle.h"
 
+#include "ecs/components/components.h"
+
 #include "ecs/helper.hpp"
 
 using namespace engine::ecs;

@@ -2,8 +2,7 @@
 
 #include "Engine.h"
 
-#include "ecs/components/TransformComponent.h"
-#include "ecs/components/HierarchyComponent.h"
+#include "ecs/components/components.h"
 
 using namespace engine::ecs;
 

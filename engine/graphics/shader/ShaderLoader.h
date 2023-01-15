@@ -13,7 +13,7 @@ namespace engine
 			uint32_t subpass{ 0 };
 			size_t usages{ 1 };
 			bool doubleSided{ false };
-			bool alphaBlend{ false };
+			EAlphaMode alphaBlend;
 		};
 
 		class CShaderLoader

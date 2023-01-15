@@ -8,13 +8,7 @@
 
 #include "graphics/rendering/material/Material.h"
 
-#include "ecs/components/HierarchyComponent.h"
-#include "ecs/components/TransformComponent.h"
-#include "ecs/components/CameraComponent.h"
-#include "ecs/components/MeshComponent.h"
-#include "ecs/components/DirectionalLightComponent.h"
-#include "ecs/components/PointLightComponent.h"
-#include "ecs/components/SpotLightComponent.h"
+#include "ecs/components/components.h"
 
 #include "system/filesystem/filesystem.h"
 
@@ -503,9 +497,11 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         {
             tinygltf::Parameter param = mat.additionalValues.at("alphaMode");
             if (param.string_value == "BLEND")
-                params.alphaMode = FMaterial::EAlphaMode::EBLEND;
-            if (param.string_value == "MASK")
-                params.alphaMode = FMaterial::EAlphaMode::EMASK;
+                params.alphaMode = EAlphaMode::EBLEND;
+            else  if (param.string_value == "MASK")
+                params.alphaMode = EAlphaMode::EMASK;
+            else
+                params.alphaMode = EAlphaMode::EOPAQUE;
         }
 
         if (mat.additionalValues.find("doubleSided") != mat.additionalValues.end())

@@ -2,9 +2,7 @@
 
 #include "Engine.h"
 
-#include "ecs/components/PointLightComponent.h"
-#include "ecs/components/MeshComponent.h"
-#include "ecs/components/TransformComponent.h"
+#include "ecs/components/components.h"
 
 using namespace engine::graphics;
 using namespace engine::ecs;

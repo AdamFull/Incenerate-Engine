@@ -30,7 +30,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     auto dynamicStateEnables = pShader->getDynamicStateEnables();
     auto enableTesselation = pShader->getTesselationFlag();
     auto topology = pShader->getPrimitiveTopology();
-    auto alphaBlend = pShader->isBlendAlpha();
+    auto alphaMode = pShader->alphaMode();
     auto doubleSided = pShader->isDoubleSided();
 
     auto attributeDescription = FVertex::getAttributeDescriptions();
@@ -58,11 +58,12 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
         if (desc.format == depthformat)
             continue;
 
-        bool hasAlpha = desc.format == vk::Format::eR8G8B8A8Srgb;
+        bool hasAlpha = desc.format == vk::Format::eR8G8B8A8Srgb && alphaMode == EAlphaMode::EBLEND;
 
         vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
         colorBlendAttachment.blendEnable = hasAlpha;
+
         colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
         colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
         colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;

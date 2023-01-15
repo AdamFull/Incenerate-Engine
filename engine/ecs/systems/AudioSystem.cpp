@@ -2,9 +2,7 @@
 
 #include "Engine.h"
 
-#include "ecs/components/AudioComponent.h"
-#include "ecs/components/CameraComponent.h"
-#include "ecs/components/TransformComponent.h"
+#include "ecs/components/components.h"
 
 using namespace engine::ecs;
 using namespace engine::audio;

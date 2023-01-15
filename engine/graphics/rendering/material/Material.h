@@ -1,18 +1,13 @@
 #pragma once
 
+#include "graphics/APIStructures.h"
+
 namespace engine
 {
 	namespace graphics
 	{
 		struct FMaterial
 		{
-			enum class EAlphaMode
-			{
-				EOPAQUE,
-				EMASK,
-				EBLEND
-			};
-
 			EAlphaMode alphaMode{ EAlphaMode::EOPAQUE };
 			float alphaCutoff{ 0.5f };
 			glm::vec3 emissiveFactor{ 0.f };

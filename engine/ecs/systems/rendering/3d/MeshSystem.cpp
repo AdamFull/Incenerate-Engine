@@ -3,9 +3,7 @@
 
 #include "Engine.h"
 
-#include "ecs/components/TransformComponent.h"
-#include "ecs/components/MeshComponent.h"
-#include "ecs/components/CameraComponent.h"
+#include "ecs/components/components.h"
 #include "ecs/helper.hpp"
 
 using namespace engine::graphics;
@@ -22,14 +20,22 @@ void CMeshSystem::__update(float fDt)
 	auto editorMode = EGEngine->isEditorMode();
 	auto state = EGEngine->getState();
 
-	auto commandBuffer = EGGraphics->getCommandBuffer();
-
 	FCameraComponent* camera{ nullptr };
 
 	if (editorMode && state == EEngineState::eEditing)
 		camera = registry.try_get<FCameraComponent>(EGEditor->getCamera());
 	else
 		camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
+
+	draw(camera, EAlphaMode::EOPAQUE);
+	draw(camera, EAlphaMode::EMASK);
+	draw(camera, EAlphaMode::EBLEND);
+}
+
+void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
+{
+	auto& registry = EGCoordinator;
+	auto commandBuffer = EGGraphics->getCommandBuffer();
 
 	if (camera)
 	{
@@ -46,12 +52,14 @@ void CMeshSystem::__update(float fDt)
 				needToRender = camera->frustum.checkBox(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
 				meshlet.bWasCulled = needToRender;
 
-				if (needToRender)
+				auto& pMaterial = EGGraphics->getMaterial(meshlet.material);
+				if (pMaterial)
 				{
-					auto& pMaterial = EGGraphics->getMaterial(meshlet.material);
-					if (pMaterial)
+					auto& params = pMaterial->getParameters();
+					needToRender = needToRender && (alphaMode == params.alphaMode);
+
+					if (needToRender)
 					{
-						auto& params = pMaterial->getParameters();
 						auto& pShader = EGGraphics->getShader(pMaterial->getShader());
 						if (pShader)
 						{
@@ -71,6 +79,7 @@ void CMeshSystem::__update(float fDt)
 							{
 								pSurface->set("baseColorFactor", params.baseColorFactor);
 								pSurface->set("emissiveFactor", params.emissiveFactor);
+								pSurface->set("alphaMode", static_cast<int>(params.alphaMode));
 								pSurface->set("alphaCutoff", params.alphaCutoff);
 								pSurface->set("normalScale", params.normalScale);
 								pSurface->set("occlusionStrenth", params.occlusionStrenth);

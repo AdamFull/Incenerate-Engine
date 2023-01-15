@@ -59,6 +59,7 @@ layout(std140, binding = 7) uniform UBOMaterial
 {
 	vec4 baseColorFactor;
 	vec3 emissiveFactor;
+	int alphaMode;
 	float alphaCutoff;
 	float normalScale;
 	float occlusionStrenth;
@@ -78,7 +79,7 @@ void main()
 	vec3 viewDir = normalize(data.viewDir - inPosition.xyz);;
 	//texCoord = ParallaxMapping(height_tex, inUV, viewDir, 0.01, 8.0, 32.0);
 #endif
-	float alpha = material.alphaCutoff;
+
 //BASECOLOR
 	vec4 albedo_map = vec4(1.0);
 #ifdef HAS_BASECOLORMAP
@@ -88,6 +89,18 @@ void main()
 	albedo_map = vec4(albedo_map.rgb * material.baseColorFactor.rgb, albedo_map.a);
 #endif
 	albedo_map *= vec4(inColor, 1.0);
+
+	// Alpha modes
+	// 0 - opaque
+	// 1 - mask
+	// 2 - blend
+
+	// Alpha mode mask
+	if(material.alphaMode == 1) 
+	{
+		if(albedo_map.a <= material.alphaCutoff)
+			discard;
+	}
 
 //METALLIC ROUGHNESS
 	vec4 pbr_map = vec4(0.0);

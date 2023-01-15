@@ -53,7 +53,7 @@ namespace engine
 			bool getTesselationFlag() const { return programCI.tesselation; }
 			bool isVertexFree() const { return programCI.vertexfree; }
 			const std::string& getStage() const { return programCI.srStage; }
-			const bool isBlendAlpha() const { return bAlphaBlend; }
+			const EAlphaMode alphaMode() const { return _alphaMode; }
 			const bool isDoubleSided() const { return bDoubleSided; }
 
 			const std::unique_ptr<CShader>& getShader();
@@ -70,7 +70,7 @@ namespace engine
 			std::map<std::string, std::unique_ptr<CPushHandler>> mPushBlocks;
 
 			FProgramCreateInfo programCI;
-			bool bAlphaBlend{ false };
+			EAlphaMode _alphaMode;
 			bool bDoubleSided{ false };
 		};
 	}

@@ -4,9 +4,7 @@
 #include "graphics/image/Image2D.h"
 #include "graphics/image/ImageCubemap.h"
 
-#include "ecs/components/EnvironmentComponent.h"
-#include "ecs/components/TransformComponent.h"
-#include "ecs/components/CameraComponent.h"
+#include "ecs/components/components.h"
 
 #include "ecs/helper.hpp"
 

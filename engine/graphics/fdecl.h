@@ -4,6 +4,8 @@ namespace engine
 {
 	namespace graphics
 	{
+		enum class EAlphaMode;
+
 		class CAPIHandle;
 		class CDevice;
 		class CFramebuffer;

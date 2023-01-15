@@ -6,6 +6,13 @@ namespace engine
 {
 	namespace graphics
 	{
+		enum class EAlphaMode
+		{
+			EOPAQUE,
+			EMASK,
+			EBLEND
+		};
+
 		struct FProgramCreateInfo
 		{
 			std::string srStage{};

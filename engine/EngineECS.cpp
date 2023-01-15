@@ -1,28 +1,10 @@
 #include "Engine.h"
 
 // Components
-#include "ecs/components/AudioComponent.h"
-#include "ecs/components/MeshComponent.h"
-#include "ecs/components/TransformComponent.h"
-#include "ecs/components/HierarchyComponent.h"
-#include "ecs/components/CameraComponent.h"
-#include "ecs/components/SpriteComponent.h"
-#include "ecs/components/DirectionalLightComponent.h"
-#include "ecs/components/PointLightComponent.h"
-#include "ecs/components/SpotLightComponent.h"
-#include "ecs/components/EnvironmentComponent.h"
-#include "ecs/components/ScriptComponent.h"
-#include "ecs/components/SceneComponent.h"
+#include "ecs/components/components.h"
 
 // Systems
-#include "ecs/systems/HierarchySystem.h"
-#include "ecs/systems/AudioSystem.h"
-#include "ecs/systems/rendering/3DRenderSystem.h"
-#include "ecs/systems/rendering/2DRenderSystem.h"
-#include "ecs/systems/rendering/EditorRenderSystem.h"
-#include "ecs/systems/CameraControlSystem.h"
-#include "ecs/systems/InputSystem.h"
-#include "ecs/systems/ScriptingSystem.h"
+#include "ecs/systems/systems.h"
 
 #include "ecs/helper.hpp"
 

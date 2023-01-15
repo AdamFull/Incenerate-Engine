@@ -20,17 +20,7 @@
 #include "windows/ImageViewerWindow.h"
 #include "windows/SystemPerfomanceViewWindow.h"
 
-#include "ecs/components/TransformComponent.h"
-#include "ecs/components/SpotLightComponent.h"
-#include "ecs/components/PointLightComponent.h"
-#include "ecs/components/DirectionalLightComponent.h"
-#include "ecs/components/AudioComponent.h"
-#include "ecs/components/CameraComponent.h"
-#include "ecs/components/MeshComponent.h"
-#include "ecs/components/SceneComponent.h"
-#include "ecs/components/ScriptComponent.h"
-#include "ecs/components/EnvironmentComponent.h"
-#include "ecs/components/SpriteComponent.h"
+#include "ecs/components/components.h"
 
 #include "game/SceneGraph.hpp"
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ecs/systems/BaseSystem.h"
+#include "ecs/components/fwd.h"
 
 namespace engine
 {
@@ -14,6 +15,9 @@ namespace engine
 
 			void __create() override;
 			void __update(float fDt) override;
+
+		private:
+			void draw(const FCameraComponent* camera, graphics::EAlphaMode alphaMode);
 		};
 	}
 }

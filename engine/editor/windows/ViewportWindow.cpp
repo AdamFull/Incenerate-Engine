@@ -6,8 +6,7 @@
 #include <imgui/ImGuizmo.h>
 #include <editor/imgui_impl_vulkan.h>
 
-#include "ecs/components/TransformComponent.h"
-#include "ecs/components/HierarchyComponent.h"
+#include "ecs/components/components.h"
 #include "ecs/helper.hpp"
 
 #include <glm/gtc/type_ptr.hpp>

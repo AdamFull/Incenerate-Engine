@@ -36,7 +36,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size
 		auto& params = pMaterial->getParameters();
 		specials.usages = pMaterial->getUsageCount();
 		specials.doubleSided = params.doubleSided;
-		specials.alphaBlend = params.alphaMode == FMaterial::EAlphaMode::EBLEND;
+		specials.alphaBlend = params.alphaMode;
 
 		for (auto& definition : params.vCompileDefinitions)
 			specials.defines.emplace(definition, "");
@@ -55,7 +55,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 			defineBlock << "#define " << name << " " << value << '\n';
 
 		auto pShaderObject = std::make_unique<CShaderObject>(pDevice);
-		pShaderObject->bAlphaBlend = specials.alphaBlend;
+		pShaderObject->_alphaMode = specials.alphaBlend;
 		auto& pShader = pShaderObject->pShader;
 
 		for (const auto& [defineName, defineValue] : it->second.defines)

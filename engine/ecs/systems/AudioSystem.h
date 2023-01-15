@@ -2,8 +2,7 @@
 
 #include "BaseSystem.h"
 
-#include "ecs/components/CameraComponent.h"
-#include "ecs/components/TransformComponent.h"
+#include "ecs/components/fwd.h"
 
 namespace engine
 {
