@@ -116,6 +116,7 @@ void CEditor::create()
     init_info.ImageCount = device->getFramesInFlight();
     init_info.MSAASamples = vk::SampleCountFlagBits::e1;
     init_info.Subpass = 0;
+    init_info.vmaAllocator = device->getVMAAllocator();
     //init_info.CheckVkResultFn = check_vk_result;
     ImGui_ImplVulkan_Init(&init_info, fb->getRenderPass());
 
