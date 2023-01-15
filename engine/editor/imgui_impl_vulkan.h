@@ -44,7 +44,6 @@
 #define VK_NO_PROTOTYPES
 #endif
 #include <vulkan/vulkan.h>
-#include <vma/vk_mem_alloc.h>
 
 // Initialization data, for ImGui_ImplVulkan_Init()
 // [Please zero-clear before use!]
@@ -53,17 +52,16 @@ struct ImGui_ImplVulkan_InitInfo
     vk::Instance                      Instance;
     vk::PhysicalDevice                PhysicalDevice;
     vk::Device                        Device;
-    uint32_t                          QueueFamily;
+    uint32_t                        QueueFamily;
     vk::Queue                         Queue;
     vk::PipelineCache                 PipelineCache;
     vk::DescriptorPool                DescriptorPool;
-    uint32_t                          Subpass;
-    uint32_t                          MinImageCount;          // >= 2
-    uint32_t                          ImageCount;             // >= MinImageCount
+    uint32_t                        Subpass;
+    uint32_t                        MinImageCount;          // >= 2
+    uint32_t                        ImageCount;             // >= MinImageCount
     vk::SampleCountFlagBits           MSAASamples;            // >= VK_SAMPLE_COUNT_1_BIT (0 -> default to VK_SAMPLE_COUNT_1_BIT)
-    vk::AllocationCallbacks*          Allocator;
-    VmaAllocator                      vmaAllocator;
-    void                              (*CheckVkResultFn)(vk::Result err);
+    vk::AllocationCallbacks*        Allocator;
+    void                            (*CheckVkResultFn)(vk::Result err);
 };
 
 // Called by user code
@@ -160,8 +158,8 @@ struct ImGui_ImplVulkanH_Window
 // [Please zero-clear before use!]
 struct ImGui_ImplVulkanH_FrameRenderBuffers
 {
-    VmaAllocation         VertexBufferMemory;
-    VmaAllocation         IndexBufferMemory;
+    vk::DeviceMemory      VertexBufferMemory;
+    vk::DeviceMemory      IndexBufferMemory;
     vk::DeviceSize        VertexBufferSize;
     vk::DeviceSize        IndexBufferSize;
     vk::Buffer            VertexBuffer;
@@ -205,11 +203,11 @@ struct ImGui_ImplVulkan_Data
 
     // Font data
     vk::Sampler                   FontSampler;
-    VmaAllocation                 FontMemory;
+    vk::DeviceMemory              FontMemory;
     vk::Image                     FontImage;
     vk::ImageView                 FontView;
     vk::DescriptorSet             FontDescriptorSet;
-    VmaAllocation                 UploadBufferMemory;
+    vk::DeviceMemory              UploadBufferMemory;
     vk::Buffer                    UploadBuffer;
 
     // Render buffers for main window

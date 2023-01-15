@@ -76,9 +76,9 @@ bool ImGui_ImplVulkan_CreateDeviceObjects();
 void ImGui_ImplVulkan_DestroyDeviceObjects();
 void ImGui_ImplVulkanH_DestroyFrame(vk::Device device, ImGui_ImplVulkanH_Frame* fd, const vk::AllocationCallbacks* allocator);
 void ImGui_ImplVulkanH_DestroyFrameSemaphores(vk::Device device, ImGui_ImplVulkanH_FrameSemaphores* fsd, const vk::AllocationCallbacks* allocator);
-void ImGui_ImplVulkanH_DestroyFrameRenderBuffers(VmaAllocator vmaAllocator, ImGui_ImplVulkanH_FrameRenderBuffers* buffers, const vk::AllocationCallbacks* allocator);
-void ImGui_ImplVulkanH_DestroyWindowRenderBuffers(VmaAllocator vmaAllocator, ImGui_ImplVulkanH_WindowRenderBuffers* buffers, const vk::AllocationCallbacks* allocator);
-void ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(VmaAllocator vmaAllocator, const vk::AllocationCallbacks* allocator);
+void ImGui_ImplVulkanH_DestroyFrameRenderBuffers(vk::Device device, ImGui_ImplVulkanH_FrameRenderBuffers* buffers, const vk::AllocationCallbacks* allocator);
+void ImGui_ImplVulkanH_DestroyWindowRenderBuffers(vk::Device device, ImGui_ImplVulkanH_WindowRenderBuffers* buffers, const vk::AllocationCallbacks* allocator);
+void ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(vk::Device device, const vk::AllocationCallbacks* allocator);
 void ImGui_ImplVulkanH_CreateWindowSwapChain(vk::PhysicalDevice physical_device, vk::Device device, ImGui_ImplVulkanH_Window* wd, const vk::AllocationCallbacks* allocator, int w, int h, uint32_t min_image_count);
 void ImGui_ImplVulkanH_CreateWindowCommandBuffers(vk::PhysicalDevice physical_device, vk::Device device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const vk::AllocationCallbacks* allocator);
 
@@ -313,32 +313,34 @@ static void check_vk_result(vk::Result err)
         v->CheckVkResultFn(err);
 }
 
-static void CreateOrResizeBuffer(vk::Buffer& buffer, VmaAllocation& buffer_memory, vk::DeviceSize& p_buffer_size, size_t new_size, vk::BufferUsageFlagBits usage)
+static void CreateOrResizeBuffer(vk::Buffer& buffer, vk::DeviceMemory& buffer_memory, vk::DeviceSize& p_buffer_size, size_t new_size, vk::BufferUsageFlagBits usage)
 {
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
     ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
     vk::Result err;
-    if (buffer && buffer_memory)
-        vmaDestroyBuffer(v->vmaAllocator, buffer, buffer_memory);
+    if (buffer)
+        v->Device.destroyBuffer(buffer, v->Allocator);
+    if (buffer_memory)
+        v->Device.freeMemory(buffer_memory, v->Allocator);
 
     vk::DeviceSize vertex_buffer_size_aligned = ((new_size - 1) / bd->BufferMemoryAlignment + 1) * bd->BufferMemoryAlignment;
     vk::BufferCreateInfo buffer_info = {};
     buffer_info.size = vertex_buffer_size_aligned;
     buffer_info.usage = usage;
     buffer_info.sharingMode = vk::SharingMode::eExclusive;
-
-    VmaAllocationCreateInfo alloc_create_info = {};
-    alloc_create_info.usage = VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_ONLY;
-
-    auto bci = (VkBufferCreateInfo)buffer_info;
-    auto buf = (VkBuffer)buffer;
-    err = (vk::Result)vmaCreateBuffer(v->vmaAllocator, &bci, &alloc_create_info, &buf, &buffer_memory, nullptr);
+    err = v->Device.createBuffer(&buffer_info, v->Allocator, &buffer);
     check_vk_result(err);
-
-    buffer = buf;
 
     vk::MemoryRequirements req;
     v->Device.getBufferMemoryRequirements(buffer, &req);
+    bd->BufferMemoryAlignment = (bd->BufferMemoryAlignment > req.alignment) ? bd->BufferMemoryAlignment : req.alignment;
+    vk::MemoryAllocateInfo alloc_info = {};
+    alloc_info.allocationSize = req.size;
+    alloc_info.memoryTypeIndex = ImGui_ImplVulkan_MemoryType(vk::MemoryPropertyFlagBits::eHostVisible, req.memoryTypeBits);
+    err = v->Device.allocateMemory(&alloc_info, v->Allocator, &buffer_memory);
+    check_vk_result(err);
+
+    v->Device.bindBufferMemory(buffer, buffer_memory, 0);
     p_buffer_size = req.size;
 }
 
@@ -428,9 +430,9 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, vk::CommandBuffer co
         // Upload vertex/index data into a single contiguous GPU buffer
         ImDrawVert* vtx_dst = NULL;
         ImDrawIdx* idx_dst = NULL;
-        vk::Result err = (vk::Result)vmaMapMemory(v->vmaAllocator, rb->VertexBufferMemory, (void**)(&vtx_dst));
+        vk::Result err = v->Device.mapMemory(rb->VertexBufferMemory, 0, rb->VertexBufferSize, vk::MemoryMapFlags{}, (void**)(&vtx_dst));
         check_vk_result(err);
-        err = (vk::Result)vmaMapMemory(v->vmaAllocator, rb->IndexBufferMemory, (void**)(&idx_dst));
+        err = v->Device.mapMemory(rb->IndexBufferMemory, 0, rb->IndexBufferSize, vk::MemoryMapFlags{}, (void**)(&idx_dst));
         check_vk_result(err);
         for (int n = 0; n < draw_data->CmdListsCount; n++)
         {
@@ -440,14 +442,15 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, vk::CommandBuffer co
             vtx_dst += cmd_list->VtxBuffer.Size;
             idx_dst += cmd_list->IdxBuffer.Size;
         }
-        std::array<VmaAllocation, 2> allocations = { rb->VertexBufferMemory, rb->IndexBufferMemory };
-        std::array<VkDeviceSize, 2> offsets = { 0, 0 };
-        std::array<VkDeviceSize, 2> sizes = { VK_WHOLE_SIZE, VK_WHOLE_SIZE };
-
-        err = (vk::Result)vmaFlushAllocations(v->vmaAllocator, allocations.size(), allocations.data(), offsets.data(), sizes.data());
+        std::array<vk::MappedMemoryRange, 2> range = {};
+        range[0].memory = rb->VertexBufferMemory;
+        range[0].size = VK_WHOLE_SIZE;
+        range[1].memory = rb->IndexBufferMemory;
+        range[1].size = VK_WHOLE_SIZE;
+        err = v->Device.flushMappedMemoryRanges(range.size(), range.data());
         check_vk_result(err);
-        vmaUnmapMemory(v->vmaAllocator, rb->VertexBufferMemory);
-        vmaUnmapMemory(v->vmaAllocator, rb->IndexBufferMemory);
+        v->Device.unmapMemory(rb->VertexBufferMemory);
+        v->Device.unmapMemory(rb->IndexBufferMemory);
     }
 
     // Setup desired Vulkan state
@@ -555,15 +558,16 @@ bool ImGui_ImplVulkan_CreateFontsTexture(vk::CommandBuffer command_buffer)
         info.usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
         info.sharingMode = vk::SharingMode::eExclusive;
         info.initialLayout = vk::ImageLayout::eUndefined;
-
-        VmaAllocationCreateInfo alloc_create_info = {};
-        alloc_create_info.usage = VmaMemoryUsage::VMA_MEMORY_USAGE_UNKNOWN; //Device local
-
-        auto ici = (VkImageCreateInfo)info;
-        auto img = (VkImage)bd->FontImage;
-        err = (vk::Result)vmaCreateImage(v->vmaAllocator, &ici, &alloc_create_info, &img, &bd->FontMemory, nullptr);
+        err = v->Device.createImage(&info, v->Allocator, &bd->FontImage);
         check_vk_result(err);
-        bd->FontImage = img;
+        vk::MemoryRequirements req;
+        v->Device.getImageMemoryRequirements(bd->FontImage, &req);
+        vk::MemoryAllocateInfo alloc_info = {};
+        alloc_info.allocationSize = req.size;
+        alloc_info.memoryTypeIndex = ImGui_ImplVulkan_MemoryType(vk::MemoryPropertyFlagBits::eDeviceLocal, req.memoryTypeBits);
+        err = v->Device.allocateMemory(&alloc_info, v->Allocator, &bd->FontMemory);
+        check_vk_result(err);
+        v->Device.bindImageMemory(bd->FontImage, bd->FontMemory, 0);
     }
 
     // Create the Image View:
@@ -588,34 +592,31 @@ bool ImGui_ImplVulkan_CreateFontsTexture(vk::CommandBuffer command_buffer)
         buffer_info.size = upload_size;
         buffer_info.usage = vk::BufferUsageFlagBits::eTransferSrc;
         buffer_info.sharingMode = vk::SharingMode::eExclusive;
-
-        VmaAllocationCreateInfo alloc_create_info = {};
-        alloc_create_info.usage = VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_ONLY;
-
-        auto bci = (VkBufferCreateInfo)buffer_info;
-        auto buf = (VkBuffer)bd->UploadBuffer;
-        err = (vk::Result)vmaCreateBuffer(v->vmaAllocator, &bci, &alloc_create_info, &buf, &bd->UploadBufferMemory, nullptr);
         err = v->Device.createBuffer(&buffer_info, v->Allocator, &bd->UploadBuffer);
         check_vk_result(err);
-
-        bd->UploadBuffer = buf;
-
         vk::MemoryRequirements req;
         v->Device.getBufferMemoryRequirements(bd->UploadBuffer, &req);
         bd->BufferMemoryAlignment = (bd->BufferMemoryAlignment > req.alignment) ? bd->BufferMemoryAlignment : req.alignment;
+        vk::MemoryAllocateInfo alloc_info = {};
+        alloc_info.allocationSize = req.size;
+        alloc_info.memoryTypeIndex = ImGui_ImplVulkan_MemoryType(vk::MemoryPropertyFlagBits::eHostVisible, req.memoryTypeBits);
+        err = v->Device.allocateMemory(&alloc_info, v->Allocator, &bd->UploadBufferMemory);
         check_vk_result(err);
+        v->Device.bindBufferMemory(bd->UploadBuffer, bd->UploadBufferMemory, 0);
     }
 
     // Upload to Buffer:
     {
         char* map = NULL;
-        err = (vk::Result)vmaMapMemory(v->vmaAllocator, bd->UploadBufferMemory, (void**)(&map));
+        err = v->Device.mapMemory(bd->UploadBufferMemory, 0, upload_size, vk::MemoryMapFlags{}, (void**)(&map));
         check_vk_result(err);
         memcpy(map, pixels, upload_size);
-        
-        err = (vk::Result)vmaFlushAllocation(v->vmaAllocator, bd->UploadBufferMemory, 0, upload_size);
+        std::array<vk::MappedMemoryRange, 1> range{};
+        range[0].memory = bd->UploadBufferMemory;
+        range[0].size = upload_size;
+        err = v->Device.flushMappedMemoryRanges(range.size(), range.data());
         check_vk_result(err);
-        vmaUnmapMemory(v->vmaAllocator, bd->UploadBufferMemory);
+        v->Device.unmapMemory(bd->UploadBufferMemory);
     }
 
     // Copy to Image:
@@ -903,10 +904,14 @@ void    ImGui_ImplVulkan_DestroyFontUploadObjects()
 {
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
     ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
-    if (bd->UploadBuffer && bd->UploadBufferMemory)
+    if (bd->UploadBuffer)
     {
-        vmaDestroyBuffer(v->vmaAllocator, bd->UploadBuffer, bd->UploadBufferMemory);
+        v->Device.destroyBuffer(bd->UploadBuffer, v->Allocator);
         bd->UploadBuffer = VK_NULL_HANDLE;
+    }
+    if (bd->UploadBufferMemory)
+    {
+        v->Device.freeMemory(bd->UploadBufferMemory, v->Allocator);
         bd->UploadBufferMemory = VK_NULL_HANDLE;
     }
 }
@@ -915,20 +920,14 @@ void    ImGui_ImplVulkan_DestroyDeviceObjects()
 {
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
     ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
-    ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(v->vmaAllocator, v->Allocator);
+    ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(v->Device, v->Allocator);
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 
     if (bd->ShaderModuleVert)     { v->Device.destroyShaderModule(bd->ShaderModuleVert, v->Allocator); bd->ShaderModuleVert = VK_NULL_HANDLE; }
     if (bd->ShaderModuleFrag)     {  v->Device.destroyShaderModule(bd->ShaderModuleFrag, v->Allocator); bd->ShaderModuleFrag = VK_NULL_HANDLE; }
     if (bd->FontView)             {  v->Device.destroyImageView(bd->FontView, v->Allocator); bd->FontView = VK_NULL_HANDLE; }
-
-    if (bd->FontImage && bd->FontMemory) 
-    { 
-        vmaDestroyImage(v->vmaAllocator, bd->FontImage, bd->FontMemory); 
-        bd->FontImage = VK_NULL_HANDLE; 
-        bd->FontMemory = VK_NULL_HANDLE;
-    }
-
+    if (bd->FontImage)            {  v->Device.destroyImage(bd->FontImage, v->Allocator); bd->FontImage = VK_NULL_HANDLE; }
+    if (bd->FontMemory)           {  v->Device.freeMemory(bd->FontMemory, v->Allocator); bd->FontMemory = VK_NULL_HANDLE; }
     if (bd->FontSampler)          {  v->Device.destroySampler(bd->FontSampler, v->Allocator); bd->FontSampler = VK_NULL_HANDLE; }
     if (bd->DescriptorSetLayout)  {  v->Device.destroyDescriptorSetLayout(bd->DescriptorSetLayout, v->Allocator); bd->DescriptorSetLayout = VK_NULL_HANDLE; }
     if (bd->PipelineLayout)       {  v->Device.destroyPipelineLayout(bd->PipelineLayout, v->Allocator); bd->PipelineLayout = VK_NULL_HANDLE; }
@@ -977,7 +976,6 @@ bool    ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, vk::RenderPass re
     IM_ASSERT(info->DescriptorPool);
     IM_ASSERT(info->MinImageCount >= 2);
     IM_ASSERT(info->ImageCount >= info->MinImageCount);
-    IM_ASSERT(info->vmaAllocator);
     IM_ASSERT(render_pass);
 
     bd->VulkanInitInfo = *info;
@@ -1036,7 +1034,7 @@ void ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count)
     IM_ASSERT(0); // FIXME-VIEWPORT: Unsupported. Need to recreate all swap chains!
     ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
     v->Device.waitIdle();
-    ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(v->vmaAllocator, v->Allocator);
+    ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(v->Device, v->Allocator);
 
     bd->VulkanInitInfo.MinImageCount = min_image_count;
 }
@@ -1423,42 +1421,32 @@ void ImGui_ImplVulkanH_DestroyFrameSemaphores(vk::Device device, ImGui_ImplVulka
     device.destroySemaphore(fsd->RenderCompleteSemaphore, allocator);
 }
 
-void ImGui_ImplVulkanH_DestroyFrameRenderBuffers(VmaAllocator vmaAllocator, ImGui_ImplVulkanH_FrameRenderBuffers* buffers, const vk::AllocationCallbacks* allocator)
+void ImGui_ImplVulkanH_DestroyFrameRenderBuffers(vk::Device device, ImGui_ImplVulkanH_FrameRenderBuffers* buffers, const vk::AllocationCallbacks* allocator)
 {
-    if (buffers->VertexBuffer && buffers->VertexBufferMemory)
-    { 
-        vmaDestroyBuffer(vmaAllocator, buffers->VertexBuffer, buffers->VertexBufferMemory);
-        buffers->VertexBuffer = VK_NULL_HANDLE; 
-        buffers->VertexBufferMemory = VK_NULL_HANDLE;
-    }
-    
-    if (buffers->IndexBuffer && buffers->IndexBufferMemory)
-    { 
-        vmaDestroyBuffer(vmaAllocator, buffers->IndexBuffer, buffers->IndexBufferMemory);
-        buffers->IndexBuffer = VK_NULL_HANDLE; 
-        buffers->IndexBufferMemory = VK_NULL_HANDLE;
-    }
-
+    if (buffers->VertexBuffer) { device.destroyBuffer(buffers->VertexBuffer, allocator); buffers->VertexBuffer = VK_NULL_HANDLE; }
+    if (buffers->VertexBufferMemory) { device.freeMemory(buffers->VertexBufferMemory, allocator); buffers->VertexBufferMemory = VK_NULL_HANDLE; }
+    if (buffers->IndexBuffer) { device.destroyBuffer(buffers->IndexBuffer, allocator); buffers->IndexBuffer = VK_NULL_HANDLE; }
+    if (buffers->IndexBufferMemory) { device.freeMemory(buffers->IndexBufferMemory, allocator); buffers->IndexBufferMemory = VK_NULL_HANDLE; }
     buffers->VertexBufferSize = 0;
     buffers->IndexBufferSize = 0;
 }
 
-void ImGui_ImplVulkanH_DestroyWindowRenderBuffers(VmaAllocator vmaAllocator, ImGui_ImplVulkanH_WindowRenderBuffers* buffers, const vk::AllocationCallbacks* allocator)
+void ImGui_ImplVulkanH_DestroyWindowRenderBuffers(vk::Device device, ImGui_ImplVulkanH_WindowRenderBuffers* buffers, const vk::AllocationCallbacks* allocator)
 {
     for (uint32_t n = 0; n < buffers->Count; n++)
-        ImGui_ImplVulkanH_DestroyFrameRenderBuffers(vmaAllocator, &buffers->FrameRenderBuffers[n], allocator);
+        ImGui_ImplVulkanH_DestroyFrameRenderBuffers(device, &buffers->FrameRenderBuffers[n], allocator);
     IM_FREE(buffers->FrameRenderBuffers);
     buffers->FrameRenderBuffers = NULL;
     buffers->Index = 0;
     buffers->Count = 0;
 }
 
-void ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(VmaAllocator vmaAllocator, const vk::AllocationCallbacks* allocator)
+void ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(vk::Device device, const vk::AllocationCallbacks* allocator)
 {
     ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
     for (int n = 0; n < platform_io.Viewports.Size; n++)
         if (ImGui_ImplVulkan_ViewportData* vd = (ImGui_ImplVulkan_ViewportData*)platform_io.Viewports[n]->RendererUserData)
-            ImGui_ImplVulkanH_DestroyWindowRenderBuffers(vmaAllocator, &vd->RenderBuffers, allocator);
+            ImGui_ImplVulkanH_DestroyWindowRenderBuffers(device, &vd->RenderBuffers, allocator);
 }
 
 //--------------------------------------------------------------------------------------------------------
@@ -1517,7 +1505,7 @@ static void ImGui_ImplVulkan_DestroyWindow(ImGuiViewport* viewport)
         ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
         if (vd->WindowOwned)
             ImGui_ImplVulkanH_DestroyWindow(v->Instance, v->Device, &vd->Window, v->Allocator);
-        ImGui_ImplVulkanH_DestroyWindowRenderBuffers(v->vmaAllocator, &vd->RenderBuffers, v->Allocator);
+        ImGui_ImplVulkanH_DestroyWindowRenderBuffers(v->Device, &vd->RenderBuffers, v->Allocator);
         IM_DELETE(vd);
     }
     viewport->RendererUserData = NULL;
