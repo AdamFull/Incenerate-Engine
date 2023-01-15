@@ -149,11 +149,13 @@ void CEditorContentBrowser::update_path(const std::filesystem::path& npath)
 	relative = std::filesystem::relative(currentPath, workdir);
 	vCurrentDirData.clear();
 
-	for (auto& entry : std::filesystem::directory_iterator(currentPath))
+	if (std::filesystem::exists(currentPath))
 	{
-		auto path = entry.path().string();
-		if(entry.is_directory() || fs::is_image_format(path) || fs::is_audio_format(path) || fs::is_script_format(path) || fs::is_mesh_format(path))
-			vCurrentDirData.emplace_back(path);
+		for (auto& entry : std::filesystem::directory_iterator(currentPath))
+		{
+			auto path = entry.path().string();
+			if (entry.is_directory() || fs::is_image_format(path) || fs::is_audio_format(path) || fs::is_script_format(path) || fs::is_mesh_format(path))
+				vCurrentDirData.emplace_back(path);
+		}
 	}
-		
 }
