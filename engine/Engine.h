@@ -9,7 +9,7 @@
 #include "event/EventManager.hpp"
 #include "editor/Editor.h"
 
-#include "game/SceneGraph.hpp"
+#include "game/SceneManager.h"
 #include "ecs/systems/BaseSystem.h"
 
 #define EGEngine CEngine::getInstance()
@@ -18,7 +18,7 @@
 #define EGAudio CEngine::getInstance()->getAudio()
 #define EGWindow CEngine::getInstance()->getWindow()
 #define EGGraphics CEngine::getInstance()->getGraphics()
-#define EGSceneGraph CEngine::getInstance()->getSceneGraph()
+#define EGSceneManager CEngine::getInstance()->getSceneManager()
 
 namespace engine
 {
@@ -33,6 +33,7 @@ namespace engine
 	using winptr_t = std::unique_ptr<system::window::CWindowHandle>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
 	using audiocore_t = std::unique_ptr<audio::CAudioCore>;
+	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
 
 	class CEngine : public utl::singleton<CEngine>
 	{
@@ -52,7 +53,7 @@ namespace engine
 		const winptr_t& getWindow() const;
 		const graphptr_t& getGraphics() const;
 		const audiocore_t& getAudio() const;
-		const entt::entity& getSceneGraph() const;
+		const scenemgr_t& getSceneManager() const;
 
 		const bool isEditorMode() const;
 
@@ -73,7 +74,6 @@ namespace engine
 		void destruction();
 		void initEntityComponentSystem();
 	private:
-		entt::entity root;
 		entt::registry registry;
 		std::unique_ptr<CEventManager> pEventManager;
 
@@ -83,6 +83,7 @@ namespace engine
 		winptr_t pWindow;
 		graphptr_t pGraphics;
 		audiocore_t pAudio;
+		scenemgr_t pSceneManager;
 		bool bEditorMode{ true };
 
 		std::vector<std::unique_ptr<ecs::ISystem>> vSystems;

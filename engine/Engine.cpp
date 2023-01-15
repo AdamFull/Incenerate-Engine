@@ -37,6 +37,8 @@ void CEngine::create()
 
 	pEventManager = std::make_unique<CEventManager>();
 
+	pSceneManager = std::make_unique<CSceneManager>();
+
 	pAudio = std::make_unique<CAudioCore>();
 	pAudio->create();
 
@@ -53,8 +55,6 @@ void CEngine::create()
 		eState = EEngineState::eEditing;
 
 	initEntityComponentSystem();
-
-	root = CSceneLoader::load("scene.json");
 
 	for (const auto& system : vSystems)
 		system->create();
@@ -92,7 +92,7 @@ void CEngine::beginEngineLoop()
 void CEngine::destruction()
 {
 	vSystems.clear();
-	scenegraph::destroy_node(root);
+	pSceneManager = nullptr;
 	
 	pAudio->shutdown();
 	pGraphics->shutdown();
@@ -127,9 +127,9 @@ const audiocore_t& CEngine::getAudio() const
 	return pAudio;
 }
 
-const entt::entity& CEngine::getSceneGraph() const
+const scenemgr_t& CEngine::getSceneManager() const
 {
-	return root;
+	return pSceneManager;
 }
 
 const bool CEngine::isEditorMode() const

@@ -3,6 +3,8 @@
 #include "windows/WindowBase.h"
 #include <utility/upattern.hpp>
 
+#include "EditorProject.h"
+
 struct ImFont;
 
 namespace engine
@@ -41,6 +43,14 @@ namespace engine
 			constexpr uint32_t add_file = "add_file"_utl_hash;
 		}
 
+		struct FRecentProjects
+		{
+			std::string recent;
+		};
+
+		void to_json(nlohmann::json& json, const FRecentProjects& type);
+		void from_json(const nlohmann::json& json, FRecentProjects& type);
+
 		class CEditor
 		{
 		public:
@@ -66,6 +76,11 @@ namespace engine
 
 			ImFont* getLargeIcons() { return pLargeIcons; }
 		private:
+			void NewProjectModal();
+			void OpenProjectModal();
+			void load_editor();
+			void save_editor();
+
 			template<class _Ty>
 			static uint32_t get_class_id()
 			{
@@ -74,6 +89,9 @@ namespace engine
 
 			void baseInitialize();
 		private:
+			FRecentProjects recproj;
+			std::unique_ptr<CEditorProject> pEditorProject;
+
 			entt::entity camera{ entt::null };
 			entt::entity selected{ entt::null };
 			std::map<uint32_t, std::string> mEditorIcons;

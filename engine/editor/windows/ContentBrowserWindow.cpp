@@ -32,6 +32,7 @@ const std::string& getFileIcon(const std::string& filename, bool isDirectory)
 
 void CEditorContentBrowser::create()
 {
+	EGEngine->addEventListener(Events::Editor::ProjectUpdated, this, &CEditorContentBrowser::OnProjectChanged);
 	workdir = fs::get_workdir();
 	update_path(workdir);
 }
@@ -141,6 +142,12 @@ void CEditorContentBrowser::__draw(float fDt)
 		ImGui::NextColumn();
 		ImGui::PopID();
 	}
+}
+
+void CEditorContentBrowser::OnProjectChanged(CEvent& event)
+{
+	workdir = fs::get_workdir();
+	update_path(workdir);
 }
 
 void CEditorContentBrowser::update_path(const std::filesystem::path& npath)

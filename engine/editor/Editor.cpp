@@ -7,6 +7,8 @@
 #include <imgui/ImGuizmo.h>
 #include <imgui/font/IconsMaterialDesignIcons.h>
 
+#include "CustomControls.h"
+
 #include "EditorThemes.h"
 
 #include "system/filesystem/filesystem.h"
@@ -29,8 +31,26 @@
 #include "ecs/components/EnvironmentComponent.h"
 #include "ecs/components/SpriteComponent.h"
 
+#include "game/SceneGraph.hpp"
 
-#include "game/SceneSerializer.h"
+constexpr const char* editor_local_data = "editorloc";
+
+namespace engine
+{
+    namespace editor
+    {
+        void to_json(nlohmann::json& json, const FRecentProjects& type)
+        {
+            json = nlohmann::json();
+            utl::serialize_from("recent", json, type.recent, !type.recent.empty());
+        }
+
+        void from_json(const nlohmann::json& json, FRecentProjects& type)
+        {
+            utl::parse_to("recent", json, type.recent);
+        }
+    }
+}
 
 using namespace engine;
 using namespace engine::game;
@@ -52,6 +72,8 @@ void CEditor::create()
 {
     auto& device = EGGraphics->getDevice();
     auto& fb = EGGraphics->getFramebuffer("present");
+
+    pEditorProject = std::make_unique<CEditorProject>();
 
     vk::DescriptorPoolSize pool_sizes[] =
     {
@@ -112,9 +134,6 @@ void CEditor::create()
     cmdBuf.submitIdle();
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 
-    for (auto& overlay : vEditorWindows)
-       overlay->create();
-
     // Other icons
     mEditorIcons[icons::trash] = ICON_MDI_DELETE;
     mEditorIcons[icons::play] = ICON_MDI_PLAY;
@@ -161,6 +180,17 @@ void CEditor::create()
     auto& transform = registry.get<FTransformComponent>(camera);
     transform.position = glm::vec3(1.f, -1.f, 1.f);
     transform.rotation = glm::vec3(0.01f, 0.01f, 0.01f);
+
+    load_editor();
+
+    if (!recproj.recent.empty())
+    {
+        auto path = std::filesystem::path(recproj.recent);
+        pEditorProject->open(path);
+    }
+
+    for (auto& overlay : vEditorWindows)
+        overlay->create();
 }
 
 void CEditor::newFrame(float fDt)
@@ -176,30 +206,31 @@ void CEditor::newFrame(float fDt)
 
     //ImGui::ShowDemoWindow();
 
+    const char* open_popup{ nullptr };
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("New project", "CTRL+N")) {}
-            if (ImGui::MenuItem("Open project", "CTRL+O")) {}
+            if (ImGui::MenuItem("New project", "Ctrl-N")) { open_popup = "new_project_dialog"; }
+            if (ImGui::MenuItem("Open project", "Ctrl+O")) { open_popup = "open_project_dialog"; }
             ImGui::Separator();
-            if (ImGui::MenuItem("New scene", "CTRL+SHIFT+N")) {}
-            if (ImGui::MenuItem("Open scene", "CTRL+SHIFT+O")) {}
+            if (ImGui::MenuItem("New scene", "Ctrl-Shift-N")) { open_popup = "new_scene_dialog"; }
+            if (ImGui::MenuItem("Open scene", "Ctrl-Shift-O")) { open_popup = "open_scene_dialog"; }
             ImGui::Separator();
-            if (ImGui::MenuItem((mEditorIcons[icons::save] + " Save").c_str(), "CTRL+S")) { CSceneLoader::save(EGSceneGraph, "scene.json"); }
-            if (ImGui::MenuItem((mEditorIcons[icons::save_all] + " Save all").c_str())) {}
+            if (ImGui::MenuItem((mEditorIcons[icons::save] + " Save").c_str(), "Ctrl-S")) { EGSceneManager->save(); }
+            if (ImGui::MenuItem((mEditorIcons[icons::save_all] + " Save all").c_str(), "Ctrl-Shift-S")) { pEditorProject->save(); }
             ImGui::Separator();
-            if (ImGui::MenuItem((mEditorIcons[icons::close] + " Exit").c_str(), "CTRL+Q")) {}
+            if (ImGui::MenuItem((mEditorIcons[icons::close] + " Exit").c_str(), "Ctrl-Q")) {}
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem((mEditorIcons[icons::undo] + " Undo").c_str(), "CTRL+Z")) {}
-            if (ImGui::MenuItem((mEditorIcons[icons::redo] + " Redo").c_str(), "CTRL+Y", false, false)) {}  // Disabled item
+            if (ImGui::MenuItem((mEditorIcons[icons::undo] + " Undo").c_str(), "Ctrl-Z")) {}
+            if (ImGui::MenuItem((mEditorIcons[icons::redo] + " Redo").c_str(), "Ctrl-Y", false, false)) {}  // Disabled item
             ImGui::Separator();
-            if (ImGui::MenuItem((mEditorIcons[icons::cut] + " Cut").c_str(), "CTRL+X")) {}
-            if (ImGui::MenuItem((mEditorIcons[icons::copy] + " Copy").c_str(), "CTRL+C")) {}
-            if (ImGui::MenuItem((mEditorIcons[icons::paste] + " Paste").c_str(), "CTRL+V")) {}
+            if (ImGui::MenuItem((mEditorIcons[icons::cut] + " Cut").c_str(), "Ctrl-X")) {}
+            if (ImGui::MenuItem((mEditorIcons[icons::copy] + " Copy").c_str(), "Ctrl-C")) {}
+            if (ImGui::MenuItem((mEditorIcons[icons::paste] + " Paste").c_str(), "Ctrl-V")) {}
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Window"))
@@ -224,7 +255,13 @@ void CEditor::newFrame(float fDt)
         ImGui::EndMainMenuBar();
     }
 
+    if(open_popup)
+        ImGui::OpenPopup(open_popup);
+
     ImGui::DockSpaceOverViewport();
+
+    NewProjectModal();
+    OpenProjectModal();
 
     //ImGui::ShowDemoWindow();
     for (auto& overlay : vEditorWindows)
@@ -275,6 +312,71 @@ vk::DescriptorPool& CEditor::getDescriptorPool()
 const std::string& CEditor::getIcon(uint32_t id)
 {
     return mEditorIcons[id];
+}
+
+void CEditor::NewProjectModal()
+{
+    // Project name, default scene and other
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, { 0.5f, 0.5f });
+
+    if (ImGui::BeginPopupModal("new_project_dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
+    {
+        static char name_buf[512];
+        constexpr const char* filter[] = { "*.incenerateproj" };
+        if (ImGui::FileSave("New project", "...", name_buf, 512, "New incenerate project", 1, filter))
+        {
+            auto path = std::filesystem::path(name_buf);
+            if (pEditorProject->make_new(path))
+            {
+                recproj.recent = path.string();
+                save_editor();
+                ImGui::CloseCurrentPopup();
+                EGEngine->sendEvent(Events::Editor::ProjectUpdated);
+            }
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void CEditor::OpenProjectModal()
+{
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, { 0.5f, 0.5f });
+
+    if (ImGui::BeginPopupModal("open_project_dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar |  ImGuiWindowFlags_NoMove))
+    {
+        static char name_buf[512];
+        constexpr const char* filter[] = { "*.incenerateproj" };
+        if (ImGui::FileOpen("Open project", "...", name_buf, 512, "Open incenerate project", 1, filter))
+        {
+            auto path = std::filesystem::path(name_buf);
+            if (pEditorProject->open(path))
+            {
+                recproj.recent = path.string();
+                save_editor();
+                ImGui::CloseCurrentPopup();
+                EGEngine->sendEvent(Events::Editor::ProjectUpdated);
+            }
+        }
+
+        ImGui::SetItemDefaultFocus();
+        if (ImGui::Button("Cancel", { -1.f, 0.f }))
+            ImGui::CloseCurrentPopup();
+
+        ImGui::EndPopup();
+    }
+
+    
+}
+
+void CEditor::load_editor()
+{
+    fs::read_bson(editor_local_data, recproj, true);
+}
+
+void CEditor::save_editor()
+{
+    fs::write_bson(editor_local_data, recproj, true);
 }
 
 void CEditor::baseInitialize()

@@ -15,7 +15,7 @@ void CHierarchySystem::__create()
 void CHierarchySystem::__update(float fDt)
 {
 	auto& registry = EGCoordinator;
-	auto root = EGSceneGraph;
+	auto root = EGSceneManager->getRoot();
 
 	// Preparing transformation
 	auto view = registry.view<FTransformComponent>();
@@ -34,29 +34,32 @@ void CHierarchySystem::__update(float fDt)
 		transform.update();
 	}
 
-	// Calculating relative transform
-	std::queue<entt::entity> nextparent;
-	nextparent.push(EGSceneGraph);
-
-	while (!nextparent.empty())
+	if (root != entt::null)
 	{
-		auto current = nextparent.front();
+		// Calculating relative transform
+		std::queue<entt::entity> nextparent;
+		nextparent.push(root);
 
-		auto& transform = registry.get<FTransformComponent>(current);
-		auto& hierarchy = registry.get<FHierarchyComponent>(current);
-		transform.update();
-
-		for (auto& child : hierarchy.children)
+		while (!nextparent.empty())
 		{
-			auto& ctransform = registry.get<FTransformComponent>(child);
-			auto& chierarchy = registry.get<FHierarchyComponent>(child);
+			auto current = nextparent.front();
 
-			ctransform.model = transform.model * ctransform.model;
-			ctransform.update();
+			auto& transform = registry.get<FTransformComponent>(current);
+			auto& hierarchy = registry.get<FHierarchyComponent>(current);
+			transform.update();
 
-			if (!chierarchy.children.empty())
-				nextparent.push(child);
+			for (auto& child : hierarchy.children)
+			{
+				auto& ctransform = registry.get<FTransformComponent>(child);
+				auto& chierarchy = registry.get<FHierarchyComponent>(child);
+
+				ctransform.model = transform.model * ctransform.model;
+				ctransform.update();
+
+				if (!chierarchy.children.empty())
+					nextparent.push(child);
+			}
+			nextparent.pop();
 		}
-		nextparent.pop();
 	}
 }

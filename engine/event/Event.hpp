@@ -14,6 +14,7 @@ namespace engine
 	{
 		using namespace utl;
 		const ParamId OpenImageViewer = "Events::Editor::OpenImageViewer"_utl_hash;
+		const ParamId ProjectUpdated = "Events::Editor::ProjectUpdated"_utl_hash;
 	}
 
 	namespace Events::Graphics

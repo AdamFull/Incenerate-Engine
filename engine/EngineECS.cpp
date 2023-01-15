@@ -29,6 +29,7 @@
 #include "system/filesystem/filesystem.h"
 
 #include "loaders/MeshLoader.h"
+#include "game/SceneGraph.hpp"
 
 using namespace engine;
 using namespace engine::system;

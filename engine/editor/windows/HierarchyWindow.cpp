@@ -20,7 +20,7 @@ void CEditorHierarchy::create()
 void CEditorHierarchy::__draw(float fDt)
 {
     auto& registry = EGCoordinator;
-    auto root = EGSceneGraph;
+    auto root = EGSceneManager->getRoot();
 	auto current_size = ImGui::GetWindowSize();
 
 	buildHierarchy(root);

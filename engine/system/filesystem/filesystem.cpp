@@ -4,6 +4,8 @@
 
 using namespace engine::system;
 
+std::filesystem::path fs::_workdir{ "" };
+
 bool fs::read_file(const std::filesystem::path& path, std::string& data, bool local)
 {
     auto full_path = get_workdir(local) / path;
@@ -144,12 +146,17 @@ bool fs::is_audio_format(const std::filesystem::path& path)
     return is_audio_format(utl::const_hash(ext.c_str(), ext.size()));
 }
 
+void fs::set_workdir(const std::filesystem::path& nworkdir)
+{
+    _workdir = std::filesystem::weakly_canonical(nworkdir);
+}
+
 std::filesystem::path fs::get_workdir(bool local)
 {
     if (local)
-        return std::filesystem::current_path();
+        return "";
     else
-        return std::filesystem::current_path().assign(std::filesystem::weakly_canonical("../assets/"));
+        return _workdir;
 }
 
 // TODO: refactor this

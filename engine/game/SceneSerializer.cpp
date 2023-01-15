@@ -45,7 +45,7 @@ using namespace engine::system;
 using namespace engine::graphics;
 using namespace engine::audio;
 
-entt::entity CSceneLoader::load(const std::string& scenepath)
+entt::entity CSceneLoader::load(const std::filesystem::path& scenepath)
 {
 	std::vector<FSceneObjectRaw> vScene;
 	fs::read_json(scenepath, vScene);
@@ -57,7 +57,7 @@ entt::entity CSceneLoader::load(const std::string& scenepath)
 	return root;
 }
 
-void CSceneLoader::save(const entt::entity& root, const std::string& scenepath)
+void CSceneLoader::save(const entt::entity& root, const std::filesystem::path& scenepath)
 {
 	std::vector<FSceneObjectRaw> vScene;
 

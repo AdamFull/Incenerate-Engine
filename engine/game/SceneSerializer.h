@@ -19,8 +19,8 @@ namespace engine
 		class CSceneLoader
 		{
 		public:
-			static entt::entity load(const std::string& scenepath);
-			static void save(const entt::entity& root, const std::string& scenepath);
+			static entt::entity load(const std::filesystem::path& scenepath);
+			static void save(const entt::entity& root, const std::filesystem::path& scenepath);
 		private:
 			static void loadNodes(const entt::entity& parent, const std::vector<FSceneObjectRaw>& vObjects);
 			static void serializeNodes(const entt::entity& parent, std::vector<FSceneObjectRaw>& vObjects);

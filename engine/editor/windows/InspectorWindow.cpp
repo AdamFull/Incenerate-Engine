@@ -21,6 +21,8 @@
 
 #include "system/filesystem/filesystem.h"
 
+#include "game/SceneGraph.hpp"
+
 #include "loaders/MeshLoader.h"
 #include "loaders/ImageLoader.h"
 

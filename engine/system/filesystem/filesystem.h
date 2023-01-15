@@ -138,10 +138,12 @@ namespace engine
                 return false;
             }
 
+            static void set_workdir(const std::filesystem::path& nworkdir);
             // It's should be project dir
 			static std::filesystem::path get_workdir(bool local = false);
 
         private:
+            static std::filesystem::path _workdir;
             static bool is_image_format(uint32_t format);
             static bool is_ktx_format(uint32_t format);
             static bool is_mesh_format(uint32_t format);
