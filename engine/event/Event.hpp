@@ -10,6 +10,13 @@ namespace engine
 	using EventId = uint32_t;
 	using ParamId = uint32_t;
 
+	namespace Events::Debug
+	{
+		using namespace utl;
+		const ParamId SystemCreateTime = "Events::Debug::SystemCreateTime"_utl_hash;
+		const ParamId SystemUpdateTime = "Events::Debug::SystemUpdateTime"_utl_hash;
+	}
+
 	namespace Events::Editor
 	{
 		using namespace utl;

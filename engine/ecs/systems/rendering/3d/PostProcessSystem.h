@@ -9,6 +9,7 @@ namespace engine
 		class CPostProcessSystem : public ISystem
 		{
 		public:
+			CPostProcessSystem() { name = "Rendering post process system"; }
 			virtual ~CPostProcessSystem() override;
 
 			void __create() override;

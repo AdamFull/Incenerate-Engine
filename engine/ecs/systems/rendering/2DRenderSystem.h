@@ -9,6 +9,7 @@ namespace engine
 		class C2DRenderSystem : public ISystem
 		{
 		public:
+			C2DRenderSystem() { name = "2D render system"; }
 			virtual ~C2DRenderSystem() override = default;
 
 			void __create() override;

@@ -10,12 +10,11 @@ namespace engine
 		class CShadowPassSystem : public ISystem
 		{
 		public:
+			CShadowPassSystem() { name = "Rendering shadow system"; }
 			virtual ~CShadowPassSystem() override = default;
 
 			void __create() override;
 			void __update(float fDt) override;
-		private:
-			std::vector<std::unique_ptr<ISystem>> vSubSystems;
 		};
 	}
 }

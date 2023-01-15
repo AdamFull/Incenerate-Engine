@@ -78,6 +78,9 @@ namespace engine
 		private:
 			void NewProjectModal();
 			void OpenProjectModal();
+			void NewSceneModal();
+			void OpenSceneModal();
+
 			void load_editor();
 			void save_editor();
 

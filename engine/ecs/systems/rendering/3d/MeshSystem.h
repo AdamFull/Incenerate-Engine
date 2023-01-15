@@ -9,6 +9,7 @@ namespace engine
 		class CMeshSystem : public ISystem
 		{
 		public:
+			CMeshSystem() { name = "Rendering mesh system"; }
 			virtual ~CMeshSystem() override = default;
 
 			void __create() override;

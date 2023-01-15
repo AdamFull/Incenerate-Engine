@@ -11,7 +11,7 @@ CSceneManager::~CSceneManager()
 		scenegraph::destroy_node(root);
 }
 
-void CSceneManager::make_new(const std::filesystem::path& path)
+bool CSceneManager::make_new(const std::filesystem::path& path)
 {
 	if (root != entt::null)
 		scenegraph::destroy_node(root);
@@ -20,15 +20,19 @@ void CSceneManager::make_new(const std::filesystem::path& path)
 
 	CSceneLoader::save(root, path);
 	scenepath = path;
+
+	return true;
 }
 
-void CSceneManager::load(const std::filesystem::path& path)
+bool CSceneManager::load(const std::filesystem::path& path)
 {
 	if (root != entt::null)
 		scenegraph::destroy_node(root);
 
 	root = CSceneLoader::load(path);
 	scenepath = path;
+
+	return root != entt::null;
 }
 
 void CSceneManager::save()

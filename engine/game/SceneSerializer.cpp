@@ -94,7 +94,6 @@ void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FScen
 
 			if (name == "environment")
 				registry.emplace<FEnvironmentComponent>(node, component.get<FEnvironmentComponent>());
-				
 
 			if (name == "sprite")
 				registry.emplace<FSpriteComponent>(node, component.get<FSpriteComponent>());

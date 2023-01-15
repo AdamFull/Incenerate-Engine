@@ -9,6 +9,7 @@ namespace engine
 		class CInputSystem : public ISystem
 		{
 		public:
+			CInputSystem() { name = "Input system"; }
 			virtual ~CInputSystem() override = default;
 
 			void __create() override;

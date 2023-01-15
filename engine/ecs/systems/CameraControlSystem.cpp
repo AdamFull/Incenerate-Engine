@@ -108,8 +108,8 @@ void CCameraControlSystem::rotate(FCameraComponent& camera, FTransformComponent&
 	auto fdx = (cursorPos - oldPos) * dt;
 
 	{
-		float rotX = (fdx.x / dt) * camera.sensitivity * 1.5f;
-		float rotY = (fdx.y / dt) * camera.sensitivity * 1.5f;
+		float rotX = (fdx.x / dt) * camera.sensitivity * 5.0f;
+		float rotY = (fdx.y / dt) * camera.sensitivity * 5.0f;
 
 		camera.angleH += rotX;
 		if (camera.angleV + rotY > 89)

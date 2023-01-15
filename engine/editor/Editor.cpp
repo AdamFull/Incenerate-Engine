@@ -18,6 +18,7 @@
 #include "windows/InspectorWindow.h"
 #include "windows/ContentBrowserWindow.h"
 #include "windows/ImageViewerWindow.h"
+#include "windows/SystemPerfomanceViewWindow.h"
 
 #include "ecs/components/TransformComponent.h"
 #include "ecs/components/SpotLightComponent.h"
@@ -107,6 +108,7 @@ void CEditor::create()
     vEditorWindows.emplace_back(std::make_unique<CEditorInspector>("Inspector"));
     vEditorWindows.emplace_back(std::make_unique<CEditorContentBrowser>("Content browser"));
     vEditorWindows.emplace_back(std::make_unique<CEditorImageViewer>("Image viewer"));
+    vEditorWindows.emplace_back(std::make_unique<CEditorPerfomanceView>("System perfomance view"));
 
     ImGui_ImplSDL2_InitForVulkan(EGWindow->getWindowPointer());
     ImGui_ImplVulkan_InitInfo init_info = {};
@@ -176,6 +178,8 @@ void CEditor::create()
     auto& registry = EGCoordinator;
     camera = scenegraph::create_node("editor_camera");
     registry.emplace<FCameraComponent>(camera, FCameraComponent{});
+    auto& camcomp = registry.get<FCameraComponent>(camera);
+    camcomp.sensitivity = 5.f;
 
     auto& transform = registry.get<FTransformComponent>(camera);
     transform.position = glm::vec3(1.f, -1.f, 1.f);
@@ -262,6 +266,8 @@ void CEditor::newFrame(float fDt)
 
     NewProjectModal();
     OpenProjectModal();
+    NewSceneModal();
+    OpenSceneModal();
 
     //ImGui::ShowDemoWindow();
     for (auto& overlay : vEditorWindows)
@@ -365,8 +371,48 @@ void CEditor::OpenProjectModal()
 
         ImGui::EndPopup();
     }
+}
 
-    
+void CEditor::NewSceneModal()
+{
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, { 0.5f, 0.5f });
+
+    if (ImGui::BeginPopupModal("new_scene_dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
+    {
+        static char name_buf[512];
+        constexpr const char* filter[] = { "*.json" };
+        if (ImGui::FileSave("New scene", "...", name_buf, 512, "New incenerate scene", 1, filter))
+        {
+            auto path = std::filesystem::path(name_buf);
+            if (EGSceneManager->make_new(path))
+                ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void CEditor::OpenSceneModal()
+{
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, { 0.5f, 0.5f });
+
+    if (ImGui::BeginPopupModal("open_scene_dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
+    {
+        static char name_buf[512];
+        constexpr const char* filter[] = { "*.json" };
+        if (ImGui::FileOpen("Open scene", "...", name_buf, 512, "Open incenerate scene", 1, filter))
+        {
+            auto path = std::filesystem::path(name_buf);
+            if (EGSceneManager->load(path))
+                ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SetItemDefaultFocus();
+        if (ImGui::Button("Cancel", { -1.f, 0.f }))
+            ImGui::CloseCurrentPopup();
+
+        ImGui::EndPopup();
+    }
 }
 
 void CEditor::load_editor()

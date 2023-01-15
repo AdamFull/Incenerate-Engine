@@ -9,12 +9,11 @@ namespace engine
 		class CDeferredPassSystem : public ISystem
 		{
 		public:
+			CDeferredPassSystem() { name = "Rendering deferred system"; }
 			virtual ~CDeferredPassSystem() override = default;
 
 			void __create() override;
 			void __update(float fDt) override;
-		private:
-			std::vector<std::unique_ptr<ISystem>> vSubSystems;
 		};
 	}
 }

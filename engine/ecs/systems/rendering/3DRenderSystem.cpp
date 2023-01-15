@@ -10,10 +10,6 @@
 using namespace engine::graphics;
 using namespace engine::ecs;
 
-C3DRenderSystem::C3DRenderSystem()
-{
-}
-
 void C3DRenderSystem::__create()
 {
 	vSubSystems.emplace_back(std::make_unique<CShadowPassSystem>());

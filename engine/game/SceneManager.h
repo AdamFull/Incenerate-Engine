@@ -9,8 +9,8 @@ namespace engine
 		public:
 			~CSceneManager();
 
-			void make_new(const std::filesystem::path& path);
-			void load(const std::filesystem::path& path);
+			bool make_new(const std::filesystem::path& path);
+			bool load(const std::filesystem::path& path);
 			void save();
 
 			const entt::entity& getRoot();

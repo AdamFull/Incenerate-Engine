@@ -9,6 +9,7 @@ namespace engine
 		class CEnvironmentSystem : public ISystem
 		{
 		public:
+			CEnvironmentSystem() { name = "Rendering environment system"; }
 			virtual ~CEnvironmentSystem() override = default;
 
 			void __create() override;

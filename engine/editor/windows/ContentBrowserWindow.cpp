@@ -54,6 +54,7 @@ void CEditorContentBrowser::__draw(float fDt)
 			if (ImGui::MenuItem((nfdr + " folder").c_str())); // Requires dialog
 			auto& script = EGEditor->getIcon(icons::script_file);
 			if (ImGui::MenuItem((script + " lua file").c_str()));
+			if (ImGui::MenuItem("scene"));
 			ImGui::EndMenu();
 		}
 

@@ -9,6 +9,7 @@ namespace engine
 		class CScriptingSystem : public ISystem
 		{
 		public:
+			CScriptingSystem() { name = "Scripting system"; }
 			virtual ~CScriptingSystem() override = default;
 
 			void __create() override;

@@ -9,6 +9,7 @@ namespace engine
 		class CHierarchySystem : public ISystem
 		{
 		public:
+			CHierarchySystem() { name = "Hierarchy system"; }
 			virtual ~CHierarchySystem() override = default;
 
 			void __create() override;

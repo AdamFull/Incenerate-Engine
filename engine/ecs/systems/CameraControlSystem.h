@@ -13,6 +13,7 @@ namespace engine
 		class CCameraControlSystem : public ISystem
 		{
 		public:
+			CCameraControlSystem() { name = "Camera system"; }
 			virtual ~CCameraControlSystem() override = default;
 
 			void __create() override;

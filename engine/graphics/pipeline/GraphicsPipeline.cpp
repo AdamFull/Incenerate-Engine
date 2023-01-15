@@ -62,11 +62,11 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
 
         vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-        colorBlendAttachment.blendEnable = alphaBlend && hasAlpha;
+        colorBlendAttachment.blendEnable = hasAlpha;
         colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
         colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
         colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
-        colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+        colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne;
         colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
         colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;
 

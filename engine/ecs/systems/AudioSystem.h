@@ -12,6 +12,7 @@ namespace engine
 		class CAudioSystem : public ISystem
 		{
 		public:
+			CAudioSystem() { name = "Audio system"; }
 			virtual ~CAudioSystem() override;
 
 			void __create() override;

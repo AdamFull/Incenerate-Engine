@@ -9,6 +9,7 @@ namespace engine
 		class CDirectionalShadowSystem : public ISystem
 		{
 		public:
+			CDirectionalShadowSystem() { name = "Rendering directional shadow system"; }
 			virtual ~CDirectionalShadowSystem() override = default;
 
 			void __create() override;

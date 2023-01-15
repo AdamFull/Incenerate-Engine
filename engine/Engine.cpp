@@ -137,6 +137,11 @@ const bool CEngine::isEditorMode() const
 	return bEditorMode;
 }
 
+const std::vector<std::unique_ptr<ecs::ISystem>>& CEngine::getSystems() const
+{
+	return vSystems;
+}
+
 void CEngine::sendEvent(CEvent& event)
 {
 	pEventManager->sendEvent(event);

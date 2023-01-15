@@ -9,6 +9,7 @@ namespace engine
 		class COmniShadowSystem : public ISystem
 		{
 		public:
+			COmniShadowSystem() { name = "Rendering omni shadow system"; }
 			virtual ~COmniShadowSystem() override = default;
 
 			void __create() override;

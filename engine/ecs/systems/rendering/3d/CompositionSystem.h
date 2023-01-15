@@ -9,6 +9,7 @@ namespace engine
 		class CCompositionSystem : public ISystem
 		{
 		public:
+			CCompositionSystem() { name = "Rendering composition system"; }
 			virtual ~CCompositionSystem() override = default;
 
 			void __create() override;

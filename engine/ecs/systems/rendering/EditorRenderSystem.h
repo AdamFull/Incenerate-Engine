@@ -9,6 +9,7 @@ namespace engine
 		class CEditorRenderSystem : public ISystem
 		{
 		public:
+			CEditorRenderSystem() { name = "Editor system"; }
 			virtual ~CEditorRenderSystem() override = default;
 
 			void __create() override;

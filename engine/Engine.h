@@ -60,6 +60,8 @@ namespace engine
 		void setState(EEngineState state) { eState = state; }
 		EEngineState getState() { return eState; }
 
+		const std::vector<std::unique_ptr<ecs::ISystem>>& getSystems() const;
+
 		// Event methods
 		template<class... _Args>
 		void addEventListener(EventId eventId, _Args&& ...args)
