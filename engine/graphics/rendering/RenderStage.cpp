@@ -45,12 +45,8 @@ void CRenderStage::create(const FCIStage& createInfo)
 
 void CRenderStage::reCreate(const FCIStage& createInfo)
 {
-	auto renderArea = pFramebuffer->getRenderArea();
-	if (renderArea.extent != createInfo.viewport.extent)
-	{
-		pFramebuffer->setRenderArea(createInfo.viewport.offset, createInfo.viewport.extent);
-		pFramebuffer->reCreate();
-	}
+	pFramebuffer->setRenderArea(createInfo.viewport.offset, createInfo.viewport.extent);
+	pFramebuffer->reCreate();
 }
 
 void CRenderStage::begin(vk::CommandBuffer& commandBuffer)
