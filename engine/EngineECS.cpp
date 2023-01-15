@@ -1,7 +1,5 @@
 #include "Engine.h"
 
-#include <utility/uthreading.hpp>
-
 // Components
 #include "ecs/components/AudioComponent.h"
 #include "ecs/components/MeshComponent.h"

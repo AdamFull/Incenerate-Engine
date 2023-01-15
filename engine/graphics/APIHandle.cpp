@@ -1,7 +1,5 @@
 #include "APIHandle.h"
 
-#include <utility/uthreading.hpp>
-
 #include "system/window/WindowHandle.h"
 #include "system/filesystem/filesystem.h"
 #include "Engine.h"

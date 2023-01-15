@@ -11,6 +11,7 @@
 #include "ecs/helper.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/epsilon.hpp>
 
 using namespace engine::ecs;
 using namespace engine::editor;

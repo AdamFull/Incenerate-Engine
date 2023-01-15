@@ -245,6 +245,11 @@
           "name": "SPIRV_CROSS_ENABLE_UTIL",
           "value": "False",
           "type": "BOOL"
+        },
+        {
+          "name": "ALSOFT_NO_QT5",
+          "value": "True",
+          "type": "BOOL"
         }
       ]
     },
