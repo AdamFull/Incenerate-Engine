@@ -59,6 +59,31 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 ### Other features
 - [ ] shader reflection
 
+### Passes gltf tests
+- [ ] AlphaBlendModeTest
+- [ ] AttenuationTest
+- [ ] ClearCoatTest
+- [x] EmissiveStrengthTest
+- [ ] EnvironmentTest
+- [ ] InterpolationTest
+- [ ] MorphPrimitivesTest
+- [ ] MorphStressTest
+- [ ] MultiUVTest
+- [ ] NormalTangentMirrorTest
+- [ ] NormalTangentTest
+- [ ] OrientationTest
+- [ ] SpecularTest
+- [ ] TextureCoordinateTest
+- [ ] TextureEncodingTest
+- [ ] TextureLinearInterpolationTest
+- [ ] TextureSettingsTest
+- [ ] TextureTransformMultiTest
+- [ ] TextureTransformTest
+- [ ] TransmissionRoughnessTest
+- [ ] TransmissionTest
+- [ ] UnlitTest
+- [ ] VertexColorTest
+
 ### Bugs and problems
 - Some gltf meshes loads incorrect, and when i deleting this mesh, it's not completely deleted
 - Shadow projection is incorrect
