@@ -59,31 +59,10 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 ### Other features
 - [x] shader reflection (spirv-cross)
 
-### Passes gltf tests
-- [x] AlphaBlendModeTest
-- [ ] AttenuationTest
-- [x] ClearCoatTest
-- [x] EmissiveStrengthTest
-- [ ] EnvironmentTest
-- [ ] InterpolationTest
-- [ ] MorphPrimitivesTest
-- [ ] MorphStressTest
-- [ ] MultiUVTest
-- [ ] NormalTangentMirrorTest
-- [ ] NormalTangentTest
-- [ ] OrientationTest
-- [ ] SpecularTest
-- [x] TextureCoordinateTest
-- [ ] TextureEncodingTest
-- [x] TextureLinearInterpolationTest
-- [ ] TextureSettingsTest
-- [ ] TextureTransformMultiTest
-- [ ] TextureTransformTest
-- [ ] TransmissionRoughnessTest
-- [ ] TransmissionTest
-- [ ] Unicode Test
-- [ ] UnlitTest
-- [x] VertexColorTest
+### glTF support
+[Feature support status](doc/gltf/glTFFeaturesSupportStatus.md)
+[Tests passing status](doc/gltf/glTFSamplesSupportStatus.md)
+[Sampless that renders/working correct](doc/gltf/glTFTestPassingStatus.md)
 
 ### Bugs and problems
 - Some gltf meshes loads incorrect, and when i deleting this mesh, it's not completely deleted
