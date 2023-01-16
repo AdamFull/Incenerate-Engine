@@ -57,7 +57,7 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [ ] RTX Shadows
 
 ### Other features
-- [ ] shader reflection
+- [x] shader reflection (spirv-cross)
 
 ### Passes gltf tests
 - [ ] AlphaBlendModeTest
