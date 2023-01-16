@@ -67,6 +67,9 @@ namespace engine
             static bool is_mesh_format(const std::string& path);
             static bool is_mesh_format(const std::filesystem::path& path);
 
+            static bool is_gltf_format(const std::string& path);
+            static bool is_gltf_format(const std::filesystem::path& path);
+
             static bool is_skybox_format(const std::string& path);
             static bool is_skybox_format(const std::filesystem::path& path);
 
@@ -150,6 +153,7 @@ namespace engine
             static bool is_image_format(uint32_t format);
             static bool is_ktx_format(uint32_t format);
             static bool is_mesh_format(uint32_t format);
+            static bool is_gltf_format(uint32_t format);
             static bool is_skybox_format(uint32_t format);
             static bool is_script_format(uint32_t format);
             static bool is_audio_format(uint32_t format);

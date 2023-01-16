@@ -48,6 +48,46 @@ std::string url_decode(const std::string& str)
     return ret;
 }
 
+int getTextureIndex(const std::string& name, const tinygltf::Value& val)
+{
+    if (val.Has(name))
+    {
+        auto obj = val.Get(name);
+        if (obj.Has("index"))
+        {
+            auto idx = obj.Get("index");
+            return idx.GetNumberAsInt();
+        }
+    }
+
+    return -1;
+}
+
+double getDoubleValueOrDefault(const std::string& name, const tinygltf::Value& val, double _default = 0.0)
+{
+    if (val.Has(name))
+    {
+        auto obj = val.Get(name);
+        return obj.GetNumberAsDouble();
+    }
+
+    return _default;
+}
+
+glm::vec3 getVec3OrDefault(const std::string& name, const tinygltf::Value& val, glm::vec3 _default = glm::vec3(0.f))
+{
+    if (val.Has(name))
+    {
+        auto obj = val.Get(name);
+        auto x = const_cast<tinygltf::Value*>(&obj.Get(0));
+        auto y = const_cast<tinygltf::Value*>(&obj.Get(1));
+        auto z = const_cast<tinygltf::Value*>(&obj.Get(2));
+        return glm::vec3(x->GetNumberAsDouble(), y->GetNumberAsDouble(), z->GetNumberAsDouble());
+    }
+
+    return _default;
+}
+
 // Based on https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanglTFModel.cpp
 bool loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* userData)
 {
@@ -69,13 +109,18 @@ void CGltfLoader::load(const const std::filesystem::path& source, const entt::en
     tinygltf::Model gltfModel;
     tinygltf::TinyGLTF gltfContext;
     std::string error, warning;
-    gltfContext.SetImageLoader(loadImageDataFuncEmpty, nullptr);
+    gltfContext.SetImageLoader(loadImageDataFuncEmpty, this);
 
     auto fpath = std::filesystem::weakly_canonical(fs::get_workdir() / source);
     fsParentPath = std::filesystem::weakly_canonical(fpath.parent_path());
     fsParentPath = std::filesystem::relative(fsParentPath, fs::get_workdir());
+    auto ext = fs::get_ext(fpath);
 
-    bool fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, fs::from_unicode(fpath));
+    bool fileLoaded{ false };
+    if (ext == ".glb")
+        fileLoaded = gltfContext.LoadBinaryFromFile(&gltfModel, &error, &warning, fs::from_unicode(fpath));
+    else if(ext == ".gltf")
+        fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, fs::from_unicode(fpath));
 
     if (!warning.empty())
         log_warning("\nWarnings while loading gltf scene \"{}\": \n{}", fs::from_unicode(source), warning);
@@ -123,7 +168,7 @@ void CGltfLoader::loadNode(const entt::entity& parent, const tinygltf::Node& nod
     if (node.rotation.size() == 4)
     {
         //TODO: refactor transform for using quaterion
-        glm::quat quat = glm::conjugate(glm::make_quat(node.rotation.data()));
+        glm::quat quat = glm::make_quat(node.rotation.data());
         transform.rotation = glm::eulerAngles(quat); //  * glm::vec3(-1.0, 1.0, 1.0)
     }
     // Loading scale data
@@ -510,14 +555,139 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         if (mat.additionalValues.find("alphaCutoff") != mat.additionalValues.end())
             params.alphaCutoff = static_cast<float>(mat.additionalValues.at("alphaCutoff").Factor());
 
+
         for (auto& [name, data] : mat.extensions)
         {
-            if (name == "KHR_materials_emissive_strength")
+            auto hash = utl::const_hash(name.c_str(), name.size());
+            switch (hash)
             {
-                auto source = data.Get("emissiveStrength");
-                params.emissiveStrength = source.GetNumberAsDouble();
+            case ext::KHR_materials_clearcoat: {
+                params.clearcoatFactor = getDoubleValueOrDefault("clearcoatFactor", data);
+                params.clearcoatRoughnessFactor = getDoubleValueOrDefault("clearcoatRoughnessFactor", data);
+               
+                auto clearcoatTexture = getTextureIndex("clearcoatTexture", data);
+                if (clearcoatTexture >= 0)
+                {
+                    pMaterial->addTexture("clearcoat_tex", loadTexture(vTextures.at(clearcoatTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_CLEARCOAT_TEX");
+                }
+
+                auto clearcoatRoughnessTexture = getTextureIndex("clearcoatRoughnessTexture", data);
+                if (clearcoatRoughnessTexture >= 0)
+                {
+                    pMaterial->addTexture("clearcoat_rough_tex", loadTexture(vTextures.at(clearcoatRoughnessTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_CLEARCOAT_ROUGH_TEX");
+                }
+
+                auto clearcoatNormalTexture = getTextureIndex("clearcoatNormalTexture", data);
+                if (clearcoatNormalTexture >= 0)
+                {
+                    pMaterial->addTexture("clearcoat_normal_tex", loadTexture(vTextures.at(clearcoatNormalTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_CLEARCOAT_NORMAL_TEX");
+                }
+            } break;
+
+            case ext::KHR_materials_emissive_strength: {
+                params.emissiveStrength = getDoubleValueOrDefault("emissiveStrength", data, 1.0);
+            } break;
+
+            case ext::KHR_materials_ior: {
+                params.ior = getDoubleValueOrDefault("ior", data, 1.5);
+            } break;
+
+            case ext::KHR_materials_iridescence: {
+                params.iridescenceFactor = getDoubleValueOrDefault("iridescenceFactor", data);
+                params.iridescenceIor = getDoubleValueOrDefault("iridescenceIor", data, 1.3);
+                params.iridescenceThicknessMinimum = getDoubleValueOrDefault("iridescenceThicknessMinimum", data, 100.0);
+                params.iridescenceThicknessMaximum = getDoubleValueOrDefault("iridescenceThicknessMaximum", data, 400.0);
+
+                auto iridescenceTexture = getTextureIndex("iridescenceTexture", data);
+                if (iridescenceTexture >= 0)
+                {
+                    pMaterial->addTexture("iridescence_tex", loadTexture(vTextures.at(iridescenceTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_IRIDESCENCE_TEX");
+                }
+
+                auto iridescenceThicknessTexture = getTextureIndex("iridescenceThicknessTexture", data);
+                if (iridescenceThicknessTexture >= 0)
+                {
+                    pMaterial->addTexture("iridescence_thickness_tex", loadTexture(vTextures.at(iridescenceThicknessTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_IRIDESCENCE_THICKNESS_TEX");
+                }
+            } break;
+
+            case ext::KHR_materials_sheen: {
+                params.sheenColorFactor = getVec3OrDefault("sheenColorFactor", data);
+                params.sheenRoughnessFactor = getDoubleValueOrDefault("sheenRoughnessFactor", data);
+
+                auto sheenColorTexture = getTextureIndex("sheenColorTexture", data);
+                if (sheenColorTexture >= 0)
+                {
+                    pMaterial->addTexture("sheen_tex", loadTexture(vTextures.at(sheenColorTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_SHEEN_TEX");
+                }
+
+                auto sheenRoughnessTexture = getTextureIndex("sheenRoughnessTexture", data);
+                if (sheenRoughnessTexture >= 0)
+                {
+                    pMaterial->addTexture("sheen_rough_tex", loadTexture(vTextures.at(sheenRoughnessTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_SHEEN_ROUGH_TEX");
+                }
+            } break;
+
+            case ext::KHR_materials_specular: {
+                params.specularFactor = getDoubleValueOrDefault("specularFactor", data, 1.0);
+                params.specularColorFactor = getVec3OrDefault("specularColorFactor", data, glm::vec3(1.f));
+
+                auto specularTexture = getTextureIndex("specularTexture", data);
+                if (specularTexture >= 0)
+                {
+                    pMaterial->addTexture("specular_tex", loadTexture(vTextures.at(specularTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_SPECULAR_TEX");
+                }
+
+                auto specularColorTexture = getTextureIndex("specularColorTexture", data);
+                if (specularColorTexture >= 0)
+                {
+                    pMaterial->addTexture("specular_color_tex", loadTexture(vTextures.at(specularColorTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_SPECULAR_COLOR_TEX");
+                }
+            } break;
+
+            case ext::KHR_materials_transmission: {
+                params.transmissionFactor = getDoubleValueOrDefault("transmissionFactor", data);
+
+                auto transmissionTexture = getTextureIndex("transmissionTexture", data);
+                if (transmissionTexture >= 0)
+                {
+                    pMaterial->addTexture("transmission_tex", loadTexture(vTextures.at(transmissionTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_TRANSMISSION_TEX");
+                }
+            } break;
+
+            case ext::KHR_materials_unlit: {
+            } break;
+
+            case ext::KHR_materials_variants: {
+            } break;
+
+            case ext::KHR_materials_volume: {
+                params.thicknessFactor = getDoubleValueOrDefault("thicknessFactor", data);
+                params.attenuationDistance = getDoubleValueOrDefault("attenuationDistance", data, INFINITY);
+                params.attenuationColor = getVec3OrDefault("attenuationColor", data, glm::vec3(1.f));
+
+                auto thicknessTexture = getTextureIndex("thicknessTexture", data);
+                if (thicknessTexture >= 0)
+                {
+                    pMaterial->addTexture("thickness_tex", loadTexture(vTextures.at(thicknessTexture), vk::Format::eR8G8B8A8Unorm));
+                    params.vCompileDefinitions.emplace_back("HAS_THICKNESS_TEX");
+                }
+            } break;
+
+            default: break;
             }
-                
+
+            log_info("Material with name {} requires glTF 2.0 extention named \"{}\"", mat.name, name);
         }
 
         // TODO: add instances in shader object

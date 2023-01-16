@@ -11,8 +11,6 @@ using namespace engine::game;
 
 void CMeshLoader::load(const std::filesystem::path& source, const entt::entity& root)
 {
-	auto ext = fs::get_ext(source);
-
-	if (ext == ".gltf")
+	if (fs::is_gltf_format(source))
 		std::make_unique<CGltfLoader>()->load(source, root);
 }

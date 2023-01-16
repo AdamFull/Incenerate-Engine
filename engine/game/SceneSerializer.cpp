@@ -7,27 +7,8 @@
 
 #include "ecs/components/components.h"
 
-namespace engine
-{
-	namespace game
-	{
-		void to_json(nlohmann::json& json, const FSceneObjectRaw& type)
-		{
-			json = nlohmann::json();
-			utl::serialize_from("name", json, type.srName, !type.srName.empty());
-			utl::serialize_from("components", json, type.mComponents, !type.mComponents.empty());
-			utl::serialize_from("children", json, type.vChildren, !type.vChildren.empty());
-		}
 
-		void from_json(const nlohmann::json& json, FSceneObjectRaw& type)
-		{
-			utl::parse_to("name", json, type.srName);
-			utl::parse_to("components", json, type.mComponents);
-			utl::parse_to("children", json, type.vChildren);
-		}
-	}
-}
-
+using namespace engine;
 using namespace engine::ecs;
 using namespace engine::game;
 using namespace engine::system;
@@ -36,118 +17,104 @@ using namespace engine::audio;
 
 entt::entity CSceneLoader::load(const std::filesystem::path& scenepath)
 {
-	std::vector<FSceneObjectRaw> vScene;
-	fs::read_json(scenepath, vScene);
+	FIncenerateScene scene;
+	fs::read_json(scenepath, scene);
 
-	auto root = scenegraph::create_node("root");
-
-	loadNodes(root, vScene);
-
-	return root;
+	return loadNode(scene.root);
 }
 
 void CSceneLoader::save(const entt::entity& root, const std::filesystem::path& scenepath)
 {
-	std::vector<FSceneObjectRaw> vScene;
+	FIncenerateScene scene;
+	scene.root = saveNode(root);
 
-	auto& registry = EGCoordinator;
-	auto& hierarchy = registry.get<FHierarchyComponent>(root);
-
-	for (auto& child : hierarchy.children)
-		serializeNodes(child, vScene);
-
-	fs::write_json(scenepath, vScene, 2);
+	fs::write_json(scenepath, scene, 2);
 }
 
-void CSceneLoader::loadNodes(const entt::entity& parent, const std::vector<FSceneObjectRaw>& vObjects)
+entt::entity CSceneLoader::loadNode(FSceneObjectRaw& object)
 {
 	auto& registry = EGCoordinator;
 
-	for (auto& object : vObjects)
+	auto node = scenegraph::create_node(object.srName);
+
+	for (auto& [name, component] : object.mComponents)
 	{
-		auto node = scenegraph::create_node(object.srName);
-		
-		for (auto& [name, component] : object.mComponents)
+		if (name == "transform")
 		{
-			if (name == "transform")
-			{
-				auto& transform = registry.get<FTransformComponent>(node);
-				transform = component.get<FTransformComponent>();
-			}
-
-			if (name == "camera")
-				registry.emplace<FCameraComponent>(node, component.get<FCameraComponent>());
-
-			if (name == "audio")
-				registry.emplace<FAudioComponent>(node, component.get<FAudioComponent>());
-
-			if (name == "environment")
-				registry.emplace<FEnvironmentComponent>(node, component.get<FEnvironmentComponent>());
-
-			if (name == "sprite")
-				registry.emplace<FSpriteComponent>(node, component.get<FSpriteComponent>());
-
-			if (name == "scene")
-				registry.emplace<FSceneComponent>(node, component.get<FSceneComponent>());
-
-			if (name == "directionallight")
-				registry.emplace<FDirectionalLightComponent>(node, component.get<FDirectionalLightComponent>());
-
-			if (name == "pointlight")
-				registry.emplace<FPointLightComponent>(node, component.get<FPointLightComponent>());
-
-			if (name == "spotlight")
-				registry.emplace<FSpotLightComponent>(node, component.get<FSpotLightComponent>());
-
-			if (name == "script")
-				registry.emplace<FScriptComponent>(node, component.get<FScriptComponent>());
+			auto& transform = registry.get<FTransformComponent>(node);
+			transform = component.get<FTransformComponent>();
 		}
 
-		loadNodes(node, object.vChildren);
+		if (name == "camera")
+			registry.emplace<FCameraComponent>(node, component.get<FCameraComponent>());
 
-		scenegraph::attach_child(parent, node);
+		if (name == "audio")
+			registry.emplace<FAudioComponent>(node, component.get<FAudioComponent>());
+
+		if (name == "environment")
+			registry.emplace<FEnvironmentComponent>(node, component.get<FEnvironmentComponent>());
+
+		if (name == "sprite")
+			registry.emplace<FSpriteComponent>(node, component.get<FSpriteComponent>());
+
+		if (name == "scene")
+			registry.emplace<FSceneComponent>(node, component.get<FSceneComponent>());
+
+		if (name == "directionallight")
+			registry.emplace<FDirectionalLightComponent>(node, component.get<FDirectionalLightComponent>());
+
+		if (name == "pointlight")
+			registry.emplace<FPointLightComponent>(node, component.get<FPointLightComponent>());
+
+		if (name == "spotlight")
+			registry.emplace<FSpotLightComponent>(node, component.get<FSpotLightComponent>());
+
+		if (name == "script")
+			registry.emplace<FScriptComponent>(node, component.get<FScriptComponent>());
 	}
+
+	for(auto& child : object.vChildren)
+		scenegraph::attach_child(node, loadNode(child));
+
+	return node;
 }
 
-void CSceneLoader::serializeNodes(const entt::entity& parent, std::vector<FSceneObjectRaw>& vObjects)
+FSceneObjectRaw CSceneLoader::saveNode(const entt::entity& node)
 {
 	bool bIgnoreChildren{ false };
 	auto& registry = EGCoordinator;
 
 	FSceneObjectRaw object;
 
-	auto& phierarchy = registry.get<FHierarchyComponent>(parent);
-	object.srName = phierarchy.name;
+	auto& hierarchy = registry.get<FHierarchyComponent>(node);
+	object.srName = hierarchy.name;
 
-	if (auto transform = registry.try_get<FTransformComponent>(parent))
+	if (auto transform = registry.try_get<FTransformComponent>(node))
 		object.mComponents.emplace("transform", nlohmann::json(*transform));
-	if (auto scene = registry.try_get<FSceneComponent>(parent))
+	if (auto scene = registry.try_get<FSceneComponent>(node))
 	{
 		object.mComponents.emplace("scene", nlohmann::json(*scene));
 		bIgnoreChildren = true;
 	}
-	if (auto camera = registry.try_get<FCameraComponent>(parent))
+	if (auto camera = registry.try_get<FCameraComponent>(node))
 		object.mComponents.emplace("camera", nlohmann::json(*camera));
-	if (auto audio = registry.try_get<FAudioComponent>(parent))
+	if (auto audio = registry.try_get<FAudioComponent>(node))
 		object.mComponents.emplace("audio", nlohmann::json(*audio));
-	if (auto environment = registry.try_get<FEnvironmentComponent>(parent))
+	if (auto environment = registry.try_get<FEnvironmentComponent>(node))
 		object.mComponents.emplace("environment", nlohmann::json(*environment));
-	if (auto sprite = registry.try_get<FSpriteComponent>(parent))
+	if (auto sprite = registry.try_get<FSpriteComponent>(node))
 		object.mComponents.emplace("sprite", nlohmann::json(*sprite));
-	if (auto directionallight = registry.try_get<FDirectionalLightComponent>(parent))
+	if (auto directionallight = registry.try_get<FDirectionalLightComponent>(node))
 		object.mComponents.emplace("directionallight", nlohmann::json(*directionallight));
-	if (auto pointlight = registry.try_get<FPointLightComponent>(parent))
+	if (auto pointlight = registry.try_get<FPointLightComponent>(node))
 		object.mComponents.emplace("pointlight", nlohmann::json(*pointlight));
-	if (auto spotlight = registry.try_get<FSpotLightComponent>(parent))
+	if (auto spotlight = registry.try_get<FSpotLightComponent>(node))
 		object.mComponents.emplace("spotlight", nlohmann::json(*spotlight));
-	if (auto script = registry.try_get<FScriptComponent>(parent))
+	if (auto script = registry.try_get<FScriptComponent>(node))
 		object.mComponents.emplace("script", nlohmann::json(*script));
 
-	if (!bIgnoreChildren)
-	{
-		for (auto& child : phierarchy.children)
-			serializeNodes(child, object.vChildren);
-	}
+	for (auto& child : hierarchy.children)
+		object.vChildren.emplace_back(saveNode(child));
 
-	vObjects.emplace_back(object);
+	return object;
 }

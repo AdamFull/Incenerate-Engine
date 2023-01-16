@@ -10,8 +10,8 @@ namespace engine
 		{
 			glm::vec3 color;
 			float intencity{ 1.f };
-			float innerAngle{ 0.92f };
-			float outerAngle{ 0.98f };
+			float innerAngle{ 0.f };
+			float outerAngle{ 0.78f };
 			bool toTarget{ false };
 			bool castShadows{ false };
 		};
@@ -23,8 +23,8 @@ namespace engine
 			alignas(16) glm::vec3 direction;
 			alignas(16) glm::vec3 color;
 			alignas(4) float intencity;
-			alignas(4) float innerAngle;
-			alignas(4) float outerAngle;
+			alignas(4) float lightAngleScale;
+			alignas(4) float lightAngleOffset;
 			alignas(4) bool toTarget{ false };
 			alignas(4) bool castShadows;
 		};

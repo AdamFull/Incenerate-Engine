@@ -84,4 +84,57 @@ namespace engine
 		utl::parse_to("pipeline", json, type.srPipeline);
 		utl::parse_to("shaders", json, type.srShaders);
 	}
+
+	// Scene structures
+	// Postprocessing 
+	void to_json(nlohmann::json& json, const FPostProcessTonemap& type)
+	{
+		utl::serialize_from("gamma", json, type.gamma, type.gamma != 2.2f);
+		utl::serialize_from("exposure", json, type.exposure, type.exposure != 4.5f);
+	}
+
+	void from_json(const nlohmann::json& json, FPostProcessTonemap& type)
+	{
+		utl::parse_to("gamma", json, type.gamma);
+		utl::parse_to("exposure", json, type.exposure);
+	}
+
+	void to_json(nlohmann::json& json, const FScenePostProcessing& type)
+	{
+		utl::serialize_from("tonemapping", json, type.tonemapping, true);
+	}
+
+	void from_json(const nlohmann::json& json, FScenePostProcessing& type)
+	{
+		utl::parse_to("tonemapping", json, type.tonemapping);
+	}
+
+
+	void to_json(nlohmann::json& json, const FSceneObjectRaw& type)
+	{
+		utl::serialize_from("name", json, type.srName, !type.srName.empty());
+		utl::serialize_from("components", json, type.mComponents, !type.mComponents.empty());
+		utl::serialize_from("children", json, type.vChildren, !type.vChildren.empty());
+	}
+
+	void from_json(const nlohmann::json& json, FSceneObjectRaw& type)
+	{
+		utl::parse_to("name", json, type.srName);
+		utl::parse_to("components", json, type.mComponents);
+		utl::parse_to("children", json, type.vChildren);
+	}
+
+
+	void to_json(nlohmann::json& json, const FIncenerateScene& type)
+	{
+		json = nlohmann::json();
+		utl::serialize_from("postprocess", json, type.postprocessing, true);
+		utl::serialize_from("scene", json, type.root, true);
+	}
+
+	void from_json(const nlohmann::json& json, FIncenerateScene& type)
+	{
+		utl::parse_to("postprocess", json, type.postprocessing);
+		utl::parse_to("scene", json, type.root);
+	}
 }

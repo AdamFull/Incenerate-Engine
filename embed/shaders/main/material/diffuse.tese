@@ -1,7 +1,18 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
 
-layout(std140, binding = 7) uniform UBOMaterial
+layout(std140, binding = 0) uniform FUniformData 
+{
+  	mat4 model;
+  	mat4 view;
+  	mat4 projection;
+  	mat4 normal;
+	vec3 viewDir;
+	vec2 viewportDim;
+	vec4 frustumPlanes[6];
+} data;
+
+layout(std140, binding = 18) uniform UBOMaterial
 {
 	vec4 baseColorFactor;
 	vec3 emissiveFactor;
@@ -13,17 +24,6 @@ layout(std140, binding = 7) uniform UBOMaterial
 	float tessellationFactor;
 	float tessellationStrength;
 } material;
-
-layout(std140, binding = 0) uniform FUniformData 
-{
-  	mat4 model;
-  	mat4 view;
-  	mat4 projection;
-  	mat4 normal;
-	vec3 viewDir;
-	vec2 viewportDim;
-	vec4 frustumPlanes[6];
-} data;
 
 #ifdef HAS_HEIGHTMAP
 layout(binding = 6) uniform sampler2D height_tex;

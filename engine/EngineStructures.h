@@ -63,6 +63,44 @@ namespace engine
 
 	void to_json(nlohmann::json& json, const FEngineCreateInfo& type);
 	void from_json(const nlohmann::json& json, FEngineCreateInfo& type);
+
+
+	// Scene structures
+	struct FPostProcessTonemap
+	{
+		float gamma{ 2.2f };
+		float exposure{ 4.5f };
+	};
+
+	void to_json(nlohmann::json& json, const FPostProcessTonemap& type);
+	void from_json(const nlohmann::json& json, FPostProcessTonemap& type);
+
+	struct FScenePostProcessing
+	{
+		FPostProcessTonemap tonemapping;
+	};
+
+	void to_json(nlohmann::json& json, const FScenePostProcessing& type);
+	void from_json(const nlohmann::json& json, FScenePostProcessing& type);
+
+	struct FSceneObjectRaw
+	{
+		std::string srName;
+		std::map<std::string, nlohmann::json> mComponents;
+		std::vector<FSceneObjectRaw> vChildren;
+	};
+
+	void to_json(nlohmann::json& json, const FSceneObjectRaw& type);
+	void from_json(const nlohmann::json& json, FSceneObjectRaw& type);
+
+	struct FIncenerateScene
+	{
+		FScenePostProcessing postprocessing;
+		FSceneObjectRaw root;
+	};
+
+	void to_json(nlohmann::json& json, const FIncenerateScene& type);
+	void from_json(const nlohmann::json& json, FIncenerateScene& type);
 }
 
 template <>

@@ -123,6 +123,18 @@ bool fs::is_mesh_format(const std::filesystem::path& path)
     return is_mesh_format(utl::const_hash(ext.c_str(), ext.size()));
 }
 
+bool fs::is_gltf_format(const std::string& path)
+{
+    auto ext = get_ext(path);
+    return is_gltf_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
+bool fs::is_gltf_format(const std::filesystem::path& path)
+{
+    auto ext = get_ext(path);
+    return is_gltf_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
 bool fs::is_skybox_format(const std::string& path)
 {
     auto ext = get_ext(path);
@@ -193,6 +205,13 @@ bool fs::is_ktx_format(uint32_t format)
 bool fs::is_mesh_format(uint32_t format)
 {
     return 
+        format == format::gltf ||
+        format == format::glb;
+}
+
+bool fs::is_gltf_format(uint32_t format)
+{
+    return
         format == format::gltf ||
         format == format::glb;
 }

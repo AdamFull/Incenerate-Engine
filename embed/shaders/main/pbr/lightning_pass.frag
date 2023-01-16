@@ -83,17 +83,20 @@ vec3 calculateSpotlight(FSpotLight light, int index, vec3 worldPosition, vec3 al
 	vec3 dir = vec3(normalize(light.direction));
 	if(light.toTarget)
 		dir = normalize(light.position - light.direction);
-	float cosDir = dot(light.toTarget ? L : -L, dir);
-	float spotEffect = smoothstep(light.innerConeAngle, light.outerConeAngle, cosDir);
-	float heightAttenuation = smoothstep(100.0, 0.0f, dist);
+
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
+
+	// https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md
+	float cd = dot(light.toTarget ? L : -L, dir);
+	float angularAttenuation = clamp(cd * light.lightAngleScale + light.lightAngleOffset, 0.0, 1.0);
+	angularAttenuation *= angularAttenuation;	
 	
 	float shadow_factor = 1.0;
 
 	if(light.castShadows)
 		shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
 
-	return light.color * light.intencity * color * spotEffect * heightAttenuation * shadow_factor;
+	return light.color * light.intencity * color * angularAttenuation * shadow_factor;
 }
 
 vec3 calculatePointLight(FPointLight light, int index, vec3 worldPosition, vec3 albedo, vec3 V, vec3 N, vec3 F0, float metallic, float roughness)
@@ -149,6 +152,8 @@ void main()
 		vec3 F0 = vec3(0.04f);
 		// Reflectance at normal incidence angle
 		F0 = mix(F0, albedo, metallic);
+
+		//F0 = vec3(pow(( 1.5 - 1.0) /  (1.5 + 1.0), 2.0));
 
 		// Light contribution
 		vec3 Lo = vec3(0.0f);

@@ -17,8 +17,8 @@ struct FSpotLight
     vec3 direction;
     vec3 color;
 	float intencity;
-	float innerConeAngle;
-    float outerConeAngle;
+	float lightAngleScale; 
+    float lightAngleOffset;
 	bool toTarget;
 	bool castShadows;
 };

@@ -74,6 +74,7 @@ void CCompositionSystem::__update(float fDt)
 
 	// Collecting spot lights
 	{
+		// TODO: direction as dot product of rotation and some vec
 		auto view = registry.view<FTransformComponent, FSpotLightComponent>();
 		for (auto [entity, transform, light] : view.each())
 		{
@@ -82,8 +83,8 @@ void CCompositionSystem::__update(float fDt)
 			commit.direction = transform.rrotation;
 			commit.color = light.color;
 			commit.intencity = light.intencity;
-			commit.innerAngle = light.innerAngle;
-			commit.outerAngle = light.outerAngle;
+			commit.lightAngleScale = 1.f / glm::max(0.001f, glm::cos(light.innerAngle) - glm::cos(light.outerAngle));
+			commit.lightAngleOffset = -glm::cos(light.outerAngle) * commit.lightAngleScale;
 			commit.toTarget = light.toTarget;
 			commit.castShadows = light.castShadows;
 
