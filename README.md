@@ -60,9 +60,9 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [x] shader reflection (spirv-cross)
 
 ### Passes gltf tests
-- [ ] AlphaBlendModeTest
+- [x] AlphaBlendModeTest
 - [ ] AttenuationTest
-- [ ] ClearCoatTest
+- [x] ClearCoatTest
 - [x] EmissiveStrengthTest
 - [ ] EnvironmentTest
 - [ ] InterpolationTest
@@ -73,9 +73,9 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [ ] NormalTangentTest
 - [ ] OrientationTest
 - [ ] SpecularTest
-- [ ] TextureCoordinateTest
+- [x] TextureCoordinateTest
 - [ ] TextureEncodingTest
-- [ ] TextureLinearInterpolationTest
+- [x] TextureLinearInterpolationTest
 - [ ] TextureSettingsTest
 - [ ] TextureTransformMultiTest
 - [ ] TextureTransformTest
@@ -83,7 +83,7 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [ ] TransmissionTest
 - [ ] Unicode Test
 - [ ] UnlitTest
-- [ ] VertexColorTest
+- [x] VertexColorTest
 
 ### Bugs and problems
 - Some gltf meshes loads incorrect, and when i deleting this mesh, it's not completely deleted
