@@ -59,6 +59,7 @@ layout(std140, binding = 7) uniform UBOMaterial
 {
 	vec4 baseColorFactor;
 	vec3 emissiveFactor;
+	float emissiveStrength;
 	int alphaMode;
 	float alphaCutoff;
 	float normalScale;
@@ -69,7 +70,7 @@ layout(std140, binding = 7) uniform UBOMaterial
 	float tessellationStrength;
 } material;
 
-const float minRoughness = 0.01;
+const float minRoughness = 0.04;
 
 //https://github.com/bwasty/gltf-viewer/blob/master/src/shaders/pbr-frag.glsl
 void main() 
@@ -81,12 +82,11 @@ void main()
 #endif
 
 //BASECOLOR
-	vec4 albedo_map = vec4(1.0);
+	vec4 albedo_map = vec4(0.0);
 #ifdef HAS_BASECOLORMAP
-	albedo_map = texture(color_tex, texCoord);
-	albedo_map = vec4(albedo_map.rgb * material.baseColorFactor.rgb, albedo_map.a);
+	albedo_map = texture(color_tex, texCoord) * material.baseColorFactor;
 #else
-	albedo_map = vec4(albedo_map.rgb * material.baseColorFactor.rgb, albedo_map.a);
+	albedo_map = material.baseColorFactor;
 #endif
 	albedo_map *= vec4(inColor, 1.0);
 
@@ -145,17 +145,19 @@ void main()
 
 //AMBIENT OCCLUSION
 #ifdef HAS_OCCLUSIONMAP
-	pbr_map.b = texture(occlusion_tex, texCoord).r * material.occlusionStrenth;
+	pbr_map.b = texture(occlusion_tex, texCoord).r;
+	pbr_map.a = material.occlusionStrenth;
 #else
 	pbr_map.b = 1.0;
+	pbr_map.a = 0.0;
 #endif
 
 //EMISSION
-	vec4 emission = 
+	vec4 emission = vec4(0.0);
 #ifdef HAS_EMISSIVEMAP
-    vec4(texture(emissive_tex, texCoord).rgb * material.emissiveFactor, 1.0);
+    emission = vec4(texture(emissive_tex, texCoord).rgb * material.emissiveFactor, 1.0) * material.emissiveStrength;
 #else
-	vec4(inColor * material.emissiveFactor, 1.0);
+	emission = vec4(material.emissiveFactor, 1.0) * material.emissiveStrength;
 #endif
 
 	outAlbedo = albedo_map;

@@ -79,6 +79,7 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 							{
 								pSurface->set("baseColorFactor", params.baseColorFactor);
 								pSurface->set("emissiveFactor", params.emissiveFactor);
+								pSurface->set("emissiveStrength", params.emissiveStrength);
 								pSurface->set("alphaMode", static_cast<int>(params.alphaMode));
 								pSurface->set("alphaCutoff", params.alphaCutoff);
 								pSurface->set("normalScale", params.normalScale);

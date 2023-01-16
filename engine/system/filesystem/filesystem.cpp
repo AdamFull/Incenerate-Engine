@@ -1,6 +1,7 @@
 #include "filesystem.h"
 
 #include <fstream>
+#include <codecvt>
 
 using namespace engine::system;
 
@@ -48,6 +49,18 @@ bool fs::is_file_exists(const std::filesystem::path& path)
     return std::filesystem::exists(path);
 }
 
+std::string fs::from_unicode(const std::wstring& unicode)
+{
+    using type_converter = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<type_converter, wchar_t> converter;
+    return converter.to_bytes(unicode);
+}
+
+std::string fs::from_unicode(const std::filesystem::path& unicode)
+{
+    return from_unicode(unicode.wstring());
+}
+
 std::string fs::get_ext(const std::string& path)
 {
     if (auto fnd = path.find_last_of("."))
@@ -61,7 +74,7 @@ std::string fs::get_ext(const std::string& path)
 
 std::string fs::get_ext(const std::filesystem::path& path)
 {
-    return path.extension().string();
+    return from_unicode(path.extension());
 }
 
 std::string fs::get_filename(const std::string& path)
@@ -71,7 +84,7 @@ std::string fs::get_filename(const std::string& path)
 
 std::string fs::get_filename(const std::filesystem::path& path)
 {
-    return path.filename().string();
+    return from_unicode(path);
 }
 
 bool fs::is_image_format(const std::string& path)

@@ -11,6 +11,7 @@ namespace engine
 			EAlphaMode alphaMode{ EAlphaMode::EOPAQUE };
 			float alphaCutoff{ 0.5f };
 			glm::vec3 emissiveFactor{ 0.f };
+			float emissiveStrength{ 1.f };
 			float normalScale{ 1.f };
 			float occlusionStrenth{ 1.f };
 			glm::vec4 baseColorFactor{ 1.0f };

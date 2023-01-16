@@ -135,6 +135,7 @@ void main()
 	float roughness = mrah.r;
 	float metallic = mrah.g;
 	float occlusion = mrah.b;
+	float occlusionStrength = mrah.a;
 
 	vec3 fragcolor = vec3(0.0f);
 	if(calculateLightning)
@@ -188,7 +189,9 @@ void main()
 		// Ambient part
 		vec3 kD = 1.0 - F;
 		kD *= 1.0 - metallic;	  
-		vec3 ambient = (kD * diffuse + specular) * occlusion;
+		vec3 ambient = (kD * diffuse + specular);
+
+		ambient = mix(ambient, ambient * occlusion, occlusionStrength);
 
 		// Ambient part
 		fragcolor = ambient + (emission * 1.0) + Lo;

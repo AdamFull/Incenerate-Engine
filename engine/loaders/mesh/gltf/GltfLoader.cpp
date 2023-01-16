@@ -64,7 +64,7 @@ bool loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::s
     return true;//tinygltf::LoadImageData(image, imageIndex, error, warning, req_width, req_height, bytes, size, userData);
 }
 
-void CGltfLoader::load(const std::string& source, const entt::entity& root)
+void CGltfLoader::load(const const std::filesystem::path& source, const entt::entity& root)
 {
     tinygltf::Model gltfModel;
     tinygltf::TinyGLTF gltfContext;
@@ -75,16 +75,16 @@ void CGltfLoader::load(const std::string& source, const entt::entity& root)
     fsParentPath = std::filesystem::weakly_canonical(fpath.parent_path());
     fsParentPath = std::filesystem::relative(fsParentPath, fs::get_workdir());
 
-    bool fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, fpath.string());
+    bool fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, fs::from_unicode(fpath));
 
     if (!warning.empty())
-        log_warning("\nWarnings while loading gltf scene \"{}\": \n{}", source, warning);
+        log_warning("\nWarnings while loading gltf scene \"{}\": \n{}", fs::from_unicode(source), warning);
     if (!error.empty())
-        log_error("\nErrors while loading gltf scene \"{}\": \n{}", source, error);
+        log_error("\nErrors while loading gltf scene \"{}\": \n{}", fs::from_unicode(source), error);
 
     if (fileLoaded)
     {
-        vbo_id = EGGraphics->addVertexBuffer(fpath.filename().string());
+        vbo_id = EGGraphics->addVertexBuffer(fs::from_unicode(fpath.filename()));
 
         loadTextures(gltfModel);
         loadMaterials(gltfModel);
@@ -510,6 +510,16 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         if (mat.additionalValues.find("alphaCutoff") != mat.additionalValues.end())
             params.alphaCutoff = static_cast<float>(mat.additionalValues.at("alphaCutoff").Factor());
 
+        for (auto& [name, data] : mat.extensions)
+        {
+            if (name == "KHR_materials_emissive_strength")
+            {
+                auto source = data.Get("emissiveStrength");
+                params.emissiveStrength = source.GetNumberAsDouble();
+            }
+                
+        }
+
         // TODO: add instances in shader object
         pMaterial->setParameters(std::move(params));
         auto mat_name = mat.name.empty() ? fs::get_filename(fsParentPath) + "_" + std::to_string(vMaterials.size()) : mat.name;
@@ -537,7 +547,7 @@ void CGltfLoader::loadTextures(const tinygltf::Model& model)
 
         auto& image = model.images.at(image_index); 
         auto texture_path = std::filesystem::weakly_canonical(fsParentPath / url_decode(image.uri));
-        vTextures.emplace_back(texture_path.string(), isBasisU || fs::is_ktx_format(texture_path));
+        vTextures.emplace_back(fs::from_unicode(texture_path), isBasisU || fs::is_ktx_format(texture_path));
     }
 }
 

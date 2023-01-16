@@ -9,7 +9,7 @@ namespace engine
 		class CAudioLoader
 		{
 		public:
-			static std::unique_ptr<CAudioReader> load(const std::string& filepath);
+			static std::unique_ptr<CAudioReader> load(const std::filesystem::path& filepath);
 		};
 	}
 }

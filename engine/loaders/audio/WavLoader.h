@@ -27,7 +27,7 @@ namespace engine
 		{
 		public:
 			virtual ~CWavReader() override = default;
-			EAudioReaderError open(const std::string& filepath) override;
+			EAudioReaderError open(const std::filesystem::path& filepath) override;
 			size_t read(std::vector<char>& data) override;
 			void close() override;
 

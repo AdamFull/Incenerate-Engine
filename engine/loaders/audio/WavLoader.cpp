@@ -5,13 +5,13 @@
 using namespace engine::loaders;
 using namespace engine::system;
 
-EAudioReaderError CWavReader::open(const std::string& filepath)
+EAudioReaderError CWavReader::open(const std::filesystem::path& filepath)
 {
 	char header[header_size];
 
 	auto relpath = fs::get_workdir() / filepath;
 
-	pFile = fopen(relpath.string().c_str(), "rb");
+	pFile = fopen(fs::from_unicode(relpath).c_str(), "rb");
 	if (!pFile)
 		return EAudioReaderError::eCannotOpenFile;
 

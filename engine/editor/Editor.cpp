@@ -325,7 +325,7 @@ void CEditor::NewProjectModal()
             auto path = std::filesystem::path(name_buf);
             if (pEditorProject->make_new(path))
             {
-                recproj.recent = path.string();
+                recproj.recent = fs::from_unicode(path);
                 save_editor();
                 ImGui::CloseCurrentPopup();
                 EGEngine->sendEvent(Events::Editor::ProjectUpdated);
@@ -349,7 +349,7 @@ void CEditor::OpenProjectModal()
             auto path = std::filesystem::path(name_buf);
             if (pEditorProject->open(path))
             {
-                recproj.recent = path.string();
+                recproj.recent = fs::from_unicode(path);
                 save_editor();
                 ImGui::CloseCurrentPopup();
                 EGEngine->sendEvent(Events::Editor::ProjectUpdated);
@@ -426,7 +426,7 @@ void CEditor::baseInitialize()
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
     Themes::cinder();
-    auto fontfile = (fs::get_workdir(true) / "font" / FONT_ICON_FILE_NAME_MDI).string();
+    auto fontfile = fs::from_unicode(fs::get_workdir(true) / "font" / FONT_ICON_FILE_NAME_MDI);
 
     static const ImWchar icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };
     ImFontConfig icons_config;

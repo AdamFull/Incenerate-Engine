@@ -34,7 +34,7 @@ void CImageLoader::load(const std::filesystem::path& fsPath, std::unique_ptr<FIm
 
 void CImageLoader::loadSTB(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
-    auto filename = fsPath.string();
+    auto filename = fs::from_unicode(fsPath);
 
     int width{ 0 }, height{ 0 }, channels{ 0 };
     auto data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
@@ -67,7 +67,7 @@ void CImageLoader::loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<
 {
     ktxTexture* kTexture{ nullptr };
 
-    auto ktxresult = ktxTexture_CreateFromNamedFile(fsPath.string().c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &kTexture);
+    auto ktxresult = ktxTexture_CreateFromNamedFile(fs::from_unicode(fsPath).c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &kTexture);
     log_cerror(ktxresult == KTX_SUCCESS, "Failed to open ktx texture.");
 
     imageCI->isArray = kTexture->isArray;
@@ -111,7 +111,7 @@ void CImageLoader::loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr
 {
     ktxTexture2* kTexture{ nullptr };
 
-    auto ktxresult = ktxTexture_CreateFromNamedFile(fsPath.string().c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, (ktxTexture**)&kTexture);
+    auto ktxresult = ktxTexture_CreateFromNamedFile(fs::from_unicode(fsPath).c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, (ktxTexture**)&kTexture);
     log_cerror(ktxresult == KTX_SUCCESS, "Failed to open ktx texture.");
 
     imageCI->isArray = kTexture->isArray;
@@ -170,7 +170,7 @@ EImageFormat CImageLoader::getTextureFormat(const std::filesystem::path& fsPath)
         {".dds", EImageFormat::eDDS}
     };
 
-    auto ext = fsPath.extension().string();
+    auto ext = fs::from_unicode(fsPath.extension());
     auto it = imageFormatMapStatic.find(ext);
     if (it != imageFormatMapStatic.end())
         return it->second;

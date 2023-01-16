@@ -9,7 +9,7 @@ namespace engine
 		class CGltfLoader
 		{
 		public:
-			void load(const std::string& source, const entt::entity& pRoot);
+			void load(const std::filesystem::path& source, const entt::entity& pRoot);
 
 		private:
 			void loadNode(const entt::entity& entity, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, float globalscale);

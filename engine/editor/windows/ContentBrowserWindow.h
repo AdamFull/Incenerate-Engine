@@ -20,7 +20,7 @@ namespace engine
 			void update_path(const std::filesystem::path& npath);
 		private:
 			std::filesystem::path currentPath{};
-			std::vector<std::string> vCurrentDirData;
+			std::vector<std::filesystem::path> vCurrentDirData;
 
 			std::filesystem::path workdir{};
 			std::filesystem::path relative{};

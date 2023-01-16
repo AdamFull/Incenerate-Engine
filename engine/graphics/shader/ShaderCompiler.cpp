@@ -78,7 +78,7 @@ private:
 
 vk::ShaderStageFlagBits getShaderStage(const std::filesystem::path& moduleName)
 {
-	auto fileExt = moduleName.extension().string();
+	auto fileExt = fs::get_ext(moduleName);
 	std::transform(fileExt.begin(), fileExt.end(), fileExt.begin(), ::tolower);
 
 	if (fileExt == ".comp")
@@ -297,7 +297,7 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 	std::string data;
 	if (fs::read_file(path, data, true))
 	{
-		auto fname = path.filename().string();
+		auto fname = fs::get_filename(path);
 		auto hash = utl::const_hash(data.c_str());
 		//auto found = get(fname, hash);
 		//if (found)
@@ -312,7 +312,7 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 
 		auto messages = static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules | EShMsgDefault);
 
-		auto srShaderName = path.string();
+		auto srShaderName = fs::from_unicode(path);
 		auto shaderName = srShaderName.c_str();
 		auto shaderSource = data.c_str();
 		shader.setStringsWithLengthsAndNames(&shaderSource, nullptr, &shaderName, 1);

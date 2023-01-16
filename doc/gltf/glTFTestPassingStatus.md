@@ -1,0 +1,25 @@
+## Passes glTF tests
+- [x] AlphaBlendModeTest
+- [ ] AttenuationTest
+- [x] ClearCoatTest
+- [x] EmissiveStrengthTest
+- [ ] EnvironmentTest
+- [ ] InterpolationTest
+- [ ] MorphPrimitivesTest
+- [ ] MorphStressTest
+- [ ] MultiUVTest
+- [ ] NormalTangentMirrorTest
+- [ ] NormalTangentTest
+- [ ] OrientationTest
+- [ ] SpecularTest
+- [x] TextureCoordinateTest
+- [ ] TextureEncodingTest
+- [x] TextureLinearInterpolationTest
+- [ ] TextureSettingsTest
+- [ ] TextureTransformMultiTest
+- [ ] TextureTransformTest
+- [ ] TransmissionRoughnessTest
+- [ ] TransmissionTest
+- [ ] Unicode Test
+- [ ] UnlitTest
+- [x] VertexColorTest

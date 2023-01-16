@@ -161,7 +161,7 @@ void CEditorInspector::__draw(float fDt)
 					if (!registry.try_get<FAudioComponent>(selected))
 					{
 						FAudioComponent naudio{};
-						naudio.source = source.string();
+						naudio.source = fs::from_unicode(source);
 
 						registry.emplace<FAudioComponent>(selected, std::move(naudio));
 					}
@@ -171,7 +171,7 @@ void CEditorInspector::__draw(float fDt)
 					if (!registry.try_get<FScriptComponent>(selected))
 					{
 						FScriptComponent nscript{};
-						nscript.source = source.string();
+						nscript.source = fs::from_unicode(source);
 
 						registry.emplace<FScriptComponent>(selected, std::move(nscript));
 					}
@@ -183,7 +183,7 @@ void CEditorInspector::__draw(float fDt)
 					if (!registry.try_get<FEnvironmentComponent>(selected) && pImageCI->isCubemap)
 					{
 						FEnvironmentComponent nskybox{};
-						nskybox.source = source.string();
+						nskybox.source = fs::from_unicode(source);
 
 						registry.emplace<FEnvironmentComponent>(selected, std::move(nskybox));
 					}
@@ -193,7 +193,7 @@ void CEditorInspector::__draw(float fDt)
 					if (!registry.try_get<FSceneComponent>(selected))
 					{
 						FSceneComponent nscene{};
-						nscene.source = source.string();
+						nscene.source = fs::from_unicode(source);
 
 						registry.emplace<FSceneComponent>(selected, std::move(nscene));
 					}
@@ -219,13 +219,13 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 			{
 				if (object->source != source)
 				{
-					object->source = source.string();
+					object->source = fs::from_unicode(source);
 
 					if (object->loaded)
 					{
 						EGAudio->removeSource(object->asource);
 						auto pAudio = std::make_unique<CAudioSource>(object->source);
-						object->asource = EGAudio->addSource(source.filename().string(), std::move(pAudio));
+						object->asource = EGAudio->addSource(fs::get_filename(source), std::move(pAudio));
 					}
 					else
 					{
@@ -233,7 +233,7 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 						auto& registry = EGCoordinator;
 
 						FAudioComponent naudio{};
-						naudio.source = source.string();
+						naudio.source = fs::from_unicode(source);
 
 						registry.remove<FAudioComponent>(self);
 						registry.emplace<FAudioComponent>(self, std::move(naudio));
@@ -307,7 +307,7 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 
 			if (fs::is_script_format(source))
 			{
-				object->source = source.string();
+				object->source = fs::from_unicode(source);
 				if (object->loaded)
 				{
 
@@ -318,7 +318,7 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 					auto self = EGEditor->getLastSelection();
 
 					FScriptComponent nskybox{};
-					nskybox.source = source.string();
+					nskybox.source = fs::from_unicode(source);
 
 					registry.remove<FScriptComponent>(self);
 					registry.emplace<FScriptComponent>(self, std::move(nskybox));
@@ -349,7 +349,7 @@ void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 
 				if (object->source != source && pImageCI->isCubemap)
 				{
-					object->source = source.string();
+					object->source = fs::from_unicode(source);
 					if (object->loaded)
 					{
 						EGGraphics->removeImage(object->prefiltred);
@@ -362,7 +362,7 @@ void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 					else
 					{
 						FEnvironmentComponent nskybox{};
-						nskybox.source = source.string();
+						nskybox.source = fs::from_unicode(source);
 
 						registry.remove<FEnvironmentComponent>(self);
 						registry.emplace<FEnvironmentComponent>(self, std::move(nskybox));
@@ -393,7 +393,7 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 			{
 				if (object->source != source)
 				{
-					object->source = source.string();
+					object->source = fs::from_unicode(source);
 					if (object->loaded)
 					{
 						auto& hierarchy = registry.get<FHierarchyComponent>(self);
@@ -410,7 +410,7 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 						auto& registry = EGCoordinator;
 
 						FSceneComponent nscene{};
-						nscene.source = source.string();
+						nscene.source = fs::from_unicode(source);
 
 						registry.remove<FSceneComponent>(self);
 						registry.emplace<FSceneComponent>(self, std::move(nscene));
@@ -420,4 +420,5 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 		}
 		ImGui::EndDragDropTarget();
 	}
+	ImGui::Text("");
 }

@@ -84,7 +84,7 @@ void CEditorContentBrowser::__draw(float fDt)
 		if (ImGui::Button(undo.c_str()))
 			update_path(currentPath.parent_path());
 		ImGui::SameLine();
-		ImGui::Text(relative.string().c_str());
+		ImGui::Text(fs::from_unicode(relative).c_str());
 	}
 
 	ImGui::Separator();
@@ -102,7 +102,7 @@ void CEditorContentBrowser::__draw(float fDt)
 	for (auto& path : vCurrentDirData)
 	{
 		auto relativePath = std::filesystem::relative(path, workdir);
-		auto filename = relativePath.filename().string();
+		auto filename = fs::from_unicode(relativePath.filename().wstring());
 		auto isDirectory = std::filesystem::is_directory(path);
 
 		auto& icon = getFileIcon(filename, isDirectory);
@@ -118,7 +118,7 @@ void CEditorContentBrowser::__draw(float fDt)
 		{
 			if (isDirectory)
 			{
-				auto npath = currentPath / fs::get_filename(path);
+				auto npath = currentPath / path.filename();
 				update_path(npath);
 				ImGui::PopID();
 				break;
@@ -135,7 +135,7 @@ void CEditorContentBrowser::__draw(float fDt)
 		{
 			const wchar_t* itemPath = relativePath.c_str();
 			ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
-			ImGui::Text((icon+(" "+relativePath.string())).c_str());
+			ImGui::Text((icon+(" " + fs::from_unicode(relativePath))).c_str());
 			ImGui::EndDragDropSource();
 		}
 
@@ -161,7 +161,7 @@ void CEditorContentBrowser::update_path(const std::filesystem::path& npath)
 	{
 		for (auto& entry : std::filesystem::directory_iterator(currentPath))
 		{
-			auto path = entry.path().string();
+			auto path = entry.path();
 			if (entry.is_directory() || fs::is_image_format(path) || fs::is_audio_format(path) || fs::is_script_format(path) || fs::is_mesh_format(path))
 				vCurrentDirData.emplace_back(path);
 		}

@@ -49,6 +49,9 @@ namespace engine
 
 			static bool is_file_exists(const std::filesystem::path& path);
 
+            static std::string from_unicode(const std::wstring& unicode);
+            static std::string from_unicode(const std::filesystem::path& unicode);
+
             static std::string get_ext(const std::string& path);
             static std::string get_ext(const std::filesystem::path& path);
 

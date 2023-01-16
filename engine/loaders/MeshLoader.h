@@ -7,7 +7,7 @@ namespace engine
 		class CMeshLoader
 		{
 		public:
-			static void load(const std::string& source, const entt::entity& pRoot);
+			static void load(const std::filesystem::path& source, const entt::entity& pRoot);
 		};
 	}
 }

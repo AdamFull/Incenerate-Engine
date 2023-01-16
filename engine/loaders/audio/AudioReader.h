@@ -19,7 +19,7 @@ namespace engine
 				close();
 			}
 
-			virtual EAudioReaderError open(const std::string& filepath) = 0;
+			virtual EAudioReaderError open(const std::filesystem::path& filepath) = 0;
 			virtual size_t read(std::vector<char>& data) = 0;
 			virtual void close() {};
 
