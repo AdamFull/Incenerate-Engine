@@ -46,7 +46,7 @@ void CEditorImageViewer::OnOpenImage(CEvent& event)
 	if (openned_image != invalid_index)
 		EGGraphics->removeImage(openned_image);
 
-	auto path = event.getParam<std::string>(Events::Editor::OpenImageViewer);
+	auto path = event.getParam<std::filesystem::path>(Events::Editor::OpenImageViewer);
 	auto name = fs::get_filename(path);
 	openned_image = EGGraphics->addImage(name, path);
 	bIsOpen = true;

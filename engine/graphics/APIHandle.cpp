@@ -380,7 +380,7 @@ size_t CAPIHandle::addImage(const std::string& name, std::unique_ptr<CImage>&& i
     return pImageManager->add(name, std::move(image));
 }
 
-size_t CAPIHandle::addImage(const std::string& name, const std::string& path)
+size_t CAPIHandle::addImage(const std::string& name, const std::filesystem::path& path)
 {
     std::unique_ptr<CImage> image = std::make_unique<CImage>(pDevice.get());
     

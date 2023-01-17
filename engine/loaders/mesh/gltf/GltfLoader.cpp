@@ -214,8 +214,8 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         std::vector<FVertex> vertexBuffer;
 
         const tinygltf::Primitive& primitive = mesh.primitives[j];
-        if (primitive.indices < 0)
-            continue;
+        //if (primitive.indices < 0)
+        //    continue;
 
         uint32_t indexStart = pVBO->getLastIndex();
         uint32_t vertexStart = pVBO->getLastVertex();
@@ -331,6 +331,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         }
 
         // Indices
+        if(primitive.indices > 0)
         {
             const tinygltf::Accessor& accessor = model.accessors[primitive.indices];
             const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];

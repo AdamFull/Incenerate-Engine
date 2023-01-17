@@ -96,8 +96,10 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 
 							pShader->predraw(commandBuffer);
 
-							commandBuffer.drawIndexed(meshlet.index_count, 1, meshlet.begin_index, 0, 0);
-							continue;
+							if (vbo->getLastIndex() == 0)
+								commandBuffer.draw(meshlet.vertex_count, 1, meshlet.begin_vertex, 0);
+							else
+								commandBuffer.drawIndexed(meshlet.index_count, 1, meshlet.begin_index, 0, 0);
 						}
 					}
 				}

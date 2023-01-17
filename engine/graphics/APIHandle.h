@@ -43,7 +43,7 @@ namespace engine
 			ERenderApi getAPI() { return eAPI; }
 
 			size_t addImage(const std::string& name, std::unique_ptr<CImage>&& image);
-			size_t addImage(const std::string& name, const std::string& path);
+			size_t addImage(const std::string& name, const std::filesystem::path& path);
 			void removeImage(const std::string& name);
 			void removeImage(size_t id);
 			const std::unique_ptr<CImage>& getImage(const std::string& name);
