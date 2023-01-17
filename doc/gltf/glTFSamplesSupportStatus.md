@@ -29,41 +29,41 @@
 - [ ] AnimatedMorphCube
 - [ ] AnimatedMorphSphere
 - [ ] AnimatedTriangle
-- [ ] AntiqueCamera
-- [ ] Avocado
-- [ ] BarramundiFish
-- [ ] BoomBox
-- [ ] BoomBoxWithAxes
-- [ ] Box
-- [ ] Box With Spaces
+- [x] AntiqueCamera
+- [x] Avocado
+- [x] BarramundiFish
+- [x] BoomBox
+- [x] BoomBoxWithAxes
+- [x] Box
+- [x] Box With Spaces
 - [ ] BoxAnimated
 - [ ] BoxInterleaved
-- [ ] BoxTextured
-- [ ] BoxTexturedNonPowerOfTwo
-- [ ] BoxVertexColors
+- [x] BoxTextured
+- [x] BoxTexturedNonPowerOfTwo
+- [x] BoxVertexColors
 - [ ] BrainStem
-- [ ] Buggy
+- [ ] Buggy (Loading incorrect)
 - [ ] Cameras
 - [ ] CesiumMan
-- [ ] CesiumMilkTruck
-- [ ] Corset
-- [ ] Cube
-- [ ] DamagedHelmet
+- [ ] CesiumMilkTruck (Loading with incorrect rotation)
+- [x] Corset
+- [x] Cube
+- [x] DamagedHelmet
 - [ ] DragonAttenuation
-- [ ] Duck
-- [ ] FlightHelmet
-- [ ] Fox
-- [ ] GearboxAssy
-- [ ] GlamVelvetSofa
+- [x] Duck
+- [x] FlightHelmet
+- [x] Fox
+- [ ] GearboxAssy (Loading incorrect)
+- [ ] GlamVelvetSofa (Loading, but without materials)
 - [ ] IridescenceDielectricSpheres
 - [ ] IridescenceLamp
 - [ ] IridescenceMetallicSpheres
 - [ ] IridescenceSuzanne
 - [ ] IridescentDishWithOlives
-- [ ] Lantern
-- [ ] LightsPunctualLamp
+- [x] Lantern
+- [ ] LightsPunctualLamp (Loading but without materials)
 - [ ] MaterialsVariantsShoe
-- [ ] MetalRoughSpheres
+- [x] MetalRoughSpheres
 - [ ] MetalRoughSpheresNoTextures
 - [ ] MosquitoInAmber
 - [ ] MultipleScenes
@@ -71,7 +71,7 @@
 - [ ] RecursiveSkeletons
 - [ ] RiggedFigure
 - [ ] RiggedSimple
-- [ ] SciFiHelmet
+- [x] SciFiHelmet
 - [ ] SheenChair
 - [ ] SheenCloth
 - [ ] SimpleMeshes
@@ -79,12 +79,12 @@
 - [ ] SimpleSkin
 - [ ] SimpleSparseAccessor
 - [ ] SpecGlossVsMetalRough
-- [ ] Sponza
+- [x] Sponza
 - [ ] StainedGlassLamp
-- [ ] Suzanne
+- [x] Suzanne
 - [ ] ToyCar
-- [ ] Triangle
-- [ ] TriangleWithoutIndices
+- [ ] Triangle (No material included)
+- [ ] TriangleWithoutIndices (No material included)
 - [ ] TwoSidedPlane
 - [ ] VC
 - [ ] WaterBottle
