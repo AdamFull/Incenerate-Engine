@@ -173,8 +173,8 @@ void CEditor::create()
     camcomp.sensitivity = 5.f;
 
     auto& transform = registry.get<FTransformComponent>(camera);
-    transform.position = glm::vec3(1.f, -1.f, 1.f);
-    transform.rotation = glm::vec3(0.01f, 0.01f, 0.01f);
+    transform.position = glm::vec3(0.f, 8.f, 10.f);
+    transform.rotation = glm::vec3(-0.01f, -0.7f, -0.7f);
 
     load_editor();
 

@@ -27,12 +27,10 @@ namespace engine
 			float xmag{ 0.f };
 			float ymag{ 0.f };
 
-			float angleH{ 0.f };
-			float angleV{ 0.f };
-
 			glm::vec3 viewPos;
 			glm::mat4 view, invView, projection, invProjection;
 			glm::vec2 viewportDim{};
+
 			glm::vec3 up;
 			glm::vec3 forward;
 			glm::vec3 right;

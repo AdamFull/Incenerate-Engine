@@ -7,6 +7,10 @@
 
 #include "ecs/helper.hpp"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 using namespace engine::ecs;
 using namespace engine::system::window;
 
@@ -20,17 +24,8 @@ _Ty rangeToRange(_Ty input, _Ty in_min, _Ty in_max, _Ty out_min, _Ty out_max)
 
 void CCameraControlSystem::__create()
 {
-	auto& registry = EGCoordinator;
-
 	EGEngine->addEventListener(Events::Input::Key, this, &CCameraControlSystem::onKeyInput);
 	EGEngine->addEventListener(Events::Input::Mouse, this, &CCameraControlSystem::onMouseInput);
-
-	auto view = registry.view<FTransformComponent, FCameraComponent>();
-	for (auto [entity, transform, camera] : view.each())
-	{
-		camera.angleV = glm::degrees(-transform.rotation.y);
-		camera.angleH = glm::degrees(glm::atan(transform.rotation.z / transform.rotation.x));
-	}
 }
 
 void CCameraControlSystem::__update(float fDt)
@@ -107,30 +102,17 @@ void CCameraControlSystem::recalculateView(FCameraComponent& camera, FTransformC
 
 void CCameraControlSystem::rotate(FCameraComponent& camera, FTransformComponent& transform)
 {
-	auto fdx = (cursorPos - oldPos) * dt;
+	glm::vec2 delta = (cursorPos - oldPos) * dt;
+	oldPos = cursorPos;
 
+	if (delta.x != 0.0f || delta.y != 0.0f)
 	{
-		float rotX = (fdx.x / dt) * camera.sensitivity * 5.0f;
-		float rotY = (fdx.y / dt) * camera.sensitivity * 5.0f;
+		delta *= camera.sensitivity * camera.sensitivity * camera.sensitivity;
 
-		camera.angleH += rotX;
-		if (camera.angleV + rotY > 89)
-			camera.angleV = 89;
-		else if (camera.angleV + rotY < -89)
-			camera.angleV = -89;
-		else
-			camera.angleV += rotY;
+		glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-delta.y, camera.right), glm::angleAxis(-delta.x, camera.up)));
+		transform.rotation = glm::rotate(q, camera.forward);
 
-		const float w{ cos(glm::radians(camera.angleV)) * -cos(glm::radians(camera.angleH)) };
-		const float u{ -sin(glm::radians(camera.angleV)) };
-		const float v{ cos(glm::radians(camera.angleV)) * -sin(glm::radians(camera.angleH)) };
-
-		auto newrot = glm::normalize(glm::vec3(w * -1.f, u, v * -1.f));
-		if (transform.rotation != newrot)
-		{
-			transform.rotation = newrot;
-			camera.moved = true;
-		}
+		camera.moved = true;
 	}
 }
 
