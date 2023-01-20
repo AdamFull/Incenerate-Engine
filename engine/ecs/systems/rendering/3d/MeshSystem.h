@@ -1,13 +1,13 @@
 #pragma once
 
-#include "ecs/systems/BaseSystem.h"
+#include "ecs/systems/rendering/BaseGraphicsSystem.h"
 #include "ecs/components/fwd.h"
 
 namespace engine
 {
 	namespace ecs
 	{
-		class CMeshSystem : public ISystem
+		class CMeshSystem : public CBaseGraphicsSystem
 		{
 		public:
 			CMeshSystem() { name = "Rendering mesh system"; }

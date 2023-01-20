@@ -15,6 +15,8 @@ void CDeferredPassSystem::__create()
 
 	for (auto& system : vSubSystems)
 		system->create();
+
+	CBaseGraphicsSystem::__create();
 }
 
 void CDeferredPassSystem::__update(float fDt)

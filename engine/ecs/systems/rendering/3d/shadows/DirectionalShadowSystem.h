@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ecs/systems/BaseSystem.h"
+#include "ecs/systems/rendering/BaseGraphicsSystem.h"
 
 namespace engine
 {
 	namespace ecs
 	{
-		class CDirectionalShadowSystem : public ISystem
+		class CDirectionalShadowSystem : public CBaseGraphicsSystem
 		{
 		public:
 			CDirectionalShadowSystem() { name = "Rendering directional shadow system"; }

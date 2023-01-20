@@ -16,6 +16,14 @@ void CCompositionSystem::__create()
 	shader_id = EGGraphics->addShader("pbr_composition", "pbr_composition");
 	brdflut_id = EGGraphics->computeBRDFLUT(512);
 
+	addSubresource("albedo_tex");
+	addSubresource("normal_tex");
+	addSubresource("mrah_tex");
+	addSubresource("emission_tex");
+	addSubresource("depth_tex");
+	addSubresource("direct_shadowmap_tex");
+	addSubresource("omni_shadowmap_tex");
+
 	auto emptyCubemap = std::make_unique<CImageCubemap>(device.get());
 	emptyCubemap->create(
 		vk::Extent2D{ 16, 16 },
@@ -26,6 +34,8 @@ void CCompositionSystem::__create()
 		vk::ImageUsageFlagBits::eStorage);
 
 	empty_cube_id = EGGraphics->addImage("empty_cubemap", std::move(emptyCubemap));
+
+	CBaseGraphicsSystem::__create();
 }
 
 void CCompositionSystem::__update(float fDt)
@@ -114,26 +124,14 @@ void CCompositionSystem::__update(float fDt)
 		pShader->addTexture("irradiance_tex", skybox ? skybox->irradiance : empty_cube_id);
 		pShader->addTexture("prefiltred_tex", skybox ? skybox->prefiltred : empty_cube_id);
 
-		auto& albedo = EGGraphics->getImage("albedo_tex_" + std::to_string(index));
-		pShader->addTexture("albedo_tex", albedo->getDescriptor());
+		pShader->addTexture("albedo_tex", getSubresource("albedo_tex"));
+		pShader->addTexture("normal_tex", getSubresource("normal_tex"));
+		pShader->addTexture("mrah_tex", getSubresource("mrah_tex"));
+		pShader->addTexture("emission_tex", getSubresource("emission_tex"));
+		pShader->addTexture("depth_tex", getSubresource("depth_tex"));
 
-		auto& normal = EGGraphics->getImage("normal_tex_" + std::to_string(index));
-		pShader->addTexture("normal_tex", normal->getDescriptor());
-
-		auto& mrah = EGGraphics->getImage("mrah_tex_" + std::to_string(index));
-		pShader->addTexture("mrah_tex", mrah->getDescriptor());
-
-		auto& emission = EGGraphics->getImage("emission_tex_" + std::to_string(index));
-		pShader->addTexture("emission_tex", emission->getDescriptor());
-
-		auto& depth = EGGraphics->getImage("depth_tex_" + std::to_string(index));
-		pShader->addTexture("depth_tex", depth->getDescriptor());
-
-		auto& directsm = EGGraphics->getImage("direct_shadowmap_tex_" + std::to_string(index));
-		pShader->addTexture("direct_shadowmap_tex", directsm->getDescriptor());
-
-		auto& omnism = EGGraphics->getImage("omni_shadowmap_tex_" + std::to_string(index));
-		pShader->addTexture("omni_shadowmap_tex", omnism->getDescriptor());
+		pShader->addTexture("direct_shadowmap_tex", getSubresource("direct_shadowmap_tex"));
+		pShader->addTexture("omni_shadowmap_tex", getSubresource("omni_shadowmap_tex"));
 
 		auto& pUBO = pShader->getUniformBuffer("UBODeferred");
 		pUBO->set("invViewProjection", glm::inverse(camera->projection * camera->view));

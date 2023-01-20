@@ -11,7 +11,7 @@ using namespace engine::ecs;
 
 void CMeshSystem::__create()
 {
-
+	CBaseGraphicsSystem::__create();
 }
 
 void CMeshSystem::__update(float fDt)

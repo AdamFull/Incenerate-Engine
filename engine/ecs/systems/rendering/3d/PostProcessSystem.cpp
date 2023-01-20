@@ -11,6 +11,24 @@ using namespace engine::graphics;
 using namespace engine::ecs;
 using namespace engine::system::window;
 
+size_t createImage(const std::string& name, vk::Format format)
+{
+	using namespace engine;
+
+	auto& device = EGGraphics->getDevice();
+
+	auto pImage = std::make_unique<CImage2D>(device.get());
+	pImage->create(
+		device->getExtent(true),
+		format,
+		vk::ImageLayout::eGeneral,
+		vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
+		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
+		vk::ImageUsageFlagBits::eStorage);
+
+	return EGGraphics->addImage(name, std::move(pImage));
+}
+
 CPostProcessSystem::~CPostProcessSystem()
 {
 	
@@ -27,7 +45,7 @@ void CPostProcessSystem::__create()
 	addSubresource("composition_tex");
 	addSubresource("brightness_tex");
 
-	EGEngine->addEventListener(Events::Graphics::ReCreate, this, &CPostProcessSystem::onViewportChanged);
+	CBaseGraphicsSystem::__create();
 }
 
 void CPostProcessSystem::__update(float fDt)
@@ -96,67 +114,4 @@ void CPostProcessSystem::__update(float fDt)
 	}
 
 	VkHelper::BarrierFromComputeToGraphics(commandBuffer);
-
-	//image->transitionImageLayoutGraphics(commandBuffer, vk::ImageLayout::eGeneral, vk::ImageLayout::eShaderReadOnlyOptimal);
-	//
-	//// Blur pass
-	//{
-	//	auto& stage = EGGraphics->getRenderStage("postprocess");
-	//	auto& pShader = EGGraphics->getShader(shader_id_blur);
-	//	 
-	//	pShader->addTexture("writeColour", bloom_image);
-	//	pShader->addTexture("samplerBrightness", bloom_image);
-	//
-	//	auto& pBloomUbo = pShader->getPushBlock("ubo");
-	//	pBloomUbo->set("blurScale", peffects.blurScale);
-	//	pBloomUbo->set("blurStrength", peffects.blurStrength);
-	//	pBloomUbo->set("direction", -1);
-	//
-	//	stage->begin(commandBuffer);
-	//	pShader->predraw(commandBuffer);
-	//	commandBuffer.draw(3, 1, 0, 0);
-	//	stage->end(commandBuffer);
-	//}
-	
-	//image->transitionImageLayoutGraphics(commandBuffer, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
-}
-
-void CPostProcessSystem::onViewportChanged(CEvent& event)
-{
-	mSubresourceMap.clear();
-	addSubresource("composition_tex");
-	addSubresource("brightness_tex");
-}
-
-size_t CPostProcessSystem::createImage(const std::string& name, vk::Format format)
-{
-	auto& device = EGGraphics->getDevice();
-
-	auto pImage = std::make_unique<CImage2D>(device.get());
-	pImage->create(
-		device->getExtent(true),
-		format,
-		vk::ImageLayout::eGeneral,
-		vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
-		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
-		vk::ImageUsageFlagBits::eStorage);
-
-	return EGGraphics->addImage(name, std::move(pImage));
-}
-
-void CPostProcessSystem::addSubresource(const std::string& name)
-{
-	auto& device = EGGraphics->getDevice();
-	auto framesInFlight = device->getFramesInFlight();
-
-	for (uint32_t i = 0; i < framesInFlight; i++)
-		mSubresourceMap[name].emplace_back(EGGraphics->getImageID(name + "_" + std::to_string(i)));
-}
-
-size_t CPostProcessSystem::getSubresource(const std::string& name)
-{
-	auto& device = EGGraphics->getDevice();
-	auto index = device->getCurrentFrame();
-
-	return mSubresourceMap[name].at(index);
 }

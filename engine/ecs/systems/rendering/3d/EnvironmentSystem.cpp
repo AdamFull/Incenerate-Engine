@@ -13,6 +13,7 @@ using namespace engine::graphics;
 
 void CEnvironmentSystem::__create()
 {
+	CBaseGraphicsSystem::__create();
 }
 
 void CEnvironmentSystem::__update(float fDt)

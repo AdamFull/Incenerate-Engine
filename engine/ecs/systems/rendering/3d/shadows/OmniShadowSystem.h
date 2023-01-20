@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ecs/systems/BaseSystem.h"
+#include "ecs/systems/rendering/BaseGraphicsSystem.h"
 
 namespace engine
 {
 	namespace ecs
 	{
-		class COmniShadowSystem : public ISystem
+		class COmniShadowSystem : public CBaseGraphicsSystem
 		{
 		public:
 			COmniShadowSystem() { name = "Rendering omni shadow system"; }

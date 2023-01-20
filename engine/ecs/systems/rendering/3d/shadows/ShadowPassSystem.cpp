@@ -11,6 +11,8 @@ void CShadowPassSystem::__create()
 
 	for (auto& system : vSubSystems)
 		system->create();
+
+	CBaseGraphicsSystem::__create();
 }
 
 void CShadowPassSystem::__update(float fDt)

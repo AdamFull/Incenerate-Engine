@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ecs/systems/BaseSystem.h"
+#include "ecs/systems/rendering/BaseGraphicsSystem.h"
 
 namespace engine
 {
 	namespace ecs
 	{
-		class CDeferredPassSystem : public ISystem
+		class CDeferredPassSystem : public CBaseGraphicsSystem
 		{
 		public:
 			CDeferredPassSystem() { name = "Rendering deferred system"; }

@@ -13,6 +13,8 @@ void COmniShadowSystem::__create()
 	specials.defines = { {"INVOCATION_COUNT", std::to_string(MAX_POINT_LIGHT_COUNT)} };
 	specials.subpass = 1;
 	shader_id = EGGraphics->addShader("omni_shadow_pass", "omni_shadow_pass", specials);
+
+	CBaseGraphicsSystem::__create();
 }
 
 void COmniShadowSystem::__update(float fDt)

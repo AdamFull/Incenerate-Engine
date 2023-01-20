@@ -1,15 +1,15 @@
 #pragma once
 
-#include "ecs/systems/BaseSystem.h"
+#include "ecs/systems/rendering/BaseGraphicsSystem.h"
 
 namespace engine
 {
 	namespace ecs
 	{
-		class CEnvironmentSystem : public ISystem
+		class CEnvironmentSystem : public CBaseGraphicsSystem
 		{
 		public:
-			CEnvironmentSystem() { name = "Rendering environment system"; }
+			CEnvironmentSystem() { this->name = "Rendering environment system"; }
 			virtual ~CEnvironmentSystem() override = default;
 
 			void __create() override;

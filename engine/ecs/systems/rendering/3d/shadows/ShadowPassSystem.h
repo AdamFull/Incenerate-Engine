@@ -7,7 +7,7 @@ namespace engine
 {
 	namespace ecs
 	{
-		class CShadowPassSystem : public ISystem
+		class CShadowPassSystem : public CBaseGraphicsSystem
 		{
 		public:
 			CShadowPassSystem() { name = "Rendering shadow system"; }
