@@ -643,7 +643,7 @@ size_t CAPIHandle::computeIrradiance(size_t origin, uint32_t size)
     auto shader_id = addShader("irradiancecube_generator", "irradiancecube_generator");
     auto& pShader = getShader(shader_id);
     pShader->addTexture("outColour", output_id);
-    pShader->addTexture("samplerColour", origin);
+    pShader->addTexture("samplerColor", origin);
 
     pShader->dispatch({ size, size });
 
@@ -703,7 +703,7 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
         pPushConst->flush(commandBuffer);
 
         pShader->addTexture("outColour", imageInfo);
-        pShader->addTexture("samplerColour", origin);
+        pShader->addTexture("samplerColor", origin);
 
         pShader->dispatch(commandBuffer, { size, size });
         cmdBuf.submitIdle();

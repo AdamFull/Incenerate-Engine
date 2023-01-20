@@ -15,11 +15,15 @@ namespace engine
 			void __create() override;
 			void __update(float fDt) override;
 		private:
-			size_t shader_id_tonemap{ invalid_index };
-			size_t shader_id_downsample{ invalid_index };
-			size_t shader_id_blur{ invalid_index };
-			size_t bloom_image{ invalid_index };
-			size_t bloom_image2{ invalid_index };
+			size_t shader_fxaa{ invalid_index };
+			size_t shader_brightdetect{ invalid_index };
+			size_t shader_downsample{ invalid_index };
+			size_t shader_blur{ invalid_index };
+			size_t shader_tonemap{ invalid_index };
+
+			size_t final_image{ invalid_index };
+			size_t temp_image{ invalid_index };
+			size_t temp_image_2{ invalid_index };
 		};
 	}
 }

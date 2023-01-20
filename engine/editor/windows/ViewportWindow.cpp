@@ -127,7 +127,7 @@ void CEditorViewport::drawViewport(float offsetx, float offsety)
 	auto& device = EGGraphics->getDevice();
 	auto frame = EGGraphics->getDevice()->getCurrentFrame();
 	//auto& image = EGGraphics->getImage("brightness_tex_" + std::to_string(frame));
-	auto& image = EGGraphics->getImage("bloom_tex");
+	auto& image = EGGraphics->getImage("bloom_tex_2");
 	
 	vk::WriteDescriptorSet write{};
 	write.descriptorType = vk::DescriptorType::eCombinedImageSampler;

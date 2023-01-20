@@ -25,7 +25,6 @@ namespace engine
 	struct FPostProcess
 	{
 		// fxaa
-		bool fxaa{ true };
 		float qualitySubpix{ 0.98f };
 		float qualityEdgeThreshold{ 0.333f };
 		float qualityEdgeThresholdMin{ 0.033f };
@@ -35,7 +34,6 @@ namespace engine
 		float exposure{ 4.5f };
 
 		// Bloom
-		bool bloom{ true };
 		float bloom_threshold{ 1.f };
 		float blurScale{ 1.0f };
 		float blurStrength{ 1.7f };

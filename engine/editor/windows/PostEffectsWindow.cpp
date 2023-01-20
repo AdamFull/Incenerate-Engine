@@ -18,7 +18,6 @@ void CEditorPostEffects::__draw(float fDt)
 
 	if (ImGui::CollapsingHeader("FXAA", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::GCheckbox("fxaa", &peffects.fxaa);
 		ImGui::GDragFloat("qualitySubpix", &peffects.qualitySubpix, 0.01f, 0.01f, 1.f);
 		ImGui::GDragFloat("qualityEdgeThreshold", &peffects.qualityEdgeThreshold, 0.001f, 0.001f, 1.f);
 		ImGui::GDragFloat("qualityEdgeThresholdMin", &peffects.qualityEdgeThresholdMin, 0.001f, 0.001f, 1.f);
@@ -32,7 +31,8 @@ void CEditorPostEffects::__draw(float fDt)
 
 	if (ImGui::CollapsingHeader("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::GCheckbox("bloom", &peffects.bloom);
 		ImGui::GDragFloat("bloom_threshold", &peffects.bloom_threshold, 0.01f, 0.01f, 1.f);
+		ImGui::GDragFloat("blurScale", &peffects.blurScale, 0.01f, 0.01f, 5.f);
+		ImGui::GDragFloat("blurStrength", &peffects.blurStrength, 0.01f, 0.01f, 5.f);
 	}
 }

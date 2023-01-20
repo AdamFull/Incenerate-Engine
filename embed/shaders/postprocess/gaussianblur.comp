@@ -1,0 +1,55 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_ARB_shading_language_420pack : enable
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(binding = 0, rgba32f) uniform writeonly image2D writeColor;
+layout(binding = 1) uniform sampler2D samplerColor;
+
+layout(push_constant) uniform FBloomUbo 
+{
+	float blurScale;
+    float blurStrength;
+    int direction;
+} ubo;
+
+void main()
+{
+	vec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5f)) / vec2(imageSize(writeColor).xy);
+
+	vec2 colorSize = textureSize(samplerColor, 0);
+	vec4 color = vec4(0.0f);
+
+	vec2 direction = vec2(ubo.blurStrength, 0.0);
+	if(ubo.direction < 0)
+		direction = vec2(0.0, ubo.blurStrength);
+
+#if BLUR_TYPE == 5
+	vec2 off1 = vec2(1.3333333333333333f) * direction;
+	color += texture(samplerColor, uv) * 0.29411764705882354 * ubo.blurScale;
+	color += texture(samplerColor, uv + (off1 / colorSize)) * 0.35294117647058826f * ubo.blurScale;
+	color += texture(samplerColor, uv - (off1 / colorSize)) * 0.35294117647058826f * ubo.blurScale;
+#elif BLUR_TYPE == 9
+	vec2 off1 = vec2(1.3846153846f) * direction;
+	vec2 off2 = vec2(3.2307692308f) * direction;
+	color += texture(samplerColor, uv) * 0.2270270270f * ubo.blurScale;
+	color += texture(samplerColor, uv + (off1 / colorSize)) * 0.3162162162f * ubo.blurScale;
+	color += texture(samplerColor, uv - (off1 / colorSize)) * 0.3162162162f * ubo.blurScale;
+	color += texture(samplerColor, uv + (off2 / colorSize)) * 0.0702702703f * ubo.blurScale;
+	color += texture(samplerColor, uv - (off2 / colorSize)) * 0.0702702703f * ubo.blurScale;
+#elif BLUR_TYPE == 13
+	vec2 off1 = vec2(1.411764705882353f) * direction;
+	vec2 off2 = vec2(3.2941176470588234f) * direction;
+	vec2 off3 = vec2(5.176470588235294f) * direction;
+	color += texture(samplerColor, uv) * 0.1964825501511404f * ubo.blurScale;
+	color += texture(samplerColor, uv + (off1 / colorSize)) * 0.2969069646728344f * ubo.blurScale;
+	color += texture(samplerColor, uv - (off1 / colorSize)) * 0.2969069646728344f * ubo.blurScale;
+	color += texture(samplerColor, uv + (off2 / colorSize)) * 0.09447039785044732f * ubo.blurScale;
+	color += texture(samplerColor, uv - (off2 / colorSize)) * 0.09447039785044732f * ubo.blurScale;
+	color += texture(samplerColor, uv + (off3 / colorSize)) * 0.010381362401148057f * ubo.blurScale;
+	color += texture(samplerColor, uv - (off3 / colorSize)) * 0.010381362401148057f * ubo.blurScale;
+#endif
+
+	imageStore(writeColor, ivec2(gl_GlobalInvocationID.xy), color);
+}

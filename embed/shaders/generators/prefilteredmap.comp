@@ -11,7 +11,7 @@ layout(push_constant) uniform PushObject {
 
 layout(binding = 0, rgba32f) uniform writeonly imageCube outColour;
 
-layout(binding = 1) uniform samplerCube samplerColour;
+layout(binding = 1) uniform samplerCube samplerColor;
 
 #include "../shared_shading.glsl"
 
@@ -63,6 +63,6 @@ void main()
 	for (uint i = 0; i != 6; ++i) 
     {
 		vec3 R = normalize(cubeDir(uv, i));
-		imageStore(outColour, ivec3(gl_GlobalInvocationID.xy, i), vec4(prefilterEnvMap(samplerColour, R, object.roughness), 1.0f));
+		imageStore(outColour, ivec3(gl_GlobalInvocationID.xy, i), vec4(prefilterEnvMap(samplerColor, R, object.roughness), 1.0f));
 	}
 }

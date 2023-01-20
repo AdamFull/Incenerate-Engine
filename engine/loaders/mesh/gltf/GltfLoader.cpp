@@ -331,7 +331,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         }
 
         // Indices
-        if(primitive.indices > 0)
+        if(primitive.indices >= 0)
         {
             const tinygltf::Accessor& accessor = model.accessors[primitive.indices];
             const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
