@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vma/vk_mem_alloc.hpp>
+
 #include "Helpers.h"
 #include "buffers/CommandPool.h"
 
@@ -17,9 +19,7 @@ namespace engine
 
 			void create(const FEngineCreateInfo& createInfo);
 
-			static VkResult createDebugUtilsMessengerEXT(VkInstance, const VkDebugUtilsMessengerCreateInfoEXT*, const VkAllocationCallbacks*, VkDebugUtilsMessengerEXT*);
 			static VKAPI_ATTR VkBool32 VKAPI_CALL validationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT*, void*);
-			static void destroyDebugUtilsMessengerEXT(VkInstance, VkDebugUtilsMessengerEXT, const VkAllocationCallbacks*);
 
 			void updateCommandPools();
 
@@ -45,7 +45,7 @@ namespace engine
             }
 
             void copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
-            void createImage(vk::Image& image, vk::ImageCreateInfo createInfo, VmaAllocation& allocation);
+            void createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation);
             void transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
             void transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
             void copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions);
@@ -73,7 +73,7 @@ namespace engine
             inline vk::SampleCountFlagBits getSamples() { return msaaSamples; }
             inline vk::AllocationCallbacks* getAllocator() { return pAllocator; }
 
-            inline VmaAllocator& getVMAAllocator() { return vmaAlloc; }
+            inline vma::Allocator& getVMAAllocator() { return vmaAlloc; }
 
             const vk::PipelineCache& getPipelineCache() const { return pipelineCache; }
 
@@ -219,10 +219,6 @@ namespace engine
             template <class _Ty>
             inline void destroy(_Ty* ref) { log_error("Unknown object type."); }
             template <>
-            inline void destroy(vk::Instance* ref) { vkDestroyInstance(*ref, (const VkAllocationCallbacks*)pAllocator); }
-            template <>
-            inline void destroy(vk::Device* ref) { vkDestroyDevice(*ref, (const VkAllocationCallbacks*)pAllocator); }
-            template <>
             inline void destroy(vk::Sampler* ref) { vkDevice.destroySampler(*ref, pAllocator); }
             template <>
             inline void destroy(vk::Image* ref) { vkDevice.destroyImage(*ref, pAllocator); }
@@ -280,12 +276,13 @@ namespace engine
 
         private:
             CAPIHandle* pAPI{ nullptr };
+            vk::DynamicLoader dl;
             vk::Instance vkInstance{ VK_NULL_HANDLE }; // Main vulkan instance
-            VkDebugUtilsMessengerEXT vkDebugUtils{ NULL };
+            vk::DebugUtilsMessengerEXT vkDebugUtils{ VK_NULL_HANDLE };
             vk::SurfaceKHR vkSurface{ VK_NULL_HANDLE }; // Vulkan's drawing surface
             std::map<std::thread::id, std::shared_ptr<CCommandPool>> commandPools;
             vk::AllocationCallbacks* pAllocator{ nullptr };
-            VmaAllocator vmaAlloc{ VK_NULL_HANDLE };
+            vma::Allocator vmaAlloc{ VK_NULL_HANDLE };
 
             vk::PhysicalDevice vkPhysical;
             vk::Device vkDevice;

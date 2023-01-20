@@ -106,8 +106,6 @@ namespace engine
 template <>
 struct utl::FlagTraits<engine::ERenderStageAvaliableFlagBits>
 {
-	static VULKAN_HPP_CONST_OR_CONSTEXPR bool isBitmask = true;
-
 	enum : uint32_t
 	{
 		allFlags = (uint32_t)engine::ERenderStageAvaliableFlagBits::eShadow | (uint32_t)engine::ERenderStageAvaliableFlagBits::eMesh |

@@ -47,6 +47,7 @@ namespace engine
 			void removeImage(const std::string& name);
 			void removeImage(size_t id);
 			const std::unique_ptr<CImage>& getImage(const std::string& name);
+			size_t getImageID(const std::string& name);
 			const std::unique_ptr<CImage>& getImage(size_t id);
 
 			size_t addShader(const std::string& name, std::unique_ptr<CShaderObject>&& shader);

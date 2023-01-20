@@ -43,8 +43,8 @@
 #if defined(IMGUI_IMPL_VULKAN_NO_PROTOTYPES) && !defined(VK_NO_PROTOTYPES)
 #define VK_NO_PROTOTYPES
 #endif
-#include <vulkan/vulkan.h>
-#include <vma/vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
+#include <vma/vk_mem_alloc.hpp>
 
 // Initialization data, for ImGui_ImplVulkan_Init()
 // [Please zero-clear before use!]
@@ -62,7 +62,7 @@ struct ImGui_ImplVulkan_InitInfo
     uint32_t                          ImageCount;             // >= MinImageCount
     vk::SampleCountFlagBits           MSAASamples;            // >= VK_SAMPLE_COUNT_1_BIT (0 -> default to VK_SAMPLE_COUNT_1_BIT)
     vk::AllocationCallbacks*          Allocator;
-    VmaAllocator                      vmaAllocator;
+    vma::Allocator                      vmaAllocator;
     void                              (*CheckVkResultFn)(vk::Result err);
 };
 
@@ -160,8 +160,8 @@ struct ImGui_ImplVulkanH_Window
 // [Please zero-clear before use!]
 struct ImGui_ImplVulkanH_FrameRenderBuffers
 {
-    VmaAllocation         VertexBufferMemory;
-    VmaAllocation         IndexBufferMemory;
+    vma::Allocation         VertexBufferMemory;
+    vma::Allocation         IndexBufferMemory;
     vk::DeviceSize        VertexBufferSize;
     vk::DeviceSize        IndexBufferSize;
     vk::Buffer            VertexBuffer;
@@ -205,11 +205,11 @@ struct ImGui_ImplVulkan_Data
 
     // Font data
     vk::Sampler                   FontSampler;
-    VmaAllocation                 FontMemory;
+    vma::Allocation                 FontMemory;
     vk::Image                     FontImage;
     vk::ImageView                 FontView;
     vk::DescriptorSet             FontDescriptorSet;
-    VmaAllocation                 UploadBufferMemory;
+    vma::Allocation                 UploadBufferMemory;
     vk::Buffer                    UploadBuffer;
 
     // Render buffers for main window

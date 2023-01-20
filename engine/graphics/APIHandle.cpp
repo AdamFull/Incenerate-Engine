@@ -196,12 +196,53 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
 
     {
+        mStageInfos["tonemapping"].srName = "tonemapping";
+        mStageInfos["tonemapping"].viewport.offset = vk::Offset2D(0, 0);
+        mStageInfos["tonemapping"].viewport.extent = device->getExtent(true);
+        mStageInfos["tonemapping"].bViewportDependent = true;
+        mStageInfos["tonemapping"].vImages.emplace_back(FCIImage{ "postprocess_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["tonemapping"].vImages.emplace_back(FCIImage{ "brightness_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["tonemapping"].vOutputs.emplace_back("postprocess_tex");
+        mStageInfos["tonemapping"].vOutputs.emplace_back("brightness_tex");
+        mStageInfos["tonemapping"].vDescriptions.emplace_back("");
+        mStageInfos["tonemapping"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eAllGraphics,
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                )
+            )
+        );
+        mStageInfos["tonemapping"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                )
+            )
+        );
+
+        auto stageId = EGGraphics->addRenderStage("tonemapping");
+        auto& pStage = EGGraphics->getRenderStage(stageId);
+        pStage->create(mStageInfos["tonemapping"]);
+    }
+
+    {
         mStageInfos["postprocess"].srName = "postprocess";
         mStageInfos["postprocess"].viewport.offset = vk::Offset2D(0, 0);
         mStageInfos["postprocess"].viewport.extent = device->getExtent(true);
-        mStageInfos["postprocess"].bViewportDependent = true;
-        mStageInfos["postprocess"].vImages.emplace_back(FCIImage{ "postprocess_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["postprocess"].vOutputs.emplace_back("postprocess_tex");
         mStageInfos["postprocess"].vDescriptions.emplace_back("");
         mStageInfos["postprocess"].vDependencies.emplace_back(
             FCIDependency(
@@ -411,6 +452,11 @@ const std::unique_ptr<CImage>& CAPIHandle::getImage(const std::string& name)
     return pImageManager->get(name);
 }
 
+size_t CAPIHandle::getImageID(const std::string& name)
+{
+    return pImageManager->get_id(name);
+}
+
 const std::unique_ptr<CImage>& CAPIHandle::getImage(size_t id)
 {
     return pImageManager->get(id);
@@ -574,7 +620,7 @@ size_t CAPIHandle::computeBRDFLUT(uint32_t size)
 
     pShader->addTexture("outColour", output_id);
 
-    pShader->dispatch(size);
+    pShader->dispatch({ size, size });
 
     removeShader(shader_id);
 
@@ -599,7 +645,7 @@ size_t CAPIHandle::computeIrradiance(size_t origin, uint32_t size)
     pShader->addTexture("outColour", output_id);
     pShader->addTexture("samplerColour", origin);
 
-    pShader->dispatch(size);
+    pShader->dispatch({ size, size });
 
     removeShader(shader_id);
 
@@ -659,7 +705,7 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
         pShader->addTexture("outColour", imageInfo);
         pShader->addTexture("samplerColour", origin);
 
-        pShader->dispatch(commandBuffer, size);
+        pShader->dispatch(commandBuffer, { size, size });
         cmdBuf.submitIdle();
 
         pDevice->destroy(&levelView);

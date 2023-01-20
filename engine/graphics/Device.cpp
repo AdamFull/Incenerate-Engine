@@ -7,20 +7,13 @@
 #include <SDL_vulkan.h>
 #include <vulkan/vulkan_to_string.hpp>
 
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+
 using namespace engine::graphics;
 using namespace engine::system::window;
 
 std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
-std::vector<const char*> deviceExtensions{ "VK_KHR_swapchain", "VK_KHR_maintenance4" };
-
-VkResult CDevice::createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pCallback)
-{
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func != nullptr)
-        return func(instance, pCreateInfo, pAllocator, pCallback);
-
-    return VK_ERROR_EXTENSION_NOT_PRESENT;
-}
+std::vector<const char*> deviceExtensions{ "VK_KHR_swapchain", "VK_KHR_maintenance4", "VK_KHR_synchronization2"};
 
 VKAPI_ATTR VkBool32 VKAPI_CALL CDevice::validationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
@@ -34,15 +27,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL CDevice::validationCallback(VkDebugUtilsMessageSe
     }
 
     return VK_FALSE;
-}
-
-void CDevice::destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks* pAllocator)
-{
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    if (func != nullptr)
-    {
-        func(instance, callback, pAllocator);
-    }
 }
 
 void* allocationFunction(void* pUserData, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
@@ -99,25 +83,28 @@ CDevice::~CDevice()
     commandPools.clear();
 
     vkInstance.destroySurfaceKHR(vkSurface);
-    vmaDestroyAllocator(vmaAlloc);
-    destroy(&vkDevice);
+    vmaAlloc.destroy();
+    vkDevice.destroy(pAllocator);
 
     if (bValidation)
-        destroyDebugUtilsMessengerEXT(vkInstance, vkDebugUtils, (const VkAllocationCallbacks*)pAllocator);
+        vkInstance.destroyDebugUtilsMessengerEXT(vkDebugUtils, pAllocator);
 
-    destroy(&vkInstance);
+    vkInstance.destroy(pAllocator);
     free(pAllocator);
     pAllocator = nullptr;
 }
 
 void CDevice::create(const FEngineCreateInfo& createInfo)
 {
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
+
 #ifdef _DEBUG
     bValidation = true;
 #endif
 
     log_debug("Validation state: {}", bValidation);
-    
+   
     createInstance(createInfo);
     createDebugCallback();
     createSurface();
@@ -131,35 +118,19 @@ void CDevice::create(const FEngineCreateInfo& createInfo)
 
 void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
 {
-    VmaVulkanFunctions vk_funcs = {};
-    vk_funcs.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
-    vk_funcs.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
-    vk_funcs.vkAllocateMemory = vkAllocateMemory;
-    vk_funcs.vkFreeMemory = vkFreeMemory;
-    vk_funcs.vkMapMemory = vkMapMemory;
-    vk_funcs.vkUnmapMemory = vkUnmapMemory;
-    vk_funcs.vkFlushMappedMemoryRanges = vkFlushMappedMemoryRanges;
-    vk_funcs.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
-    vk_funcs.vkBindBufferMemory = vkBindBufferMemory;
-    vk_funcs.vkBindImageMemory = vkBindImageMemory;
-    vk_funcs.vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
-    vk_funcs.vkGetImageMemoryRequirements = vkGetImageMemoryRequirements;
-    vk_funcs.vkCreateBuffer = vkCreateBuffer;
-    vk_funcs.vkDestroyBuffer = vkDestroyBuffer;
-    vk_funcs.vkCreateImage = vkCreateImage;
-    vk_funcs.vkDestroyImage = vkDestroyImage;
-    vk_funcs.vkCmdCopyBuffer = vkCmdCopyBuffer;
+    vma::VulkanFunctions vk_funcs = {};
+    vk_funcs.vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+    vk_funcs.vkGetDeviceProcAddr = dl.getProcAddress<PFN_vkGetDeviceProcAddr>("vkGetDeviceProcAddr");
 
-    VmaAllocatorCreateInfo createInfo{};
+    vma::AllocatorCreateInfo createInfo{};
     createInfo.instance = vkInstance;
     createInfo.physicalDevice = vkPhysical;
     createInfo.device = vkDevice;
-    createInfo.pAllocationCallbacks = (VkAllocationCallbacks*)pAllocator;
+    createInfo.pAllocationCallbacks = pAllocator;
     createInfo.vulkanApiVersion = getVulkanVersion(eci.eAPI);
     createInfo.pVulkanFunctions = &vk_funcs;
     
-    auto res = (vk::Result)vmaCreateAllocator(&createInfo, &vmaAlloc);
-    log_cerror(VkHelper::check(res), "Cannot create vulkan memory allocator.");
+    vmaAlloc = vma::createAllocator(createInfo);
 }
 
 void CDevice::createInstance(const FEngineCreateInfo& createInfo)
@@ -201,6 +172,7 @@ void CDevice::createInstance(const FEngineCreateInfo& createInfo)
 
     vk::Result res = create(instanceCI, &vkInstance);
     log_cerror(VkHelper::check(res), "Cannot create vulkan instance.");
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(vkInstance);
 }
 
 void CDevice::createDebugCallback()
@@ -215,8 +187,8 @@ void CDevice::createDebugCallback()
         validationCallback,
         nullptr);
 
-    // NOTE: Vulkan-hpp has methods for this, but they trigger linking errors...
-    if (createDebugUtilsMessengerEXT(vkInstance, reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(&createInfo), (const VkAllocationCallbacks*)pAllocator, &vkDebugUtils) != VK_SUCCESS)
+    vkDebugUtils = vkInstance.createDebugUtilsMessengerEXT(createInfo, pAllocator);
+    if (!vkDebugUtils)
         log_error("failed to set up debug callback!");
 }
 
@@ -252,6 +224,11 @@ void CDevice::createDevice()
     for (uint32_t queueFamily : uniqueQueueFamilies)
         queueCreateInfos.push_back({ vk::DeviceQueueCreateFlags(), queueFamily, 1, &queuePriority });
 
+    
+    vk::PhysicalDeviceVulkan13Features vk13features{};
+    vk13features.synchronization2 = true;
+    vk13features.maintenance4 = true;
+
     vk::PhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.samplerAnisotropy = true;
     deviceFeatures.sampleRateShading = true;
@@ -269,6 +246,7 @@ void CDevice::createDevice()
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.pNext = &vk13features;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
@@ -280,6 +258,7 @@ void CDevice::createDevice()
 
     vk::Result res = create(createInfo, &vkDevice);
     log_cerror(VkHelper::check(res), "Failed to create logical device.");
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(vkDevice);
 
     qGraphicsQueue = vkDevice.getQueue(indices.graphicsFamily.value(), 0);
     log_cerror(qGraphicsQueue, "Failed while getting graphics queue.");
@@ -529,7 +508,7 @@ void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk:
     cmdBuf.submitIdle();
 }
 
-void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, VmaAllocation& allocation)
+void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation)
 {
     log_debug("Creating image: [extent {}x{}x{}, type {}, format {}, mips {}, layers {}, samples {}, tiling {}, sharing {}, layout {}]", 
         createInfo.extent.width, createInfo.extent.height, createInfo.extent.depth,
@@ -537,15 +516,11 @@ void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, VmaA
         vk::to_string(createInfo.samples), vk::to_string(createInfo.tiling), vk::to_string(createInfo.sharingMode), vk::to_string(createInfo.initialLayout));
     log_cerror(vkDevice, "Trying to create image, byt logical device is not valid.");
 
-    VmaAllocationCreateInfo alloc_create_info = {};
-    alloc_create_info.usage = VmaMemoryUsage::VMA_MEMORY_USAGE_UNKNOWN; //Device local
+    vma::AllocationCreateInfo alloc_create_info = {};
+    alloc_create_info.usage = vma::MemoryUsage::eUnknown; //Device local
 
-    auto ici = (VkImageCreateInfo)createInfo;
-    auto img = (VkImage)image;
-    auto res = (vk::Result)vmaCreateImage(vmaAlloc, &ici, &alloc_create_info, &img, &allocation, nullptr);
+    auto res = vmaAlloc.createImage(&createInfo, &alloc_create_info, &image, &allocation, nullptr);
     log_cerror(VkHelper::check(res), "Image was not created");
-
-    image = img;
 }
 
 void CDevice::transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
@@ -648,6 +623,14 @@ void CDevice::transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image
             barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
 
             sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+            destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+        }
+        else if (oldLayout == vk::ImageLayout::eGeneral && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+        {
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+            sourceStage = vk::PipelineStageFlagBits::eTransfer;
             destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
         }
         else

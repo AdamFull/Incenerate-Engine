@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vulkan/vulkan.hpp>
 #include <spirvcross/spirv_cross.hpp>
 #include <spirvcross/spirv_glsl.hpp>
 

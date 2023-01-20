@@ -22,6 +22,25 @@
 
 namespace engine
 {
+	struct FPostProcess
+	{
+		// fxaa
+		bool fxaa{ true };
+		float qualitySubpix{ 0.98f };
+		float qualityEdgeThreshold{ 0.333f };
+		float qualityEdgeThresholdMin{ 0.033f };
+
+		// Tonemapping
+		float gamma{ 2.2f };
+		float exposure{ 4.5f };
+
+		// Bloom
+		bool bloom{ true };
+		float bloom_threshold{ 1.f };
+		float blurScale{ 1.0f };
+		float blurStrength{ 1.7f };
+	};
+
 	enum class EEngineState
 	{
 		eEditing,
@@ -54,6 +73,7 @@ namespace engine
 		const graphptr_t& getGraphics() const;
 		const audiocore_t& getAudio() const;
 		const scenemgr_t& getSceneManager() const;
+		FPostProcess& getPostEffects();
 
 		const bool isEditorMode() const;
 
@@ -81,6 +101,7 @@ namespace engine
 
 		EEngineState eState;
 
+		FPostProcess posteffects;
 		editorptr_t pEditor;
 		winptr_t pWindow;
 		graphptr_t pGraphics;

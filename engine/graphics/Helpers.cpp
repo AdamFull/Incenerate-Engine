@@ -8,6 +8,7 @@
 #include <SDL_vulkan.h>
 
 using namespace engine;
+using namespace engine::graphics;
 using namespace engine::system::window;
 using namespace engine::graphics;
 
@@ -109,4 +110,62 @@ vk::PresentModeKHR VkHelper::chooseSwapPresentMode(const std::vector<vk::Present
 bool VkHelper::hasStencilComponent(vk::Format format)
 {
     return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
+}
+
+void VkHelper::BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer)
+{
+    vk::MemoryBarrier2KHR barrier{};
+    barrier.srcStageMask = vk::PipelineStageFlagBits2::eComputeShader;
+    barrier.srcAccessMask = vk::AccessFlagBits2::eShaderWrite;
+    barrier.dstStageMask = vk::PipelineStageFlagBits2::eComputeShader;
+    barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
+
+    vk::DependencyInfoKHR dependencyInfo{};
+    dependencyInfo.memoryBarrierCount = 1;
+    dependencyInfo.pMemoryBarriers = &barrier;
+
+    commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
+}
+
+void VkHelper::BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer)
+{
+    vk::MemoryBarrier2KHR barrier{};
+    barrier.srcStageMask = vk::PipelineStageFlagBits2::eComputeShader;
+    barrier.srcAccessMask = vk::AccessFlagBits2::eShaderWrite;
+    barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
+    barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
+
+    vk::DependencyInfoKHR dependencyInfo{};
+    dependencyInfo.memoryBarrierCount = 1;
+    dependencyInfo.pMemoryBarriers = &barrier;
+
+    commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
+}
+
+void VkHelper::BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, size_t image_id)
+{
+    if (image_id != invalid_index)
+    {
+        auto& image = EGGraphics->getImage(image_id);
+
+        vk::ImageMemoryBarrier2KHR imageMemoryBarrier{};
+        imageMemoryBarrier.srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
+        imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
+        imageMemoryBarrier.dstStageMask = vk::PipelineStageFlagBits2::eComputeShader;
+        imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
+        imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
+        imageMemoryBarrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        imageMemoryBarrier.image = image->getImage();
+        imageMemoryBarrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+        imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
+        imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
+
+        vk::DependencyInfoKHR dependencyInfo{};
+        dependencyInfo.imageMemoryBarrierCount = 1;
+        dependencyInfo.pImageMemoryBarriers = &imageMemoryBarrier;
+
+        commandBuffer.pipelineBarrier2KHR(dependencyInfo);
+    }
 }

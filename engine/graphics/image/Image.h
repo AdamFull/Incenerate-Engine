@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vma/vk_mem_alloc.hpp>
 #include "loaders/ImageLoader.h"
 
 namespace engine
@@ -39,6 +40,7 @@ namespace engine
 			void transitionImageLayout(vk::ImageLayout newLayout, vk::ImageAspectFlags aspectFlags, bool use_mips = true);
 			void transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLayout newLayout, vk::ImageAspectFlags aspectFlags, bool use_mips = true, uint32_t base_mip = 0);
 			void transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags aspectFlags, bool use_mips = true, uint32_t base_mip = 0);
+			void transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
 			bool isSupportedDimension(std::unique_ptr<loaders::FImageCreateInfo>& info);
 
@@ -53,6 +55,7 @@ namespace engine
 			void setImageLayout(vk::ImageLayout layout) { _imageLayout = layout; }
 
 			const uint32_t getMipLevels() const { return _mipLevels; }
+			const uint32_t getLayers() const { return _layerCount; }
 			const vk::Format getFormat() const { return _format; }
 			const vk::Image& getImage() const { return _image; }
 			const vk::Extent3D& getExtent() const { return _extent; }
@@ -64,7 +67,7 @@ namespace engine
 			vk::ImageView _view{ VK_NULL_HANDLE };
 			vk::Sampler _sampler{ VK_NULL_HANDLE };
 			vk::DescriptorSet descriptorSet{ VK_NULL_HANDLE };
-			VmaAllocation allocation{ VK_NULL_HANDLE };
+			vma::Allocation allocation{ VK_NULL_HANDLE };
 
 			vk::DescriptorImageInfo _descriptor;
 

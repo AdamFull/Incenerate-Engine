@@ -20,7 +20,7 @@ CImage::~CImage()
         pDevice->destroy(&_view);
     
     if (_image)
-        vmaDestroyImage(vmalloc, _image, allocation);
+        vmalloc.destroyImage(_image, allocation);
     
     if(_sampler)
         pDevice->destroy(&_sampler);
@@ -294,6 +294,30 @@ void CImage::transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLa
     barrier.subresourceRange.aspectMask = aspectFlags;
     barrier.subresourceRange.baseMipLevel = base_mip;
     barrier.subresourceRange.levelCount = use_mips ? _mipLevels : 1;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = _instCount;
+    vBarriers.push_back(barrier);
+
+    pDevice->transitionImageLayout(commandBuffer, _image, vBarriers, oldLayout, newLayout);
+    _imageLayout = newLayout;
+}
+
+void CImage::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
+{
+    auto queue_indices = pDevice->findQueueFamilies();
+
+    std::vector<vk::ImageMemoryBarrier> vBarriers;
+    vk::ImageMemoryBarrier barrier{};
+    barrier.srcQueueFamilyIndex = queue_indices.graphicsFamily.value_or(VK_QUEUE_FAMILY_IGNORED);
+    barrier.dstQueueFamilyIndex = queue_indices.graphicsFamily.value_or(VK_QUEUE_FAMILY_IGNORED);
+    barrier.oldLayout = oldLayout;
+    barrier.newLayout = newLayout;
+    barrier.image = _image;
+    barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+    barrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+    barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = _mipLevels;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = _instCount;
     vBarriers.push_back(barrier);

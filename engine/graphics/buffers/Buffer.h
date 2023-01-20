@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vma/vk_mem_alloc.hpp>
+
 namespace engine
 {
 	namespace graphics
@@ -11,7 +13,7 @@ namespace engine
 			~CBuffer();
 
 			static std::unique_ptr<CBuffer> MakeBuffer(CDevice* device, size_t size, size_t count,
-				VmaMemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
+				vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
 				vk::DeviceSize minOffsetAlignment = 1);
 
 			static std::unique_ptr<CBuffer> MakeStagingBuffer(CDevice* device, size_t size, size_t count);
@@ -20,9 +22,9 @@ namespace engine
 			static std::unique_ptr<CBuffer> MakeStorageBuffer(CDevice* device, size_t size, size_t count);
 			static std::unique_ptr<CBuffer> MakeUniformBuffer(CDevice* device, size_t size, size_t count);
 
-			void create(vk::DeviceSize instanceSize, vk::DeviceSize instanceCount, VmaMemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
+			void create(vk::DeviceSize instanceSize, vk::DeviceSize instanceCount, vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
 				vk::DeviceSize minOffsetAlignment = 1);
-			void reCreate(vk::DeviceSize instanceSize, uint32_t instanceCount, VmaMemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
+			void reCreate(vk::DeviceSize instanceSize, uint32_t instanceCount, vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
 				vk::DeviceSize minOffsetAlignment = 1);
 
 			vk::DescriptorBufferInfo& getDescriptor(vk::DeviceSize size, vk::DeviceSize offset);
@@ -49,7 +51,7 @@ namespace engine
 			CDevice* pDevice{ nullptr };
 			void* mappedMemory{ nullptr };
 			vk::Buffer buffer = VK_NULL_HANDLE;
-			VmaAllocation allocation{ VK_NULL_HANDLE };
+			vma::Allocation allocation{ VK_NULL_HANDLE };
 
 			vk::DescriptorBufferInfo bufferInfo;
 			vk::DeviceSize bufferSize;

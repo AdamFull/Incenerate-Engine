@@ -1,0 +1,33 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_ARB_shading_language_420pack : enable
+#extension GL_GOOGLE_include_directive : require
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(binding = 0, rgba16f) uniform writeonly image2D writeColour;
+layout(binding = 1) uniform sampler2D samplerColour;
+
+#define offset 5
+
+void main()
+{
+	vec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5f)) / vec2(imageSize(writeColour).xy);
+
+	vec4 color = vec4(0.0);
+    vec2 texSize = textureSize(samplerColour, 0);
+    float aspect = texSize.x/texSize.y;
+
+    color += texture(samplerColour, uv);
+    color += textureOffset(samplerColour, uv, ivec2(-offset, 0));
+    color += textureOffset(samplerColour, uv, ivec2(-offset, offset));
+    color += textureOffset(samplerColour, uv, ivec2(0, offset));
+    color += textureOffset(samplerColour, uv, ivec2(offset, offset));
+    color += textureOffset(samplerColour, uv, ivec2(offset, 0));
+    color += textureOffset(samplerColour, uv, ivec2(offset, -offset));
+    color += textureOffset(samplerColour, uv, ivec2(0, -offset));
+    color += textureOffset(samplerColour, uv, ivec2(-offset, -offset));
+    color /= offset;
+
+    imageStore(writeColour, ivec2(gl_GlobalInvocationID.xy), color);
+}

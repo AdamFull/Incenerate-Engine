@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vulkan/vulkan.hpp>
+
 #include <utility/tiny_gltf.h>
 #include <utility/upattern.hpp>
 

@@ -1,6 +1,13 @@
 #include "PostProcessSystem.h"
 #include "Engine.h"
 
+#include "graphics/image/Image2D.h"
+
+#ifdef MemoryBarrier
+#undef MemoryBarrier
+#endif
+
+using namespace engine::graphics;
 using namespace engine::ecs;
 using namespace engine::system::window;
 
@@ -11,36 +18,145 @@ CPostProcessSystem::~CPostProcessSystem()
 
 void CPostProcessSystem::__create()
 {
-	shader_id = EGGraphics->addShader("post_process", "post_process");
+	shader_id_tonemap = EGGraphics->addShader("post_process", "post_process");
+	shader_id_downsample = EGGraphics->addShader("downsample", "downsample");
+	shader_id_blur = EGGraphics->addShader("gaussian_blur", "gaussian_blur");
+
+	bloom_image = createImage("bloom_tex", vk::Format::eR16G16B16A16Sfloat);
+
+	addSubresource("composition_tex");
+	addSubresource("brightness_tex");
+
+	EGEngine->addEventListener(Events::Graphics::ReCreate, this, &CPostProcessSystem::onViewportChanged);
 }
 
 void CPostProcessSystem::__update(float fDt)
 {
-	auto& stage = EGGraphics->getRenderStage("postprocess");
+	auto& device = EGGraphics->getDevice();
+	auto extent = device->getExtent(true);
+	auto& peffects = EGEngine->getPostEffects();
 	auto commandBuffer = EGGraphics->getCommandBuffer();
-	auto& pShader = EGGraphics->getShader(shader_id);
-	auto index = EGGraphics->getDevice()->getCurrentFrame();
 
-	auto& postprocess = EGGraphics->getImage("composition_tex_" + std::to_string(index));
-	pShader->addTexture("samplerColor", postprocess->getDescriptor());
+	// Re create images
+	{
+		auto& image = EGGraphics->getImage(bloom_image);
+		auto image_ext = image->getExtent();
+		if (image_ext.width != extent.width || image_ext.height != extent.height)
+		{
+			EGGraphics->removeImage(bloom_image);
+			bloom_image = createImage("bloom_tex", vk::Format::eR16G16B16A16Sfloat);
+		}
+	}
 
-	auto& pPush = pShader->getPushBlock("ubo");
-	pPush->set("enableFXAA", true);
-	pPush->set("texelStep", glm::vec2(1.0 / CWindowHandle::iWidth, 1.0 / CWindowHandle::iWidth));
-	pPush->flush(commandBuffer);
+	// Apply fxaa (graphics) + brightdetect
+	// Downsample
+	// blur vert
+	// blur horiz
 
-	auto& pUTonemap = pShader->getUniformBuffer("UBOTonemap");
-	pUTonemap->set("gamma", 2.2f);
-	pUTonemap->set("exposure", 4.5f);
 
-	auto& pUFXAA = pShader->getUniformBuffer("UBOFXAA");
-	pUFXAA->set("qualitySubpix", 0.98f);
-	pUFXAA->set("qualityEdgeThreshold", 0.333f);
-	pUFXAA->set("qualityEdgeThresholdMin", 0.033f);
+	// Tonemapping
+	{
+		auto& stage = EGGraphics->getRenderStage("tonemapping");
+		auto& pShader = EGGraphics->getShader(shader_id_tonemap);
+		
+		pShader->addTexture("samplerColor", getSubresource("composition_tex"));
 
-	stage->begin(commandBuffer);
-	pShader->predraw(commandBuffer);
-	commandBuffer.draw(3, 1, 0, 0);
+		auto& pPush = pShader->getPushBlock("ubo");
+		pPush->set("enableFXAA", peffects.fxaa);
+		pPush->set("texelStep", glm::vec2(1.f / extent.width, 1.f / extent.height));
+		pPush->set("bloom_threshold", peffects.bloom_threshold);
+		pPush->flush(commandBuffer);
 
-	stage->end(commandBuffer);
+		auto& pUTonemap = pShader->getUniformBuffer("UBOTonemap");
+		pUTonemap->set("gamma", peffects.gamma);
+		pUTonemap->set("exposure", peffects.exposure);
+
+		auto& pUFXAA = pShader->getUniformBuffer("UBOFXAA");
+		pUFXAA->set("qualitySubpix", peffects.qualitySubpix);
+		pUFXAA->set("qualityEdgeThreshold", peffects.qualityEdgeThreshold);
+		pUFXAA->set("qualityEdgeThresholdMin", peffects.qualityEdgeThresholdMin);
+
+		stage->begin(commandBuffer);
+		pShader->predraw(commandBuffer);
+		commandBuffer.draw(3, 1, 0, 0);
+
+		stage->end(commandBuffer);
+	}
+
+	VkHelper::BarrierFromGraphicsToCompute(commandBuffer, getSubresource("brightness_tex"));
+
+	// Downsample pass
+	{
+		auto& pShader = EGGraphics->getShader(shader_id_downsample);
+	
+		pShader->addTexture("writeColour", bloom_image);
+		pShader->addTexture("samplerColour", getSubresource("brightness_tex"));
+		
+		pShader->dispatch(commandBuffer, device->getExtent(true));
+	}
+
+	VkHelper::BarrierFromComputeToGraphics(commandBuffer);
+
+	//image->transitionImageLayoutGraphics(commandBuffer, vk::ImageLayout::eGeneral, vk::ImageLayout::eShaderReadOnlyOptimal);
+	//
+	//// Blur pass
+	//{
+	//	auto& stage = EGGraphics->getRenderStage("postprocess");
+	//	auto& pShader = EGGraphics->getShader(shader_id_blur);
+	//	 
+	//	pShader->addTexture("writeColour", bloom_image);
+	//	pShader->addTexture("samplerBrightness", bloom_image);
+	//
+	//	auto& pBloomUbo = pShader->getPushBlock("ubo");
+	//	pBloomUbo->set("blurScale", peffects.blurScale);
+	//	pBloomUbo->set("blurStrength", peffects.blurStrength);
+	//	pBloomUbo->set("direction", -1);
+	//
+	//	stage->begin(commandBuffer);
+	//	pShader->predraw(commandBuffer);
+	//	commandBuffer.draw(3, 1, 0, 0);
+	//	stage->end(commandBuffer);
+	//}
+	
+	//image->transitionImageLayoutGraphics(commandBuffer, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
+}
+
+void CPostProcessSystem::onViewportChanged(CEvent& event)
+{
+	mSubresourceMap.clear();
+	addSubresource("composition_tex");
+	addSubresource("brightness_tex");
+}
+
+size_t CPostProcessSystem::createImage(const std::string& name, vk::Format format)
+{
+	auto& device = EGGraphics->getDevice();
+
+	auto pImage = std::make_unique<CImage2D>(device.get());
+	pImage->create(
+		device->getExtent(true),
+		format,
+		vk::ImageLayout::eGeneral,
+		vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
+		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
+		vk::ImageUsageFlagBits::eStorage);
+
+	return EGGraphics->addImage(name, std::move(pImage));
+}
+
+void CPostProcessSystem::addSubresource(const std::string& name)
+{
+	auto& device = EGGraphics->getDevice();
+	auto framesInFlight = device->getFramesInFlight();
+
+	for (uint32_t i = 0; i < framesInFlight; i++)
+		mSubresourceMap[name].emplace_back(EGGraphics->getImageID(name + "_" + std::to_string(i)));
+}
+
+size_t CPostProcessSystem::getSubresource(const std::string& name)
+{
+	auto& device = EGGraphics->getDevice();
+	auto index = device->getCurrentFrame();
+
+	return mSubresourceMap[name].at(index);
 }

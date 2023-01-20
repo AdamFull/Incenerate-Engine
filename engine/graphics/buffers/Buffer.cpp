@@ -5,7 +5,7 @@
 using namespace engine::graphics;
 
 std::unique_ptr<CBuffer> CBuffer::MakeBuffer(CDevice* device, size_t size, size_t count,
-    VmaMemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
+    vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
     vk::DeviceSize minOffsetAlignment)
 {
     auto buffer = std::make_unique<CBuffer>(device);
@@ -16,21 +16,21 @@ std::unique_ptr<CBuffer> CBuffer::MakeBuffer(CDevice* device, size_t size, size_
 std::unique_ptr<CBuffer> CBuffer::MakeStagingBuffer(CDevice* device, size_t size, size_t count)
 {
     auto buffer = std::make_unique<CBuffer>(device);
-    buffer->create(size, count, VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_ONLY, vk::BufferUsageFlagBits::eTransferSrc);
+    buffer->create(size, count, vma::MemoryUsage::eCpuOnly, vk::BufferUsageFlagBits::eTransferSrc);
     return buffer;
 }
 
 std::unique_ptr<CBuffer> CBuffer::MakeVertexBuffer(CDevice* device, size_t size, size_t count)
 {
     auto buffer = std::make_unique<CBuffer>(device);
-    buffer->create(size, count, VmaMemoryUsage::VMA_MEMORY_USAGE_UNKNOWN, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, 1);
+    buffer->create(size, count, vma::MemoryUsage::eUnknown, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, 1);
     return buffer;
 }
 
 std::unique_ptr<CBuffer> CBuffer::MakeIndexBuffer(CDevice* device, size_t size, size_t count)
 {
     auto buffer = std::make_unique<CBuffer>(device);
-    buffer->create(size, count, VmaMemoryUsage::VMA_MEMORY_USAGE_UNKNOWN, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, 1);
+    buffer->create(size, count, vma::MemoryUsage::eUnknown, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, 1);
     return buffer;
 }
 
@@ -40,7 +40,7 @@ std::unique_ptr<CBuffer> CBuffer::MakeStorageBuffer(CDevice* device, size_t size
     auto minOffsetAllignment = std::lcm(physProps.limits.minUniformBufferOffsetAlignment, physProps.limits.nonCoherentAtomSize);
     
     auto buffer = std::make_unique<CBuffer>(device);
-    buffer->create(size, count, VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_TO_GPU,
+    buffer->create(size, count, vma::MemoryUsage::eCpuToGpu,
         vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer,
         minOffsetAllignment);
 
@@ -53,7 +53,7 @@ std::unique_ptr<CBuffer> CBuffer::MakeUniformBuffer(CDevice* device, size_t size
     auto minOffsetAllignment = std::lcm(physProps.limits.minUniformBufferOffsetAlignment, physProps.limits.nonCoherentAtomSize);
 
     auto buffer = std::make_unique<CBuffer>(device);
-    buffer->create(size, count, VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_TO_GPU, vk::BufferUsageFlagBits::eUniformBuffer, minOffsetAllignment);
+    buffer->create(size, count, vma::MemoryUsage::eCpuToGpu, vk::BufferUsageFlagBits::eUniformBuffer, minOffsetAllignment);
 
     return buffer;
 }
@@ -70,12 +70,12 @@ CBuffer::~CBuffer()
     if (mappedMemory)
         unmap();
     if (buffer)
-        vmaDestroyBuffer(vmalloc, buffer, allocation);
+        vmalloc.destroyBuffer(buffer, allocation);
 
     pDevice = nullptr;
 }
 
-void CBuffer::create(vk::DeviceSize instanceSize, vk::DeviceSize instanceCount, VmaMemoryUsage memory_usage, vk::BufferUsageFlags usageFlags, vk::DeviceSize minOffsetAlignment)
+void CBuffer::create(vk::DeviceSize instanceSize, vk::DeviceSize instanceCount, vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags, vk::DeviceSize minOffsetAlignment)
 {
     auto logical = pDevice->getLogical();
     alignmentSize = getAlignment(instanceSize, minOffsetAlignment);
@@ -99,20 +99,16 @@ void CBuffer::create(vk::DeviceSize instanceSize, vk::DeviceSize instanceCount, 
         bufferInfo.pQueueFamilyIndices = queueFamily.data();
     }
 
-    VmaAllocationCreateInfo alloc_create_info = {};
+    vma::AllocationCreateInfo alloc_create_info = {};
     alloc_create_info.usage = memory_usage;
 
     auto& vmalloc = pDevice->getVMAAllocator();
 
-    auto bci = (VkBufferCreateInfo)bufferInfo;
-    auto buf = (VkBuffer)buffer;
-    auto res = (vk::Result)vmaCreateBuffer(vmalloc, &bci, &alloc_create_info, &buf, &allocation, nullptr);
+    auto res = vmalloc.createBuffer(&bufferInfo, &alloc_create_info, &buffer, &allocation, nullptr);
     log_cerror(VkHelper::check(res), "Cannot allocate memory for buffer.");
-
-    buffer = buf;
 }
 
-void CBuffer::reCreate(vk::DeviceSize instanceSize, uint32_t instanceCount, VmaMemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
+void CBuffer::reCreate(vk::DeviceSize instanceSize, uint32_t instanceCount, vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
      vk::DeviceSize minOffsetAlignment)
 {
     create(instanceSize, instanceCount, memory_usage, usageFlags, minOffsetAlignment);
@@ -144,7 +140,7 @@ void CBuffer::map()
 
     auto allocator = pDevice->getVMAAllocator();
     
-    auto res = (vk::Result)vmaMapMemory(allocator, allocation, &mappedMemory);
+    auto res = allocator.mapMemory(allocation, &mappedMemory);
     log_cerror(VkHelper::check(res), "Can't map memory.");
 }
 
@@ -156,7 +152,7 @@ void CBuffer::unmap()
     auto allocator = pDevice->getVMAAllocator();
     if (mappedMemory)
     {
-        vmaUnmapMemory(allocator, allocation);
+        allocator.unmapMemory(allocation);
         mappedMemory = nullptr;
     }
 }
@@ -198,7 +194,7 @@ void CBuffer::flush(vk::DeviceSize size, vk::DeviceSize offset)
     log_cerror(vkDevice, "Called flush buffer but device is invalid");
 
     auto allocator = pDevice->getVMAAllocator();
-    vmaFlushAllocation(allocator, allocation, offset, size);
+    allocator.flushAllocation(allocation, offset, size);
 }
 
 vk::DeviceSize CBuffer::getAlignment(vk::DeviceSize instanceSize, vk::DeviceSize minOffsetAlignment)

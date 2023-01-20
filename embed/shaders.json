@@ -91,7 +91,7 @@
     "defines": {}
   },
   "post_process": {
-    "stage": "postprocess",
+    "stage": "tonemapping",
     "vertex_free": true,
     "bind_point": "Graphics",
     "cull_mode": "Back",
@@ -105,7 +105,7 @@
     "defines": {}
   },
   "ssao_pass": {
-    "stage": "postprocess",
+    "stage": "tonemapping",
     "bind_point": "Graphics",
     "cull_mode": "Back",
     "front_face": "cw",
@@ -118,7 +118,7 @@
     "defines": {}
   },
   "ssr_pass": {
-    "stage": "postprocess",
+    "stage": "tonemapping",
     "bind_point": "Graphics",
     "cull_mode": "Back",
     "front_face": "cw",
@@ -147,6 +147,7 @@
 
   "gaussian_blur": {
     "stage": "postprocess",
+    "vertex_free": true,
     "bind_point": "Graphics",
     "cull_mode": "Back",
     "front_face": "cw",
@@ -161,7 +162,7 @@
     }
   },
   "brightdetect": {
-    "stage": "postprocess",
+    "stage": "tonemapping",
     "bind_point": "Graphics",
     "cull_mode": "Back",
     "front_face": "cw",
@@ -174,15 +175,9 @@
     "defines": {}
   },
   "downsample": {
-    "stage": "postprocess",
-    "bind_point": "Graphics",
-    "cull_mode": "Back",
-    "front_face": "cw",
-    "depth_test": false,
-    "dynamic_states": [ "Viewport", "Scissor" ],
+    "bind_point": "Compute",
     "stages": [
-      "shaders/main/screenspace.vert",
-      "shaders/postprocess/downsample.frag"
+      "shaders/postprocess/downsample.comp"
     ],
     "defines": {}
   },

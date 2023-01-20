@@ -107,7 +107,7 @@ void CCameraControlSystem::rotate(FCameraComponent& camera, FTransformComponent&
 
 	if (delta.x != 0.0f || delta.y != 0.0f)
 	{
-		delta *= camera.sensitivity * camera.sensitivity * camera.sensitivity;
+		delta *= camera.sensitivity * camera.sensitivity;
 
 		glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-delta.y, camera.right), glm::angleAxis(-delta.x, camera.up)));
 		transform.rotation = glm::rotate(q, camera.forward);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EngineStructures.h"
-#include <vma/vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
 
 namespace engine
 {
@@ -41,6 +41,10 @@ namespace engine
 			static vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>);
 
 			static bool hasStencilComponent(vk::Format format);
+
+			static void BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer);
+			static void BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer);
+			static void BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, size_t image_id = invalid_index);
 		};
 	}
 }

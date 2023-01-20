@@ -132,6 +132,11 @@ const scenemgr_t& CEngine::getSceneManager() const
 	return pSceneManager;
 }
 
+FPostProcess& CEngine::getPostEffects()
+{
+	return posteffects;
+}
+
 const bool CEngine::isEditorMode() const
 {
 	return bEditorMode;

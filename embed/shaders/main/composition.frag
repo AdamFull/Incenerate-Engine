@@ -22,11 +22,13 @@ layout (binding = 0) uniform sampler2D samplerColor;
 layout (location = 0) in vec2 inUV;
 
 layout (location = 0) out vec4 outColor;
+layout (location = 1) out vec4 outBrightness;
 
 layout(push_constant) uniform FBloomUbo
 {
     bool enableFXAA;
     vec2 texelStep;
+    float bloom_threshold;
 } ubo;
 
 layout(std140, binding = 3) uniform UBOFXAA
@@ -42,13 +44,6 @@ layout(std140, binding = 4) uniform UBOTonemap
 	float exposure;
 } tonemap;
 
-layout(std140, binding = 5) uniform UBOMotionBlur
-{
-	float velocityScale;
-} motion;
-
-#define MAX_SAMPLES 30
-
 vec2 flippedUV(vec2 uv)
 {
     return vec2(uv.s, uv.t * -1.0);
@@ -56,18 +51,11 @@ vec2 flippedUV(vec2 uv)
 
 void main() 
 {
-    //vec4 motionBlur = per_object_motion_blir(velocity_tex, samplerColor, inUV, motion.velocityScale, MAX_SAMPLES);
-
-    //vec3 fragcolor = texture(samplerColor, inUV).rgb;
     vec3 fragcolor = vec3(0.0);
     if(ubo.enableFXAA)
         fragcolor = fxaa(samplerColor, inUV, fxaa_p.qualitySubpix, FXAA_REDUCE_MIN, FXAA_REDUCE_MUL, FXAA_SPAN_MAX, ubo.texelStep).rgb;
     else
         fragcolor = texture(samplerColor, inUV).rgb;
-
-    //fragcolor = motionBlur.rgb;
-    //vec3 brightness = texture(samplerBrightness, inUV).rgb;
-    //fragcolor = mix(fragcolor, brightness, 0.4);
 
     //Exposure
     fragcolor = Uncharted2Tonemap(fragcolor * tonemap.exposure);
@@ -76,4 +64,10 @@ void main()
     fragcolor = pow(fragcolor, vec3(1.0f / tonemap.gamma));
     
 	outColor = vec4(fragcolor, 1.0);
+
+    float brightness = dot(outColor.xyz, vec3(0.2126, 0.7152, 0.0722));
+	if(brightness > ubo.bloom_threshold)
+        outBrightness = vec4(fragcolor, 1.0);
+    else
+        outBrightness = vec4(0.0, 0.0, 0.0, 1.0);
 }

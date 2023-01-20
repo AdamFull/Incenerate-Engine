@@ -105,7 +105,7 @@ void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
 	currentUsage = (currentUsage + 1) % usageCount;
 }
 
-void CShaderObject::dispatch(size_t size)
+void CShaderObject::dispatch(vk::Extent2D size)
 {
 	auto cmdBuf = CCommandBuffer(pDevice);
 	cmdBuf.create(true, vk::QueueFlagBits::eCompute);
@@ -116,12 +116,12 @@ void CShaderObject::dispatch(size_t size)
 	cmdBuf.submitIdle();
 }
 
-void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, size_t size)
+void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, vk::Extent2D size)
 {
 	predraw(commandBuffer);
 
-	auto groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(size) / static_cast<float>(*pShader->getLocalSizes()[0])));
-	auto groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(size) / static_cast<float>(*pShader->getLocalSizes()[1])));
+	auto groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(size.width) / static_cast<float>(*pShader->getLocalSizes()[0])));
+	auto groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(size.height) / static_cast<float>(*pShader->getLocalSizes()[1])));
 	commandBuffer.dispatch(groupCountX, groupCountY, 1);
 }
 

@@ -3,15 +3,13 @@
 #extension GL_ARB_shading_language_420pack : enable
 #extension GL_GOOGLE_include_directive : require
 
-layout (binding = 0) uniform sampler2D samplerBrightness;
+layout(binding = 0, rgba8) uniform writeonly image2D writeColour;
+layout (binding = 1) uniform sampler2D samplerBrightness;
 
 layout (location = 0) in vec2 inUV;
 
-layout (location = 0) out vec4 outColor;
-
 layout(push_constant) uniform FBloomUbo 
 {
-    //Bloom
 	float blurScale;
     float blurStrength;
     int direction;
@@ -50,5 +48,5 @@ void main()
 	colour += texture(samplerBrightness, inUV + (off3 / sizeColour)) * 0.010381362401148057f * ubo.blurScale;
 	colour += texture(samplerBrightness, inUV - (off3 / sizeColour)) * 0.010381362401148057f * ubo.blurScale;
 #endif
-	outColor = colour;
+	imageStore(writeColour, ivec2(inUV * imageSize(writeColour)), colour);
 }
