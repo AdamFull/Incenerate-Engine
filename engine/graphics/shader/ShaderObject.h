@@ -31,8 +31,8 @@ namespace engine
 
 			void create(uint32_t subpass = 0, size_t usages = 1);
 			void predraw(vk::CommandBuffer& commandBuffer);
-			void dispatch(vk::Extent2D size);
-			void dispatch(vk::CommandBuffer& commandBuffer, vk::Extent2D size);
+			void dispatch(glm::vec2 size);
+			void dispatch(vk::CommandBuffer& commandBuffer, glm::vec2 size);
 
 			void addTexture(const std::string& attachment, size_t id);
 			void addTexture(const std::string& attachment, vk::DescriptorImageInfo descriptor);

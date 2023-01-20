@@ -152,13 +152,20 @@
     ],
     "defines": {}
   },
+  "upsample": {
+    "bind_point": "Compute",
+    "stages": [
+      "shaders/postprocess/upsample.comp"
+    ],
+    "defines": {}
+  },
   "gaussian_blur": {
     "bind_point": "Compute",
     "stages": [
       "shaders/postprocess/gaussianblur.comp"
     ],
     "defines": {
-      "BLUR_TYPE": "5"
+      "BLUR_TYPE": "12"
     }
   },
   "tonemap": {

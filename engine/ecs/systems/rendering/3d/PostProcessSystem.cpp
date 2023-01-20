@@ -11,7 +11,7 @@ using namespace engine::graphics;
 using namespace engine::ecs;
 using namespace engine::system::window;
 
-size_t createImage(const std::string& name, vk::Format format)
+size_t createImage(const std::string& name, vk::Format format, bool mips = false)
 {
 	using namespace engine;
 
@@ -24,7 +24,11 @@ size_t createImage(const std::string& name, vk::Format format)
 		vk::ImageLayout::eGeneral,
 		vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
 		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
-		vk::ImageUsageFlagBits::eStorage);
+		vk::ImageUsageFlagBits::eStorage,
+		vk::ImageAspectFlagBits::eColor,
+		vk::Filter::eLinear,
+		vk::SamplerAddressMode::eClampToEdge,
+		vk::SampleCountFlagBits::e1, true, false, mips);
 
 	return EGGraphics->addImage(name, std::move(pImage));
 }
@@ -52,18 +56,26 @@ CPostProcessSystem::~CPostProcessSystem()
 
 void CPostProcessSystem::__create()
 {
-	shader_fxaa = EGGraphics->addShader("fxaa", "fxaa");
-	shader_brightdetect = EGGraphics->addShader("brightdetect", "brightdetect");
-	shader_downsample = EGGraphics->addShader("downsample", "downsample");
-	shader_tonemap = EGGraphics->addShader("tonemap", "tonemap");
+	final_image = createImage("final_tex", vk::Format::eR32G32B32A32Sfloat);
+	brightness_image = createImage("brightness_tex", vk::Format::eR32G32B32A32Sfloat);
+	temp_image = createImage("bloom_tex", vk::Format::eR32G32B32A32Sfloat, true);
+	temp_image_2 = createImage("bloom_tex_2", vk::Format::eR32G32B32A32Sfloat, true);
+	auto& image = EGGraphics->getImage(temp_image);
 
 	FShaderSpecials specials;
+	specials.usages = image->getMipLevels();
+	shader_downsample = EGGraphics->addShader("downsample", "downsample", specials);
+	shader_upsample = EGGraphics->addShader("upsample", "upsample", specials);
+
+	shader_fxaa = EGGraphics->addShader("fxaa", "fxaa");
+	shader_brightdetect = EGGraphics->addShader("brightdetect", "brightdetect");
+	shader_tonemap = EGGraphics->addShader("tonemap", "tonemap");
+
+	
 	specials.usages = 2;
 	shader_blur = EGGraphics->addShader("gaussian_blur", "gaussian_blur", specials);
 
-	final_image = createImage("final_tex", vk::Format::eR32G32B32A32Sfloat);
-	temp_image = createImage("bloom_tex", vk::Format::eR32G32B32A32Sfloat);
-	temp_image_2 = createImage("bloom_tex_2", vk::Format::eR32G32B32A32Sfloat);
+	
 
 	addSubresource("composition_tex");
 
@@ -74,20 +86,23 @@ void CPostProcessSystem::__update(float fDt)
 {
 	auto& device = EGGraphics->getDevice();
 	auto extent = device->getExtent(true);
+	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
 	auto& peffects = EGEngine->getPostEffects();
 	auto commandBuffer = EGGraphics->getCommandBuffer();
 
 	// Re create images
 	{
 		tryReCreateImage("final_tex", final_image);
+		tryReCreateImage("brightness_tex", brightness_image);
 		tryReCreateImage("bloom_tex", temp_image);
 		tryReCreateImage("bloom_tex_2", temp_image_2);
 	}
 
-	// Apply fxaa (graphics) + brightdetect
-	// Downsample
-	// blur vert
-	// blur horiz
+	{
+		for (auto& view : vDeleteViews)
+			device->destroy(&view);
+		vDeleteViews.clear();
+	}
 
 	VkHelper::BarrierFromGraphicsToCompute(commandBuffer, getSubresource("composition_tex"));
 
@@ -105,7 +120,7 @@ void CPostProcessSystem::__update(float fDt)
 		pPush->set("qualityEdgeThresholdMin", peffects.qualityEdgeThresholdMin);
 		pPush->flush(commandBuffer);
 		
-		pShader->dispatch(commandBuffer, device->getExtent(true));
+		pShader->dispatch(commandBuffer, resolution);
 
 	}
 
@@ -119,66 +134,119 @@ void CPostProcessSystem::__update(float fDt)
 		pPush->set("bloom_threshold", peffects.bloom_threshold);
 		pPush->flush(commandBuffer);
 
-		pShader->addTexture("writeColor", temp_image);
+		pShader->addTexture("writeColor", brightness_image);
 		pShader->addTexture("samplerColor", final_image);
 
-		pShader->dispatch(commandBuffer, device->getExtent(true));
+		pShader->dispatch(commandBuffer, resolution);
+	}
+
+	VkHelper::BarrierFromComputeToCompute(commandBuffer);
+	
+	// Downsample pass
+	{
+		auto& pShader = EGGraphics->getShader(shader_downsample);
+		auto& image = EGGraphics->getImage(temp_image);
+		auto& pPush = pShader->getPushBlock("ubo");
+
+		glm::vec2 mipSize{ extent.width, extent.height };
+
+		for (uint32_t i = 0; i < image->getMipLevels(); i++)
+		{
+			vk::ImageView levelView{ VK_NULL_HANDLE };
+			vk::ImageViewCreateInfo viewInfo{};
+			viewInfo.viewType = vk::ImageViewType::e2D;
+			viewInfo.format = image->getFormat();
+			viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+			viewInfo.subresourceRange.baseMipLevel = i;
+			viewInfo.subresourceRange.levelCount = 1;
+			viewInfo.subresourceRange.baseArrayLayer = 0;
+			viewInfo.subresourceRange.layerCount = 1;
+			viewInfo.image = image->getImage();
+
+			vk::Result res = device->create(viewInfo, &levelView);
+			assert(res == vk::Result::eSuccess && "Cannot create image view.");
+
+			pPush->set("resolution", mipSize);
+			pPush->flush(commandBuffer);
+
+			auto imageInfo = image->getDescriptor();
+			imageInfo.imageView = levelView;
+
+			pShader->addTexture("writeColor", imageInfo);
+			pShader->addTexture("samplerColor", brightness_image);
+
+			pShader->dispatch(commandBuffer, { mipSize.x, mipSize.y });
+
+			VkHelper::BarrierFromComputeToCompute(commandBuffer);
+
+			vDeleteViews.emplace_back(levelView);
+
+			mipSize *= 0.5f;
+		}
 	}
 
 	//VkHelper::BarrierFromComputeToCompute(commandBuffer);
-	//
-	//// Downsample pass
-	//{
-	//	auto& pShader = EGGraphics->getShader(shader_downsample);
-	//
-	//	pShader->addTexture("writeColor", temp_image_2);
-	//	pShader->addTexture("samplerColor", temp_image);
-	//	
-	//	pShader->dispatch(commandBuffer, device->getExtent(true));
-	//}
-
-	VkHelper::BarrierFromComputeToCompute(commandBuffer);
-
+	
+	// Upsample
 	{
-		auto& pShader = EGGraphics->getShader(shader_blur);
+		auto& pShader = EGGraphics->getShader(shader_upsample);
+		auto& image = EGGraphics->getImage(temp_image_2);
+		auto& pPush = pShader->getPushBlock("ubo");
+		pPush->set("filterRadius", peffects.filterRadius);
 
-		auto& pBlock = pShader->getPushBlock("ubo");
-		pBlock->set("blurScale", peffects.blurScale);
-		pBlock->set("blurStrength", peffects.blurStrength);
-		pBlock->set("direction", -1);
-		pBlock->flush(commandBuffer);
+		glm::vec2 mipSize{ extent.width, extent.height };
 
-		pShader->addTexture("writeColor", temp_image_2);
-		pShader->addTexture("samplerColor", temp_image);
+		for (uint32_t i = 0; i < image->getMipLevels(); i++)
+		{
+			vk::ImageView levelView{ VK_NULL_HANDLE };
+			vk::ImageViewCreateInfo viewInfo{};
+			viewInfo.viewType = vk::ImageViewType::e2D;
+			viewInfo.format = image->getFormat();
+			viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+			viewInfo.subresourceRange.baseMipLevel = i;
+			viewInfo.subresourceRange.levelCount = 1;
+			viewInfo.subresourceRange.baseArrayLayer = 0;
+			viewInfo.subresourceRange.layerCount = 1;
+			viewInfo.image = image->getImage();
 
-		pShader->dispatch(commandBuffer, device->getExtent(true));
+			vk::Result res = device->create(viewInfo, &levelView);
+			assert(res == vk::Result::eSuccess && "Cannot create image view.");
 
-		VkHelper::BarrierFromComputeToCompute(commandBuffer);
+			pPush->flush(commandBuffer);
 
-		pShader->addTexture("writeColor", temp_image);
-		pShader->addTexture("samplerColor", temp_image_2);
-		pBlock->set("direction", 1);
-		pBlock->flush(commandBuffer);
+			auto imageInfo = image->getDescriptor();
+			imageInfo.imageView = levelView;
 
-		pShader->dispatch(commandBuffer, device->getExtent(true));
+			pShader->addTexture("writeColor", imageInfo);
+			pShader->addTexture("samplerColor", temp_image);
+
+			pShader->dispatch(commandBuffer, { mipSize.x, mipSize.y });
+
+			VkHelper::BarrierFromComputeToCompute(commandBuffer);
+
+			vDeleteViews.emplace_back(levelView);
+
+			mipSize *= 0.5f;
+		}
 	}
-
-	VkHelper::BarrierFromComputeToCompute(commandBuffer);
-
+	
+	//VkHelper::BarrierFromComputeToCompute(commandBuffer);
+	
 	// Tonemap
 	{
 		auto& pShader = EGGraphics->getShader(shader_tonemap);
-
+	
 		auto& pBlock = pShader->getPushBlock("ubo");
 		pBlock->set("gamma", peffects.gamma);
 		pBlock->set("exposure", peffects.exposure);
+		pBlock->set("bloomStrength", peffects.bloomStrength);
 		pBlock->flush(commandBuffer);
-
-		pShader->addTexture("writeColor", temp_image_2);
+	
+		pShader->addTexture("writeColor", temp_image);
 		pShader->addTexture("samplerColor", final_image);
-		pShader->addTexture("blurColor", temp_image);
-
-		pShader->dispatch(commandBuffer, device->getExtent(true));
+		pShader->addTexture("blurColor", temp_image_2);
+	
+		pShader->dispatch(commandBuffer, resolution);
 	}
 
 	VkHelper::BarrierFromComputeToGraphics(commandBuffer);

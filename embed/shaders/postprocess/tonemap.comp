@@ -15,13 +15,14 @@ layout(push_constant) uniform UBOTonemap
 {
 	float gamma;
 	float exposure;
+	float bloomStrength;
 } ubo;
 
 void main()
 {
 	vec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5f)) / vec2(imageSize(writeColor).xy);
 
-	vec3 fragcolor = texture(samplerColor, uv).xyz + texture(blurColor, uv).xyz;
+	vec3 fragcolor = mix(texture(samplerColor, uv).xyz,  texture(blurColor, uv).xyz, ubo.bloomStrength);
 
 	//Exposure
     fragcolor = Uncharted2Tonemap(fragcolor * ubo.exposure);

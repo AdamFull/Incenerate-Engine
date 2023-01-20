@@ -35,8 +35,8 @@ namespace engine
 
 		// Bloom
 		float bloom_threshold{ 1.f };
-		float blurScale{ 1.0f };
-		float blurStrength{ 1.7f };
+		float filterRadius{ 0.005f };
+		float bloomStrength{ 0.04f };
 	};
 
 	enum class EEngineState

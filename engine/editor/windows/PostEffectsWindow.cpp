@@ -32,7 +32,7 @@ void CEditorPostEffects::__draw(float fDt)
 	if (ImGui::CollapsingHeader("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::GDragFloat("bloom_threshold", &peffects.bloom_threshold, 0.01f, 0.01f, 1.f);
-		ImGui::GDragFloat("blurScale", &peffects.blurScale, 0.01f, 0.01f, 5.f);
-		ImGui::GDragFloat("blurStrength", &peffects.blurStrength, 0.01f, 0.01f, 5.f);
+		ImGui::GDragFloat("filterRadius", &peffects.filterRadius, 0.001f, 0.001f, 0.01f);
+		ImGui::GDragFloat("bloomStrength", &peffects.bloomStrength, 0.01f, 0.01f, 0.1f);
 	}
 }
