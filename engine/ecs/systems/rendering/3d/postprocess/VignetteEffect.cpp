@@ -1,16 +1,16 @@
-#include "FXAAEffect.h"
+#include "VignetteEffect.h"
 
 #include "Engine.h"
 
 using namespace engine::graphics;
 using namespace engine::ecs;
 
-void CFXAAEffect::create()
+void CVignetteEffect::create()
 {
-	shader_fxaa = EGGraphics->addShader("fxaa", "fxaa");
+	shader_vignette = EGGraphics->addShader("chromatic_aberration", "chromatic_aberration");
 }
 
-size_t CFXAAEffect::render(bool enable, size_t in_source, size_t out_source)
+size_t CVignetteEffect::render(bool enable, size_t in_source, size_t out_source)
 {
 	auto& device = EGGraphics->getDevice();
 	auto extent = device->getExtent(true);
@@ -20,14 +20,15 @@ size_t CFXAAEffect::render(bool enable, size_t in_source, size_t out_source)
 
 	if (enable)
 	{
-		auto& pShader = EGGraphics->getShader(shader_fxaa);
+		auto& pShader = EGGraphics->getShader(shader_vignette);
 
 		pShader->addTexture("writeColor", out_source);
 		pShader->addTexture("samplerColor", in_source);
 
 		auto& pPush = pShader->getPushBlock("ubo");
-		pPush->set("texel_step", glm::vec2(1.f / extent.width, 1.f / extent.height));
-		pPush->set("quality", peffects.fxaa_quality);
+		pPush->set("inner_radius", peffects.vignette_inner);
+		pPush->set("outer_radius", peffects.vignette_outer);
+		pPush->set("opacity", peffects.vignette_opacity);
 		pPush->flush(commandBuffer);
 
 		pShader->dispatch(commandBuffer, resolution);

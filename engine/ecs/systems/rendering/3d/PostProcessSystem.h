@@ -2,6 +2,9 @@
 
 #include "postprocess/BloomEffect.h"
 #include "postprocess/FXAAEffect.h"
+#include "postprocess/ChromaticAberrationEffect.h"
+#include "postprocess/VignetteEffect.h"
+
 #include "ecs/systems/rendering/BaseGraphicsSystem.h"
 
 namespace engine
@@ -19,6 +22,8 @@ namespace engine
 		private:
 			CFXAAEffect fxaa;
 			CBloomEffect bloom;
+			CChromaticAberrationEffect chromatic_aberration;
+			CVignetteEffect vignette;
 
 			size_t shader_tonemap{ invalid_index };
 

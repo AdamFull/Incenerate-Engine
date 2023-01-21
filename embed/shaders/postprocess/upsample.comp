@@ -17,7 +17,7 @@ layout(binding = 1) uniform sampler2D samplerColor;
 layout(push_constant) uniform UBOUpsample
 {
     vec2 resolution;
-	float filterRadius;
+	float filter_radius;
 } ubo;
 
 void main()
@@ -27,8 +27,8 @@ void main()
 
     // The filter kernel is applied with a radius, specified in texture
     // coordinates, so that the radius will vary across mip resolutions.
-    float x = ubo.filterRadius;
-    float y = ubo.filterRadius;
+    float x = ubo.filter_radius;
+    float y = ubo.filter_radius;
 
     // Take 9 samples around current texel:
     // a - b - c

@@ -166,6 +166,20 @@
     ],
     "defines": {}
   },
+  "chromatic_aberration": {
+    "bind_point": "Compute",
+    "stages": [
+      "shaders/postprocess/chromatic_aberration.comp"
+    ],
+    "defines": {}
+  },
+  "vignette": {
+    "bind_point": "Compute",
+    "stages": [
+      "shaders/postprocess/vignette.comp"
+    ],
+    "defines": {}
+  },
 
   "gaussian_blur": {
     "bind_point": "Compute",

@@ -186,7 +186,7 @@ namespace ImGui
             if (Button("N", buttonSize))
             {
                 bValueChanged = true;
-                *value = 0.0f;
+                *value = min;
             }
             PopFont();
             PopStyleColor(3);
@@ -194,7 +194,52 @@ namespace ImGui
             SameLine();
 
             SetNextItemWidth(GetContentRegionAvail().x);
-            bValueChanged |= DragFloat("##N", value, step, min, max, "%.2f");
+            bValueChanged |= DragFloat("##N", value, step, min, max, "%.3f");
+
+            PopStyleVar();
+
+            ImGui::EndTable();
+        }
+
+        PopID();
+
+        return bValueChanged;
+    }
+
+    bool GDragInt(const std::string& label, int* value, int step, int min, int max)
+    {
+        bool bValueChanged{ false };
+        ImGuiIO& io = GetIO();
+        auto boldFont = io.Fonts->Fonts[0];
+
+        PushID(label.c_str());
+
+        if (BeginTable(("table" + label).c_str(), 2))
+        {
+            TableNextColumn(); Text(label.c_str());
+
+            TableNextColumn();
+            PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+
+            float lineHeight = boldFont->FontSize + 6.0f;
+            ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+            PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+            PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+            PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+            PushFont(boldFont);
+            if (Button("N", buttonSize))
+            {
+                bValueChanged = true;
+                *value = min;
+            }
+            PopFont();
+            PopStyleColor(3);
+
+            SameLine();
+
+            SetNextItemWidth(GetContentRegionAvail().x);
+            bValueChanged |= DragInt("##N", value, step, min, max);
 
             PopStyleVar();
 

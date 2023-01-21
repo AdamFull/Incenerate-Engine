@@ -19,21 +19,36 @@ void CEditorPostEffects::__draw(float fDt)
 	if (ImGui::CollapsingHeader("FXAA", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::GCheckbox("enable", &peffects.fxaa);
-		ImGui::GDragFloat("qualitySubpix", &peffects.qualitySubpix, 0.01f, 0.01f, 1.f);
+		ImGui::GDragFloat("quality", &peffects.fxaa_quality, 0.01f, 0.01f, 1.f);
 	}
 
 	if (ImGui::CollapsingHeader("Tonemapping", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::GCheckbox("enable", &peffects.tonemapping);
-		ImGui::GDragFloat("gamma", &peffects.gamma, 0.01f, 0.01f, 4.f);
-		ImGui::GDragFloat("exposure", &peffects.exposure, 0.01f, 0.01f, 11.f);
+		ImGui::GDragFloat("gamma", &peffects.tonemapping_gamma, 0.01f, 0.01f, 4.f);
+		ImGui::GDragFloat("exposure", &peffects.tonemapping_exposure, 0.01f, 0.01f, 11.f);
 	}
 
 	if (ImGui::CollapsingHeader("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::GCheckbox("enable", &peffects.bloom);
 		ImGui::GDragFloat("bloom_threshold", &peffects.bloom_threshold, 0.01f, 0.01f, 1.f);
-		ImGui::GDragFloat("filterRadius", &peffects.filterRadius, 0.001f, 0.001f, 0.01f);
-		ImGui::GDragFloat("bloomStrength", &peffects.bloomStrength, 0.01f, 0.01f, 0.1f);
+		ImGui::GDragFloat("radius", &peffects.bloom_filter_radius, 0.001f, 0.001f, 0.01f);
+		ImGui::GDragFloat("strength", &peffects.bloom_strength, 0.01f, 0.01f, 0.2f);
+	}
+
+	if (ImGui::CollapsingHeader("Chromatic aberration", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::GCheckbox("enable", &peffects.aberration);
+		ImGui::GDragFloat("distortion", &peffects.aberration_distortion, 0.01f, 0.01f, 10.f);
+		ImGui::GDragInt("itteration", &peffects.aberration_iterations, 3, 3, 24);
+	}
+
+	if (ImGui::CollapsingHeader("Vignette", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::GCheckbox("enable", &peffects.vignette);
+		ImGui::GDragFloat("inner", &peffects.vignette_inner, 0.01f, 0.01f, 10.f);
+		ImGui::GDragFloat("outer", &peffects.vignette_outer, 0.01f, 0.01f, 10.f);
+		ImGui::GDragFloat("opacity", &peffects.vignette_opacity, 0.01f, 0.01f, 1.f);
 	}
 }

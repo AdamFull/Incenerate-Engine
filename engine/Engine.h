@@ -26,18 +26,29 @@ namespace engine
 	{
 		// fxaa
 		bool fxaa{ true };
-		float qualitySubpix{ 0.98f };
+		float fxaa_quality{ 0.98f };
 
 		// Tonemapping
 		bool tonemapping{ true };
-		float gamma{ 2.2f };
-		float exposure{ 4.5f };
+		float tonemapping_gamma{ 2.2f };
+		float tonemapping_exposure{ 4.5f };
 
 		// Bloom
 		bool bloom{ true };
 		float bloom_threshold{ 1.f };
-		float filterRadius{ 0.005f };
-		float bloomStrength{ 0.04f };
+		float bloom_filter_radius{ 0.005f };
+		float bloom_strength{ 0.04f };
+
+		// Chromatic aberration
+		bool aberration{ false };
+		float aberration_distortion{ 2.2f };
+		int aberration_iterations{ 12 };
+
+		// Vignette
+		bool vignette{ false };
+		float vignette_inner{ 0.15f };
+		float vignette_outer{ 1.35f };
+		float vignette_opacity{ 0.85f };
 	};
 
 	enum class EEngineState

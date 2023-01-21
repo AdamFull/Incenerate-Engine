@@ -1,16 +1,16 @@
-#include "FXAAEffect.h"
+#include "ChromaticAberrationEffect.h"
 
 #include "Engine.h"
 
 using namespace engine::graphics;
 using namespace engine::ecs;
 
-void CFXAAEffect::create()
+void CChromaticAberrationEffect::create()
 {
-	shader_fxaa = EGGraphics->addShader("fxaa", "fxaa");
+	shader_aberr = EGGraphics->addShader("chromatic_aberration", "chromatic_aberration");
 }
 
-size_t CFXAAEffect::render(bool enable, size_t in_source, size_t out_source)
+size_t CChromaticAberrationEffect::render(bool enable, size_t in_source, size_t out_source)
 {
 	auto& device = EGGraphics->getDevice();
 	auto extent = device->getExtent(true);
@@ -20,14 +20,14 @@ size_t CFXAAEffect::render(bool enable, size_t in_source, size_t out_source)
 
 	if (enable)
 	{
-		auto& pShader = EGGraphics->getShader(shader_fxaa);
+		auto& pShader = EGGraphics->getShader(shader_aberr);
 
 		pShader->addTexture("writeColor", out_source);
 		pShader->addTexture("samplerColor", in_source);
 
 		auto& pPush = pShader->getPushBlock("ubo");
-		pPush->set("texel_step", glm::vec2(1.f / extent.width, 1.f / extent.height));
-		pPush->set("quality", peffects.fxaa_quality);
+		pPush->set("distortion", peffects.aberration_distortion);
+		pPush->set("iterations", peffects.aberration_iterations);
 		pPush->flush(commandBuffer);
 
 		pShader->dispatch(commandBuffer, resolution);

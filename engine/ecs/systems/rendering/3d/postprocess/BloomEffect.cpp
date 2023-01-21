@@ -88,7 +88,7 @@ size_t CBloomEffect::render(bool enable, size_t source)
 			auto& pShader = EGGraphics->getShader(shader_brightdetect);
 
 			auto& pPush = pShader->getPushBlock("ubo");
-			pPush->set("bloom_threshold", 1.f);
+			pPush->set("bloom_threshold", peffects.bloom_threshold);
 			pPush->flush(commandBuffer);
 
 			pShader->addTexture("writeColor", final_image);
@@ -140,7 +140,7 @@ size_t CBloomEffect::render(bool enable, size_t source)
 				auto& nextMip = vMips.at(i - 1);
 
 				pPush->set("resolution", nextMip.size);
-				pPush->set("filterRadius", peffects.filterRadius);
+				pPush->set("filter_radius", peffects.bloom_filter_radius);
 				pPush->flush(commandBuffer);
 
 				auto imageInfo = image->getDescriptor();
@@ -159,7 +159,7 @@ size_t CBloomEffect::render(bool enable, size_t source)
 		{
 			auto& pShader = EGGraphics->getShader(shader_applybloom);
 			auto& pPush = pShader->getPushBlock("ubo");
-			pPush->set("bloomStrength", peffects.bloomStrength);
+			pPush->set("bloom_strength", peffects.bloom_strength);
 			pPush->flush(commandBuffer);
 
 			pShader->addTexture("writeColor", final_image);

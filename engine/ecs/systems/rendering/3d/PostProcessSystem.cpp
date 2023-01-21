@@ -20,6 +20,8 @@ void CPostProcessSystem::__create()
 {
 	fxaa.create();
 	bloom.create();
+	chromatic_aberration.create();
+	vignette.create();
 
 	final_image = effectshared::createImage("postprocess_tex", vk::Format::eB10G11R11UfloatPack32);
 	auto& image = EGGraphics->getImage(final_image);
@@ -50,14 +52,16 @@ void CPostProcessSystem::__update(float fDt)
 	size_t current_image = getSubresource("composition_tex");
 	current_image = fxaa.render(peffects.fxaa, current_image, final_image);
 	current_image = bloom.render(peffects.bloom, current_image);
+	current_image = chromatic_aberration.render(peffects.aberration, current_image, final_image);
+	current_image = vignette.render(peffects.vignette, current_image, final_image);
 	
 	// Tonemap
 	{
 		auto& pShader = EGGraphics->getShader(shader_tonemap);
 	
 		auto& pBlock = pShader->getPushBlock("ubo");
-		pBlock->set("gamma", peffects.gamma);
-		pBlock->set("exposure", peffects.exposure);
+		pBlock->set("gamma", peffects.tonemapping_gamma);
+		pBlock->set("exposure", peffects.tonemapping_exposure);
 		pBlock->flush(commandBuffer);
 	
 		pShader->addTexture("writeColor", final_image);
