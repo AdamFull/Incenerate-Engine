@@ -11,8 +11,13 @@ CImage2D::CImage2D(CDevice* device)
 }
 
 void CImage2D::create(const vk::Extent2D& extent, vk::Format format, vk::ImageLayout layout, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspect,
-	vk::Filter filter, vk::SamplerAddressMode addressMode, vk::SampleCountFlagBits samples, bool instantLayoutTransition, bool anisotropic, bool mipmaps)
+	vk::Filter filter, vk::SamplerAddressMode addressMode, vk::SampleCountFlagBits samples, bool instantLayoutTransition, bool anisotropic, bool mipmaps, 
+    uint32_t levelCount)
 {
+    uint32_t mip_levels{ 1 };
+    if (mipmaps)
+        mip_levels = levelCount == 1 ? static_cast<uint32_t>(std::floor(std::log2(std::max(extent.width, extent.height)))) + 1 : levelCount;
+
     enableAnisotropy = anisotropic;
     auto texture = std::make_unique<FImageCreateInfo>();
     texture->baseWidth = extent.width;
@@ -20,7 +25,7 @@ void CImage2D::create(const vk::Extent2D& extent, vk::Format format, vk::ImageLa
     texture->baseDepth = 1;
     texture->numDimensions = 2;
     texture->generateMipmaps = mipmaps;
-    texture->numLevels = mipmaps ? static_cast<uint32_t>(std::floor(std::log2(std::max(extent.width, extent.height)))) + 1 : 1;
+    texture->numLevels = mip_levels;
     texture->isArray = false;
     texture->numLayers = 1;
     texture->numFaces = 1;

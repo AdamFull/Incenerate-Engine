@@ -159,6 +159,14 @@
     ],
     "defines": {}
   },
+  "applybloom": {
+    "bind_point": "Compute",
+    "stages": [
+      "shaders/postprocess/applybloom.comp"
+    ],
+    "defines": {}
+  },
+
   "gaussian_blur": {
     "bind_point": "Compute",
     "stages": [

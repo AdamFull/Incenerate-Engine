@@ -24,8 +24,6 @@ layout(push_constant) uniform UBOFXAA
 {
     vec2 texelStep;
     float qualitySubpix;
-	float qualityEdgeThreshold;
-	float qualityEdgeThresholdMin;
 } ubo;
 
 void main()

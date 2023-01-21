@@ -7,22 +7,20 @@
 
 layout(local_size_x = 16, local_size_y = 16) in;
 
-layout(binding = 0, rgba32f) uniform writeonly image2D writeColor;
+layout(binding = 0, r11f_g11f_b10f) uniform writeonly image2D writeColor;
 layout(binding = 1) uniform sampler2D samplerColor;
-layout(binding = 2) uniform sampler2D blurColor;
 
 layout(push_constant) uniform UBOTonemap
 {
 	float gamma;
 	float exposure;
-	float bloomStrength;
 } ubo;
 
 void main()
 {
 	vec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5f)) / vec2(imageSize(writeColor).xy);
 
-	vec3 fragcolor = mix(texture(samplerColor, uv).xyz,  texture(blurColor, uv).xyz, ubo.bloomStrength);
+	vec3 fragcolor = texture(samplerColor, uv).xyz;
 
 	//Exposure
     fragcolor = Uncharted2Tonemap(fragcolor * ubo.exposure);

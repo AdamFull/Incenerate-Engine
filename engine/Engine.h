@@ -25,15 +25,16 @@ namespace engine
 	struct FPostProcess
 	{
 		// fxaa
+		bool fxaa{ true };
 		float qualitySubpix{ 0.98f };
-		float qualityEdgeThreshold{ 0.333f };
-		float qualityEdgeThresholdMin{ 0.033f };
 
 		// Tonemapping
+		bool tonemapping{ true };
 		float gamma{ 2.2f };
 		float exposure{ 4.5f };
 
 		// Bloom
+		bool bloom{ true };
 		float bloom_threshold{ 1.f };
 		float filterRadius{ 0.005f };
 		float bloomStrength{ 0.04f };
