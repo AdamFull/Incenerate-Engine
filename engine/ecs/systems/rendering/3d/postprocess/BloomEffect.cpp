@@ -6,6 +6,14 @@
 using namespace engine::graphics;
 using namespace engine::ecs;
 
+CBloomEffect::~CBloomEffect()
+{
+	auto& device = EGGraphics->getDevice();
+	for (auto& mip : vMips)
+		device->destroy(&mip.view);
+	vMips.clear();
+}
+
 void CBloomEffect::create()
 {
 	init();

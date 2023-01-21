@@ -15,6 +15,8 @@ namespace engine
 		class CBloomEffect
 		{
 		public:
+			~CBloomEffect();
+
 			void create();
 			void update();
 			size_t render(bool enable, size_t source);
