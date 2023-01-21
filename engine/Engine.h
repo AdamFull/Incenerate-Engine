@@ -7,6 +7,7 @@
 #include "graphics/APIHandle.h"
 #include "audio/AudioCore.h"
 #include "event/EventManager.hpp"
+#include "scripting/ScriptingCore.h"
 #include "editor/Editor.h"
 
 #include "game/SceneManager.h"
@@ -63,6 +64,7 @@ namespace engine
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
 	using audiocore_t = std::unique_ptr<audio::CAudioCore>;
 	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
+	using scriptcore_t = std::unique_ptr<scripting::CScriptingCore>;
 
 	class CEngine : public utl::singleton<CEngine>
 	{
@@ -83,6 +85,7 @@ namespace engine
 		const graphptr_t& getGraphics() const;
 		const audiocore_t& getAudio() const;
 		const scenemgr_t& getSceneManager() const;
+		const scriptcore_t& getScripting() const;
 		FPostProcess& getPostEffects();
 
 		const bool isEditorMode() const;
@@ -117,6 +120,7 @@ namespace engine
 		graphptr_t pGraphics;
 		audiocore_t pAudio;
 		scenemgr_t pSceneManager;
+		scriptcore_t pScripting;
 		bool bEditorMode{ true };
 
 		std::vector<std::unique_ptr<ecs::ISystem>> vSystems;

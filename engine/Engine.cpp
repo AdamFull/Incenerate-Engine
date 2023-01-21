@@ -13,6 +13,7 @@ using namespace engine::graphics;
 using namespace engine::system;
 using namespace engine::system::window;
 using namespace engine::audio;
+using namespace engine::scripting;
 
 CEngine::CEngine()
 {
@@ -41,6 +42,9 @@ void CEngine::create()
 
 	pAudio = std::make_unique<CAudioCore>();
 	pAudio->create();
+
+	pScripting = std::make_unique<CScriptingCore>();
+	pScripting->create();
 
 	pWindow = std::make_unique<CWindowHandle>();
 	pWindow->create(createInfo.window);
@@ -130,6 +134,11 @@ const audiocore_t& CEngine::getAudio() const
 const scenemgr_t& CEngine::getSceneManager() const
 {
 	return pSceneManager;
+}
+
+const scriptcore_t& CEngine::getScripting() const
+{
+	return pScripting;
 }
 
 FPostProcess& CEngine::getPostEffects()
