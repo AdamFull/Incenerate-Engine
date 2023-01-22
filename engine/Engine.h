@@ -23,49 +23,6 @@
 
 namespace engine
 {
-	struct FPostProcess
-	{
-		// fxaa
-		bool fxaa{ true };
-		float fxaa_quality{ 0.98f };
-
-		// DOF
-		bool dof{ false };
-		int dof_bokeh_size{ 1 };
-		float dof_bokeh_separation{ 1.f };
-		float dof_bokeh_min_threshold{ 0.2f };
-		float dof_bokeh_max_threshold{ 0.5f };
-		float dof_blur_scale{ 1.f };
-		float dof_blur_strength{ 1.f };
-		float dof_focus_point{ 8.24f };
-		float dof_near_field{ 0.3f };
-		float dof_near_transition{ 0.125f };
-		float dof_far_field{ 8.f };
-		float dof_far_transition{ 3.f };
-
-		// Bloom
-		bool bloom{ true };
-		float bloom_threshold{ 1.f };
-		float bloom_filter_radius{ 0.005f };
-		float bloom_strength{ 0.04f };
-
-		// Chromatic aberration
-		bool aberration{ false };
-		float aberration_distortion{ 2.2f };
-		int aberration_iterations{ 12 };
-
-		// Vignette
-		bool vignette{ false };
-		float vignette_inner{ 0.15f };
-		float vignette_outer{ 1.35f };
-		float vignette_opacity{ 0.85f };
-
-		// Tonemapping
-		bool tonemapping{ true };
-		float tonemapping_gamma{ 2.2f };
-		float tonemapping_exposure{ 4.5f };
-	};
-
 	enum class EEngineState
 	{
 		eEditing,
@@ -100,7 +57,6 @@ namespace engine
 		const audiocore_t& getAudio() const;
 		const scenemgr_t& getSceneManager() const;
 		const scriptcore_t& getScripting() const;
-		FPostProcess& getPostEffects();
 
 		const bool isEditorMode() const;
 
@@ -128,7 +84,6 @@ namespace engine
 
 		EEngineState eState;
 
-		FPostProcess posteffects;
 		editorptr_t pEditor;
 		winptr_t pWindow;
 		graphptr_t pGraphics;

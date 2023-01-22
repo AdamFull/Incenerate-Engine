@@ -3,6 +3,8 @@
 #include "Engine.h"
 #include "EffectShared.h"
 
+#include "ecs/components/CameraComponent.h"
+
 using namespace engine::graphics;
 using namespace engine::ecs;
 
@@ -81,22 +83,21 @@ void CBloomEffect::init()
 	}
 }
 
-size_t CBloomEffect::render(bool enable, size_t source)
+size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 {
 	auto& device = EGGraphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
-	auto& peffects = EGEngine->getPostEffects();
 	auto commandBuffer = EGGraphics->getCommandBuffer();
 
-	if (enable)
+	if (camera->effects.bloom.enable)
 	{
 		// Brightdetect
 		{
 			auto& pShader = EGGraphics->getShader(shader_brightdetect);
 
 			auto& pPush = pShader->getPushBlock("ubo");
-			pPush->set("bloom_threshold", peffects.bloom_threshold);
+			pPush->set("bloom_threshold", camera->effects.bloom.threshold);
 			pPush->flush(commandBuffer);
 
 			pShader->addTexture("writeColor", final_image);
@@ -148,7 +149,7 @@ size_t CBloomEffect::render(bool enable, size_t source)
 				auto& nextMip = vMips.at(i - 1);
 
 				pPush->set("resolution", nextMip.size);
-				pPush->set("filter_radius", peffects.bloom_filter_radius);
+				pPush->set("filter_radius", camera->effects.bloom.filter_radius);
 				pPush->flush(commandBuffer);
 
 				auto imageInfo = image->getDescriptor();
@@ -167,7 +168,7 @@ size_t CBloomEffect::render(bool enable, size_t source)
 		{
 			auto& pShader = EGGraphics->getShader(shader_applybloom);
 			auto& pPush = pShader->getPushBlock("ubo");
-			pPush->set("bloom_strength", peffects.bloom_strength);
+			pPush->set("bloom_strength", camera->effects.bloom.strength);
 			pPush->flush(commandBuffer);
 
 			pShader->addTexture("writeColor", final_image);

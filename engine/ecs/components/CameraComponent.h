@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/Frustum.h"
+#include "EngineStructures.h"
 #include <utility/uparse.hpp>
 
 namespace engine
@@ -18,6 +19,7 @@ namespace engine
 			ECameraType type{ ECameraType::ePerspective };
 
 			FFrustum frustum;
+			FPostProcess effects;
 
 			float fieldOfView{ 45.f };
 			float nearPlane{ 0.1f };

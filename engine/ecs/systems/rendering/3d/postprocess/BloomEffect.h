@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
+#include "ecs/components/fwd.h"
 
 namespace engine
 {
@@ -19,7 +20,7 @@ namespace engine
 
 			void create();
 			void update();
-			size_t render(bool enable, size_t source);
+			size_t render(FCameraComponent* camera, size_t source);
 		private:
 			void init();
 			std::vector<FBloomMip> vMips;

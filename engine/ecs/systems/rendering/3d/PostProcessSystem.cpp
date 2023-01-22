@@ -3,9 +3,8 @@
 
 #include "postprocess/EffectShared.h"
 
-#ifdef MemoryBarrier
-#undef MemoryBarrier
-#endif
+#include "ecs/components/CameraComponent.h"
+#include "ecs/helper.hpp"
 
 using namespace engine::graphics;
 using namespace engine::ecs;
@@ -41,8 +40,18 @@ void CPostProcessSystem::__update(float fDt)
 	auto& device = EGGraphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
-	auto& peffects = EGEngine->getPostEffects();
 	auto commandBuffer = EGGraphics->getCommandBuffer();
+
+	auto& registry = EGCoordinator;
+	auto editorMode = EGEngine->isEditorMode();
+	auto state = EGEngine->getState();
+
+	FCameraComponent* camera{ nullptr };
+
+	if (editorMode && state == EEngineState::eEditing)
+		camera = registry.try_get<FCameraComponent>(EGEditor->getCamera());
+	else
+		camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
 
 	{
 		effectshared::tryReCreateImage("postprocess_tex", final_image, vk::Format::eR32G32B32A32Sfloat);
@@ -56,19 +65,19 @@ void CPostProcessSystem::__update(float fDt)
 	//EGGraphics->copyImage(commandBuffer, getSubresource("composition_tex"), temp_image);
 
 	size_t current_image = getSubresource("composition_tex");
-	current_image = fxaa.render(peffects.fxaa, current_image, final_image);
-	current_image = bloom.render(peffects.bloom, current_image);
-	current_image = dof.render(peffects.dof, getSubresource("depth_tex"), current_image, final_image);
-	current_image = chromatic_aberration.render(peffects.aberration, current_image, final_image);
-	current_image = vignette.render(peffects.vignette, current_image, final_image);
+	current_image = fxaa.render(camera, current_image, final_image);
+	current_image = bloom.render(camera, current_image);
+	current_image = dof.render(camera, getSubresource("depth_tex"), current_image, final_image);
+	current_image = chromatic_aberration.render(camera, current_image, final_image);
+	current_image = vignette.render(camera, current_image, final_image);
 	
 	// Tonemap
 	{
 		auto& pShader = EGGraphics->getShader(shader_tonemap);
 	
 		auto& pBlock = pShader->getPushBlock("ubo");
-		pBlock->set("gamma", peffects.tonemapping_gamma);
-		pBlock->set("exposure", peffects.tonemapping_exposure);
+		pBlock->set("gamma", camera->effects.tonemap.gamma);
+		pBlock->set("exposure", camera->effects.tonemap.exposure);
 		pBlock->flush(commandBuffer);
 	
 		pShader->addTexture("writeColor", final_image);

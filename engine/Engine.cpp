@@ -141,11 +141,6 @@ const scriptcore_t& CEngine::getScripting() const
 	return pScripting;
 }
 
-FPostProcess& CEngine::getPostEffects()
-{
-	return posteffects;
-}
-
 const bool CEngine::isEditorMode() const
 {
 	return bEditorMode;

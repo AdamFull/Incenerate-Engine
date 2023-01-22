@@ -4,7 +4,6 @@
 #include "EffectShared.h"
 
 #include "ecs/components/CameraComponent.h"
-#include "ecs/helper.hpp"
 
 using namespace engine::graphics;
 using namespace engine::ecs;
@@ -39,15 +38,14 @@ void CDOFEffect::init()
 	temp_image = effectshared::createImage("dof_temp_tex", vk::Format::eB10G11R11UfloatPack32);
 }
 
-size_t CDOFEffect::render(bool enable, size_t depth_source, size_t in_source, size_t out_source)
+size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t in_source, size_t out_source)
 {
 	auto& device = EGGraphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
-	auto& peffects = EGEngine->getPostEffects();
 	auto commandBuffer = EGGraphics->getCommandBuffer();
 
-	if (enable)
+	if (camera->effects.dof.enable)
 	{
 		// Blur in image
 		//{
@@ -70,8 +68,8 @@ size_t CDOFEffect::render(bool enable, size_t depth_source, size_t in_source, si
 			auto& pShader = EGGraphics->getShader(shader_blur);
 
 			auto& pPush = pShader->getPushBlock("ubo");
-			pPush->set("blur_scale", peffects.dof_blur_scale);
-			pPush->set("blur_strength", peffects.dof_blur_strength);
+			pPush->set("blur_scale", camera->effects.dof.blur_scale);
+			pPush->set("blur_strength", camera->effects.dof.blur_strength);
 			pPush->set("direction", -1);
 			pPush->flush(commandBuffer);
 
@@ -82,8 +80,8 @@ size_t CDOFEffect::render(bool enable, size_t depth_source, size_t in_source, si
 
 			VkHelper::BarrierFromComputeToCompute(commandBuffer);
 
-			pPush->set("blur_scale", peffects.dof_blur_scale);
-			pPush->set("blur_strength", peffects.dof_blur_strength);
+			pPush->set("blur_scale", camera->effects.dof.blur_scale);
+			pPush->set("blur_strength", camera->effects.dof.blur_strength);
 			pPush->set("direction", 1);
 			pPush->flush(commandBuffer);
 
@@ -94,8 +92,8 @@ size_t CDOFEffect::render(bool enable, size_t depth_source, size_t in_source, si
 
 			VkHelper::BarrierFromComputeToCompute(commandBuffer);
 
-			pPush->set("blur_scale", peffects.dof_blur_scale);
-			pPush->set("blur_strength", peffects.dof_blur_strength);
+			pPush->set("blur_scale", camera->effects.dof.blur_scale);
+			pPush->set("blur_strength", camera->effects.dof.blur_strength);
 			pPush->set("direction", -1);
 			pPush->flush(commandBuffer);
 
@@ -106,8 +104,8 @@ size_t CDOFEffect::render(bool enable, size_t depth_source, size_t in_source, si
 
 			VkHelper::BarrierFromComputeToCompute(commandBuffer);
 
-			pPush->set("blur_scale", peffects.dof_blur_scale);
-			pPush->set("blur_strength", peffects.dof_blur_strength);
+			pPush->set("blur_scale", camera->effects.dof.blur_scale);
+			pPush->set("blur_strength", camera->effects.dof.blur_strength);
 			pPush->set("direction", 1);
 			pPush->flush(commandBuffer);
 
@@ -121,28 +119,17 @@ size_t CDOFEffect::render(bool enable, size_t depth_source, size_t in_source, si
 
 		// Apply depth of field
 		{
-			auto& registry = EGCoordinator;
-			auto editorMode = EGEngine->isEditorMode();
-			auto state = EGEngine->getState();
-
-			FCameraComponent* camera{ nullptr };
-
-			if (editorMode && state == EEngineState::eEditing)
-				camera = registry.try_get<FCameraComponent>(EGEditor->getCamera());
-			else
-				camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
-
 			auto& pShader = EGGraphics->getShader(shader_dof);
 			auto& pPush = pShader->getPushBlock("ubo");
 
 			pPush->set("nearPlane", camera->nearPlane);
 			pPush->set("farPlane", camera->farPlane);
 
-			pPush->set("focusPoint", peffects.dof_focus_point);
-			pPush->set("nearField", peffects.dof_near_field);
-			pPush->set("nearTransition", peffects.dof_near_transition);
-			pPush->set("farField", peffects.dof_far_field);
-			pPush->set("farTransition", peffects.dof_far_transition);
+			pPush->set("focusPoint", camera->effects.dof.focus_point);
+			pPush->set("nearField", camera->effects.dof.near_field);
+			pPush->set("nearTransition", camera->effects.dof.near_transition);
+			pPush->set("farField", camera->effects.dof.far_field);
+			pPush->set("farTransition", camera->effects.dof.far_transition);
 			pPush->flush(commandBuffer);
 
 			pShader->addTexture("writeColor", temp_image);

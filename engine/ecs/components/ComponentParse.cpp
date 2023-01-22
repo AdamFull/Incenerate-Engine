@@ -44,6 +44,7 @@ namespace engine
 		void to_json(nlohmann::json& json, const FCameraComponent& type)
 		{
 			json = nlohmann::json{};
+			utl::serialize_from("post_effects", json, type.effects, true);
 			utl::serialize_from("fov", json, type.fieldOfView, type.fieldOfView != 45.f);
 			utl::serialize_from("near", json, type.nearPlane, type.nearPlane != 0.1f);
 			utl::serialize_from("far", json, type.farPlane, type.farPlane != 128.f);
@@ -52,6 +53,7 @@ namespace engine
 
 		void from_json(const nlohmann::json& json, FCameraComponent& type)
 		{
+			utl::parse_to("post_effects", json, type.effects);
 			utl::parse_to("fov", json, type.fieldOfView);
 			utl::parse_to("near", json, type.nearPlane);
 			utl::parse_to("far", json, type.farPlane);

@@ -19,7 +19,6 @@
 #include "windows/ContentBrowserWindow.h"
 #include "windows/ImageViewerWindow.h"
 #include "windows/SystemPerfomanceViewWindow.h"
-#include "windows/PostEffectsWindow.h"
 
 #include "ecs/components/components.h"
 
@@ -100,7 +99,6 @@ void CEditor::create()
     vEditorWindows.emplace_back(std::make_unique<CEditorContentBrowser>("Content browser"));
     vEditorWindows.emplace_back(std::make_unique<CEditorImageViewer>("Image viewer"));
     vEditorWindows.emplace_back(std::make_unique<CEditorPerfomanceView>("System perfomance view"));
-    vEditorWindows.emplace_back(std::make_unique<CEditorPostEffects>("Post processing"));
 
     ImGui_ImplSDL2_InitForVulkan(EGWindow->getWindowPointer());
     ImGui_ImplVulkan_InitInfo init_info = {};
@@ -188,6 +186,7 @@ void CEditor::create()
 
     for (auto& overlay : vEditorWindows)
         overlay->create();
+
 }
 
 void CEditor::newFrame(float fDt)

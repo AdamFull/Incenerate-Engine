@@ -294,6 +294,68 @@ void CEditorInspector::cameraEdit(FCameraComponent* object)
 	ImGui::GDragFloat("Far", &object->farPlane, 0.01f, 0.01f, 2048.f);
 	ImGui::GDragFloat("Sensitivity", &object->sensitivity, 0.01f, 1.f, 50.f);
 	ImGui::GCheckbox("Active", &object->active);
+	ImGui::Separator();
+
+	if(ImGui::CollapsingHeader("Post processing", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		// Chromatic aberration
+		FPostProcessCA aberration;
+		// Vignette
+		FPostProcessVignette vignette;
+		// Tonemapping
+		FPostProcessTonemap tonemap;
+		if (ImGui::CollapsingHeader("FXAA", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::GCheckbox("enable", &object->effects.fxaa.enable);
+			ImGui::GDragFloat("quality", &object->effects.fxaa.quality, 0.01f, 0.01f, 1.f);
+		}
+
+		if (ImGui::CollapsingHeader("Depth of field", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::GCheckbox("enable", &object->effects.dof.enable);
+			//ImGui::GDragInt("bokeh size", &peffects.dof_bokeh_size, 1, 1, 16);
+			//ImGui::GDragFloat("bokeh separation", &peffects.dof_bokeh_separation, 0.01f, 0.01f, 5.f);
+			//ImGui::GDragFloat("bokeh min", &peffects.dof_bokeh_min_threshold, 0.01f, 0.01f, peffects.dof_bokeh_max_threshold);
+			//ImGui::GDragFloat("bokeh max", &peffects.dof_bokeh_max_threshold, 0.01f, peffects.dof_bokeh_min_threshold, 1.f);
+			ImGui::GDragFloat("blur scale", &object->effects.dof.blur_scale, 0.01f, 0.01f, 10.f);
+			ImGui::GDragFloat("blur strength", &object->effects.dof.blur_strength, 0.01f, 0.01f, 10.f);
+			ImGui::GDragFloat("focus point", &object->effects.dof.focus_point, 0.01f, 0.01f, 100.f);
+			ImGui::GDragFloat("near field", &object->effects.dof.near_field, 0.01f, 0.01f, object->effects.dof.far_field);
+			ImGui::GDragFloat("near transition", &object->effects.dof.near_transition, 0.01f, 0.01f, 1.f);
+			ImGui::GDragFloat("far field", &object->effects.dof.far_field, 0.01f, object->effects.dof.near_field, 100.f);
+			ImGui::GDragFloat("far transition", &object->effects.dof.far_transition, 0.01f, 0.01f, 100.f);
+		}
+
+		if (ImGui::CollapsingHeader("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::GCheckbox("enable", &object->effects.bloom.enable);
+			ImGui::GDragFloat("bloom_threshold", &object->effects.bloom.threshold, 0.01f, 0.01f, 1.f);
+			ImGui::GDragFloat("radius", &object->effects.bloom.filter_radius, 0.001f, 0.001f, 0.01f);
+			ImGui::GDragFloat("strength", &object->effects.bloom.strength, 0.01f, 0.01f, 0.2f);
+		}
+
+		if (ImGui::CollapsingHeader("Chromatic aberration", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::GCheckbox("enable", &object->effects.aberration.enable);
+			ImGui::GDragFloat("distortion", &object->effects.aberration.distortion, 0.01f, 0.01f, 10.f);
+			ImGui::GDragInt("itteration", &object->effects.aberration.iterations, 3, 3, 24);
+		}
+
+		if (ImGui::CollapsingHeader("Vignette", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::GCheckbox("enable", &object->effects.vignette.enable);
+			ImGui::GDragFloat("inner", &object->effects.vignette.inner, 0.01f, 0.01f, object->effects.vignette.outer);
+			ImGui::GDragFloat("outer", &object->effects.vignette.outer, 0.01f, object->effects.vignette.inner, 10.f);
+			ImGui::GDragFloat("opacity", &object->effects.vignette.opacity, 0.01f, 0.01f, 1.f);
+		}
+
+		if (ImGui::CollapsingHeader("Tonemapping", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::GCheckbox("enable", &object->effects.tonemap.enable);
+			ImGui::GDragFloat("gamma", &object->effects.tonemap.gamma, 0.01f, 0.01f, 4.f);
+			ImGui::GDragFloat("exposure", &object->effects.tonemap.exposure, 0.01f, 0.01f, 11.f);
+		}
+	}
 }
 
 // script editor
