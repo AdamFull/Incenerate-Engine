@@ -31,6 +31,12 @@ namespace engine
 
 		// DOF
 		bool dof{ false };
+		int dof_bokeh_size{ 1 };
+		float dof_bokeh_separation{ 1.f };
+		float dof_bokeh_min_threshold{ 0.2f };
+		float dof_bokeh_max_threshold{ 0.5f };
+		float dof_blur_scale{ 1.f };
+		float dof_blur_strength{ 1.f };
 		float dof_focus_point{ 8.24f };
 		float dof_near_field{ 0.3f };
 		float dof_near_transition{ 0.125f };

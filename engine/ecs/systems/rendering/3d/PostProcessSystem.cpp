@@ -57,8 +57,8 @@ void CPostProcessSystem::__update(float fDt)
 
 	size_t current_image = getSubresource("composition_tex");
 	current_image = fxaa.render(peffects.fxaa, current_image, final_image);
-	current_image = dof.render(peffects.dof, getSubresource("depth_tex"), current_image, final_image);
 	current_image = bloom.render(peffects.bloom, current_image);
+	current_image = dof.render(peffects.dof, getSubresource("depth_tex"), current_image, final_image);
 	current_image = chromatic_aberration.render(peffects.aberration, current_image, final_image);
 	current_image = vignette.render(peffects.vignette, current_image, final_image);
 	

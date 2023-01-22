@@ -195,7 +195,7 @@
       "shaders/postprocess/gaussianblur.comp"
     ],
     "defines": {
-      "BLUR_TYPE": "12"
+      "BLUR_TYPE": "13"
     }
   },
   "tonemap": {

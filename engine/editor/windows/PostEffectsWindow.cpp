@@ -25,10 +25,16 @@ void CEditorPostEffects::__draw(float fDt)
 	if (ImGui::CollapsingHeader("Depth of field", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::GCheckbox("enable", &peffects.dof);
+		//ImGui::GDragInt("bokeh size", &peffects.dof_bokeh_size, 1, 1, 16);
+		//ImGui::GDragFloat("bokeh separation", &peffects.dof_bokeh_separation, 0.01f, 0.01f, 5.f);
+		//ImGui::GDragFloat("bokeh min", &peffects.dof_bokeh_min_threshold, 0.01f, 0.01f, peffects.dof_bokeh_max_threshold);
+		//ImGui::GDragFloat("bokeh max", &peffects.dof_bokeh_max_threshold, 0.01f, peffects.dof_bokeh_min_threshold, 1.f);
+		ImGui::GDragFloat("blur scale", &peffects.dof_blur_scale, 0.01f, 0.01f, 10.f);
+		ImGui::GDragFloat("blur strength", &peffects.dof_blur_strength, 0.01f, 0.01f, 10.f);
 		ImGui::GDragFloat("focus point", &peffects.dof_focus_point, 0.01f, 0.01f, 100.f);
-		ImGui::GDragFloat("near field", &peffects.dof_near_field, 0.01f, 0.01f, 100.f);
+		ImGui::GDragFloat("near field", &peffects.dof_near_field, 0.01f, 0.01f, peffects.dof_far_field);
 		ImGui::GDragFloat("near transition", &peffects.dof_near_transition, 0.01f, 0.01f, 1.f);
-		ImGui::GDragFloat("far field", &peffects.dof_far_field, 0.01f, 0.01f, 100.f);
+		ImGui::GDragFloat("far field", &peffects.dof_far_field, 0.01f, peffects.dof_near_field, 100.f);
 		ImGui::GDragFloat("far transition", &peffects.dof_far_transition, 0.01f, 0.01f, 100.f);
 	}
 
@@ -57,8 +63,8 @@ void CEditorPostEffects::__draw(float fDt)
 	if (ImGui::CollapsingHeader("Vignette", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::GCheckbox("enable", &peffects.vignette);
-		ImGui::GDragFloat("inner", &peffects.vignette_inner, 0.01f, 0.01f, 10.f);
-		ImGui::GDragFloat("outer", &peffects.vignette_outer, 0.01f, 0.01f, 10.f);
+		ImGui::GDragFloat("inner", &peffects.vignette_inner, 0.01f, 0.01f, peffects.vignette_outer);
+		ImGui::GDragFloat("outer", &peffects.vignette_outer, 0.01f, peffects.vignette_inner, 10.f);
 		ImGui::GDragFloat("opacity", &peffects.vignette_opacity, 0.01f, 0.01f, 1.f);
 	}
 }
