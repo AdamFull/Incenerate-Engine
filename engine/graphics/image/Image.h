@@ -46,6 +46,7 @@ namespace engine
 
 			void blitImage(vk::CommandBuffer& commandBuffer, vk::ImageLayout dstLayout, vk::ImageAspectFlags aspectFlags, uint32_t level, int32_t mipWidth, int32_t mipHeight);
 
+			static void copyTo(vk::CommandBuffer& commandBuffer, vk::Image& src, vk::Image& dst, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout, vk::ImageCopy& region);
 			void copyImageToDst(vk::CommandBuffer& commandBuffer, std::shared_ptr<CImage>& pDst, vk::ImageCopy& region, vk::ImageLayout dstLayout);
 
 			void updateDescriptor();
@@ -57,8 +58,10 @@ namespace engine
 			const uint32_t getMipLevels() const { return _mipLevels; }
 			const uint32_t getLayers() const { return _layerCount; }
 			const vk::Format getFormat() const { return _format; }
-			const vk::Image& getImage() const { return _image; }
+			vk::Image& getImage() { return _image; }
 			const vk::Extent3D& getExtent() const { return _extent; }
+			const vk::ImageLayout getLayout() const { return _imageLayout; }
+			const vk::ImageAspectFlags& getAspectMask() const { return _aspectMask; }
 
 		protected:
 			CDevice* pDevice{ nullptr };
@@ -74,6 +77,7 @@ namespace engine
 			vk::Extent3D _extent;
 			vk::SampleCountFlagBits _samples;
 			vk::ImageUsageFlags _usage;
+			vk::ImageAspectFlags _aspectMask;
 			uint32_t _mipLevels;
 			uint32_t _instCount;
 			uint32_t _layerCount;

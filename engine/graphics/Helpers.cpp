@@ -154,9 +154,9 @@ void VkHelper::BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, si
         imageMemoryBarrier.dstStageMask = vk::PipelineStageFlagBits2::eComputeShader;
         imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
         imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
-        imageMemoryBarrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        imageMemoryBarrier.newLayout = image->getLayout();
         imageMemoryBarrier.image = image->getImage();
-        imageMemoryBarrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        imageMemoryBarrier.subresourceRange.aspectMask = image->getAspectMask();
         imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
         imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
         imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();

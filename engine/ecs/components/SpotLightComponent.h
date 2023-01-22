@@ -8,7 +8,8 @@ namespace engine
 	{
 		struct FSpotLightComponent
 		{
-			glm::vec3 color;
+			glm::vec3 color{ 1.f };
+			glm::vec3 direction{ 0.f, 1.f, 0.f };
 			float intencity{ 1.f };
 			float innerAngle{ 0.f };
 			float outerAngle{ 0.78f };

@@ -1,25 +1,24 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
 
+layout(local_size_x = 16, local_size_y = 16) in;
+
 //--------------------Includes--------------------
 #include "../shader_util.glsl"
 #include "../shared_shading.glsl"
 
 //--------------------Texture bindings--------------------
-layout (binding = 0) uniform usampler2D packed_tex;
-layout (binding = 1) uniform sampler2D depth_tex;
-
-//--------------------In/Out locations--------------------
-layout (location = 0) noperspective in vec2 inUV;
-layout (location = 0) out vec4 outFragcolor;
+layout(binding = 0, r11f_g11f_b10f) uniform writeonly image2D writeColor;
+layout (binding = 1) uniform sampler2D color_tex;
+layout (binding = 2) uniform sampler2D normal_tex;
+layout (binding = 3) uniform sampler2D mrah_tex;
+layout (binding = 4) uniform sampler2D depth_tex;
 
 //--------------------Uniforms--------------------
-layout (std140, binding = 3) uniform UBOReflections
+layout (std140, binding = 5) uniform UBOReflections
 {
 	mat4 invViewProjection;
-	mat4 viewProjection;
 	mat4 projection;
-    mat4 invView;
     vec4 camPos;
 } ubo;
 
@@ -39,12 +38,6 @@ vec4 GetUV(vec3 hitCoord)
     projectedCoord.xy /= projectedCoord.w;
     projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
     return projectedCoord;
-}
-
-vec3 getPosition(sampler2D testure_sampler, vec2 uv)
-{
-    float depth = texture(testure_sampler, uv).r;
-	return getPositionFromDepth(uv, depth, ubo.invViewProjection);
 }
 
 vec3 BinarySearch(vec3 dir, inout vec3 hitCoord, out float dDepth)
@@ -90,16 +83,16 @@ vec4 RayCast(vec3 dir, inout vec3 hitCoord, out float dDepth)
 
 void main()
 {
+    ivec2 iUV = ivec2(gl_GlobalInvocationID.xy);
+	vec2 inUV = (iUV + 0.5f) / vec2(imageSize(writeColor).xy);
+
     //Load depth and world position;
-	vec3 worldPos = getPosition(depth_tex, inUV);
+    float depth = texture(depth_tex, inUV).r;
+	vec3 worldPos = getPositionFromDepth(inUV, depth, ubo.invViewProjection);
 
-    vec3 normal = vec3(0.0);
-	vec3 albedo = vec3(0.0);
-	vec4 mrah = vec4(0.0);
-
-	// Loading texture pack
-	uvec4 packed_data = texture(packed_tex, inUV);
-	unpackTextures(packed_data, normal, albedo, mrah);
+    vec3 normal = texture(normal_tex, inUV).rgb;
+	vec3 albedo = texture(color_tex, inUV).rgb;
+	vec4 mrah = texture(mrah_tex, inUV);
 
     float metallic = mrah.r;
 	float roughness = mrah.g;
@@ -122,9 +115,7 @@ void main()
     float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
     float reflectionMultiplier = pow(metallic, reflectionSpecularFalloffExponent) * screenEdgefactor * -reflected.z;
 
-    uvec4 packed_data_2 = texture(packed_tex, dCoords);
-	unpackTextures(packed_data_2, normal, albedo, mrah);
     vec3 reflection = albedo * clamp(reflectionMultiplier, 0.0, 0.9) * F;
 
-    outFragcolor = vec4(reflection, 1.0);
+    imageStore(writeColor, iUV, vec4(reflection, 1.0));
 }

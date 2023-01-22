@@ -1,7 +1,8 @@
 #pragma once
 
-#include "postprocess/BloomEffect.h"
 #include "postprocess/FXAAEffect.h"
+#include "postprocess/DOFEffect.h"
+#include "postprocess/BloomEffect.h"
 #include "postprocess/ChromaticAberrationEffect.h"
 #include "postprocess/VignetteEffect.h"
 
@@ -21,6 +22,7 @@ namespace engine
 			void __update(float fDt) override;
 		private:
 			CFXAAEffect fxaa;
+			CDOFEffect dof;
 			CBloomEffect bloom;
 			CChromaticAberrationEffect chromatic_aberration;
 			CVignetteEffect vignette;

@@ -49,6 +49,7 @@ namespace engine
 			const std::unique_ptr<CImage>& getImage(const std::string& name);
 			size_t getImageID(const std::string& name);
 			const std::unique_ptr<CImage>& getImage(size_t id);
+			void copyImage(vk::CommandBuffer& commandBuffer, size_t src, size_t dst);
 
 			size_t addShader(const std::string& name, std::unique_ptr<CShaderObject>&& shader);
 			size_t addShader(const std::string& name, const std::string& shadertype, size_t mat_id = invalid_index);

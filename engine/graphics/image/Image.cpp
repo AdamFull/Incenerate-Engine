@@ -108,6 +108,7 @@ void CImage::generateMipmaps(vk::Image& image, uint32_t mipLevels, vk::Format fo
 void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Format format, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode,
     vk::Filter filter, vk::SampleCountFlagBits samples)
 {
+    _aspectMask = aspect;
     _format = format;
     _addressMode = addressMode;
     _filter = filter;
@@ -389,9 +390,14 @@ void CImage::blitImage(vk::CommandBuffer& commandBuffer, vk::ImageLayout dstLayo
     commandBuffer.blitImage(_image, _imageLayout, _image, dstLayout, 1, &blit, vk::Filter::eLinear);
 }
 
+void CImage::copyTo(vk::CommandBuffer& commandBuffer, vk::Image& src, vk::Image& dst, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout, vk::ImageCopy& region)
+{
+    commandBuffer.copyImage(src, srcLayout, dst, dstLayout, 1, &region);
+}
+
 void CImage::copyImageToDst(vk::CommandBuffer& commandBuffer, std::shared_ptr<CImage>& pDst, vk::ImageCopy& region, vk::ImageLayout dstLayout)
 {
-    pDevice->copyTo(commandBuffer, _image, pDst->_image, _imageLayout, dstLayout, region);
+    copyTo(commandBuffer, _image, pDst->_image, _imageLayout, dstLayout, region);
 }
 
 void CImage::updateDescriptor()

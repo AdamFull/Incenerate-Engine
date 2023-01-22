@@ -19,17 +19,19 @@ CPostProcessSystem::~CPostProcessSystem()
 void CPostProcessSystem::__create()
 {
 	fxaa.create();
+	dof.create();
 	bloom.create();
 	chromatic_aberration.create();
 	vignette.create();
 
-	final_image = effectshared::createImage("postprocess_tex", vk::Format::eB10G11R11UfloatPack32);
+	final_image = effectshared::createImage("postprocess_tex", vk::Format::eR32G32B32A32Sfloat);
 	auto& image = EGGraphics->getImage(final_image);
 
 	
 	shader_tonemap = EGGraphics->addShader("tonemap", "tonemap");
 
 	addSubresource("composition_tex");
+	addSubresource("depth_tex");
 
 	CBaseGraphicsSystem::__create();
 }
@@ -43,14 +45,19 @@ void CPostProcessSystem::__update(float fDt)
 	auto commandBuffer = EGGraphics->getCommandBuffer();
 
 	{
-		effectshared::tryReCreateImage("postprocess_tex", final_image, vk::Format::eB10G11R11UfloatPack32);
+		effectshared::tryReCreateImage("postprocess_tex", final_image, vk::Format::eR32G32B32A32Sfloat);
+		dof.update();
 		bloom.update();
 	}
 
 	VkHelper::BarrierFromGraphicsToCompute(commandBuffer, getSubresource("composition_tex"));
+	VkHelper::BarrierFromGraphicsToCompute(commandBuffer, getSubresource("depth_tex"));
+
+	//EGGraphics->copyImage(commandBuffer, getSubresource("composition_tex"), temp_image);
 
 	size_t current_image = getSubresource("composition_tex");
 	current_image = fxaa.render(peffects.fxaa, current_image, final_image);
+	current_image = dof.render(peffects.dof, getSubresource("depth_tex"), current_image, final_image);
 	current_image = bloom.render(peffects.bloom, current_image);
 	current_image = chromatic_aberration.render(peffects.aberration, current_image, final_image);
 	current_image = vignette.render(peffects.vignette, current_image, final_image);

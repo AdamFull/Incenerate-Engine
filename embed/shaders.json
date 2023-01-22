@@ -103,19 +103,7 @@
     ],
     "defines": {}
   },
-  "ssr_pass": {
-    "stage": "tonemapping",
-    "bind_point": "Graphics",
-    "cull_mode": "Back",
-    "front_face": "cw",
-    "depth_test": false,
-    "dynamic_states": [ "Viewport", "Scissor" ],
-    "stages": [
-      "shaders/main/screenspace.vert",
-      "shaders/main/ssr.frag"
-    ],
-    "defines": {}
-  },
+
   "displaynormal": {
     "stage": "debug",
     "bind_point": "Graphics",
@@ -180,7 +168,27 @@
     ],
     "defines": {}
   },
+  "dof": {
+    "bind_point": "Compute",
+    "stages": [
+      "shaders/postprocess/dof.comp"
+    ],
+    "defines": {}
+  },
+  "ssr_pass": {
+    "bind_point": "Compute",
+    "stages": [
+      "shaders/postprocess/ssr.comp"
+    ],
+    "defines": {}
+  },
 
+  "bokeh_blur": {
+    "bind_point": "Compute",
+    "stages": [
+      "shaders/postprocess/bokeh.comp"
+    ]
+  },
   "gaussian_blur": {
     "bind_point": "Compute",
     "stages": [

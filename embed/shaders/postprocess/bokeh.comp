@@ -1,0 +1,55 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_ARB_shading_language_420pack : enable
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(binding = 0, r11f_g11f_b10f) uniform writeonly image2D writeColor;
+layout(binding = 1) uniform sampler2D samplerColor;
+
+layout(push_constant) uniform UBOBokehBlur
+{
+	int size;
+	float separation;
+	float minThreshold;
+	float maxThreshold;
+} ubo;
+
+void main()
+{
+	ivec2 iUV = ivec2(gl_GlobalInvocationID.xy);
+	vec2 texSize = vec2(imageSize(writeColor).xy);
+	vec2 inUV = (iUV + 0.5f) / texSize;
+
+	vec4 color = texture(samplerColor, inUV);
+
+	if(ubo.size <= 0)
+		return;
+
+	float separation = max(ubo.separation, 1.0);
+
+	float  mx = 0.0;
+	vec4  cmx = color;
+
+	for (int i = -ubo.size; i <= ubo.size; ++i)
+	{
+		for (int j = -ubo.size; j <= ubo.size; ++j)
+		{
+			if (!(distance(vec2(i, j), vec2(0, 0)) <= ubo.size)) { continue; }
+			
+			vec4 c = texture(samplerColor, ( iUV + (vec2(i, j) * separation)) / texSize);
+			
+			float mxt = dot(c.rgb, vec3(0.3, 0.59, 0.11));
+			
+			if (mxt > mx) 
+			{
+				mx = mxt;
+				cmx = c;
+			}
+		}
+	}
+
+	color.rgb = mix(color.rgb, cmx.rgb, smoothstep(ubo.minThreshold, ubo.maxThreshold, mx));
+
+	imageStore(writeColor, iUV, color);
+}

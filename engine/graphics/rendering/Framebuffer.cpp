@@ -90,7 +90,17 @@ void CFramebuffer::addInputReference(uint32_t index, const std::vector<std::stri
     {
         auto attachment = mFbAttachments.find(arg);
         if (attachment != mFbAttachments.end())
-            references.emplace_back(vk::AttachmentReference{ attachment->second.reference, vk::ImageLayout::eShaderReadOnlyOptimal });
+        {
+            auto& usage = attachment->second.usageFlags;
+            vk::ImageLayout imageLayout;
+            if (isStorage(usage) && isSampled(usage))
+                imageLayout = vk::ImageLayout::eGeneral;
+            else
+                imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+            references.emplace_back(vk::AttachmentReference{ attachment->second.reference, imageLayout });
+        }
+            
         else
             log_error("Attachment not found.");
     }
@@ -104,7 +114,16 @@ void CFramebuffer::addOutputReference(uint32_t index, const std::vector<std::str
     {
         auto attachment = mFbAttachments.find(arg);
         if (attachment != mFbAttachments.end())
-            references.emplace_back(vk::AttachmentReference{ attachment->second.reference, vk::ImageLayout::eColorAttachmentOptimal });
+        {
+            auto& usage = attachment->second.usageFlags;
+            vk::ImageLayout imageLayout;
+            if (isStorage(usage) && isSampled(usage))
+                imageLayout = vk::ImageLayout::eGeneral;
+            else
+                imageLayout = vk::ImageLayout::eColorAttachmentOptimal;
+
+            references.emplace_back(vk::AttachmentReference{ attachment->second.reference, imageLayout });
+        }
         else
             log_error("Attachment not found.");
     }
@@ -177,30 +196,47 @@ void CFramebuffer::addImage(const std::string& name, vk::Format format, vk::Imag
 
     if (isColorAttachment(usageFlags))
     {
-        if (isSampled(usageFlags) && !isInputAttachment(usageFlags))
+        if (!isInputAttachment(usageFlags))
         {
-            attachmentDescription.storeOp = vk::AttachmentStoreOp::eStore;
-            attachmentDescription.finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-        }
-        else if (isInputAttachment(usageFlags) && !isSampled(usageFlags))
-        {
-            attachmentDescription.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
-        }
-        else if (isInputAttachment(usageFlags) && isSampled(usageFlags))
-        {
-            attachmentDescription.storeOp = vk::AttachmentStoreOp::eStore;
-            attachmentDescription.finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+            if (isTransferSrc(usageFlags))
+            {
+                attachmentDescription.storeOp = vk::AttachmentStoreOp::eStore;
+                attachmentDescription.finalLayout = vk::ImageLayout::eTransferSrcOptimal;
+            }
+            else if (isSampled(usageFlags) && isStorage(usageFlags))
+            {
+                attachmentDescription.storeOp = vk::AttachmentStoreOp::eStore;
+                attachmentDescription.finalLayout = vk::ImageLayout::eGeneral;
+            }
+            else if (isSampled(usageFlags))
+            {
+                attachmentDescription.storeOp = vk::AttachmentStoreOp::eStore;
+                attachmentDescription.finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+            }
+            else
+            {
+                if (format == pDevice->getImageFormat())
+                {
+                    attachmentDescription.storeOp = vk::AttachmentStoreOp::eStore;
+                    attachmentDescription.finalLayout = vk::ImageLayout::ePresentSrcKHR;
+                }
+                else
+                    log_error("Cannot use sampled image with input attachment.");
+            }
         }
         else
         {
-            if (format == pDevice->getImageFormat())
+            if (!isSampled(usageFlags))
             {
-                attachmentDescription.storeOp = vk::AttachmentStoreOp::eStore;
-                attachmentDescription.finalLayout = vk::ImageLayout::ePresentSrcKHR;
+                attachmentDescription.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
             }
             else
-                log_error("Cannot use sampled image with input attachment.");
+            {
+                attachmentDescription.storeOp = vk::AttachmentStoreOp::eStore;
+                attachmentDescription.finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+            }
         }
+        
         clearValue.setColor(vk::ClearColorValue{ std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f} });
     }
     else if (isDepthAttachment(usageFlags))
@@ -304,7 +340,13 @@ std::unique_ptr<CImage> CFramebuffer::createImage(const FFramebufferAttachmentIn
     if (isColorAttachment(attachment.usageFlags))
     {
         aspectMask = vk::ImageAspectFlagBits::eColor;
-        imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+        if (isTransferSrc(attachment.usageFlags))
+            imageLayout = vk::ImageLayout::eTransferSrcOptimal;
+        else if (isStorage(attachment.usageFlags))
+            imageLayout = vk::ImageLayout::eGeneral;
+        else
+            imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
     }
     else if (isDepthAttachment(attachment.usageFlags))
     {
@@ -325,7 +367,7 @@ std::unique_ptr<CImage> CFramebuffer::createImage(const FFramebufferAttachmentIn
     {
     case EImageType::e2D: {
         auto tex = std::make_unique<CImage2D>(pDevice); 
-        tex->create(extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, vk::SamplerAddressMode::eRepeat, vk::SampleCountFlagBits::e1, translate_layout);
+        tex->create(extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
         texture = std::move(tex);
     } break;
     case EImageType::eArray2D: { 

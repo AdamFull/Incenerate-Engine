@@ -656,11 +656,6 @@ void CDevice::copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vecto
     cmdBuf.submitIdle();
 }
 
-void CDevice::copyTo(vk::CommandBuffer& commandBuffer, vk::Image& src, vk::Image& dst, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout, vk::ImageCopy& region)
-{
-    commandBuffer.copyImage(src, srcLayout, dst, dstLayout, 1, &region);
-}
-
 void CDevice::createSampler(vk::Sampler& sampler, vk::Filter magFilter, vk::SamplerAddressMode eAddressMode, bool anisotropy, bool compareOp, uint32_t mipLevels)
 {
     log_debug("Creating sampler: [filter {}, addr {}, anisotropy {}, compare {}, mips {}]", 

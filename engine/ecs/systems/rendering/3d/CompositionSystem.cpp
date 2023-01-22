@@ -57,7 +57,7 @@ void CCompositionSystem::__update(float fDt)
 		for (auto [entity, transform, light] : view.each())
 		{
 			FDirectionalLightCommit commit;
-			commit.direction = transform.rrotation;
+			commit.direction = glm::normalize(transform.rrotation * light.direction);
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.castShadows = light.castShadows;
@@ -90,7 +90,7 @@ void CCompositionSystem::__update(float fDt)
 		{
 			FSpotLightCommit commit;
 			commit.position = transform.rposition;
-			commit.direction = transform.rrotation;
+			commit.direction = transform.rrotation * light.direction;
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.lightAngleScale = 1.f / glm::max(0.001f, glm::cos(light.innerAngle) - glm::cos(light.outerAngle));

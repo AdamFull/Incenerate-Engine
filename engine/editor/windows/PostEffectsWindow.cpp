@@ -22,6 +22,16 @@ void CEditorPostEffects::__draw(float fDt)
 		ImGui::GDragFloat("quality", &peffects.fxaa_quality, 0.01f, 0.01f, 1.f);
 	}
 
+	if (ImGui::CollapsingHeader("Depth of field", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::GCheckbox("enable", &peffects.dof);
+		ImGui::GDragFloat("focus point", &peffects.dof_focus_point, 0.01f, 0.01f, 100.f);
+		ImGui::GDragFloat("near field", &peffects.dof_near_field, 0.01f, 0.01f, 100.f);
+		ImGui::GDragFloat("near transition", &peffects.dof_near_transition, 0.01f, 0.01f, 1.f);
+		ImGui::GDragFloat("far field", &peffects.dof_far_field, 0.01f, 0.01f, 100.f);
+		ImGui::GDragFloat("far transition", &peffects.dof_far_transition, 0.01f, 0.01f, 100.f);
+	}
+
 	if (ImGui::CollapsingHeader("Tonemapping", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::GCheckbox("enable", &peffects.tonemapping);

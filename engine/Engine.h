@@ -29,10 +29,13 @@ namespace engine
 		bool fxaa{ true };
 		float fxaa_quality{ 0.98f };
 
-		// Tonemapping
-		bool tonemapping{ true };
-		float tonemapping_gamma{ 2.2f };
-		float tonemapping_exposure{ 4.5f };
+		// DOF
+		bool dof{ false };
+		float dof_focus_point{ 8.24f };
+		float dof_near_field{ 0.3f };
+		float dof_near_transition{ 0.125f };
+		float dof_far_field{ 8.f };
+		float dof_far_transition{ 3.f };
 
 		// Bloom
 		bool bloom{ true };
@@ -50,6 +53,11 @@ namespace engine
 		float vignette_inner{ 0.15f };
 		float vignette_outer{ 1.35f };
 		float vignette_opacity{ 0.85f };
+
+		// Tonemapping
+		bool tonemapping{ true };
+		float tonemapping_gamma{ 2.2f };
+		float tonemapping_exposure{ 4.5f };
 	};
 
 	enum class EEngineState

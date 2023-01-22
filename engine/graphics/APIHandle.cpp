@@ -158,7 +158,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
         mStageInfos["composition"].viewport.extent = device->getExtent(true);
         mStageInfos["composition"].bViewportDependent = true;
-        mStageInfos["composition"].vImages.emplace_back(FCIImage{ "composition_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["composition"].vImages.emplace_back(FCIImage{ "composition_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled });
         mStageInfos["composition"].vOutputs.emplace_back("composition_tex");
         mStageInfos["composition"].vDescriptions.emplace_back("");
         mStageInfos["composition"].vDependencies.emplace_back(
@@ -193,89 +193,6 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         auto stageId = EGGraphics->addRenderStage("composition");
         auto& pStage = EGGraphics->getRenderStage(stageId);
         pStage->create(mStageInfos["composition"]);
-    }
-
-    {
-        mStageInfos["tonemapping"].srName = "tonemapping";
-        mStageInfos["tonemapping"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["tonemapping"].viewport.extent = device->getExtent(true);
-        mStageInfos["tonemapping"].bViewportDependent = true;
-        mStageInfos["tonemapping"].vImages.emplace_back(FCIImage{ "postprocess_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["tonemapping"].vImages.emplace_back(FCIImage{ "brightness_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["tonemapping"].vOutputs.emplace_back("postprocess_tex");
-        mStageInfos["tonemapping"].vOutputs.emplace_back("brightness_tex");
-        mStageInfos["tonemapping"].vDescriptions.emplace_back("");
-        mStageInfos["tonemapping"].vDependencies.emplace_back(
-            FCIDependency(
-                FCIDependencyDesc(
-                    VK_SUBPASS_EXTERNAL,
-                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                    vk::AccessFlagBits::eColorAttachmentWrite
-                ),
-                FCIDependencyDesc(
-                    0,
-                    vk::PipelineStageFlagBits::eAllGraphics,
-                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
-                )
-            )
-        );
-        mStageInfos["tonemapping"].vDependencies.emplace_back(
-            FCIDependency(
-                FCIDependencyDesc(
-                    0,
-                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                    vk::AccessFlagBits::eColorAttachmentWrite
-                ),
-                FCIDependencyDesc(
-                    VK_SUBPASS_EXTERNAL,
-                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                    vk::AccessFlagBits::eColorAttachmentWrite
-                )
-            )
-        );
-
-        auto stageId = EGGraphics->addRenderStage("tonemapping");
-        auto& pStage = EGGraphics->getRenderStage(stageId);
-        pStage->create(mStageInfos["tonemapping"]);
-    }
-
-    {
-        mStageInfos["postprocess"].srName = "postprocess";
-        mStageInfos["postprocess"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["postprocess"].viewport.extent = device->getExtent(true);
-        mStageInfos["postprocess"].vDescriptions.emplace_back("");
-        mStageInfos["postprocess"].vDependencies.emplace_back(
-            FCIDependency(
-                FCIDependencyDesc(
-                    VK_SUBPASS_EXTERNAL,
-                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                    vk::AccessFlagBits::eColorAttachmentWrite
-                ),
-                FCIDependencyDesc(
-                    0,
-                    vk::PipelineStageFlagBits::eAllGraphics,
-                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
-                )
-            )
-        );
-        mStageInfos["postprocess"].vDependencies.emplace_back(
-            FCIDependency(
-                FCIDependencyDesc(
-                    0,
-                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                    vk::AccessFlagBits::eColorAttachmentWrite
-                ),
-                FCIDependencyDesc(
-                    VK_SUBPASS_EXTERNAL,
-                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                    vk::AccessFlagBits::eColorAttachmentWrite
-                )
-            )
-        );
-
-        auto stageId = EGGraphics->addRenderStage("postprocess");
-        auto& pStage = EGGraphics->getRenderStage(stageId);
-        pStage->create(mStageInfos["postprocess"]);
     }
     
     {
@@ -460,6 +377,32 @@ size_t CAPIHandle::getImageID(const std::string& name)
 const std::unique_ptr<CImage>& CAPIHandle::getImage(size_t id)
 {
     return pImageManager->get(id);
+}
+
+void CAPIHandle::copyImage(vk::CommandBuffer& commandBuffer, size_t src, size_t dst)
+{
+    auto& src_image = getImage(src);
+    auto& dst_image = getImage(dst);
+
+    vk::ImageCopy region;
+    region.extent = src_image->getExtent();
+    // src
+    region.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+    region.srcSubresource.baseArrayLayer = 0;
+    region.srcSubresource.layerCount = src_image->getLayers();
+    region.srcSubresource.mipLevel = 0;
+    // dst
+    region.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+    region.dstSubresource.baseArrayLayer = 0;
+    region.dstSubresource.layerCount = dst_image->getLayers();
+    region.dstSubresource.mipLevel = 0;
+
+    auto& src_vk_image = src_image->getImage();
+    auto& dst_vk_image = dst_image->getImage();
+    auto src_layout = src_image->getLayout();
+    auto dst_layout = dst_image->getLayout();
+
+    CImage::copyTo(commandBuffer, src_vk_image, dst_vk_image, src_layout, dst_layout, region);
 }
 
 
