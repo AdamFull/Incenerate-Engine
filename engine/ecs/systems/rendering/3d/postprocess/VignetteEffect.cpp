@@ -9,7 +9,7 @@ using namespace engine::ecs;
 
 void CVignetteEffect::create()
 {
-	shader_vignette = EGGraphics->addShader("chromatic_aberration", "chromatic_aberration");
+	shader_vignette = EGGraphics->addShader("vignette", "vignette");
 }
 
 size_t CVignetteEffect::render(FCameraComponent* camera, size_t in_source, size_t out_source)

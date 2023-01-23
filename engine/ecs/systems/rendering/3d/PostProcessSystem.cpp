@@ -22,12 +22,10 @@ void CPostProcessSystem::__create()
 	bloom.create();
 	chromatic_aberration.create();
 	vignette.create();
+	tonemap.create();
 
 	final_image = effectshared::createImage("postprocess_tex", vk::Format::eR32G32B32A32Sfloat);
 	auto& image = EGGraphics->getImage(final_image);
-
-	
-	shader_tonemap = EGGraphics->addShader("tonemap", "tonemap");
 
 	addSubresource("composition_tex");
 	addSubresource("depth_tex");
@@ -70,21 +68,7 @@ void CPostProcessSystem::__update(float fDt)
 	current_image = dof.render(camera, getSubresource("depth_tex"), current_image, final_image);
 	current_image = chromatic_aberration.render(camera, current_image, final_image);
 	current_image = vignette.render(camera, current_image, final_image);
-	
-	// Tonemap
-	{
-		auto& pShader = EGGraphics->getShader(shader_tonemap);
-	
-		auto& pBlock = pShader->getPushBlock("ubo");
-		pBlock->set("gamma", camera->effects.tonemap.gamma);
-		pBlock->set("exposure", camera->effects.tonemap.exposure);
-		pBlock->flush(commandBuffer);
-	
-		pShader->addTexture("writeColor", final_image);
-		pShader->addTexture("samplerColor", current_image);
-	
-		pShader->dispatch(commandBuffer, resolution);
-	}
+	current_image = tonemap.render(camera, current_image, final_image);
 
 	VkHelper::BarrierFromComputeToGraphics(commandBuffer);
 }

@@ -5,6 +5,7 @@
 #include "postprocess/BloomEffect.h"
 #include "postprocess/ChromaticAberrationEffect.h"
 #include "postprocess/VignetteEffect.h"
+#include "postprocess/TonemapEffect.h"
 
 #include "ecs/systems/rendering/BaseGraphicsSystem.h"
 
@@ -26,8 +27,7 @@ namespace engine
 			CBloomEffect bloom;
 			CChromaticAberrationEffect chromatic_aberration;
 			CVignetteEffect vignette;
-
-			size_t shader_tonemap{ invalid_index };
+			CTonemapEffect tonemap;
 
 			size_t final_image{ invalid_index };
 		};
