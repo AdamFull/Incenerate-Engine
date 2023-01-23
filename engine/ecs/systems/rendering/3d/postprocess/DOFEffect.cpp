@@ -15,8 +15,8 @@ void CDOFEffect::create()
 	shader_dof = EGGraphics->addShader("dof", "dof");
 
 	FShaderSpecials specials;
-	specials.usages = 4;
-	shader_blur = EGGraphics->addShader("gaussian_blur", "gaussian_blur", specials);
+	specials.usages = 1;
+	shader_blur = EGGraphics->addShader("bokeh_blur", "bokeh_blur", specials);
 }
 
 void CDOFEffect::update()
@@ -48,72 +48,70 @@ size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 	if (camera->effects.dof.enable)
 	{
 		// Blur in image
+		{
+			auto& pShader = EGGraphics->getShader(shader_blur);
+		
+			auto& pPush = pShader->getPushBlock("ubo");
+			pPush->set("max_radius", camera->effects.dof.bokeh_samples);
+			pPush->set("sides", camera->effects.dof.bokeh_poly);
+			pPush->flush(commandBuffer);
+		
+			pShader->addTexture("writeColor", blur_image);
+			pShader->addTexture("samplerColor", in_source);
+		
+			pShader->dispatch(commandBuffer, resolution);
+		}
+
 		//{
 		//	auto& pShader = EGGraphics->getShader(shader_blur);
 		//
 		//	auto& pPush = pShader->getPushBlock("ubo");
-		//	pPush->set("size", peffects.dof_bokeh_size);
-		//	pPush->set("separation", peffects.dof_bokeh_separation);
-		//	pPush->set("minThreshold", peffects.dof_bokeh_min_threshold);
-		//	pPush->set("maxThreshold", peffects.dof_bokeh_max_threshold);
+		//	pPush->set("blur_scale", camera->effects.dof.blur_scale);
+		//	pPush->set("blur_strength", camera->effects.dof.blur_strength);
+		//	pPush->set("direction", -1);
 		//	pPush->flush(commandBuffer);
 		//
-		//	pShader->addTexture("writeColor", blur_image);
+		//	pShader->addTexture("writeColor", temp_image);
 		//	pShader->addTexture("samplerColor", in_source);
 		//
 		//	pShader->dispatch(commandBuffer, resolution);
-		//}
-
-		{
-			auto& pShader = EGGraphics->getShader(shader_blur);
-
-			auto& pPush = pShader->getPushBlock("ubo");
-			pPush->set("blur_scale", camera->effects.dof.blur_scale);
-			pPush->set("blur_strength", camera->effects.dof.blur_strength);
-			pPush->set("direction", -1);
-			pPush->flush(commandBuffer);
-
-			pShader->addTexture("writeColor", temp_image);
-			pShader->addTexture("samplerColor", in_source);
-
-			pShader->dispatch(commandBuffer, resolution);
-
-			VkHelper::BarrierFromComputeToCompute(commandBuffer);
-
-			pPush->set("blur_scale", camera->effects.dof.blur_scale);
-			pPush->set("blur_strength", camera->effects.dof.blur_strength);
-			pPush->set("direction", 1);
-			pPush->flush(commandBuffer);
-
-			pShader->addTexture("writeColor", blur_image);
-			pShader->addTexture("samplerColor", temp_image);
-
-			pShader->dispatch(commandBuffer, resolution);
-
-			VkHelper::BarrierFromComputeToCompute(commandBuffer);
-
-			pPush->set("blur_scale", camera->effects.dof.blur_scale);
-			pPush->set("blur_strength", camera->effects.dof.blur_strength);
-			pPush->set("direction", -1);
-			pPush->flush(commandBuffer);
-
-			pShader->addTexture("writeColor", temp_image);
-			pShader->addTexture("samplerColor", blur_image);
-
-			pShader->dispatch(commandBuffer, resolution);
-
-			VkHelper::BarrierFromComputeToCompute(commandBuffer);
-
-			pPush->set("blur_scale", camera->effects.dof.blur_scale);
-			pPush->set("blur_strength", camera->effects.dof.blur_strength);
-			pPush->set("direction", 1);
-			pPush->flush(commandBuffer);
-
-			pShader->addTexture("writeColor", blur_image);
-			pShader->addTexture("samplerColor", temp_image);
-
-			pShader->dispatch(commandBuffer, resolution);
-		}	
+		//
+		//	VkHelper::BarrierFromComputeToCompute(commandBuffer);
+		//
+		//	pPush->set("blur_scale", camera->effects.dof.blur_scale);
+		//	pPush->set("blur_strength", camera->effects.dof.blur_strength);
+		//	pPush->set("direction", 1);
+		//	pPush->flush(commandBuffer);
+		//
+		//	pShader->addTexture("writeColor", blur_image);
+		//	pShader->addTexture("samplerColor", temp_image);
+		//
+		//	pShader->dispatch(commandBuffer, resolution);
+		//
+		//	VkHelper::BarrierFromComputeToCompute(commandBuffer);
+		//
+		//	pPush->set("blur_scale", camera->effects.dof.blur_scale);
+		//	pPush->set("blur_strength", camera->effects.dof.blur_strength);
+		//	pPush->set("direction", -1);
+		//	pPush->flush(commandBuffer);
+		//
+		//	pShader->addTexture("writeColor", temp_image);
+		//	pShader->addTexture("samplerColor", blur_image);
+		//
+		//	pShader->dispatch(commandBuffer, resolution);
+		//
+		//	VkHelper::BarrierFromComputeToCompute(commandBuffer);
+		//
+		//	pPush->set("blur_scale", camera->effects.dof.blur_scale);
+		//	pPush->set("blur_strength", camera->effects.dof.blur_strength);
+		//	pPush->set("direction", 1);
+		//	pPush->flush(commandBuffer);
+		//
+		//	pShader->addTexture("writeColor", blur_image);
+		//	pShader->addTexture("samplerColor", temp_image);
+		//
+		//	pShader->dispatch(commandBuffer, resolution);
+		//}	
 
 		VkHelper::BarrierFromComputeToCompute(commandBuffer);
 

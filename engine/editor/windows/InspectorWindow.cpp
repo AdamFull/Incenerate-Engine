@@ -317,8 +317,10 @@ void CEditorInspector::cameraEdit(FCameraComponent* object)
 			//ImGui::GDragFloat("bokeh separation", &peffects.dof_bokeh_separation, 0.01f, 0.01f, 5.f);
 			//ImGui::GDragFloat("bokeh min", &peffects.dof_bokeh_min_threshold, 0.01f, 0.01f, peffects.dof_bokeh_max_threshold);
 			//ImGui::GDragFloat("bokeh max", &peffects.dof_bokeh_max_threshold, 0.01f, peffects.dof_bokeh_min_threshold, 1.f);
-			ImGui::GDragFloat("blur scale", &object->effects.dof.blur_scale, 0.01f, 0.01f, 10.f);
-			ImGui::GDragFloat("blur strength", &object->effects.dof.blur_strength, 0.01f, 0.01f, 10.f);
+			//ImGui::GDragFloat("blur scale", &object->effects.dof.blur_scale, 0.01f, 0.01f, 10.f);
+			//ImGui::GDragFloat("blur strength", &object->effects.dof.blur_strength, 0.01f, 0.01f, 10.f);
+			ImGui::GDragInt("bokeh_samples", &object->effects.dof.bokeh_samples, 1, 2, 20);
+			ImGui::GDragFloat("bokeh_poly", &object->effects.dof.bokeh_poly, 1.f, 1.f, 20.f);
 			ImGui::GDragFloat("focus point", &object->effects.dof.focus_point, 0.01f, 0.01f, 100.f);
 			ImGui::GDragFloat("near field", &object->effects.dof.near_field, 0.01f, 0.01f, object->effects.dof.far_field);
 			ImGui::GDragFloat("near transition", &object->effects.dof.near_transition, 0.01f, 0.01f, 1.f);

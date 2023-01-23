@@ -97,6 +97,8 @@ namespace engine
 		bool enable{ false };
 		float blur_scale{ 1.f };
 		float blur_strength{ 1.f };
+		int bokeh_samples{ 5 };
+		float bokeh_poly{ 8.f };
 		float focus_point{ 8.24f };
 		float near_field{ 0.3f };
 		float near_transition{ 0.125f };

@@ -132,8 +132,10 @@ namespace engine
 	void to_json(nlohmann::json& json, const FPostProcessDOF& type)
 	{
 		utl::serialize_from("enable", json, type.enable, type.enable != false);
-		utl::serialize_from("blur_scale", json, type.blur_scale, type.blur_scale != 1.f);
-		utl::serialize_from("blur_strength", json, type.blur_strength, type.blur_strength != 1.f);
+		//utl::serialize_from("blur_scale", json, type.blur_scale, type.blur_scale != 1.f);
+		//utl::serialize_from("blur_strength", json, type.blur_strength, type.blur_strength != 1.f);
+		utl::serialize_from("bokeh_samples", json, type.bokeh_samples, type.bokeh_samples != 5);
+		utl::serialize_from("bokeh_poly", json, type.bokeh_poly, type.bokeh_poly != 8.f);
 		utl::serialize_from("focus_point", json, type.focus_point, type.focus_point != 8.24f);
 		utl::serialize_from("near_field", json, type.near_field, type.near_field != 0.3f);
 		utl::serialize_from("near_transition", json, type.near_transition, type.near_transition != 0.125f);
@@ -144,8 +146,10 @@ namespace engine
 	void from_json(const nlohmann::json& json, FPostProcessDOF& type)
 	{
 		utl::parse_to("enable", json, type.enable);
-		utl::parse_to("blur_scale", json, type.blur_scale);
-		utl::parse_to("blur_strength", json, type.blur_strength);
+		//utl::parse_to("blur_scale", json, type.blur_scale);
+		//utl::parse_to("blur_strength", json, type.blur_strength);
+		utl::parse_to("bokeh_samples", json, type.bokeh_samples);
+		utl::parse_to("bokeh_poly", json, type.bokeh_poly);
 		utl::parse_to("focus_point", json, type.focus_point);
 		utl::parse_to("near_field", json, type.near_field);
 		utl::parse_to("near_transition", json, type.near_transition);

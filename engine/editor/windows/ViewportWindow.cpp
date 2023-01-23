@@ -118,8 +118,9 @@ void CEditorViewport::__draw(float fDt)
 			camera->controllable = ImGui::IsWindowHovered(ImGuiFocusedFlags_RootAndChildWindows);
 
 		drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
-		drawOverlay(textDrawPos.x, textDrawPos.y, fDt);
 	}
+
+	drawOverlay(textDrawPos.x, textDrawPos.y, fDt);
 }
 
 void CEditorViewport::drawViewport(float offsetx, float offsety)
