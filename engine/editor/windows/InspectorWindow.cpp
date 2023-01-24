@@ -121,7 +121,6 @@ void CEditorInspector::__draw(float fDt)
 			[](auto* object)
 			{
 				ImGui::GColorEdit3("Color", object->color);
-				ImGui::GDragFloatVec3("Direction", object->direction, 0.01f, 0.f, 1.f);
 				ImGui::GDragFloat("Intencity", &object->intencity, 0.01f, 0.01f, 50.f);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
 			});
@@ -130,7 +129,7 @@ void CEditorInspector::__draw(float fDt)
 			[](auto* object)
 			{
 				ImGui::GColorEdit3("Color", object->color);
-				ImGui::GDragFloatVec3("Direction", object->direction, 0.01f, 0.f, 1.f);
+				ImGui::GDragFloatVec3("Target", object->target, 0.01f);
 				ImGui::GDragFloat("Intencity", &object->intencity, 0.01f, 0.01f, 50.f);
 				ImGui::GDragFloat("Inner angle", &object->innerAngle, 0.01f, 0.01f, object->outerAngle);
 				ImGui::GDragFloat("Outer angle", &object->outerAngle, 0.01f, object->innerAngle, 3.14f);

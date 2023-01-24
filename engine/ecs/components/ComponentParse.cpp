@@ -81,7 +81,6 @@ namespace engine
 		{
 			json = nlohmann::json{};
 			utl::serialize_from("color", json, type.color, type.color != glm::vec3(1.f));
-			utl::serialize_from("direction", json, type.direction, type.direction != glm::vec3(0.f, 1.f, 0.f));
 			utl::serialize_from("intencity", json, type.intencity, type.intencity != 1.f);
 			utl::serialize_from("castShadows", json, type.castShadows, type.castShadows);
 		}
@@ -116,7 +115,6 @@ namespace engine
 		{
 			json = nlohmann::json{};
 			utl::serialize_from("color", json, type.color, type.color != glm::vec3(1.f));
-			utl::serialize_from("direction", json, type.direction, type.direction != glm::vec3(0.f, 1.f, 0.f));
 			utl::serialize_from("intencity", json, type.intencity, type.intencity != 1.f);
 			utl::serialize_from("innerAngle", json, type.innerAngle, type.innerAngle != 0.92f);
 			utl::serialize_from("outerAngle", json, type.outerAngle, type.outerAngle != 0.98f);
@@ -127,7 +125,6 @@ namespace engine
 		void from_json(const nlohmann::json& json, FSpotLightComponent& type)
 		{
 			utl::parse_to("color", json, type.color);
-			utl::parse_to("direction", json, type.direction);
 			utl::parse_to("intencity", json, type.intencity);
 			utl::parse_to("innerAngle", json, type.innerAngle);
 			utl::parse_to("outerAngle", json, type.outerAngle);

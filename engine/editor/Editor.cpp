@@ -174,7 +174,7 @@ void CEditor::create()
 
     auto& transform = registry.get<FTransformComponent>(camera);
     transform.position = glm::vec3(0.f, 8.f, 10.f);
-    transform.rotation = glm::vec3(-0.01f, -0.7f, -0.7f);
+    transform.rotation = glm::vec3(-0.02f, -0.09f, 1.00f);
 
     load_editor();
 

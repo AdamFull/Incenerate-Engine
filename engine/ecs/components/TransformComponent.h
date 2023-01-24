@@ -18,6 +18,7 @@ namespace engine
 			glm::vec3 rrotation{ 0.f };
 			glm::vec3 rscale{ 1.f };
 			glm::mat4 model{ 1.f };
+			glm::mat4 model_old{ 1.f };
 
 			void update()
 			{

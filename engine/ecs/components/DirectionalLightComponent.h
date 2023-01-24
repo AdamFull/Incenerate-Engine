@@ -9,7 +9,6 @@ namespace engine
 		struct FDirectionalLightComponent
 		{
 			glm::vec3 color{ 1.f };
-			glm::vec3 direction{ 0.f, 1.f, 0.f };
 			float intencity{ 1.f };
 			bool castShadows{ false };
 		};

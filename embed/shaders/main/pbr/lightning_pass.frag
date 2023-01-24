@@ -46,7 +46,7 @@ layout(std140, binding = 12) uniform UBODeferred
 } ubo;
 
 //Lights
-layout(std430, binding = 15) buffer UBOLights
+layout(std430, binding = 15) buffer readonly UBOLights
 {
 	FDirectionalLight directionalLights[1];
 	FSpotLight spotLights[15];
@@ -62,9 +62,8 @@ vec3 lightContribution(vec3 albedo, vec3 L, vec3 V, vec3 N, vec3 F0, float metal
 
 vec3 calculateDirectionalLight(FDirectionalLight light, vec3 worldPosition, vec3 albedo, vec3 V, vec3 N, vec3 F0, float metallic, float roughness)
 {
-	vec3 L = -light.direction;
-	float dist = length(L);
-	L = normalize(L);
+	vec3 L = normalize(-light.direction);
+
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 
 	//float shadow_factor = getCascadeShadow(cascade_shadowmap_tex, ubo.viewPos.xyz, worldPosition, N, light);
@@ -75,9 +74,7 @@ vec3 calculateDirectionalLight(FDirectionalLight light, vec3 worldPosition, vec3
 
 vec3 calculateSpotlight(FSpotLight light, int index, vec3 worldPosition, vec3 albedo, vec3 V, vec3 N, vec3 F0, float metallic, float roughness)
 {
-	vec3 L = light.position - worldPosition;
-	float dist = length(L);
-	L = normalize(L);
+	vec3 L = normalize(light.position - worldPosition);
 
 	// Direction vector from source to target
 	vec3 dir = vec3(normalize(light.direction));
@@ -93,24 +90,24 @@ vec3 calculateSpotlight(FSpotLight light, int index, vec3 worldPosition, vec3 al
 	
 	float shadow_factor = 1.0;
 
-	if(light.castShadows)
-		shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
+	//if(light.castShadows)
+	//	shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
 
 	return light.color * light.intencity * color * angularAttenuation * shadow_factor;
 }
 
 vec3 calculatePointLight(FPointLight light, int index, vec3 worldPosition, vec3 albedo, vec3 V, vec3 N, vec3 F0, float metallic, float roughness)
 {
-	vec3 L = light.position - worldPosition;
-	float dist = length(L);
-	L = normalize(L);
+	vec3 L = normalize(light.position - worldPosition);
+	float dist = distance(worldPosition, light.position);
+	
 	float atten = clamp(1.0 - pow(dist, 2.0f)/pow(light.radius, 2.0f), 0.0f, 1.0f); atten *= atten;
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 
 	float shadow_factor = 1.0;
 
-	if(light.castShadows)
-		shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index);
+	//if(light.castShadows)
+	//	shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index);
 
 	return light.color * atten * color * light.intencity * shadow_factor;
 }

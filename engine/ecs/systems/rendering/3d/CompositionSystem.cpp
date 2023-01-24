@@ -1,5 +1,7 @@
 #include "CompositionSystem.h"
 
+#include <glm/gtx/quaternion.hpp>
+
 #include "Engine.h"
 #include "graphics/image/ImageCubemap.h"
 
@@ -57,7 +59,7 @@ void CCompositionSystem::__update(float fDt)
 		for (auto [entity, transform, light] : view.each())
 		{
 			FDirectionalLightCommit commit;
-			commit.direction = glm::normalize(transform.rrotation * light.direction);
+			commit.direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.castShadows = light.castShadows;
@@ -89,8 +91,8 @@ void CCompositionSystem::__update(float fDt)
 		for (auto [entity, transform, light] : view.each())
 		{
 			FSpotLightCommit commit;
-			commit.position = transform.rposition;
-			commit.direction = transform.rrotation * light.direction;
+			commit.position = transform.rposition; 
+			commit.direction = light.toTarget ? light.target : glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.lightAngleScale = 1.f / glm::max(0.001f, glm::cos(light.innerAngle) - glm::cos(light.outerAngle));
