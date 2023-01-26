@@ -18,10 +18,10 @@ namespace engine
 		{
 		public:
 			CAudioSource() = default;
-			CAudioSource(const std::string& filepath);
+			CAudioSource(const std::filesystem::path& filepath);
 			~CAudioSource();
 
-			void create(const std::string& filepath);
+			void create(const std::filesystem::path& filepath);
 			void play();
 			void pause();
 			void stop();

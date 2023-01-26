@@ -46,7 +46,7 @@ void CAudioCore::shutdown()
     alcCall(alcCloseDevice, closed, pDevice, pDevice);
 }
 
-size_t CAudioCore::addSource(const std::string& name, const std::string& filepath)
+size_t CAudioCore::addSource(const std::string& name, const std::filesystem::path& filepath)
 {
     return pAudioSourceManager->add(name, std::make_unique<CAudioSource>(filepath));
 }

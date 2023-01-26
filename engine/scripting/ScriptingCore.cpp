@@ -4,18 +4,47 @@
 
 using namespace engine::scripting;
 
-struct vars {
-    int boop = 0;
-};
-
 void CScriptingCore::create()
 {
+    pScriptManager = std::make_unique<CObjectManager<CScriptSource>>();
+
     bind_glm_lib(lua);
+    bind_components(lua);
+}
 
-    lua.script(
-        "first = vec4.new(2.0)\n"
-        "second = vec3.new(2.5)\n"
-        "result = first * vec4.new(second, 0.5)");
+void CScriptingCore::update()
+{
 
-    auto result = lua.get<glm::vec4>("result");
+}
+
+size_t CScriptingCore::addSource(const std::string& name, const std::filesystem::path& filepath)
+{
+    auto script = std::make_unique<CScriptSource>();
+    script->load(filepath, lua);
+    return pScriptManager->add(name, std::move(script));
+}
+
+size_t CScriptingCore::addSource(const std::string& name, std::unique_ptr<CScriptSource>&& source)
+{
+    return pScriptManager->add(name, std::move(source));
+}
+
+void CScriptingCore::removeSource(const std::string& name)
+{
+    pScriptManager->remove(name);
+}
+
+void CScriptingCore::removeSource(size_t id)
+{
+    pScriptManager->remove(id);
+}
+
+const std::unique_ptr<CScriptSource>& CScriptingCore::getSource(const std::string& name)
+{
+    return pScriptManager->get(name);
+}
+
+const std::unique_ptr<CScriptSource>& CScriptingCore::getSource(size_t id)
+{
+    return pScriptManager->get(id);
 }

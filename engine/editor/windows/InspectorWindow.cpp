@@ -375,18 +375,19 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 				object->source = fs::from_unicode(source);
 				if (object->loaded)
 				{
-
+					EGScripting->removeSource(object->data);
+					EGScripting->addSource(object->source, object->source);
 				}
 				else
 				{
 					auto& registry = EGCoordinator;
 					auto self = EGEditor->getLastSelection();
 
-					FScriptComponent nskybox{};
-					nskybox.source = fs::from_unicode(source);
+					FScriptComponent nscript{};
+					nscript.source = object->source;
 
 					registry.remove<FScriptComponent>(self);
-					registry.emplace<FScriptComponent>(self, std::move(nskybox));
+					registry.emplace<FScriptComponent>(self, std::move(nscript));
 				}
 			}
 		}
@@ -427,7 +428,7 @@ void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 					else
 					{
 						FEnvironmentComponent nskybox{};
-						nskybox.source = fs::from_unicode(source);
+						nskybox.source = object->source;
 
 						registry.remove<FEnvironmentComponent>(self);
 						registry.emplace<FEnvironmentComponent>(self, std::move(nskybox));

@@ -25,7 +25,7 @@ namespace engine
             constexpr size_t mesh_ts = 2;
 
             // scripts
-            constexpr uint32_t lua = ".lua"_utl_hash;
+            constexpr uint32_t js = ".js"_utl_hash;
             constexpr size_t script_ts = 1;
 
             // scenes

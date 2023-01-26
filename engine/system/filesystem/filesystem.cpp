@@ -226,7 +226,7 @@ bool fs::is_skybox_format(uint32_t format)
 
 bool fs::is_script_format(uint32_t format)
 {
-    return format == format::lua;
+    return format == format::js;
 }
 
 bool fs::is_audio_format(uint32_t format)

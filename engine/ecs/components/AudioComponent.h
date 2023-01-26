@@ -16,7 +16,7 @@ namespace engine
 			glm::vec3 velocity;
 			bool loop{ false };
 			bool playing{ false };
-			bool shouldStop{ false };
+			bool stop{ false };
 			bool loaded{ false };
 		};
 

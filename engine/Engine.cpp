@@ -84,6 +84,7 @@ void CEngine::beginEngineLoop()
 
 		pGraphics->end();
 
+		pScripting->update();
 		pAudio->update();
 		pGraphics->update();
 

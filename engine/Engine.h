@@ -14,6 +14,7 @@
 #include "ecs/systems/BaseSystem.h"
 
 #define EGEngine CEngine::getInstance()
+#define EGScripting CEngine::getInstance()->getScripting()
 #define EGEditor CEngine::getInstance()->getEditor()
 #define EGCoordinator CEngine::getInstance()->getCoordinator()
 #define EGAudio CEngine::getInstance()->getAudio()

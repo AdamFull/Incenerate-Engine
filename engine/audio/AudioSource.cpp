@@ -6,7 +6,7 @@
 using namespace engine::audio;
 using namespace engine::loaders;
 
-CAudioSource::CAudioSource(const std::string& filepath)
+CAudioSource::CAudioSource(const std::filesystem::path& filepath)
 {
 	create(filepath);
 }
@@ -18,7 +18,7 @@ CAudioSource::~CAudioSource()
 	alCall(alDeleteBuffers, 1, &alBuffer);
 }
 
-void CAudioSource::create(const std::string& filepath)
+void CAudioSource::create(const std::filesystem::path& filepath)
 {
 	std::vector<char> vRawBuffer;
 

@@ -117,6 +117,26 @@ void destroy_audio(entt::registry& reg, entt::entity entity)
 		EGAudio->removeSource(audio.asource);
 }
 
+
+void construct_script(entt::registry& reg, entt::entity entity)
+{
+	auto& script = reg.get<FScriptComponent>(entity);
+
+	if (!script.loaded && !script.source.empty())
+	{
+		script.data = EGScripting->addSource(script.source, script.source);
+		script.loaded = true;
+	}
+}
+
+void destroy_script(entt::registry& reg, entt::entity entity)
+{
+	auto& script = reg.get<FScriptComponent>(entity);
+
+	if (script.loaded)
+		EGScripting->removeSource(script.data);
+}
+
 void CEngine::initEntityComponentSystem()
 {
 	registry.on_destroy<FMeshComponent>().connect<&destroy_mesh>();
@@ -129,6 +149,9 @@ void CEngine::initEntityComponentSystem()
 
 	registry.on_construct<FAudioComponent>().connect<&construct_audio>();
 	registry.on_destroy<FAudioComponent>().connect<&destroy_audio>();
+
+	registry.on_construct<FScriptComponent>().connect<&construct_script>();
+	registry.on_destroy<FScriptComponent>().connect<&destroy_script>();
 
 	vSystems.emplace_back(std::make_unique<CHierarchySystem>());
 	vSystems.emplace_back(std::make_unique<CInputSystem>());

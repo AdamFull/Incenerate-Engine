@@ -1,5 +1,5 @@
 /*
-** $Id: llex.h $
+** $Id: llex.h,v 1.79.1.1 2017/04/19 17:20:42 roberto Exp $
 ** Lexical Analyzer
 ** See Copyright Notice in lua.h
 */
@@ -7,17 +7,11 @@
 #ifndef llex_h
 #define llex_h
 
-#include <limits.h>
-
 #include "lobject.h"
 #include "lzio.h"
 
 
-/*
-** Single-char tokens (terminal symbols) are represented by their own
-** numeric code. Other tokens start at the following value.
-*/
-#define FIRST_RESERVED	(UCHAR_MAX + 1)
+#define FIRST_RESERVED	257
 
 
 #if !defined(LUA_ENV)
@@ -31,19 +25,22 @@
 */
 enum RESERVED {
   /* terminal symbols denoted by reserved words */
-  TK_AND = FIRST_RESERVED, TK_BREAK,
-  TK_DO, TK_ELSE, TK_ELSEIF, TK_END, TK_FALSE, TK_FOR, TK_FUNCTION,
-  TK_GOTO, TK_IF, TK_IN, TK_LOCAL, TK_NIL, TK_NOT, TK_OR, TK_REPEAT,
-  TK_RETURN, TK_THEN, TK_TRUE, TK_UNTIL, TK_WHILE,
+  TK_AUTO = FIRST_RESERVED, TK_BREAK, TK_CONTINUE,
+  TK_DO, TK_ELSE, TK_FALSE, TK___FILE__, TK_FOR, TK_FUNCTION,
+  TK_GOTO, TK_IDIV, TK_IF, TK_IN, TK_LET, TK___LINE__, TK_LOCAL, TK_NIL,
+  TK_RETURN, TK_TRUE, TK_VAR, TK_WHILE,
   /* other terminal symbols */
-  TK_IDIV, TK_CONCAT, TK_DOTS, TK_EQ, TK_GE, TK_LE, TK_NE,
+  TK_AND, TK_NOT, TK_OR, TK_POW,
+  TK_CONCAT, TK_DOTS, TK_EQ, TK_GE, TK_LE, TK_NE,
+  TK_CADD, TK_CSUB, TK_CMUL, TK_CDIV, TK_CMOD, TK_CCONCAT,
+  TK_PLUSPLUS, TK_MINUSMINUS,
   TK_SHL, TK_SHR,
-  TK_DBCOLON, TK_EOS,
+  TK_ARROW, TK_DBCOLON, TK_EOS,
   TK_FLT, TK_INT, TK_NAME, TK_STRING
 };
 
 /* number of reserved words */
-#define NUM_RESERVED	(cast_int(TK_WHILE-FIRST_RESERVED + 1))
+#define NUM_RESERVED	(cast(int, TK_WHILE-FIRST_RESERVED+1))
 
 
 typedef union {

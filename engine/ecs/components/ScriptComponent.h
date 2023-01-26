@@ -9,6 +9,7 @@ namespace engine
 		struct FScriptComponent
 		{
 			std::string source;
+			size_t data{ invalid_index };
 			bool loaded{ false };
 		};
 
