@@ -18,6 +18,7 @@ void CDirectionalShadowSystem::__create()
 
 void CDirectionalShadowSystem::__update(float fDt)
 {
+	auto& graphics = EGGraphics;
 	auto& registry = EGCoordinator;
 
 	uint32_t spot_light_count{ 0 };
@@ -42,29 +43,29 @@ void CDirectionalShadowSystem::__update(float fDt)
 
 	if (spot_light_count > 0)
 	{
-		auto commandBuffer = EGGraphics->getCommandBuffer();
-		auto& pShader = EGGraphics->getShader(shader_id);
+		graphics->bindShader(shader_id);
 
-		auto& pUniform = pShader->getUniformBuffer("UBOShadowmap");
+		auto& pUniform = graphics->getUniformHandle("UBOShadowmap");
 		pUniform->set("viewProjMat", spot_light_matrices);
 		pUniform->set("passedLights", spot_light_count);
-		pShader->predraw(commandBuffer);
+		//pShader->predraw(commandBuffer);
 
-		auto view = registry.view<FTransformComponent, FMeshComponent>();
-		for (auto [entity, transform, mesh] : view.each())
-		{
-			auto& vbo = EGGraphics->getVertexBuffer(mesh.vbo_id);
+		//auto view = registry.view<FTransformComponent, FMeshComponent>();
+		//for (auto [entity, transform, mesh] : view.each())
+		//{
+		//	graphics->bindVertexBuffer(mesh.vbo_id);
+		//
+		//	for (auto& meshlet : mesh.vMeshlets)
+		//	{
+		//		auto& pPush = graphics->getPushBlockHandle("modelData");
+		//		pPush->set("model", transform.model);
+		//
+		//		graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
+		//	}
+		// 
+		//  graphics->bindVertexBuffer(invalid_index);
+		//}
 
-			vbo->bind(commandBuffer);
-
-			for (auto& meshlet : mesh.vMeshlets)
-			{
-				auto& pPush = pShader->getPushBlock("modelData");
-				pPush->set("model", transform.model);
-				pPush->flush(commandBuffer);
-
-				commandBuffer.drawIndexed(meshlet.index_count, 1, meshlet.begin_index, 0, 0);
-			}
-		}
+		graphics->bindShader(shader_id);
 	}
 }

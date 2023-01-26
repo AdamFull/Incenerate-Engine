@@ -49,9 +49,9 @@ namespace engine
 			static void copyTo(vk::CommandBuffer& commandBuffer, vk::Image& src, vk::Image& dst, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout, vk::ImageCopy& region);
 			void copyImageToDst(vk::CommandBuffer& commandBuffer, std::shared_ptr<CImage>& pDst, vk::ImageCopy& region, vk::ImageLayout dstLayout);
 
-			void updateDescriptor();
+			void updateDescriptor(uint32_t mip_level = 0);
 
-			vk::DescriptorImageInfo& getDescriptor();
+			vk::DescriptorImageInfo& getDescriptor(uint32_t mip_level = 0);
 
 			void setImageLayout(vk::ImageLayout layout) { _imageLayout = layout; }
 
@@ -67,7 +67,7 @@ namespace engine
 			CDevice* pDevice{ nullptr };
 
 			vk::Image _image{ VK_NULL_HANDLE };
-			vk::ImageView _view{ VK_NULL_HANDLE };
+			std::vector<vk::ImageView> _views;
 			vk::Sampler _sampler{ VK_NULL_HANDLE };
 			vk::DescriptorSet descriptorSet{ VK_NULL_HANDLE };
 			vma::Allocation allocation{ VK_NULL_HANDLE };

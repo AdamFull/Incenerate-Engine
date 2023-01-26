@@ -16,8 +16,8 @@ CImage::~CImage()
 {
     auto& vmalloc = pDevice->getVMAAllocator();
 
-    if(_view)
-        pDevice->destroy(&_view);
+    for(auto& view : _views)
+        pDevice->destroy(&view);
     
     if (_image)
         vmalloc.destroyImage(_image, allocation);
@@ -177,6 +177,8 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
 
     pDevice->createImage(_image, imageInfo, allocation);
 
+    vk::ImageView imageView;
+
     vk::ImageViewCreateInfo viewInfo{};
     if (info->isArray && info->isCubemap)
         viewInfo.viewType = vk::ImageViewType::eCubeArray;
@@ -198,8 +200,19 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
     viewInfo.subresourceRange.layerCount = _instCount;
     viewInfo.image = _image;
 
-    vk::Result res = pDevice->create(viewInfo, &_view);
+    vk::Result res = pDevice->create(viewInfo, &imageView);
     log_cerror(VkHelper::check(res), "Cannot create image view");
+    _views.emplace_back(imageView);
+
+    viewInfo.subresourceRange.levelCount = 1;
+
+    for (uint32_t mip = 1; mip < _mipLevels; mip++)
+    {
+        viewInfo.subresourceRange.baseMipLevel = mip;
+        vk::Result res = pDevice->create(viewInfo, &imageView);
+        log_cerror(VkHelper::check(res), "Cannot create image view");
+        _views.emplace_back(imageView);
+    }
 
     if (!_sampler)
     {
@@ -400,19 +413,19 @@ void CImage::copyImageToDst(vk::CommandBuffer& commandBuffer, std::shared_ptr<CI
     copyTo(commandBuffer, _image, pDst->_image, _imageLayout, dstLayout, region);
 }
 
-void CImage::updateDescriptor()
+void CImage::updateDescriptor(uint32_t mip_level)
 {
     _descriptor.sampler = _sampler;
-    _descriptor.imageView = _view;
+    _descriptor.imageView = _views.at(mip_level);
     _descriptor.imageLayout = _imageLayout;
 }
 
-vk::DescriptorImageInfo& CImage::getDescriptor()
+vk::DescriptorImageInfo& CImage::getDescriptor(uint32_t mip_level)
 {
     if (_imageLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal && (_usage & vk::ImageUsageFlagBits::eInputAttachment))
     {
         _imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-        updateDescriptor();
+        updateDescriptor(mip_level);
     }
     return _descriptor;
 }

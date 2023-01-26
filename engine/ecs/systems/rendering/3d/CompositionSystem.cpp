@@ -43,6 +43,7 @@ void CCompositionSystem::__create()
 void CCompositionSystem::__update(float fDt)
 {
 	auto& registry = EGCoordinator;
+	auto& graphics = EGGraphics;
 	auto editorMode = EGEngine->isEditorMode();
 	auto state = EGEngine->getState();
 
@@ -104,13 +105,10 @@ void CCompositionSystem::__update(float fDt)
 		}
 	}
 
-	auto& stage = EGGraphics->getRenderStage("composition");
-	auto commandBuffer = EGGraphics->getCommandBuffer();
-	auto& pShader = EGGraphics->getShader(shader_id);
-	auto index = EGGraphics->getDevice()->getCurrentFrame();
+	auto stage = graphics->getRenderStageID("composition");
 
 	auto eskybox = get_active_skybox(registry);
-	FEnvironmentComponent* skybox = registry.try_get<FEnvironmentComponent>(eskybox);
+	auto* skybox = registry.try_get<FEnvironmentComponent>(eskybox);
 
 	FCameraComponent* camera{ nullptr };
 
@@ -119,38 +117,39 @@ void CCompositionSystem::__update(float fDt)
 	else
 		camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
 
-	if (camera)
-	{
-		// Setting up predraw data
-		pShader->addTexture("brdflut_tex", brdflut_id);
-		pShader->addTexture("irradiance_tex", skybox ? skybox->irradiance : empty_cube_id);
-		pShader->addTexture("prefiltred_tex", skybox ? skybox->prefiltred : empty_cube_id);
+	if (!camera)
+		return;
 
-		pShader->addTexture("albedo_tex", getSubresource("albedo_tex"));
-		pShader->addTexture("normal_tex", getSubresource("normal_tex"));
-		pShader->addTexture("mrah_tex", getSubresource("mrah_tex"));
-		pShader->addTexture("emission_tex", getSubresource("emission_tex"));
-		pShader->addTexture("depth_tex", getSubresource("depth_tex"));
+	graphics->bindShader(shader_id);
 
-		pShader->addTexture("direct_shadowmap_tex", getSubresource("direct_shadowmap_tex"));
-		pShader->addTexture("omni_shadowmap_tex", getSubresource("omni_shadowmap_tex"));
+	// Binding ibl images
+	graphics->bindTexture("brdflut_tex", brdflut_id);
+	graphics->bindTexture("irradiance_tex", skybox ? skybox->irradiance : empty_cube_id);
+	graphics->bindTexture("prefiltred_tex", skybox ? skybox->prefiltred : empty_cube_id);
 
-		auto& pUBO = pShader->getUniformBuffer("UBODeferred");
-		pUBO->set("invViewProjection", glm::inverse(camera->projection * camera->view));
-		pUBO->set("viewPos", glm::vec4(camera->viewPos, 1.0));
-		pUBO->set("directionalLightCount", directoonal_light_count);
-		pUBO->set("spotLightCount", spot_light_count);
-		pUBO->set("pointLightCount", point_light_count);
+	graphics->bindTexture("albedo_tex", getSubresource("albedo_tex"));
+	graphics->bindTexture("normal_tex", getSubresource("normal_tex"));
+	graphics->bindTexture("mrah_tex", getSubresource("mrah_tex"));
+	graphics->bindTexture("emission_tex", getSubresource("emission_tex"));
+	graphics->bindTexture("depth_tex", getSubresource("depth_tex"));
 
-		auto& pUBOLights = pShader->getUniformBuffer("UBOLights");
-		pUBOLights->set("directionalLights", directional_lights);
-		pUBOLights->set("spotLights", spot_lights);
-		pUBOLights->set("pointLights", point_lights);
+	graphics->bindTexture("direct_shadowmap_tex", getSubresource("direct_shadowmap_tex"));
+	graphics->bindTexture("omni_shadowmap_tex", getSubresource("omni_shadowmap_tex"));
 
-		// Drawing 
-		stage->begin(commandBuffer);
-		pShader->predraw(commandBuffer);
-		commandBuffer.draw(3, 1, 0, 0);
-		stage->end(commandBuffer);
-	}
+	auto& pUBO = graphics->getUniformHandle("UBODeferred");
+	pUBO->set("invViewProjection", glm::inverse(camera->projection * camera->view));
+	pUBO->set("viewPos", glm::vec4(camera->viewPos, 1.0));
+	pUBO->set("directionalLightCount", directoonal_light_count);
+	pUBO->set("spotLightCount", spot_light_count);
+	pUBO->set("pointLightCount", point_light_count);
+
+	auto& pUBOLights = graphics->getUniformHandle("UBOLights");
+	pUBOLights->set("directionalLights", directional_lights);
+	pUBOLights->set("spotLights", spot_lights);
+	pUBOLights->set("pointLights", point_lights);
+
+	// Drawing 
+	graphics->bindRenderer(stage);
+	graphics->draw(0, 3, 0, 0, 1);
+	graphics->bindRenderer(invalid_index);
 }

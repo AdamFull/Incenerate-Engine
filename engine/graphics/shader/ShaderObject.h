@@ -34,7 +34,7 @@ namespace engine
 			void dispatch(glm::vec2 size);
 			void dispatch(vk::CommandBuffer& commandBuffer, glm::vec2 size);
 
-			void addTexture(const std::string& attachment, size_t id);
+			void addTexture(const std::string& attachment, size_t id, uint32_t mip_level = 0);
 			void addTexture(const std::string& attachment, vk::DescriptorImageInfo descriptor);
 
 			vk::DescriptorImageInfo& getTexture(const std::string& attachment);

@@ -19,10 +19,9 @@ void CEnvironmentSystem::__create()
 void CEnvironmentSystem::__update(float fDt)
 {
 	auto& registry = EGCoordinator;
+	auto& graphics = EGGraphics;
 	auto editorMode = EGEngine->isEditorMode();
 	auto state = EGEngine->getState();
-
-	auto commandBuffer = EGGraphics->getCommandBuffer();
 
 	FCameraComponent* camera{ nullptr };
 
@@ -31,38 +30,34 @@ void CEnvironmentSystem::__update(float fDt)
 	else
 		camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
 
-	if (camera)
+	if (!camera)
+		return;
+
+	auto view = registry.view<FTransformComponent, FEnvironmentComponent>();
+	for (auto [entity, transform, skybox] : view.each())
 	{
-		auto view = registry.view<FTransformComponent, FEnvironmentComponent>();
-		for (auto [entity, transform, skybox] : view.each())
+		if (skybox.active && skybox.loaded)
 		{
-			if (skybox.active && skybox.loaded)
-			{
-				auto& vbo = EGGraphics->getVertexBuffer(skybox.vbo_id);
+			graphics->bindVertexBuffer(skybox.vbo_id);
+			graphics->bindShader(skybox.shader_id);
 
-				vbo->bind(commandBuffer);
+			auto normal = glm::transpose(glm::inverse(transform.model));
 
-				auto& pShader = EGGraphics->getShader(skybox.shader_id);
-				if (pShader)
-				{
-					auto normal = glm::transpose(glm::inverse(transform.model));
+			auto& pUBO = graphics->getUniformHandle("FUniformData");
+			pUBO->set("model", transform.model);
+			pUBO->set("view", camera->view);
+			pUBO->set("projection", camera->projection);
+			pUBO->set("normal", normal);
+			pUBO->set("viewDir", camera->viewPos);
+			pUBO->set("viewportDim", camera->viewportDim);
+			pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
 
-					auto& pUBO = pShader->getUniformBuffer("FUniformData");
-					pUBO->set("model", transform.model);
-					pUBO->set("view", camera->view);
-					pUBO->set("projection", camera->projection);
-					pUBO->set("normal", normal);
-					pUBO->set("viewDir", camera->viewPos);
-					pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent(true));
-					pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
+			graphics->bindTexture("samplerCubeMap", skybox.origin);
 
-					pShader->addTexture("samplerCubeMap", skybox.origin);
+			graphics->draw();
 
-					pShader->predraw(commandBuffer);
-
-					commandBuffer.drawIndexed(vbo->getLastIndex(), 1, 0, 0, 0);
-				}
-			}
+			graphics->bindShader(invalid_index);
+			graphics->bindVertexBuffer(invalid_index);
 		}
 	}
 }

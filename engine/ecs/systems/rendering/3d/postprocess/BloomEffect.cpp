@@ -10,10 +10,15 @@ using namespace engine::ecs;
 
 CBloomEffect::~CBloomEffect()
 {
-	auto& device = EGGraphics->getDevice();
-	for (auto& mip : vMips)
-		device->destroy(&mip.view);
-	vMips.clear();
+	auto& graphics = EGGraphics;
+	
+	graphics->removeShader(shader_brightdetect);
+	graphics->removeShader(shader_downsample);
+	graphics->removeShader(shader_upsample);
+	graphics->removeShader(shader_applybloom);
+
+	graphics->removeImage(bloom_image);
+	graphics->removeImage(final_image);
 }
 
 void CBloomEffect::create()
@@ -42,142 +47,117 @@ void CBloomEffect::update()
 
 void CBloomEffect::init()
 {
-	auto& device = EGGraphics->getDevice();
+	auto& graphics = EGGraphics;
+	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 
-	EGGraphics->removeImage(final_image);
-	EGGraphics->removeImage(bloom_image);
+	graphics->removeImage(final_image);
+	graphics->removeImage(bloom_image);
 
 	final_image = effectshared::createImage("final_bloom_tex", vk::Format::eB10G11R11UfloatPack32);
 	bloom_image = effectshared::createImage("bloom_stage_tex", vk::Format::eB10G11R11UfloatPack32, true);
 
-	for (auto& mip : vMips)
-		device->destroy(&mip.view);
 	vMips.clear();
-
-	auto image = EGGraphics->getImage(bloom_image).get();
 
 	glm::vec2 mipLevel{ extent.width, extent.height };
 
-	for (uint32_t i = 0; i < image->getMipLevels(); i++)
+	for (uint32_t i = 0; i < mipLevels; i++)
 	{
-		FBloomMip bloomMip;
-
-		vk::ImageViewCreateInfo viewInfo{};
-		viewInfo.viewType = vk::ImageViewType::e2D;
-		viewInfo.format = image->getFormat();
-		viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-		viewInfo.subresourceRange.baseMipLevel = i;
-		viewInfo.subresourceRange.levelCount = 1;
-		viewInfo.subresourceRange.baseArrayLayer = 0;
-		viewInfo.subresourceRange.layerCount = 1;
-		viewInfo.image = image->getImage();
-
-		vk::Result res = device->create(viewInfo, &bloomMip.view);
-		assert(res == vk::Result::eSuccess && "Cannot create image view.");
-		
-		bloomMip.size = mipLevel;
+		vMips.emplace_back(mipLevel);
 		mipLevel *= 0.5f;
-		
-		vMips.emplace_back(bloomMip);
 	}
 }
 
 size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 {
-	auto& device = EGGraphics->getDevice();
+	auto& graphics = EGGraphics;
+	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
-	auto commandBuffer = EGGraphics->getCommandBuffer();
 
 	if (camera->effects.bloom.enable)
 	{
 		// Brightdetect
 		{
-			auto& pShader = EGGraphics->getShader(shader_brightdetect);
+			graphics->bindShader(shader_brightdetect);
 
-			auto& pPush = pShader->getPushBlock("ubo");
+			auto& pPush = graphics->getPushBlockHandle("ubo");
 			pPush->set("bloom_threshold", camera->effects.bloom.threshold);
-			pPush->flush(commandBuffer);
 
-			pShader->addTexture("writeColor", final_image);
-			pShader->addTexture("samplerColor", source);
+			graphics->bindTexture("writeColor", final_image);
+			graphics->bindTexture("samplerColor", source);
 
-			pShader->dispatch(commandBuffer, resolution);
+			graphics->dispatch(resolution);
+
+			graphics->bindShader(invalid_index);
 		}
 
-		VkHelper::BarrierFromComputeToCompute(commandBuffer);
+		VkHelper::BarrierFromComputeToCompute();
 
 		// Downsample
 		{
-			auto& pShader = EGGraphics->getShader(shader_downsample);
-			auto& image = EGGraphics->getImage(bloom_image);
-			auto& pPush = pShader->getPushBlock("ubo");
+			graphics->bindShader(shader_downsample);
+			auto& pPush = graphics->getPushBlockHandle("ubo");
 
-			pShader->addTexture("samplerColor", final_image);
+			graphics->bindTexture("samplerColor", final_image);
 
-			for (uint32_t i = 0; i < image->getMipLevels(); i++)
+			for (uint32_t i = 0; i < mipLevels; i++)
 			{
 				auto& mip = vMips.at(i);
 
-				pPush->set("resolution", mip.size);
+				pPush->set("resolution", mip);
 				pPush->set("mipLevel", i);
-				pPush->flush(commandBuffer);
 
-				auto imageInfo = image->getDescriptor();
-				imageInfo.imageView = mip.view;
+				graphics->bindTexture("writeColor", bloom_image, i);
+				graphics->dispatch(mip);
 
-				pShader->addTexture("writeColor", imageInfo);
+				VkHelper::BarrierFromComputeToCompute();
 
-				pShader->dispatch(commandBuffer, { mip.size.x, mip.size.y });
-
-				VkHelper::BarrierFromComputeToCompute(commandBuffer);
-
-				pShader->addTexture("samplerColor", imageInfo);
+				graphics->bindTexture("samplerColor", bloom_image, i);
 			}
+
+			graphics->bindShader(invalid_index);
 		}
 
 		// Upsample
 		{
-			auto& pShader = EGGraphics->getShader(shader_upsample);
-			auto& image = EGGraphics->getImage(bloom_image);
-			auto& pPush = pShader->getPushBlock("ubo");
+			graphics->bindShader(shader_upsample);
+			auto& pPush = graphics->getPushBlockHandle("ubo");
 
-			for (uint32_t i = image->getMipLevels() - 1; i > 0; i--)
+			for (uint32_t i = mipLevels - 1; i > 0; i--)
 			{
 				auto& mip = vMips.at(i);
 				auto& nextMip = vMips.at(i - 1);
 
-				pPush->set("resolution", nextMip.size);
+				pPush->set("resolution", nextMip);
 				pPush->set("filter_radius", camera->effects.bloom.filter_radius);
-				pPush->flush(commandBuffer);
 
-				auto imageInfo = image->getDescriptor();
-				imageInfo.imageView = mip.view;
-				pShader->addTexture("samplerColor", imageInfo);
-				imageInfo.imageView = nextMip.view;
-				pShader->addTexture("writeColor", imageInfo);
+				graphics->bindTexture("samplerColor", bloom_image, i);
+				graphics->bindTexture("writeColor", bloom_image, i - 1);
 
-				pShader->dispatch(commandBuffer, { nextMip.size.x, nextMip.size.y });
+				graphics->dispatch(nextMip);
 
-				VkHelper::BarrierFromComputeToCompute(commandBuffer);
+				VkHelper::BarrierFromComputeToCompute();
 			}
+
+			graphics->bindShader(invalid_index);
 		}
 
 		// Apply bloom
 		{
-			auto& pShader = EGGraphics->getShader(shader_applybloom);
-			auto& pPush = pShader->getPushBlock("ubo");
+			graphics->bindShader(shader_applybloom);
+			auto& pPush = graphics->getPushBlockHandle("ubo");
 			pPush->set("bloom_strength", camera->effects.bloom.strength);
-			pPush->flush(commandBuffer);
 
-			pShader->addTexture("writeColor", final_image);
-			pShader->addTexture("samplerColor", source);
-			pShader->addTexture("bloomColor", bloom_image);
+			graphics->bindTexture("writeColor", final_image);
+			graphics->bindTexture("samplerColor", source);
+			graphics->bindTexture("bloomColor", bloom_image);
 
-			pShader->dispatch(commandBuffer, resolution);
+			graphics->dispatch(resolution);
 
-			VkHelper::BarrierFromComputeToCompute(commandBuffer);
+			graphics->bindShader(invalid_index);
+
+			VkHelper::BarrierFromComputeToCompute();
 		}
 
 		return final_image;

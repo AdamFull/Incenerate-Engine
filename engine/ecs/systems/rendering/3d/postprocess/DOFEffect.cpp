@@ -40,85 +40,35 @@ void CDOFEffect::init()
 
 size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t in_source, size_t out_source)
 {
-	auto& device = EGGraphics->getDevice();
+	auto& graphics = EGGraphics;
+	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
-	auto commandBuffer = EGGraphics->getCommandBuffer();
 
 	if (camera->effects.dof.enable)
 	{
 		// Blur in image
 		{
-			auto& pShader = EGGraphics->getShader(shader_blur);
+			graphics->bindShader(shader_blur);
 		
-			auto& pPush = pShader->getPushBlock("ubo");
+			auto& pPush = graphics->getPushBlockHandle("ubo");
 			pPush->set("max_radius", camera->effects.dof.bokeh_samples);
 			pPush->set("sides", camera->effects.dof.bokeh_poly);
-			pPush->flush(commandBuffer);
 		
-			pShader->addTexture("writeColor", blur_image);
-			pShader->addTexture("samplerColor", in_source);
+			graphics->bindTexture("writeColor", blur_image);
+			graphics->bindTexture("samplerColor", in_source);
 		
-			pShader->dispatch(commandBuffer, resolution);
+			graphics->dispatch(resolution);
+
+			graphics->bindShader(invalid_index);
 		}
 
-		//{
-		//	auto& pShader = EGGraphics->getShader(shader_blur);
-		//
-		//	auto& pPush = pShader->getPushBlock("ubo");
-		//	pPush->set("blur_scale", camera->effects.dof.blur_scale);
-		//	pPush->set("blur_strength", camera->effects.dof.blur_strength);
-		//	pPush->set("direction", -1);
-		//	pPush->flush(commandBuffer);
-		//
-		//	pShader->addTexture("writeColor", temp_image);
-		//	pShader->addTexture("samplerColor", in_source);
-		//
-		//	pShader->dispatch(commandBuffer, resolution);
-		//
-		//	VkHelper::BarrierFromComputeToCompute(commandBuffer);
-		//
-		//	pPush->set("blur_scale", camera->effects.dof.blur_scale);
-		//	pPush->set("blur_strength", camera->effects.dof.blur_strength);
-		//	pPush->set("direction", 1);
-		//	pPush->flush(commandBuffer);
-		//
-		//	pShader->addTexture("writeColor", blur_image);
-		//	pShader->addTexture("samplerColor", temp_image);
-		//
-		//	pShader->dispatch(commandBuffer, resolution);
-		//
-		//	VkHelper::BarrierFromComputeToCompute(commandBuffer);
-		//
-		//	pPush->set("blur_scale", camera->effects.dof.blur_scale);
-		//	pPush->set("blur_strength", camera->effects.dof.blur_strength);
-		//	pPush->set("direction", -1);
-		//	pPush->flush(commandBuffer);
-		//
-		//	pShader->addTexture("writeColor", temp_image);
-		//	pShader->addTexture("samplerColor", blur_image);
-		//
-		//	pShader->dispatch(commandBuffer, resolution);
-		//
-		//	VkHelper::BarrierFromComputeToCompute(commandBuffer);
-		//
-		//	pPush->set("blur_scale", camera->effects.dof.blur_scale);
-		//	pPush->set("blur_strength", camera->effects.dof.blur_strength);
-		//	pPush->set("direction", 1);
-		//	pPush->flush(commandBuffer);
-		//
-		//	pShader->addTexture("writeColor", blur_image);
-		//	pShader->addTexture("samplerColor", temp_image);
-		//
-		//	pShader->dispatch(commandBuffer, resolution);
-		//}	
-
-		VkHelper::BarrierFromComputeToCompute(commandBuffer);
+		VkHelper::BarrierFromComputeToCompute();
 
 		// Apply depth of field
 		{
-			auto& pShader = EGGraphics->getShader(shader_dof);
-			auto& pPush = pShader->getPushBlock("ubo");
+			graphics->bindShader(shader_dof);
+			auto& pPush = graphics->getPushBlockHandle("ubo");
 
 			pPush->set("nearPlane", camera->nearPlane);
 			pPush->set("farPlane", camera->farPlane);
@@ -128,16 +78,17 @@ size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 			pPush->set("nearTransition", camera->effects.dof.near_transition);
 			pPush->set("farField", camera->effects.dof.far_field);
 			pPush->set("farTransition", camera->effects.dof.far_transition);
-			pPush->flush(commandBuffer);
 
-			pShader->addTexture("writeColor", temp_image);
-			pShader->addTexture("samplerDepth", depth_source);
-			pShader->addTexture("samplerColor", in_source);
-			pShader->addTexture("samplerBlured", blur_image);
+			graphics->bindTexture("writeColor", temp_image);
+			graphics->bindTexture("samplerDepth", depth_source);
+			graphics->bindTexture("samplerColor", in_source);
+			graphics->bindTexture("samplerBlured", blur_image);
 
-			pShader->dispatch(commandBuffer, resolution);
+			graphics->dispatch(resolution);
 
-			VkHelper::BarrierFromComputeToCompute(commandBuffer);
+			graphics->bindShader(invalid_index);
+
+			VkHelper::BarrierFromComputeToCompute();
 		}
 
 		return temp_image;

@@ -27,6 +27,9 @@ void CMeshSystem::__update(float fDt)
 	else
 		camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
 
+	if (!camera)
+		return;
+
 	draw(camera, EAlphaMode::EOPAQUE);
 	draw(camera, EAlphaMode::EMASK);
 	draw(camera, EAlphaMode::EBLEND);
@@ -35,75 +38,42 @@ void CMeshSystem::__update(float fDt)
 void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 {
 	auto& registry = EGCoordinator;
-	auto commandBuffer = EGGraphics->getCommandBuffer();
-
-	if (camera)
+	auto& graphics = EGGraphics;
+	
+	auto view = registry.view<FTransformComponent, FMeshComponent>();
+	for (auto [entity, transform, mesh] : view.each())
 	{
-		auto view = registry.view<FTransformComponent, FMeshComponent>();
-		for (auto [entity, transform, mesh] : view.each())
+		graphics->bindVertexBuffer(mesh.vbo_id);
+
+		for (auto& meshlet : mesh.vMeshlets)
 		{
-			auto& vbo = EGGraphics->getVertexBuffer(mesh.vbo_id);
+			bool needToRender{ true };
+			needToRender = camera->frustum.checkBox(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
+			meshlet.bWasCulled = needToRender;
 
-			vbo->bind(commandBuffer);
+			graphics->bindMaterial(meshlet.material);
 
-			for (auto& meshlet : mesh.vMeshlets)
+			needToRender = needToRender && graphics->compareAlphaMode(alphaMode);
+
+			if (needToRender)
 			{
-				bool needToRender{ true };
-				needToRender = camera->frustum.checkBox(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
-				meshlet.bWasCulled = needToRender;
+				auto normal = glm::transpose(glm::inverse(transform.model));
 
-				auto& pMaterial = EGGraphics->getMaterial(meshlet.material);
-				if (pMaterial)
-				{
-					auto& params = pMaterial->getParameters();
-					needToRender = needToRender && (alphaMode == params.alphaMode);
+				auto& pUBO = graphics->getUniformHandle("FUniformData");
+				pUBO->set("model", transform.model);
+				pUBO->set("view", camera->view);
+				pUBO->set("projection", camera->projection);
+				pUBO->set("normal", normal);
+				pUBO->set("viewDir", camera->viewPos);
+				pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent(true));
+				pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
 
-					if (needToRender)
-					{
-						auto& pShader = EGGraphics->getShader(pMaterial->getShader());
-						if (pShader)
-						{
-							auto normal = glm::transpose(glm::inverse(transform.model));
-
-							auto& pUBO = pShader->getUniformBuffer("FUniformData");
-							pUBO->set("model", transform.model);
-							pUBO->set("view", camera->view);
-							pUBO->set("projection", camera->projection);
-							pUBO->set("normal", normal);
-							pUBO->set("viewDir", camera->viewPos);
-							pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent(true));
-							pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
-
-							auto& pSurface = pShader->getUniformBuffer("UBOMaterial");
-							if (pSurface)
-							{
-								pSurface->set("baseColorFactor", params.baseColorFactor);
-								pSurface->set("emissiveFactor", params.emissiveFactor);
-								pSurface->set("emissiveStrength", params.emissiveStrength);
-								pSurface->set("alphaMode", static_cast<int>(params.alphaMode));
-								pSurface->set("alphaCutoff", params.alphaCutoff);
-								pSurface->set("normalScale", params.normalScale);
-								pSurface->set("occlusionStrenth", params.occlusionStrenth);
-								pSurface->set("metallicFactor", params.metallicFactor);
-								pSurface->set("roughnessFactor", params.roughnessFactor);
-								pSurface->set("tessellationFactor", params.tessellationFactor);
-								pSurface->set("tessellationStrength", params.tessStrength);
-								pSurface->set("isSrgb", params.tessStrength);
-							}
-
-							for (auto& [name, id] : pMaterial->getTextures())
-								pShader->addTexture(name, id);
-
-							pShader->predraw(commandBuffer);
-
-							if (vbo->getLastIndex() == 0)
-								commandBuffer.draw(meshlet.vertex_count, 1, meshlet.begin_vertex, 0);
-							else
-								commandBuffer.drawIndexed(meshlet.index_count, 1, meshlet.begin_index, 0, 0);
-						}
-					}
-				}
+				graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
 			}
+
+			graphics->bindMaterial(invalid_index);
 		}
+
+		graphics->bindVertexBuffer(invalid_index);
 	}
 }

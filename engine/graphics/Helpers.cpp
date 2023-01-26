@@ -112,6 +112,12 @@ bool VkHelper::hasStencilComponent(vk::Format format)
     return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
 }
 
+void VkHelper::BarrierFromComputeToCompute()
+{
+    auto commandBuffer = EGGraphics->getCommandBuffer();
+    BarrierFromComputeToCompute(commandBuffer);
+}
+
 void VkHelper::BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer)
 {
     vk::MemoryBarrier2KHR barrier{};
@@ -127,6 +133,12 @@ void VkHelper::BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer)
     commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
 }
 
+void VkHelper::BarrierFromComputeToGraphics()
+{
+    auto commandBuffer = EGGraphics->getCommandBuffer();
+    BarrierFromComputeToGraphics(commandBuffer);
+}
+
 void VkHelper::BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer)
 {
     vk::MemoryBarrier2KHR barrier{};
@@ -140,6 +152,12 @@ void VkHelper::BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer)
     dependencyInfo.pMemoryBarriers = &barrier;
 
     commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
+}
+
+void VkHelper::BarrierFromGraphicsToCompute(size_t image_id)
+{
+    auto commandBuffer = EGGraphics->getCommandBuffer();
+    BarrierFromGraphicsToCompute(commandBuffer, image_id);
 }
 
 void VkHelper::BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, size_t image_id)

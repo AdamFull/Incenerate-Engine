@@ -78,12 +78,28 @@ namespace engine
 			void removeRenderStage(size_t id);
 			const std::unique_ptr<CRenderStage>& getRenderStage(const std::string& name);
 			const std::unique_ptr<CRenderStage>& getRenderStage(size_t id);
+			size_t getRenderStageID(const std::string& name);
 
 			const std::unique_ptr<CFramebuffer>& getFramebuffer(const std::string& srName);
 
 			size_t computeBRDFLUT(uint32_t size);
 			size_t computeIrradiance(size_t origin, uint32_t size);
 			size_t computePrefiltered(size_t origin, uint32_t size);
+
+			// Drawing methods
+			void bindShader(size_t id);
+			void bindMaterial(size_t id);
+			void bindVertexBuffer(size_t id);
+			void bindRenderer(size_t id);
+			void bindTexture(const std::string& name, size_t id, uint32_t mip_level = 0);
+
+			bool compareAlphaMode(EAlphaMode mode);
+
+			const std::unique_ptr<CHandler>& getUniformHandle(const std::string& name);
+			const std::unique_ptr<CPushHandler>& getPushBlockHandle(const std::string& name);
+
+			void draw(size_t begin_vertex = 0, size_t vertex_count = 0, size_t begin_index = 0, size_t index_count = 0, size_t instance_count = 1);
+			void dispatch(const glm::vec2& size);
 
 		private:
 			vk::CommandBuffer beginFrame();
@@ -102,6 +118,11 @@ namespace engine
 			std::unique_ptr<CObjectManager<CMaterial>> pMaterialManager;
 			std::unique_ptr<CObjectManager<CVertexBufferObject>> pVertexBufferManager;
 			std::unique_ptr<CObjectManager<CRenderStage>> pRenderStageManager;
+
+			CShaderObject* pBindedShader{ nullptr };
+			CMaterial* pBindedMaterial{ nullptr };
+			CVertexBufferObject* pBindedVBO{ nullptr };
+			CRenderStage* pBindedRenderStage{ nullptr };
 
 			uint32_t imageIndex{ 0 };
 			bool frameStarted{ false };

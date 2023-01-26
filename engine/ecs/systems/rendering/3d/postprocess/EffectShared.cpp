@@ -6,7 +6,7 @@
 using namespace engine::graphics;
 using namespace engine::ecs;
 
-size_t effectshared::createImage(const std::string& name, vk::Format format, bool mips)
+size_t effectshared::createImage(const std::string& name, vk::Format format, bool mips, uint32_t mip_levels)
 {
 	using namespace engine;
 
@@ -23,12 +23,12 @@ size_t effectshared::createImage(const std::string& name, vk::Format format, boo
 		vk::ImageAspectFlagBits::eColor,
 		vk::Filter::eLinear,
 		vk::SamplerAddressMode::eClampToEdge,
-		vk::SampleCountFlagBits::e1, true, false, mips, 5);
+		vk::SampleCountFlagBits::e1, true, false, mips, mip_levels);
 
 	return EGGraphics->addImage(name, std::move(pImage));
 }
 
-void effectshared::tryReCreateImage(const std::string& name, size_t& image_id, vk::Format format, bool mips)
+void effectshared::tryReCreateImage(const std::string& name, size_t& image_id, vk::Format format, bool mips, uint32_t mip_levels)
 {
 	using namespace engine;
 
@@ -40,6 +40,6 @@ void effectshared::tryReCreateImage(const std::string& name, size_t& image_id, v
 	if (image_ext.width != extent.width || image_ext.height != extent.height)
 	{
 		EGGraphics->removeImage(image_id);
-		image_id = createImage(name, format, mips);
+		image_id = createImage(name, format, mips, mip_levels);
 	}
 }

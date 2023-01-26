@@ -539,6 +539,10 @@ const std::unique_ptr<CRenderStage>& CAPIHandle::getRenderStage(size_t id)
     return pRenderStageManager->get(id);
 }
 
+size_t CAPIHandle::getRenderStageID(const std::string& name)
+{
+    return pRenderStageManager->get_id(name);
+}
 
 const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::string& srName)
 {
@@ -657,6 +661,194 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
     removeShader(shader_id);
 
     return output_id;
+}
+
+
+
+void CAPIHandle::bindShader(size_t id)
+{
+    if (id == invalid_index)
+    {
+        pBindedShader = nullptr;
+        return;
+    }
+
+    auto& shader = getShader(id);
+    if (shader)
+        pBindedShader = shader.get();
+    else
+        log_error("Cannot bind shader, because shader with id {} is not exists!", id);
+}
+
+void CAPIHandle::bindMaterial(size_t id)
+{
+    if (id == invalid_index)
+    {
+        pBindedMaterial = nullptr;
+        pBindedShader = nullptr;
+        return;
+    }
+
+    auto& material = getMaterial(id);
+    if (material)
+    {
+        pBindedMaterial = material.get();
+        bindShader(pBindedMaterial->getShader());
+    }
+    else
+        log_error("Cannot bind material, because material with id {} is not exists!", id);
+}
+
+void CAPIHandle::bindVertexBuffer(size_t id)
+{
+    if (id == invalid_index)
+    {
+        pBindedVBO = nullptr;
+        return;
+    }
+
+    auto& vbo = getVertexBuffer(id);
+    if (vbo)
+    {
+        auto& commandBuffer = commandBuffers->getCommandBuffer();
+
+        pBindedVBO = vbo.get();
+        pBindedVBO->bind(commandBuffer);
+    }
+    else
+        log_error("Cannot bind vertex buffer, because vertex buffer with id {} is not exists!");
+}
+
+void CAPIHandle::bindRenderer(size_t id)
+{
+    if (id == invalid_index)
+    {
+        if (pBindedRenderStage)
+        {
+            auto& commandBuffer = commandBuffers->getCommandBuffer();
+
+            pBindedRenderStage->end(commandBuffer);
+            pBindedRenderStage = nullptr;
+        }
+        // Log here?
+
+        return;
+    }
+
+    auto& renderStage = getRenderStage(id);
+    if (renderStage)
+    {
+        auto& commandBuffer = commandBuffers->getCommandBuffer();
+
+        pBindedRenderStage = renderStage.get();
+        pBindedRenderStage->begin(commandBuffer);
+    }
+    else
+        log_error("Cannot bind render stage, because stage with id {} is not exists!");
+}
+
+void CAPIHandle::bindTexture(const std::string& name, size_t id, uint32_t mip_level)
+{
+    if (pBindedShader)
+        pBindedShader->addTexture(name, id);
+    else
+        log_error("Cannot bind texture, cause shader was not binded.");
+}
+
+bool CAPIHandle::compareAlphaMode(EAlphaMode mode)
+{
+    if (pBindedMaterial)
+    {
+        auto& params = pBindedMaterial->getParameters();
+        return params.alphaMode == mode;
+    }
+
+    log_error("Cannot compare alpha mode, cause material was not binded.");
+
+    return false;
+}
+
+const std::unique_ptr<CHandler>& CAPIHandle::getUniformHandle(const std::string& name)
+{
+    if (pBindedShader)
+        return pBindedShader->getUniformBuffer(name);
+
+    return nullptr;
+}
+
+const std::unique_ptr<CPushHandler>& CAPIHandle::getPushBlockHandle(const std::string& name)
+{
+    if (pBindedShader)
+        return pBindedShader->getPushBlock(name);
+
+    return nullptr;
+}
+
+void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_index, size_t index_count, size_t instance_count)
+{
+    auto& commandBuffer = commandBuffers->getCommandBuffer();
+
+    if (pBindedMaterial)
+    {
+        auto& pSurface = getUniformHandle("UBOMaterial");
+        if (pSurface)
+        {
+            auto& params = pBindedMaterial->getParameters();
+
+            pSurface->set("baseColorFactor", params.baseColorFactor);
+            pSurface->set("emissiveFactor", params.emissiveFactor);
+            pSurface->set("emissiveStrength", params.emissiveStrength);
+            pSurface->set("alphaMode", static_cast<int>(params.alphaMode));
+            pSurface->set("alphaCutoff", params.alphaCutoff);
+            pSurface->set("normalScale", params.normalScale);
+            pSurface->set("occlusionStrenth", params.occlusionStrenth);
+            pSurface->set("metallicFactor", params.metallicFactor);
+            pSurface->set("roughnessFactor", params.roughnessFactor);
+            pSurface->set("tessellationFactor", params.tessellationFactor);
+            pSurface->set("tessellationStrength", params.tessStrength);
+        }
+
+        auto& textures = pBindedMaterial->getTextures();
+        for (auto& [name, id] : textures)
+            bindTexture(name, id);
+    }
+
+    if (pBindedShader)
+        pBindedShader->predraw(commandBuffer);
+    else
+        log_error("Shader program is not binded. Before calling draw, you should bind shader!");
+
+    if (pBindedVBO)
+    {
+        auto last_index = pBindedVBO->getLastIndex();
+        auto last_vertex = pBindedVBO->getLastIndex();
+
+        if (last_index == 0)
+        {
+            // Vertex only pass
+            vertex_count = vertex_count == 0 ? last_vertex : vertex_count;
+            commandBuffer.draw(vertex_count, instance_count, begin_vertex, 0);
+        }
+        else
+        {
+            // Indexed drawing
+            index_count = index_count == 0 ? last_index : index_count;
+            commandBuffer.drawIndexed(index_count, instance_count, begin_index, 0, 0);
+        }
+    }
+    else
+        // Screen space drawing
+        commandBuffer.draw(vertex_count, instance_count, begin_vertex, 0);
+}
+
+void CAPIHandle::dispatch(const glm::vec2& size)
+{
+    auto& commandBuffer = commandBuffers->getCommandBuffer();
+
+    if (pBindedShader)
+        pBindedShader->dispatch(commandBuffer, size);
+    else
+        log_error("Cannot dispatch, cause shader was not binded.")
 }
 
 vk::CommandBuffer CAPIHandle::beginFrame()

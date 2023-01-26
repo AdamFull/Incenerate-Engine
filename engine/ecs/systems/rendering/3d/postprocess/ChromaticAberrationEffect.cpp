@@ -14,26 +14,27 @@ void CChromaticAberrationEffect::create()
 
 size_t CChromaticAberrationEffect::render(FCameraComponent* camera, size_t in_source, size_t out_source)
 {
-	auto& device = EGGraphics->getDevice();
+	auto& graphics = EGGraphics;
+	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
-	auto commandBuffer = EGGraphics->getCommandBuffer();
 
 	if (camera->effects.aberration.enable)
 	{
-		auto& pShader = EGGraphics->getShader(shader_aberr);
+		graphics->bindShader(shader_aberr);
 
-		pShader->addTexture("writeColor", out_source);
-		pShader->addTexture("samplerColor", in_source);
+		graphics->bindTexture("writeColor", out_source);
+		graphics->bindTexture("samplerColor", in_source);
 
-		auto& pPush = pShader->getPushBlock("ubo");
+		auto& pPush = graphics->getPushBlockHandle("ubo");
 		pPush->set("distortion", camera->effects.aberration.distortion);
 		pPush->set("iterations", camera->effects.aberration.iterations);
-		pPush->flush(commandBuffer);
 
-		pShader->dispatch(commandBuffer, resolution);
+		graphics->dispatch(resolution);
 
-		VkHelper::BarrierFromComputeToCompute(commandBuffer);
+		graphics->bindShader(invalid_index);
+
+		VkHelper::BarrierFromComputeToCompute();
 
 		return out_source;
 	}

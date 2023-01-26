@@ -42,8 +42,11 @@ namespace engine
 
 			static bool hasStencilComponent(vk::Format format);
 
+			static void BarrierFromComputeToCompute();
 			static void BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer);
+			static void BarrierFromComputeToGraphics();
 			static void BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer);
+			static void BarrierFromGraphicsToCompute(size_t image_id = invalid_index);
 			static void BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, size_t image_id = invalid_index);
 		};
 	}

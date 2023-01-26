@@ -21,13 +21,13 @@ void CDeferredPassSystem::__create()
 
 void CDeferredPassSystem::__update(float fDt)
 {
-	auto commandBuffer = EGGraphics->getCommandBuffer();
-	auto& stage = EGGraphics->getRenderStage("deferred");
+	auto& graphics = EGGraphics;
+	auto stage = graphics->getRenderStageID("deferred");
 
-	stage->begin(commandBuffer);
+	graphics->bindRenderer(stage);
 
 	for (auto& system : vSubSystems)
 		system->update(fDt);
 
-	stage->end(commandBuffer);
+	graphics->bindRenderer(invalid_index);
 }

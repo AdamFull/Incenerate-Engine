@@ -7,12 +7,6 @@ namespace engine
 {
 	namespace ecs
 	{
-		struct FBloomMip
-		{
-			glm::vec2 size;
-			vk::ImageView view{ VK_NULL_HANDLE };
-		};
-
 		class CBloomEffect
 		{
 		public:
@@ -23,7 +17,8 @@ namespace engine
 			size_t render(FCameraComponent* camera, size_t source);
 		private:
 			void init();
-			std::vector<FBloomMip> vMips;
+			std::vector<glm::vec2> vMips;
+			const uint32_t mipLevels{ 5 };
 
 			size_t shader_brightdetect{ invalid_index };
 			size_t shader_downsample{ invalid_index };

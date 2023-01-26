@@ -14,24 +14,25 @@ void CTonemapEffect::create()
 
 size_t CTonemapEffect::render(FCameraComponent* camera, size_t in_source, size_t out_source)
 {
-	auto& device = EGGraphics->getDevice();
+	auto& graphics = EGGraphics;
+	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
-	auto commandBuffer = EGGraphics->getCommandBuffer();
 
 	if (camera->effects.tonemap.enable)
 	{
-		auto& pShader = EGGraphics->getShader(shader_tonemap);
+		graphics->bindShader(shader_tonemap);
 
-		auto& pBlock = pShader->getPushBlock("ubo");
+		auto& pBlock = graphics->getPushBlockHandle("ubo");
 		pBlock->set("gamma", camera->effects.tonemap.gamma);
 		pBlock->set("exposure", camera->effects.tonemap.exposure);
-		pBlock->flush(commandBuffer);
 
-		pShader->addTexture("writeColor", out_source);
-		pShader->addTexture("samplerColor", in_source);
+		graphics->bindTexture("writeColor", out_source);
+		graphics->bindTexture("samplerColor", in_source);
 
-		pShader->dispatch(commandBuffer, resolution);
+		graphics->dispatch(resolution);
+
+		graphics->bindShader(invalid_index);
 
 		return out_source;
 	}

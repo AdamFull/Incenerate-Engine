@@ -94,6 +94,9 @@ void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
 		uniform->flush();
 	}
 
+	for (auto& [name, push] : mPushBlocks)
+		push->flush(commandBuffer);
+
 	for (auto& [key, texture] : mTextures)
 		pInstance->pDescriptorSet->set(key, texture);
 	pInstance->pDescriptorSet->update();
@@ -125,8 +128,9 @@ void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, glm::vec2 size)
 	commandBuffer.dispatch(groupCountX, groupCountY, 1);
 }
 
-void CShaderObject::addTexture(const std::string& attachment, size_t id)
+void CShaderObject::addTexture(const std::string& attachment, size_t id, uint32_t mip_level)
 {
+	// TODO: in method getDescriptor, add mip level selecting
 	auto& texture = EGGraphics->getImage(id);
 	addTexture(attachment, texture->getDescriptor());
 }

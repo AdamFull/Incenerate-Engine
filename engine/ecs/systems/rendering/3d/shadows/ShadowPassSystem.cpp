@@ -17,10 +17,12 @@ void CShadowPassSystem::__create()
 
 void CShadowPassSystem::__update(float fDt)
 {
-	auto& stage = EGGraphics->getRenderStage("shadow");
-	auto commandBuffer = EGGraphics->getCommandBuffer();
+	auto& graphics = EGGraphics;
+	auto stage = graphics->getRenderStageID("shadow");
+	// TODO: remove commandBuffer here
+	auto commandBuffer = graphics->getCommandBuffer();
 
-	stage->begin(commandBuffer);
+	graphics->bindRenderer(stage);
 
 	uint32_t subpasses{ 0 };
 	for (auto& system : vSubSystems)
@@ -31,5 +33,5 @@ void CShadowPassSystem::__update(float fDt)
 		subpasses++;
 	}
 
-	stage->end(commandBuffer);
+	graphics->bindRenderer(invalid_index);
 }
