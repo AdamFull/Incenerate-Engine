@@ -27,7 +27,7 @@ void CBloomEffect::create()
 	auto& image = EGGraphics->getImage(bloom_image);
 
 	FShaderSpecials specials;
-	specials.usages = image->getMipLevels();
+	specials.usages = mipLevels;
 	shader_downsample = EGGraphics->addShader("downsample", "downsample", specials);
 	shader_upsample = EGGraphics->addShader("upsample", "upsample", specials);
 	shader_brightdetect = EGGraphics->addShader("brightdetect", "brightdetect");
@@ -55,7 +55,7 @@ void CBloomEffect::init()
 	graphics->removeImage(bloom_image);
 
 	final_image = effectshared::createImage("final_bloom_tex", vk::Format::eB10G11R11UfloatPack32);
-	bloom_image = effectshared::createImage("bloom_stage_tex", vk::Format::eB10G11R11UfloatPack32, true);
+	bloom_image = effectshared::createImage("bloom_stage_tex", vk::Format::eB10G11R11UfloatPack32, true, mipLevels);
 
 	vMips.clear();
 
@@ -117,7 +117,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 			}
 
 			graphics->bindShader(invalid_index);
-		}
+		}		
 
 		// Upsample
 		{

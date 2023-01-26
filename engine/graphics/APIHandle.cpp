@@ -750,7 +750,7 @@ void CAPIHandle::bindRenderer(size_t id)
 void CAPIHandle::bindTexture(const std::string& name, size_t id, uint32_t mip_level)
 {
     if (pBindedShader)
-        pBindedShader->addTexture(name, id);
+        pBindedShader->addTexture(name, id, mip_level);
     else
         log_error("Cannot bind texture, cause shader was not binded.");
 }

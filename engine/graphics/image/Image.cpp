@@ -423,9 +423,9 @@ void CImage::updateDescriptor(uint32_t mip_level)
 vk::DescriptorImageInfo& CImage::getDescriptor(uint32_t mip_level)
 {
     if (_imageLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal && (_usage & vk::ImageUsageFlagBits::eInputAttachment))
-    {
         _imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-        updateDescriptor(mip_level);
-    }
+    
+    updateDescriptor(mip_level);
+
     return _descriptor;
 }

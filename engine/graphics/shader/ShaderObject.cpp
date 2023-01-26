@@ -132,7 +132,7 @@ void CShaderObject::addTexture(const std::string& attachment, size_t id, uint32_
 {
 	// TODO: in method getDescriptor, add mip level selecting
 	auto& texture = EGGraphics->getImage(id);
-	addTexture(attachment, texture->getDescriptor());
+	addTexture(attachment, texture->getDescriptor(mip_level));
 }
 
 void CShaderObject::addTexture(const std::string& attachment, vk::DescriptorImageInfo descriptor)
