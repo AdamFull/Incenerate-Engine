@@ -768,6 +768,22 @@ bool CAPIHandle::compareAlphaMode(EAlphaMode mode)
     return false;
 }
 
+void CAPIHandle::flushConstantRanges(const std::unique_ptr<CPushHandler>& constantRange)
+{
+    auto& commandBuffer = commandBuffers->getCommandBuffer();
+    constantRange->flush(commandBuffer);
+}
+
+void CAPIHandle::flushShader()
+{
+    auto& commandBuffer = commandBuffers->getCommandBuffer();
+
+    if (pBindedShader)
+        pBindedShader->predraw(commandBuffer);
+    else
+        log_error("Cannot flush shader data, cause shader is not binded.");
+}
+
 const std::unique_ptr<CHandler>& CAPIHandle::getUniformHandle(const std::string& name)
 {
     if (pBindedShader)
@@ -814,7 +830,10 @@ void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_ind
     }
 
     if (pBindedShader)
-        pBindedShader->predraw(commandBuffer);
+    {
+        if(!bManualShaderControl)
+            pBindedShader->predraw(commandBuffer);
+    }
     else
         log_error("Shader program is not binded. Before calling draw, you should bind shader!");
 

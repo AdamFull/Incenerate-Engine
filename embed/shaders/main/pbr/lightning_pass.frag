@@ -90,8 +90,8 @@ vec3 calculateSpotlight(FSpotLight light, int index, vec3 worldPosition, vec3 al
 	
 	float shadow_factor = 1.0;
 
-	//if(light.castShadows)
-	//	shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
+	if(light.castShadows)
+		shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
 
 	return light.color * light.intencity * color * angularAttenuation * shadow_factor;
 }

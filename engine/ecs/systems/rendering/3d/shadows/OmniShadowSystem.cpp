@@ -49,32 +49,36 @@ void COmniShadowSystem::__update(float fDt)
 		}
 	}
 
-	if (point_light_count > 0)
-	{
-		graphics->bindShader(shader_id);
-
-		auto& pUniform = graphics->getUniformHandle("UBOShadowmap");
-		pUniform->set("viewProjMat", point_light_matrices);
-		pUniform->set("lightPos", point_light_positions);
-		pUniform->set("passedLights", point_light_count);
-		pUniform->set("farPlane", 25.f);
-
-		auto view = registry.view<FTransformComponent, FMeshComponent>();
-		for (auto [entity, transform, mesh] : view.each())
-		{
-			graphics->bindVertexBuffer(mesh.vbo_id);
-
-			for (auto& meshlet : mesh.vMeshlets)
-			{
-				auto& pPush = graphics->getPushBlockHandle("modelData");
-				pPush->set("model", transform.model);
-
-				graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
-			}
-
-			graphics->bindVertexBuffer(invalid_index);
-		}
-
-		graphics->bindShader(invalid_index);
-	}
+	//if (point_light_count > 0)
+	//{
+	//	graphics->bindShader(shader_id);
+	//	graphics->setManualShaderControlFlag(true);
+	//
+	//	auto& pUniform = graphics->getUniformHandle("UBOShadowmap");
+	//	pUniform->set("viewProjMat", point_light_matrices);
+	//	pUniform->set("lightPos", point_light_positions);
+	//	pUniform->set("passedLights", point_light_count);
+	//	pUniform->set("farPlane", 25.f);
+	//	graphics->flushShader();
+	//
+	//	auto view = registry.view<FTransformComponent, FMeshComponent>();
+	//	for (auto [entity, transform, mesh] : view.each())
+	//	{
+	//		graphics->bindVertexBuffer(mesh.vbo_id);
+	//
+	//		for (auto& meshlet : mesh.vMeshlets)
+	//		{
+	//			auto& pPush = graphics->getPushBlockHandle("modelData");
+	//			pPush->set("model", transform.model);
+	//			graphics->flushConstantRanges(pPush);
+	//
+	//			graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
+	//		}
+	//
+	//		graphics->bindVertexBuffer(invalid_index);
+	//	}
+	//
+	//	graphics->setManualShaderControlFlag(false);
+	//	graphics->bindShader(invalid_index);
+	//}
 }

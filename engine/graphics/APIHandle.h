@@ -95,6 +95,10 @@ namespace engine
 
 			bool compareAlphaMode(EAlphaMode mode);
 
+			void setManualShaderControlFlag(bool value) { bManualShaderControl = value; }
+			void flushConstantRanges(const std::unique_ptr<CPushHandler>& constantRange);
+			void flushShader();
+
 			const std::unique_ptr<CHandler>& getUniformHandle(const std::string& name);
 			const std::unique_ptr<CPushHandler>& getPushBlockHandle(const std::string& name);
 
@@ -123,6 +127,7 @@ namespace engine
 			CMaterial* pBindedMaterial{ nullptr };
 			CVertexBufferObject* pBindedVBO{ nullptr };
 			CRenderStage* pBindedRenderStage{ nullptr };
+			bool bManualShaderControl{ false };
 
 			uint32_t imageIndex{ 0 };
 			bool frameStarted{ false };
