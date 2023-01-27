@@ -106,8 +106,8 @@ vec3 calculatePointLight(FPointLight light, int index, vec3 worldPosition, vec3 
 
 	float shadow_factor = 1.0;
 
-	//if(light.castShadows)
-	//	shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index);
+	if(light.castShadows)
+		shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index, light.radius);
 
 	return light.color * atten * color * light.intencity * shadow_factor;
 }

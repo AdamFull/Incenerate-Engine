@@ -7,12 +7,32 @@
 
 #include <tinyfiledialogs/tinyfiledialogs.h>
 
+#include "Engine.h"
+#include "editor/operations/PropertyChangedOperation.h"
+
+using namespace engine;
+using namespace engine::editor;
+
 constexpr const float _columnWidth{100.f};
 
 namespace ImGui
 {
+    template<class _Ty>
+    void applyPropertyChange(_Ty& vold, _Ty* vnew)
+    {
+        if (ImGui::IsItemActivated())
+            vold = *vnew;
+
+        if (ImGui::IsItemDeactivatedAfterEdit())
+        {
+            auto& actionBuffer = EGEditor->getActionBuffer();
+            actionBuffer->addOperation(std::make_unique<CPropertyChangedOperation>(vold, vnew, utl::type_hash<_Ty>()));
+        }
+    }
+
     bool GCheckbox(const std::string& label, bool* value)
     {
+        static bool oldValue{ false };
         bool bValueChanged{ false };
 
         ImGui::PushID(label.c_str());
@@ -23,6 +43,7 @@ namespace ImGui
             TableNextColumn();
 
             bValueChanged = ImGui::Checkbox(("##" + label).c_str(), value);
+            applyPropertyChange(oldValue, value);
 
             EndTable();
         }
@@ -34,6 +55,8 @@ namespace ImGui
 
     bool GColorEdit3(const std::string& label, glm::vec3& value)
     {
+        static glm::vec3 oldValue{ 0.f };
+
         ImGuiColorEditFlags misc_flags{};
         bool bValueChanged{ false };
 
@@ -47,6 +70,7 @@ namespace ImGui
 
             SetNextItemWidth(GetContentRegionAvail().x);
             bValueChanged = ColorEdit3(("##" + label).c_str(), glm::value_ptr(value), misc_flags);
+            applyPropertyChange(oldValue, &value);
 
             EndTable();
         }
@@ -58,6 +82,8 @@ namespace ImGui
 
     bool GColorEdit4(const std::string& label, glm::vec4& value)
     {
+        static glm::vec4 oldValue{0.f};
+
         ImGuiColorEditFlags misc_flags{};
         bool bValueChanged{ false };
 
@@ -71,6 +97,7 @@ namespace ImGui
 
             SetNextItemWidth(GetContentRegionAvail().x);
             bValueChanged = ColorEdit4(("##" + label).c_str(), glm::value_ptr(value), misc_flags);
+            applyPropertyChange(oldValue, &value);
             
             EndTable();
         }
@@ -82,6 +109,8 @@ namespace ImGui
 
     bool GDragFloatVec3(const std::string& label, glm::vec3& values, float step, float min, float max)
     {
+        static glm::vec3 oldValue{ 0.f };
+
         bool bValueChanged{ false };
         ImGuiIO& io = ImGui::GetIO();
         auto boldFont = io.Fonts->Fonts[0];
@@ -115,6 +144,7 @@ namespace ImGui
 
             SameLine();
             bValueChanged |= DragFloat("##X", &values.x, step, min, max, "%.2f");
+            applyPropertyChange(oldValue.x, &values.x);
             PopItemWidth();
             SameLine();
 
@@ -132,6 +162,7 @@ namespace ImGui
 
             SameLine();
             bValueChanged |= DragFloat("##Y", &values.y, step, min, max, "%.2f");
+            applyPropertyChange(oldValue.y, &values.y);
             PopItemWidth();
             SameLine();
 
@@ -150,6 +181,7 @@ namespace ImGui
 
             SameLine();
             bValueChanged |= DragFloat("##Z", &values.z, step, min, max, "%.2f");
+            applyPropertyChange(oldValue.z, &values.z);
             PopItemWidth();
 
             PopStyleVar();
@@ -163,6 +195,8 @@ namespace ImGui
 
     bool GDragFloat(const std::string& label, float* value, float step, float min, float max)
     {
+        static float oldValue{ 0.f };
+
         bool bValueChanged{ false };
         ImGuiIO& io = GetIO();
         auto boldFont = io.Fonts->Fonts[0];
@@ -194,8 +228,9 @@ namespace ImGui
             SameLine();
 
             SetNextItemWidth(GetContentRegionAvail().x);
-            bValueChanged |= DragFloat("##N", value, step, min, max, "%.3f");
-
+            bValueChanged = DragFloat("##N", value, step, min, max, "%.3f");
+            applyPropertyChange(oldValue, value);
+                
             PopStyleVar();
 
             ImGui::EndTable();
@@ -208,6 +243,8 @@ namespace ImGui
 
     bool GDragInt(const std::string& label, int* value, int step, int min, int max)
     {
+        static int oldValue{ 0 };
+
         bool bValueChanged{ false };
         ImGuiIO& io = GetIO();
         auto boldFont = io.Fonts->Fonts[0];
@@ -240,6 +277,7 @@ namespace ImGui
 
             SetNextItemWidth(GetContentRegionAvail().x);
             bValueChanged |= DragInt("##N", value, step, min, max);
+            applyPropertyChange(oldValue, value);
 
             PopStyleVar();
 
@@ -287,6 +325,8 @@ namespace ImGui
 
     bool GTextInput(const std::string& label, std::string* source, bool enabled)
     {
+        static std::string oldValue;
+
         auto avaliable_width = GetContentRegionAvail().x;
         bool result{ false };
 
@@ -301,6 +341,7 @@ namespace ImGui
             SetNextItemWidth(GetContentRegionAvail().x);
             BeginDisabled(!enabled);
             result = InputText(("##" + label).c_str(), source);
+            applyPropertyChange(oldValue, source);
             EndDisabled();
 
             EndTable();

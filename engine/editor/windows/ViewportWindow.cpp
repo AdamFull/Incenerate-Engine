@@ -12,6 +12,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/epsilon.hpp>
 
+#include "editor/operations/PropertyChangedOperation.h"
+
 using namespace engine::ecs;
 using namespace engine::editor;
 using namespace engine::graphics;
@@ -179,6 +181,10 @@ void CEditorViewport::drawViewport(float offsetx, float offsety)
 
 void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex, float sizey)
 {
+	static glm::vec3 oldTranslation{ 0.f };
+	static glm::vec3 oldRotation{ 0.f };
+	static glm::vec3 oldScale{ 1.f };
+
 	bool snap{ false };
 
 	if (ImGui::IsKeyPressed(ImGuiKey_T))
@@ -226,14 +232,67 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 			decompose(delta, translation, rotation, scale);
 
 			auto rel = glm::abs(translation - transform.position);
-			auto moved = rel.x > 0.05f | rel.y > 0.05f | rel.z > 0.05f;
+			auto moved = rel.x > 0.05f || rel.y > 0.05f || rel.z > 0.05f;
 
 			switch (mCurrentGizmoOperation)
 			{
-			case ImGuizmo::TRANSLATE: transform.position += translation; break;
-			case ImGuizmo::ROTATE: transform.rotation += rotation; break;
-			case ImGuizmo::SCALE: transform.scale *= scale; break;
+			case ImGuizmo::TRANSLATE: 
+			{ 
+				if (!isManipulating)
+				{
+					isManipulating = true;
+					oldTranslation = transform.position;
+				}
+
+				transform.position += translation; 
+			} break;
+
+			case ImGuizmo::ROTATE: 
+			{
+				if (!isManipulating)
+				{
+					isManipulating = true;
+					oldRotation = transform.rotation;
+				}
+
+				transform.rotation += rotation;
+			} break;
+
+			case ImGuizmo::SCALE: 
+			{ 
+				if (!isManipulating)
+				{
+					isManipulating = true;
+					oldScale = transform.scale;
+				}
+
+				transform.scale *= scale; 
+			} break;
 			}
+
+			return;
+		}
+
+		if (isManipulating && !ImGuizmo::IsOver())
+		{
+			auto& actionBuffer = EGEditor->getActionBuffer();
+
+			switch (mCurrentGizmoOperation)
+			{
+			case ImGuizmo::TRANSLATE:
+				actionBuffer->addOperation(std::make_unique<CPropertyChangedOperation>(oldTranslation, &transform.position, utl::type_hash<glm::vec3>()));
+				break;
+			case ImGuizmo::ROTATE:
+				actionBuffer->addOperation(std::make_unique<CPropertyChangedOperation>(oldRotation, &transform.rotation, utl::type_hash<glm::vec3>()));
+				break;
+			case ImGuizmo::SCALE:
+				actionBuffer->addOperation(std::make_unique<CPropertyChangedOperation>(oldScale, &transform.scale, utl::type_hash<glm::vec3>()));
+				break;
+			default:
+				break;
+			}
+
+			isManipulating = false;
 		}
 	}
 }

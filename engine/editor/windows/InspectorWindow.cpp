@@ -16,6 +16,9 @@
 #include "loaders/MeshLoader.h"
 #include "loaders/ImageLoader.h"
 
+#include "editor/operations/AddComponentOperation.h"
+#include "editor/operations/RemoveComponentOperation.h"
+
 using namespace engine::editor;
 using namespace engine::system;
 using namespace engine::loaders;
@@ -27,6 +30,8 @@ template<class _Ty, class _EditPred>
 void try_show_edit(const std::string& name, const entt::entity& entity, _EditPred&& editpred)
 {
 	using namespace engine;
+
+	auto& actionBuffer = EGEditor->getActionBuffer();
 	auto& registry = EGCoordinator;
 	if (auto object = registry.try_get<_Ty>(entity))
 	{
@@ -48,7 +53,8 @@ void try_show_edit(const std::string& name, const entt::entity& entity, _EditPre
 			pre_header.x = ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(trash.c_str()).x + padding.x / 2.f;
 			ImGui::SetCursorPos(pre_header);
 			if (ImGui::Button(trash.c_str()))
-				registry.remove<_Ty>(entity);
+				actionBuffer->addOperation(std::make_unique<CRemoveComponentOperation>(entity, utl::type_hash<_Ty>()));
+				
 			ImGui::SetCursorPos(arter_content);
 		}
 
@@ -61,12 +67,13 @@ template<class _Ty>
 void try_add_menu_item(const std::string& name, const entt::entity& entity)
 {
 	using namespace engine;
+	auto& actionBuffer = EGEditor->getActionBuffer();
 	auto& registry = EGCoordinator;
 	if (!registry.try_get<_Ty>(entity))
 	{
 		auto& icon = EGEditor->getIcon<_Ty>();
 		if (ImGui::MenuItem((icon + " " + name).c_str()))
-			registry.emplace<_Ty>(entity, _Ty{});
+			actionBuffer->addOperation(std::make_unique<CAddComponentOperation>(entity, utl::type_hash<_Ty>()));
 	}
 }
 
@@ -83,7 +90,7 @@ void CEditorInspector::__draw(float fDt)
 	if (selected != entt::null)
 	{
 		auto& hierarchy = registry.get<FHierarchyComponent>(selected);
-
+		
 		if (ImGui::BeginPopup("add_component_popup"))
 		{
 			try_add_menu_item<FAudioComponent>("Audio", selected);
@@ -246,6 +253,7 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 	}
 
 	ImGui::GDragFloat("Gain", &object->gain, 0.01f, 0.01f, 10.f);
+	
 	ImGui::GDragFloat("Pitch", &object->pitch, 0.01f, 0.01f, 10.f);
 	ImGui::GCheckbox("Loop", &object->loop);
 

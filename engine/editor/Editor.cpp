@@ -65,6 +65,7 @@ void CEditor::create()
     auto& fb = EGGraphics->getFramebuffer("present");
 
     pEditorProject = std::make_unique<CEditorProject>();
+    pActionBuffer = std::make_unique<CEditorActionBuffer>();
 
     vk::DescriptorPoolSize pool_sizes[] =
     {
@@ -221,8 +222,8 @@ void CEditor::newFrame(float fDt)
         }
         if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem((mEditorIcons[icons::undo] + " Undo").c_str(), "Ctrl-Z")) {}
-            if (ImGui::MenuItem((mEditorIcons[icons::redo] + " Redo").c_str(), "Ctrl-Y", false, false)) {}  // Disabled item
+            if (ImGui::MenuItem((mEditorIcons[icons::undo] + " Undo").c_str(), "Ctrl-Z", false, pActionBuffer->canUndo())) { pActionBuffer->undo(); }
+            if (ImGui::MenuItem((mEditorIcons[icons::redo] + " Redo").c_str(), "Ctrl-Y", false, pActionBuffer->canRedo())) { pActionBuffer->redo(); }
             ImGui::Separator();
             if (ImGui::MenuItem((mEditorIcons[icons::cut] + " Cut").c_str(), "Ctrl-X")) {}
             if (ImGui::MenuItem((mEditorIcons[icons::copy] + " Copy").c_str(), "Ctrl-C")) {}

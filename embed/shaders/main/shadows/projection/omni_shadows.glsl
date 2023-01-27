@@ -14,25 +14,25 @@ vec3 sampleOffsetDirections[20] = vec3[]
    vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
 );   
 
-float omniShadowProjection(samplerCubeArrayShadow shadomwap_tex, vec3 P, vec3 offset, float bias, int layer)
+float omniShadowProjection(samplerCubeArrayShadow shadomwap_tex, vec3 P, vec3 offset, float bias, int layer, float radius)
 {
-	float currentDist = length(P) / 32.f;
+	float currentDist = length(P) / radius;
 	return texture(shadomwap_tex, vec4(P, layer), currentDist - bias);
 }
 
-float omniShadowFilterPCF(samplerCubeArrayShadow shadomwap_tex, vec3 P, float viewDistance, float bias, int layer)
-{
-	float far_plane = 32.0;
-	float shadowFactor = 0.0;
-	int samples  = 20;
-	float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0; 
-	for(int i = 0; i < samples; ++i)
-		shadowFactor += omniShadowProjection(shadomwap_tex, P, sampleOffsetDirections[i] * diskRadius, bias, layer);
-	shadowFactor /= float(samples); 
-	return shadowFactor;
-}
+//float omniShadowFilterPCF(samplerCubeArrayShadow shadomwap_tex, vec3 P, float viewDistance, float bias, int layer)
+//{
+//	float far_plane = 32.0;
+//	float shadowFactor = 0.0;
+//	int samples  = 20;
+//	float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0; 
+//	for(int i = 0; i < samples; ++i)
+//		shadowFactor += omniShadowProjection(shadomwap_tex, P, sampleOffsetDirections[i] * diskRadius, bias, layer);
+//	shadowFactor /= float(samples); 
+//	return shadowFactor;
+//}
 
-float omniShadowFilterPCF(samplerCubeArrayShadow shadomwap_tex, vec3 P, float bias, int layer)
+float omniShadowFilterPCF(samplerCubeArrayShadow shadomwap_tex, vec3 P, float bias, int layer, float radius)
 {
 	float shadowFactor = 0.0;
 	float samples = 4.0;
@@ -43,7 +43,7 @@ float omniShadowFilterPCF(samplerCubeArrayShadow shadomwap_tex, vec3 P, float bi
 		{
 			for(float z = -offset; z < offset; z += offset / (samples * 0.5))
 			{
-				shadowFactor += omniShadowProjection(shadomwap_tex, P, vec3(x, y, z), bias, layer);
+				shadowFactor += omniShadowProjection(shadomwap_tex, P, vec3(x, y, z), bias, layer, radius);
 			}
 		}
 	}
@@ -51,7 +51,7 @@ float omniShadowFilterPCF(samplerCubeArrayShadow shadomwap_tex, vec3 P, float bi
 	return shadowFactor;
 }
 
-float getOmniShadow(samplerCubeArrayShadow shadomwap_tex, vec3 fragPos, vec3 viewPos, vec3 N, FPointLight light, int layer) 
+float getOmniShadow(samplerCubeArrayShadow shadomwap_tex, vec3 fragPos, vec3 viewPos, vec3 N, FPointLight light, int layer, float radius) 
 {
     float shadow = 1.0;
 	vec3 shadowClip = fragPos - light.position;	
@@ -64,9 +64,9 @@ float getOmniShadow(samplerCubeArrayShadow shadomwap_tex, vec3 fragPos, vec3 vie
 
 	bool enablePCF = false;
 	if (enablePCF)
-		shadow = omniShadowFilterPCF(shadomwap_tex, shadowClip, bias, layer);
+		shadow = omniShadowFilterPCF(shadomwap_tex, shadowClip, bias, layer, radius);
 	else
-		shadow = omniShadowProjection(shadomwap_tex, shadowClip, vec3(0.0), bias, layer);
+		shadow = omniShadowProjection(shadomwap_tex, shadowClip, vec3(0.0), bias, layer, radius);
 
 	return shadow;
 }

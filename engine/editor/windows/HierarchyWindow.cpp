@@ -8,6 +8,11 @@
 
 #include "game/SceneGraph.hpp"
 
+#include "editor/operations/CreateEntityOperation.h"
+#include "editor/operations/RemoveEntityOperation.h"
+#include "editor/operations/CopyEntityOperation.h"
+#include "editor/operations/DuplicateEntityOperation.h"
+
 using namespace engine::editor;
 using namespace engine::game;
 using namespace engine::ecs;
@@ -19,6 +24,7 @@ void CEditorHierarchy::create()
 
 void CEditorHierarchy::__draw(float fDt)
 {
+    auto& actionBuffer = EGEditor->getActionBuffer();
     auto& registry = EGCoordinator;
     auto root = EGSceneManager->getRoot();
 	auto current_size = ImGui::GetWindowSize();
@@ -34,17 +40,14 @@ void CEditorHierarchy::__draw(float fDt)
     if (ImGui::BeginPopup("HierarchyOptions"))
     {
         if (ImGui::MenuItem("create"))
-        {
-            auto entity = scenegraph::create_node("SceneNode");
-            scenegraph::attach_child(selected_entity, entity);
-        }
+            actionBuffer->addOperation(std::make_unique<CCreateEntityOperation>(selected_entity));
 
         if (ImGui::MenuItem("copy", "CTRL+C"))
             copy_entity = selected_entity;
 
         if (ImGui::MenuItem("paste", "CTRL+V", nullptr, copy_entity != entt::null))
         {
-            scenegraph::attach_child(selected_entity, scenegraph::duplicate_node(copy_entity));
+            actionBuffer->addOperation(std::make_unique<CCopyEntityOperation>(selected_entity, copy_entity));
             copy_entity = entt::null;
         }
 
@@ -56,7 +59,7 @@ void CEditorHierarchy::__draw(float fDt)
             if (hierarchy.parent != entt::null)
                 attach_to = hierarchy.parent;
 
-            scenegraph::attach_child(attach_to, scenegraph::duplicate_node(selected_entity));
+            actionBuffer->addOperation(std::make_unique<CDuplicateEntityOperation>(attach_to, selected_entity));
         }
 
         if (ImGui::MenuItem("delete", "DEL"))
@@ -64,7 +67,7 @@ void CEditorHierarchy::__draw(float fDt)
             if (EGEditor->isSelected(selected_entity))
                 EGEditor->selectObject(root);
 
-            scenegraph::destroy_node(selected_entity);
+            actionBuffer->addOperation(std::make_unique<CRemoveEntityOperation>(selected_entity));
         }
 
         ImGui::EndPopup();

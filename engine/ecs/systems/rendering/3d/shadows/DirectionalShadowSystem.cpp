@@ -27,7 +27,7 @@ void CDirectionalShadowSystem::__update(float fDt)
 	// Calculating spot light matrices
 	{
 		auto lights = registry.view<FTransformComponent, FSpotLightComponent>();
-		for (auto [entity, transform, light] : lights.each())
+		for (auto [entity, ltransform, light] : lights.each())
 		{
 			if (!light.castShadows && lightStride < MAX_SPOT_LIGHT_COUNT)
 				continue;
@@ -35,8 +35,8 @@ void CDirectionalShadowSystem::__update(float fDt)
 			FFrustum frustum;
 			const glm::vec3 dp(0.0000001f);
 
-			glm::mat4 shadowProj = glm::perspective(light.outerAngle - light.innerAngle, 1.0f, 0.1f, 64.f);
-			glm::mat4 shadowView = glm::lookAt(transform.rposition + dp, transform.rrotation, glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::mat4 shadowProj = glm::perspective(glm::radians(45.f), 1.0f, 0.1f, 64.f);
+			glm::mat4 shadowView = glm::lookAt(ltransform.rposition + dp, ltransform.rrotation, glm::vec3(0.0f, 1.0f, 0.0f));
 			auto lightViewProj = shadowProj * shadowView;
 
 			frustum.update(shadowView, shadowProj);
@@ -50,18 +50,18 @@ void CDirectionalShadowSystem::__update(float fDt)
 			graphics->flushShader();
 
 			auto meshes = registry.view<FTransformComponent, FMeshComponent>();
-			for (auto [entity, transform, mesh] : meshes.each())
+			for (auto [entity, mtransform, mesh] : meshes.each())
 			{
 				graphics->bindVertexBuffer(mesh.vbo_id);
 
 				for (auto& meshlet : mesh.vMeshlets)
 				{
-					auto inLightView = frustum.checkBox(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
+					auto inLightView = frustum.checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
 
 					if(inLightView)
 					{
 						auto& pPush = graphics->getPushBlockHandle("modelData");
-						pPush->set("model", transform.model);
+						pPush->set("model", mtransform.model);
 						graphics->flushConstantRanges(pPush);
 
 						graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);

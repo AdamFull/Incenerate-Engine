@@ -24,6 +24,7 @@ namespace engine
 		private:
 			std::unique_ptr<graphics::CDescriptorSet> pDescriptorSet;
 			float overlayX{ 300.0 }, overlayY{ 50.f };
+			bool isManipulating{ false };
 		};
 	}
 }

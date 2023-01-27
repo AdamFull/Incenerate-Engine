@@ -4,6 +4,7 @@
 #include <utility/upattern.hpp>
 
 #include "EditorProject.h"
+#include "EditorActionBuffer.h"
 
 struct ImFont;
 
@@ -75,6 +76,8 @@ namespace engine
 			const entt::entity& getCamera() const { return camera; }
 
 			ImFont* getLargeIcons() { return pLargeIcons; }
+
+			const std::unique_ptr<CEditorActionBuffer>& getActionBuffer() const { return pActionBuffer; }
 		private:
 			void NewProjectModal();
 			void OpenProjectModal();
@@ -94,6 +97,7 @@ namespace engine
 		private:
 			FRecentProjects recproj;
 			std::unique_ptr<CEditorProject> pEditorProject;
+			std::unique_ptr<CEditorActionBuffer> pActionBuffer;
 
 			entt::entity camera{ entt::null };
 			entt::entity selected{ entt::null };
