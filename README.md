@@ -42,7 +42,7 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [ ] lua (sol2 in future)
 
 ### Graphics features
-- [x] Vulkan 1.1
+- [x] Vulkan 1.3
 - [x] Deferred shading
 - [x] HDR
 - [x] IBL
