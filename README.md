@@ -66,6 +66,7 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [ ] Bullet physics
 - [ ] Animation
 - [ ] Skinning
+- [ ] OpenGL 4+ support
 
 ### glTF support
 [Feature support status](doc/gltf/glTFFeaturesSupportStatus.md)
