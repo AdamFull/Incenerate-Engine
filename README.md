@@ -42,7 +42,7 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [ ] lua (sol2 in future)
 
 ### Graphics features
-- [x] Vulkan 1.1
+- [x] Vulkan 1.3
 - [x] Deferred shading
 - [x] HDR
 - [x] IBL
@@ -58,6 +58,15 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 
 ### Other features
 - [x] shader reflection (spirv-cross)
+
+### In future
+- [ ] lua (sol2 in future)
+- [ ] Material editor (now working with default pbr material)
+- [ ] Mesh (scene) metadata (custom materials and custom loading rules)
+- [ ] Bullet physics
+- [ ] Animation
+- [ ] Skinning
+- [ ] OpenGL 4+ support
 
 ### glTF support
 [Feature support status](doc/gltf/glTFFeaturesSupportStatus.md)
