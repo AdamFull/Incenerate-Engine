@@ -14,11 +14,6 @@
 
 #include "editor/operations/PropertyChangedOperation.h"
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
-
-#include <vulkan/vulkan_format_traits.hpp>
-
 #include <Helpers.h>
 
 using namespace engine::ecs;
@@ -160,10 +155,7 @@ void CEditorViewport::drawViewport()
 
 void CEditorViewport::viewportPicking()
 {
-	bool blitSupport{ true };
-
 	auto& device = EGGraphics->getDevice();
-	auto& vmalloc = device->getVMAAllocator();
 	auto frame = EGGraphics->getDevice()->getCurrentFrame();
 	auto image_name = "picking_tex_" + std::to_string(frame);
 	auto image_id = EGGraphics->getImageID(image_name);
@@ -184,20 +176,6 @@ void CEditorViewport::viewportPicking()
 		auto decoded = decodeIdFromColor(pixel[0], pixel[1], pixel[2], pixel[3]);
 		log_debug("X: {} , Y: {}, decoded: {})", mouse_pos_x, mouse_pos_y, decoded);
 		EGEditor->selectObject(static_cast<entt::entity>(decoded));
-	}
-
-	if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_PrintScreen))
-	{
-		vk::Image dstImage;
-		vma::Allocation allocation;
-		vk::SubresourceLayout subresourceLayout;
-		device->makeSaveableCopy(image_id, dstImage, allocation, subresourceLayout);
-
-		auto mapped = static_cast<uint8_t*>(vmalloc.mapMemory(allocation));
-		mapped += subresourceLayout.offset;
-		stbi_write_png("testimg.png", extent.width, extent.height, 4, mapped, subresourceLayout.rowPitch);
-		vmalloc.unmapMemory(allocation);
-		vmalloc.destroyImage(dstImage, allocation);
 	}
 }
 

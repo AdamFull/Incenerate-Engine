@@ -7,6 +7,9 @@
 #include <SDL_vulkan.h>
 #include <vulkan/vulkan_to_string.hpp>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 using namespace engine::graphics;
@@ -284,6 +287,7 @@ void CDevice::createSwapchain()
     swapChain = VK_NULL_HANDLE;
 
     auto swapChainSupport = querySwapChainSupport();
+    auto surfaceCaps = vkPhysical.getSurfaceCapabilitiesKHR(vkSurface);
     vk::SurfaceFormatKHR surfaceFormat = VkHelper::chooseSwapSurfaceFormat(swapChainSupport.formats);
     vk::PresentModeKHR presentMode = VkHelper::chooseSwapPresentMode(swapChainSupport.presentModes);
     swapchainExtent = chooseSwapExtent(swapChainSupport.capabilities);
@@ -304,7 +308,12 @@ void CDevice::createSwapchain()
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
     createInfo.imageExtent = swapchainExtent;
     createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;\
+    createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
+
+    if (surfaceCaps.supportedUsageFlags & vk::ImageUsageFlagBits::eTransferSrc)
+        createInfo.imageUsage |= vk::ImageUsageFlagBits::eTransferSrc;
+    if (surfaceCaps.supportedUsageFlags & vk::ImageUsageFlagBits::eTransferDst)
+        createInfo.imageUsage |= vk::ImageUsageFlagBits::eTransferDst;
 
     auto indices = findQueueFamilies();
     uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
@@ -641,6 +650,22 @@ void CDevice::transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image
             sourceStage = vk::PipelineStageFlagBits::eTransfer;
             destinationStage = vk::PipelineStageFlagBits::eTransfer;
         }
+        else if (oldLayout == vk::ImageLayout::ePresentSrcKHR && newLayout == vk::ImageLayout::eTransferSrcOptimal)
+        {
+            barrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
+
+            sourceStage = vk::PipelineStageFlagBits::eTransfer;
+            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+        }
+        else if (oldLayout == vk::ImageLayout::eTransferSrcOptimal && newLayout == vk::ImageLayout::ePresentSrcKHR)
+        {
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
+            barrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+
+            sourceStage = vk::PipelineStageFlagBits::eTransfer;
+            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+        }
         else
         {
             log_error("Unsupported layout transition!");
@@ -844,16 +869,13 @@ std::vector<vk::Format> CDevice::getTextureCompressionFormats()
     return vFormats;
 }
 
-void CDevice::makeSaveableCopy(size_t id, vk::Image& dstImage, vma::Allocation& allocation, vk::SubresourceLayout& subresourceLayout)
+// https://github.com/SaschaWillems/Vulkan/blob/master/examples/screenshot/screenshot.cpp
+void CDevice::takeScreenshot(const std::filesystem::path& filepath)
 {
     bool blitSupport{ true };
+    bool colorSwizzle{ false };
 
-    auto& image = pAPI->getImage(id);
-    auto format = image->getFormat();
-    auto extent = image->getExtent();
-    auto srcImage = image->getImage();
-    
-    auto formatProps = vkPhysical.getFormatProperties2(format);
+    auto formatProps = vkPhysical.getFormatProperties2(imageFormat);
     if (!(formatProps.formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eBlitSrc))
         blitSupport = false;
 
@@ -862,24 +884,26 @@ void CDevice::makeSaveableCopy(size_t id, vk::Image& dstImage, vma::Allocation& 
 
     vk::ImageCreateInfo imageInfo{};
     imageInfo.imageType = vk::ImageType::e2D;
-    imageInfo.extent = extent;
+    imageInfo.extent.width = swapchainExtent.width;
+    imageInfo.extent.height = swapchainExtent.height;
+    imageInfo.extent.depth = 1;
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
     imageInfo.format = vk::Format::eR8G8B8A8Unorm;
     imageInfo.tiling = vk::ImageTiling::eLinear;
     imageInfo.initialLayout = vk::ImageLayout::eUndefined;
     imageInfo.usage = vk::ImageUsageFlagBits::eTransferDst;
-    imageInfo.samples = vk::SampleCountFlagBits::e1;
+    imageInfo.samples = msaaSamples;
     imageInfo.sharingMode = vk::SharingMode::eExclusive;
 
+    auto& srcImage = vImages.at(currentFrame);
+    vk::Image dstImage;
+    vma::Allocation allocation;
     createImage(dstImage, imageInfo, allocation, vma::MemoryUsage::eGpuToCpu);
 
     CCommandBuffer cmdbuf(this);
     cmdbuf.create(true, vk::QueueFlagBits::eTransfer);
     auto commandBuffer = cmdbuf.getCommandBuffer();
-
-    // Waiting image for be in transfer layout
-    VkHelper::BarrierFromGraphicsToTransfer(commandBuffer, id);
 
     auto indices = findQueueFamilies();
 
@@ -893,15 +917,21 @@ void CDevice::makeSaveableCopy(size_t id, vk::Image& dstImage, vma::Allocation& 
     barrier.subresourceRange.levelCount = 1;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
-    vBarriers.push_back(barrier);
+    vBarriers.emplace_back(barrier);
     transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+
+    vBarriers.clear();
+    barrier.srcQueueFamilyIndex = indices.presentFamily.value();
+    barrier.dstQueueFamilyIndex = indices.transferFamily.value();
+    vBarriers.emplace_back(barrier);
+    transitionImageLayout(commandBuffer, srcImage, vBarriers, vk::ImageLayout::ePresentSrcKHR, vk::ImageLayout::eTransferSrcOptimal);
 
     if (blitSupport)
     {
         vk::Offset3D offset;
-        offset.x = extent.width;
-        offset.y = extent.height;
-        offset.z = extent.depth;
+        offset.x = swapchainExtent.width;
+        offset.y = swapchainExtent.height;
+        offset.z = 1;
 
         vk::ImageBlit2 blitRegion;
         blitRegion.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -925,7 +955,9 @@ void CDevice::makeSaveableCopy(size_t id, vk::Image& dstImage, vma::Allocation& 
     else
     {
         vk::ImageCopy2 copyRegion;
-        copyRegion.extent = extent;
+        copyRegion.extent.width = swapchainExtent.width;
+        copyRegion.extent.height = swapchainExtent.height;
+        copyRegion.extent.depth = 1;
         copyRegion.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
         copyRegion.srcSubresource.layerCount = 1;
         copyRegion.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -942,8 +974,19 @@ void CDevice::makeSaveableCopy(size_t id, vk::Image& dstImage, vma::Allocation& 
         commandBuffer.copyImage2(copyImageInfo);
     }
 
-    // Translating dst image to general layout to have read/write access
+    vBarriers.clear();
+    barrier.srcQueueFamilyIndex = indices.transferFamily.value();
+    barrier.dstQueueFamilyIndex = indices.transferFamily.value();
+    vBarriers.emplace_back(barrier);
+
     transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral);
+
+    vBarriers.clear();
+    barrier.srcQueueFamilyIndex = indices.transferFamily.value();
+    barrier.dstQueueFamilyIndex = indices.presentFamily.value();
+    vBarriers.emplace_back(barrier);
+
+    transitionImageLayout(commandBuffer, srcImage, vBarriers, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::ePresentSrcKHR);
 
     cmdbuf.submitIdle();
 
@@ -951,7 +994,26 @@ void CDevice::makeSaveableCopy(size_t id, vk::Image& dstImage, vma::Allocation& 
     imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
     imageSubresource.arrayLayer = 0;
     imageSubresource.mipLevel = 0;
-    subresourceLayout = vkDevice.getImageSubresourceLayout(dstImage, imageSubresource);
+    auto subresourceLayout = vkDevice.getImageSubresourceLayout(dstImage, imageSubresource);
+
+    if (!blitSupport)
+        colorSwizzle = imageFormat == vk::Format::eB8G8R8A8Srgb || imageFormat == vk::Format::eB8G8R8A8Unorm || imageFormat == vk::Format::eB8G8R8A8Snorm;
+
+    auto* mapped = static_cast<char*>(vmaAlloc.mapMemory(allocation));
+    mapped += subresourceLayout.offset;
+
+    if (colorSwizzle)
+    {
+        for (uint32_t idx = 0; idx < subresourceLayout.rowPitch * swapchainExtent.height; idx+=4)
+            std::swap(mapped[2 + idx], mapped[0 + idx]);
+    }
+
+    auto filename = filepath.string();
+    stbi_write_png(filename.c_str(), swapchainExtent.width, swapchainExtent.height, 4, mapped, subresourceLayout.rowPitch);
+
+    vmaAlloc.unmapMemory(allocation);
+
+    vmaAlloc.destroyImage(dstImage, allocation);
 }
 
 void CDevice::readPixel(size_t id, uint32_t x, uint32_t y, void* pixel)

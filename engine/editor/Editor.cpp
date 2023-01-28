@@ -345,34 +345,40 @@ const std::string& CEditor::getIcon(uint32_t id)
 
 void CEditor::onKeyDown(CEvent& event)
 {
-    //auto keys = event.getParam<CKeyDecoder>(Events::Input::Key);
-    //
-    ////if (ImGui::MenuItem((mEditorIcons[icons::cut] + " Cut").c_str(), "Ctrl-X")) {}
-    ////if (ImGui::MenuItem((mEditorIcons[icons::copy] + " Copy").c_str(), "Ctrl-C")) {}
-    ////if (ImGui::MenuItem((mEditorIcons[icons::paste] + " Paste").c_str(), "Ctrl-V")) {}
-    //
-    //if (keys.test(EKeyCode::eKeyLCtrl))
-    //{
-    //    if (keys.test(EKeyCode::eKeyLShift))
-    //    {
-    //        if (keys.test(EKeyCode::eKeyN))
-    //            open_popup = "new_scene_dialog";
-    //        else if (keys.test(EKeyCode::eKeyO))
-    //            open_popup = "open_scene_dialog";
-    //        else if (keys.test(EKeyCode::eKeyS))
-    //            bNeedSaveAll = true;
-    //    }
-    //    else if (keys.test(EKeyCode::eKeyZ))
-    //        bNeedUndo = true;
-    //    else if (keys.test(EKeyCode::eKeyY))
-    //        bNeedRedo = true;
-    //    else if (keys.test(EKeyCode::eKeyN))
-    //        open_popup = "new_project_dialog";
-    //    else if (keys.test(EKeyCode::eKeyO))
-    //        open_popup = "open_project_dialog";
-    //    else if (keys.test(EKeyCode::eKeyS))
-    //        bNeedSave = true;
-    //}
+    auto keys = event.getParam<CKeyDecoder>(Events::Input::Key);
+    
+    //if (ImGui::MenuItem((mEditorIcons[icons::cut] + " Cut").c_str(), "Ctrl-X")) {}
+    //if (ImGui::MenuItem((mEditorIcons[icons::copy] + " Copy").c_str(), "Ctrl-C")) {}
+    //if (ImGui::MenuItem((mEditorIcons[icons::paste] + " Paste").c_str(), "Ctrl-V")) {}
+    
+    if (keys.test(EKeyCode::eKeyLCtrl))
+    {
+        if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_LeftShift))
+        {
+            if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_N))
+                open_popup = "new_scene_dialog";
+            else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_O))
+                open_popup = "open_scene_dialog";
+            else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_S))
+                bNeedSaveAll = true;
+        }
+        else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_Z))
+            bNeedUndo = true;
+        else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_Y))
+            bNeedRedo = true;
+        else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_N))
+            open_popup = "new_project_dialog";
+        else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_O))
+            open_popup = "open_project_dialog";
+        else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_S))
+            bNeedSave = true;
+    }
+
+    if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_PrintScreen))
+    {
+        auto& device = EGGraphics->getDevice();
+        device->takeScreenshot("screenshot.png");
+    }
 }
 
 void CEditor::NewProjectModal()
