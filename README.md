@@ -56,6 +56,9 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [ ] GI
 - [ ] RTX Shadows
 
+### Editor features
+- [x] Pixel-perfect object picking
+
 ### Other features
 - [x] shader reflection (spirv-cross)
 
