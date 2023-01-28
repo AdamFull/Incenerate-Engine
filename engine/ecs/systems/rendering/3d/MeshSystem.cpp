@@ -67,6 +67,7 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 				pUBO->set("viewDir", camera->viewPos);
 				pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent(true));
 				pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
+				pUBO->set("object_id", VkHelper::idToColor(static_cast<uint32_t>(entity)));
 
 				graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
 			}

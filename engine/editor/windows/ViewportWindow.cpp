@@ -14,6 +14,9 @@
 
 #include "editor/operations/PropertyChangedOperation.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
 using namespace engine::ecs;
 using namespace engine::editor;
 using namespace engine::graphics;
@@ -113,6 +116,7 @@ void CEditorViewport::__draw(float fDt)
 	auto textDrawPos = ImGui::GetCursorStartPos();
 
 	drawViewport(viewportPanelSize.x, viewportPanelSize.y);
+	viewportPicking(viewportPanelSize.x, viewportPanelSize.y);
 
 	if (editorMode && state == EEngineState::eEditing)
 	{
@@ -129,7 +133,6 @@ void CEditorViewport::drawViewport(float offsetx, float offsety)
 {
 	auto& device = EGGraphics->getDevice();
 	auto frame = EGGraphics->getDevice()->getCurrentFrame();
-	//auto& image = EGGraphics->getImage("brightness_tex_" + std::to_string(frame));
 	auto& image = EGGraphics->getImage("postprocess_tex");
 	
 	vk::WriteDescriptorSet write{};
@@ -177,6 +180,124 @@ void CEditorViewport::drawViewport(float offsetx, float offsety)
 
 	if (!ImGui::IsAnyItemActive())
 		device->setViewportExtent(vk::Extent2D{(uint32_t)offsetx, (uint32_t)offsety});
+}
+
+void CEditorViewport::viewportPicking(float fx, float fy)
+{
+	bool blitSupport{ true };
+
+	auto& device = EGGraphics->getDevice();
+	auto& vmalloc = device->getVMAAllocator();
+	auto& physical = device->getPhysical();
+	auto frame = EGGraphics->getDevice()->getCurrentFrame();
+	auto image_name = "picking_tex_" + std::to_string(frame);
+	auto image_id = EGGraphics->getImageID(image_name);
+	auto& image = EGGraphics->getImage(image_id);
+	auto& srcImage = image->getImage();
+	//auto& image = EGGraphics->getImage("postprocess_tex");
+	auto extent = image->getExtent();
+	auto format = image->getFormat();
+
+	auto formatProps = physical.getFormatProperties2(format); 
+
+	if (!(formatProps.formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eBlitSrc))
+		blitSupport = false;
+	
+	if(!(formatProps.formatProperties.linearTilingFeatures & vk::FormatFeatureFlagBits::eBlitDst))
+		blitSupport = false;
+
+	vk::ImageCreateInfo imageInfo{};
+	imageInfo.imageType = vk::ImageType::e2D;
+	imageInfo.extent = extent;
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.format = vk::Format::eR8G8B8A8Unorm;
+	imageInfo.tiling = vk::ImageTiling::eLinear;
+	imageInfo.initialLayout = vk::ImageLayout::eUndefined;
+	imageInfo.usage = vk::ImageUsageFlagBits::eTransferDst;
+	imageInfo.samples = vk::SampleCountFlagBits::e1;
+	imageInfo.sharingMode = vk::SharingMode::eExclusive;
+	
+	vk::Image dstImage;
+	vma::Allocation allocation;
+	device->createImage(dstImage, imageInfo, allocation, vma::MemoryUsage::eGpuToCpu);
+
+	CCommandBuffer cmdbuf(device.get());
+	cmdbuf.create(true, vk::QueueFlagBits::eTransfer);
+	auto commandBuffer = cmdbuf.getCommandBuffer();
+	
+	VkHelper::BarrierFromGraphicsToTransfer(commandBuffer, image_id);
+	auto indices = device->findQueueFamilies();
+
+	std::vector<vk::ImageMemoryBarrier> vBarriers;
+	vk::ImageMemoryBarrier barrier{};
+	barrier.srcQueueFamilyIndex = indices.transferFamily.value();
+	barrier.dstQueueFamilyIndex = indices.transferFamily.value();
+	barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = 1;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+	vBarriers.push_back(barrier);
+	device->transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+
+	if (blitSupport)
+	{
+		vk::Offset3D offset;
+		offset.x = extent.width;
+		offset.y = extent.height;
+		offset.z = extent.depth;
+
+		vk::ImageBlit2 blitRegion;
+		blitRegion.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+		blitRegion.srcSubresource.layerCount = 1;
+		blitRegion.srcOffsets[1] = offset;
+		blitRegion.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+		blitRegion.dstSubresource.layerCount = 1;
+		blitRegion.dstOffsets[1] = offset;
+
+		vk::BlitImageInfo2 blitImageInfo;
+		blitImageInfo.srcImage = srcImage;
+		blitImageInfo.srcImageLayout = vk::ImageLayout::eTransferSrcOptimal;
+		blitImageInfo.dstImage = dstImage;
+		blitImageInfo.dstImageLayout = vk::ImageLayout::eTransferDstOptimal;
+		blitImageInfo.filter = vk::Filter::eNearest;
+		blitImageInfo.pRegions = &blitRegion;
+		blitImageInfo.regionCount = 1;
+
+		commandBuffer.blitImage2(blitImageInfo);
+	}
+	else
+	{
+		vk::ImageCopy2 copyRegion;
+		copyRegion.extent = extent;
+		copyRegion.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+		copyRegion.srcSubresource.layerCount = 1;
+		copyRegion.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+		copyRegion.dstSubresource.layerCount = 1;
+
+		vk::CopyImageInfo2 copyImageInfo;
+		copyImageInfo.srcImage = srcImage;
+		copyImageInfo.srcImageLayout = vk::ImageLayout::eTransferSrcOptimal;
+		copyImageInfo.dstImage = dstImage;
+		copyImageInfo.dstImageLayout = vk::ImageLayout::eTransferDstOptimal;
+		copyImageInfo.pRegions = &copyRegion;
+		copyImageInfo.regionCount = 1;
+
+		commandBuffer.copyImage2(copyImageInfo);
+	}
+
+	device->transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral);
+	
+	cmdbuf.submitIdle();
+	auto mapped = vmalloc.mapMemory(allocation);
+
+	if(ImGui::IsKeyDown(ImGuiKey::ImGuiKey_PrintScreen))
+		stbi_write_png("testimg.png", extent.width, extent.height, 4, mapped, extent.width * 4);
+
+	vmalloc.unmapMemory(allocation);
+
+	vmalloc.destroyImage(dstImage, allocation);
 }
 
 void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex, float sizey)

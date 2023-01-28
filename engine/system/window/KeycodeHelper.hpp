@@ -66,6 +66,10 @@ namespace engine
                 eKyeBackspace,
                 eKyeTab,
                 eKeySpace,
+                eKeyLCtrl,
+                eKeyRCtrl,
+                eKeyLShift,
+                eKeyRShift,
 
                 eKeyMinus,
                 eKeyEquals,
@@ -189,6 +193,10 @@ namespace engine
                     case SDL_SCANCODE_BACKSPACE: return EKeyCode::eKyeBackspace;
                     case SDL_SCANCODE_TAB: return EKeyCode::eKyeTab;
                     case SDL_SCANCODE_SPACE: return EKeyCode::eKeySpace;
+                    case SDL_SCANCODE_LCTRL: return EKeyCode::eKeyLCtrl;
+                    case SDL_SCANCODE_RCTRL: return EKeyCode::eKeyRCtrl;
+                    case SDL_SCANCODE_LSHIFT: return EKeyCode::eKeyLShift;
+                    case SDL_SCANCODE_RSHIFT: return EKeyCode::eKeyRShift;
 
                     case SDL_SCANCODE_MINUS: return EKeyCode::eKeyMinus;
                     case SDL_SCANCODE_EQUALS: return EKeyCode::eKeyEquals;

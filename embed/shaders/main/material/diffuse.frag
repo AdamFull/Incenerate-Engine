@@ -88,6 +88,7 @@ layout(std140, binding = 0) uniform FUniformData
 	vec3 viewDir;
 	vec2 viewportDim;
 	vec4 frustumPlanes[6];
+	vec4 object_id;
 } data;
 
 layout(std140, binding = 18) uniform UBOMaterial
@@ -119,6 +120,7 @@ layout(location = 0) out vec4 outAlbedo;
 layout(location = 1) out vec4 outNormal;
 layout(location = 2) out vec4 outMRAH;
 layout(location = 3) out vec4 outEmissive;
+layout(location = 4) out vec4 outObjectID;
 
 #include "../../shader_util.glsl"
 
@@ -216,4 +218,6 @@ void main()
 	outNormal = vec4(normal_map, 1.0);
 	outMRAH = pbr_map;
 	outEmissive = emission;
+	//outObjectID = data.object_id;
+	outObjectID = vec4(1.0);
 }

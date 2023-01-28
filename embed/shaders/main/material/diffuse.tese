@@ -10,6 +10,7 @@ layout(std140, binding = 0) uniform FUniformData
 	vec3 viewDir;
 	vec2 viewportDim;
 	vec4 frustumPlanes[6];
+	vec4 object_id;
 } data;
 
 layout(std140, binding = 18) uniform UBOMaterial

@@ -30,19 +30,33 @@ namespace ImGui
         }
     }
 
-    bool GCheckbox(const std::string& label, bool* value)
+    bool combo_std_vector_pred(void* data, int idx, const char** out_text)
+    {
+        std::vector<std::string>* vector = reinterpret_cast<std::vector<std::string>*>(data);
+        *out_text = vector->at(idx).c_str();
+        return true;
+    }
+
+    bool combo_std_list_pred(void* data, int idx, const char** out_text)
+    {
+        std::list<std::string>* vector = reinterpret_cast<std::list<std::string>*>(data);
+        *out_text = std::next(vector->begin(), idx)->c_str();
+        return true;
+    }
+
+    bool GCheckbox(const char* label, bool* value)
     {
         static bool oldValue{ false };
         bool bValueChanged{ false };
 
-        ImGui::PushID(label.c_str());
+        ImGui::PushID(label);
 
-        if (BeginTable(("table" + label).c_str(), 2))
+        if (BeginTable("table", 2))
         {
-            TableNextColumn(); ImGui::Text(label.c_str());
+            TableNextColumn(); ImGui::Text(label);
             TableNextColumn();
 
-            bValueChanged = ImGui::Checkbox(("##" + label).c_str(), value);
+            bValueChanged = ImGui::Checkbox("##", value);
             applyPropertyChange(oldValue, value);
 
             EndTable();
@@ -53,23 +67,23 @@ namespace ImGui
         return bValueChanged;
     }
 
-    bool GColorEdit3(const std::string& label, glm::vec3& value)
+    bool GColorEdit3(const char* label, glm::vec3& value)
     {
         static glm::vec3 oldValue{ 0.f };
 
         ImGuiColorEditFlags misc_flags{};
         bool bValueChanged{ false };
 
-        PushID(label.c_str());
+        PushID(label);
 
-        if (BeginTable(("table" + label).c_str(), 2))
+        if (BeginTable("table", 2))
         {
-            TableNextColumn(); Text(label.c_str());
+            TableNextColumn(); Text(label);
 
             TableNextColumn();
 
             SetNextItemWidth(GetContentRegionAvail().x);
-            bValueChanged = ColorEdit3(("##" + label).c_str(), glm::value_ptr(value), misc_flags);
+            bValueChanged = ColorEdit3("##", glm::value_ptr(value), misc_flags);
             applyPropertyChange(oldValue, &value);
 
             EndTable();
@@ -80,23 +94,23 @@ namespace ImGui
         return bValueChanged;
     }
 
-    bool GColorEdit4(const std::string& label, glm::vec4& value)
+    bool GColorEdit4(const char* label, glm::vec4& value)
     {
         static glm::vec4 oldValue{0.f};
 
         ImGuiColorEditFlags misc_flags{};
         bool bValueChanged{ false };
 
-        PushID(label.c_str());
+        PushID(label);
 
-        if (BeginTable(("table" + label).c_str(), 2))
+        if (BeginTable("table", 2))
         {
-            TableNextColumn(); Text(label.c_str());
+            TableNextColumn(); Text(label);
 
             TableNextColumn();
 
             SetNextItemWidth(GetContentRegionAvail().x);
-            bValueChanged = ColorEdit4(("##" + label).c_str(), glm::value_ptr(value), misc_flags);
+            bValueChanged = ColorEdit4("##", glm::value_ptr(value), misc_flags);
             applyPropertyChange(oldValue, &value);
             
             EndTable();
@@ -107,7 +121,7 @@ namespace ImGui
         return bValueChanged;
     }
 
-    bool GDragFloatVec3(const std::string& label, glm::vec3& values, float step, float min, float max)
+    bool GDragFloatVec3(const char* label, glm::vec3& values, float step, float min, float max)
     {
         static glm::vec3 oldValue{ 0.f };
 
@@ -115,12 +129,12 @@ namespace ImGui
         ImGuiIO& io = ImGui::GetIO();
         auto boldFont = io.Fonts->Fonts[0];
 
-        PushID(label.c_str());
+        PushID(label);
 
 
-        if (BeginTable(("table" + label).c_str(), 2))
+        if (BeginTable("table", 2))
         {
-            TableNextColumn(); Text(label.c_str());
+            TableNextColumn(); Text(label);
 
             TableNextColumn();
 
@@ -193,7 +207,7 @@ namespace ImGui
         return bValueChanged;
     }
 
-    bool GDragFloat(const std::string& label, float* value, float step, float min, float max)
+    bool GDragFloat(const char* label, float* value, float step, float min, float max)
     {
         static float oldValue{ 0.f };
 
@@ -201,11 +215,11 @@ namespace ImGui
         ImGuiIO& io = GetIO();
         auto boldFont = io.Fonts->Fonts[0];
 
-        PushID(label.c_str());
+        PushID(label);
 
-        if (BeginTable(("table" + label).c_str(), 2))
+        if (BeginTable("table", 2))
         {
-            TableNextColumn(); Text(label.c_str());
+            TableNextColumn(); Text(label);
 
             TableNextColumn();
             PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
@@ -241,7 +255,7 @@ namespace ImGui
         return bValueChanged;
     }
 
-    bool GDragInt(const std::string& label, int* value, int step, int min, int max)
+    bool GDragInt(const char* label, int* value, int step, int min, int max)
     {
         static int oldValue{ 0 };
 
@@ -249,11 +263,11 @@ namespace ImGui
         ImGuiIO& io = GetIO();
         auto boldFont = io.Fonts->Fonts[0];
 
-        PushID(label.c_str());
+        PushID(label);
 
-        if (BeginTable(("table" + label).c_str(), 2))
+        if (BeginTable("table", 2))
         {
-            TableNextColumn(); Text(label.c_str());
+            TableNextColumn(); Text(label);
 
             TableNextColumn();
             PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
@@ -298,17 +312,17 @@ namespace ImGui
         return bValueChanged;
     }
 
-    bool GAssetHolder(const std::string& label, const std::string& source)
+    bool GAssetHolder(const char* label, const std::string& source)
     {
         auto avaliable_width = GetContentRegionAvail().x;
         bool result{ false };
 
-        PushID(label.c_str());
+        PushID(label);
 
-        if (BeginTable(("table" + label).c_str(), 2))
+        if (BeginTable("table", 2))
         {
             TableNextColumn();
-            Text(label.c_str());
+            Text(label);
 
             TableNextColumn();
             BeginDisabled(!source.empty());
@@ -323,26 +337,50 @@ namespace ImGui
         return result;
     }
 
-    bool GTextInput(const std::string& label, std::string* source, bool enabled)
+    bool GTextInput(const char* label, std::string* source, bool enabled)
     {
         static std::string oldValue;
 
-        auto avaliable_width = GetContentRegionAvail().x;
         bool result{ false };
 
-        PushID(label.c_str());
+        PushID(label);
 
-        if (BeginTable(("table" + label).c_str(), 2))
+        if (BeginTable("table", 2))
         {
             TableNextColumn(); 
-            Text(label.c_str());
+            Text(label);
 
             TableNextColumn(); 
             SetNextItemWidth(GetContentRegionAvail().x);
             BeginDisabled(!enabled);
-            result = InputText(("##" + label).c_str(), source);
+            result = InputText("##", source);
             applyPropertyChange(oldValue, source);
             EndDisabled();
+
+            EndTable();
+        }
+
+        PopID();
+
+        return result;
+    }
+
+    bool GCombo(const char* label, int* current_item, const char* const items[], int item_count, int height_in_items)
+    {
+        static int oldValue{ 0 };
+        bool result{ false };
+
+        PushID(label);
+
+        if (BeginTable("table", 2))
+        {
+            TableNextColumn();
+            Text(label);
+
+            TableNextColumn(); 
+            SetNextItemWidth(GetContentRegionAvail().x);
+            result = Combo(label, current_item, items, item_count, height_in_items);
+            applyPropertyChange(oldValue, current_item);
 
             EndTable();
         }

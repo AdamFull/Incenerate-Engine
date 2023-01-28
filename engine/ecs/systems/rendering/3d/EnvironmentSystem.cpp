@@ -51,6 +51,7 @@ void CEnvironmentSystem::__update(float fDt)
 			pUBO->set("viewDir", camera->viewPos);
 			pUBO->set("viewportDim", camera->viewportDim);
 			pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
+			pUBO->set("object_id", VkHelper::idToColor(static_cast<uint32_t>(entity)));
 
 			graphics->bindTexture("samplerCubeMap", skybox.origin);
 

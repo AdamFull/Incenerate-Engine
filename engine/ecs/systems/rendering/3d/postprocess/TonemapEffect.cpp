@@ -24,6 +24,7 @@ size_t CTonemapEffect::render(FCameraComponent* camera, size_t in_source, size_t
 		graphics->bindShader(shader_tonemap);
 
 		auto& pBlock = graphics->getPushBlockHandle("ubo");
+		pBlock->set("fxaa", static_cast<int>(camera->effects.fxaa.enable));
 		pBlock->set("gamma", camera->effects.tonemap.gamma);
 		pBlock->set("exposure", camera->effects.tonemap.exposure);
 
@@ -33,6 +34,8 @@ size_t CTonemapEffect::render(FCameraComponent* camera, size_t in_source, size_t
 		graphics->dispatch(resolution);
 
 		graphics->bindShader(invalid_index);
+
+		VkHelper::BarrierFromComputeToCompute();
 
 		return out_source;
 	}

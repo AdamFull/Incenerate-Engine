@@ -25,6 +25,7 @@ layout (binding = 4) uniform sampler2D normal_tex;
 layout (binding = 5) uniform sampler2D mrah_tex;
 layout (binding = 6) uniform sampler2D emission_tex;
 layout (binding = 7) uniform sampler2D depth_tex;
+//layout (binding = 8) uniform sampler2D picking_tex;
 //layout (binding = 6) uniform sampler2D ssr_tex;
 
 //layout (binding = 7) uniform sampler2DArray cascade_shadowmap_tex;
@@ -78,19 +79,19 @@ vec3 calculateSpotlight(FSpotLight light, int index, vec3 worldPosition, vec3 al
 
 	// Direction vector from source to target
 	vec3 dir = vec3(normalize(light.direction));
-	if(light.toTarget)
+	if(light.toTarget > 0)
 		dir = normalize(light.position - light.direction);
 
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 
 	// https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md
-	float cd = dot(light.toTarget ? L : -L, dir);
+	float cd = dot(light.toTarget > 0 ? L : -L, dir);
 	float angularAttenuation = clamp(cd * light.lightAngleScale + light.lightAngleOffset, 0.0, 1.0);
 	angularAttenuation *= angularAttenuation;	
 	
 	float shadow_factor = 1.0;
 
-	if(light.castShadows)
+	if(light.castShadows > 0)
 		shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
 
 	return light.color * light.intencity * color * angularAttenuation * shadow_factor;
@@ -106,7 +107,7 @@ vec3 calculatePointLight(FPointLight light, int index, vec3 worldPosition, vec3 
 
 	float shadow_factor = 1.0;
 
-	if(light.castShadows)
+	if(light.castShadows > 0)
 		shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index, light.radius);
 
 	return light.color * atten * color * light.intencity * shadow_factor;
@@ -203,6 +204,6 @@ void main()
 		fragcolor = albedo;
 	}
 
-	float fxaa_luma = dot(sqrt(fragcolor), vec3(0.299, 0.587, 0.114));
-  	outFragcolor = vec4(fragcolor, fxaa_luma);
+  	outFragcolor = vec4(fragcolor, 1.0);
+  	//outFragcolor = texture(picking_tex, inUV);
 }

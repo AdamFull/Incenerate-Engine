@@ -27,8 +27,9 @@ size_t CFXAAEffect::render(FCameraComponent* camera, size_t in_source, size_t ou
 		graphics->bindTexture("samplerColor", in_source);
 
 		auto& pPush = graphics->getPushBlockHandle("ubo");
-		pPush->set("texel_step", glm::vec2(1.f / extent.width, 1.f / extent.height));
-		pPush->set("quality", camera->effects.fxaa.quality);
+		pPush->set("quality", atof(fxaa_quality_variant[camera->effects.fxaa.quality]));
+		pPush->set("threshold", atof(fxaa_threshold_variant[camera->effects.fxaa.threshold]));
+		pPush->set("threshold_min", atof(fxaa_threshold_min_variant[camera->effects.fxaa.threshold_min]));
 
 		graphics->dispatch(resolution);
 

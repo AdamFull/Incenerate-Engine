@@ -4,11 +4,13 @@
 layout(binding = 1) uniform samplerCube samplerCubeMap;
 
 layout(location = 0) in vec3 inWorldPos;
+layout(location = 1) in vec4 inObjectID;
 
 layout(location = 0) out vec4 outAlbedo;
 layout(location = 1) out vec4 outNormal;
 layout(location = 2) out vec4 outMRAH;
 layout(location = 3) out vec4 outEmissive;
+layout(location = 4) out vec4 outObjectID;
 
 
 #include "../../shader_util.glsl"
@@ -22,4 +24,5 @@ void main()
 	outNormal = vec4(0.0);
 	outMRAH = vec4(0.0);
 	outEmissive = vec4(0.0);
+	outObjectID = inObjectID;
 }

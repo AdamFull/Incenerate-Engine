@@ -79,6 +79,7 @@ namespace engine
 
 			const std::unique_ptr<CEditorActionBuffer>& getActionBuffer() const { return pActionBuffer; }
 		private:
+			void onKeyDown(CEvent& event);
 			void NewProjectModal();
 			void OpenProjectModal();
 			void NewSceneModal();
@@ -102,6 +103,12 @@ namespace engine
 			entt::entity camera{ entt::null };
 			entt::entity selected{ entt::null };
 			std::map<uint32_t, std::string> mEditorIcons;
+
+			const char* open_popup{ nullptr };
+			bool bNeedUndo{ false };
+			bool bNeedRedo{ false };
+			bool bNeedSave{ false };
+			bool bNeedSaveAll{ false };
 
 			ImFont* pSmallIcons{ nullptr };
 			ImFont* pLargeIcons{ nullptr };

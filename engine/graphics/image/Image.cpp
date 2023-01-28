@@ -159,15 +159,21 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
 
     _instCount = imageInfo.arrayLayers;
 
+    vma::MemoryUsage memoryUsage{ vma::MemoryUsage::eUnknown };
+    vk::ImageTiling tiling{ vk::ImageTiling::eOptimal };
+    //if ((flags & vk::ImageUsageFlagBits::eTransferSrc) || (flags & vk::ImageUsageFlagBits::eTransferDst))
+    //{
+    //    memoryUsage = vma::MemoryUsage::eGpuToCpu;
+    //    tiling = vk::ImageTiling::eLinear;
+    //}
+
     imageInfo.format = _format;
-    imageInfo.tiling = vk::ImageTiling::eOptimal;
+    imageInfo.tiling = tiling;
     imageInfo.initialLayout = _imageLayout;
     imageInfo.usage = flags;
     imageInfo.samples = _samples;
     imageInfo.sharingMode = vk::SharingMode::eExclusive;
 
-    //if (info->isArray && info->isCubemap)
-    //    imageInfo.flags = vk::ImageCreateFlagBits::e2DArrayCompatible;
     if (info->isCubemap)
         imageInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
     else
@@ -175,7 +181,7 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
 
     imageInfo.samples = pDevice->getSamples();
 
-    pDevice->createImage(_image, imageInfo, allocation);
+    pDevice->createImage(_image, imageInfo, allocation, memoryUsage);
 
     vk::ImageView imageView;
 

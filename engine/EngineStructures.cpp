@@ -119,13 +119,17 @@ namespace engine
 	void to_json(nlohmann::json& json, const FPostProcessFXAA& type)
 	{
 		utl::serialize_from("enable", json, type.enable, type.enable != false);
-		utl::serialize_from("quality", json, type.quality, type.quality != 0.98f);
+		utl::serialize_from("quality", json, type.quality, type.quality != 0);
+		utl::serialize_from("threshold", json, type.threshold, type.threshold != 0);
+		utl::serialize_from("threshold_min", json, type.threshold_min, type.threshold_min != 0);
 	}
 
 	void from_json(const nlohmann::json& json, FPostProcessFXAA& type)
 	{
 		utl::parse_to("enable", json, type.enable);
 		utl::parse_to("quality", json, type.quality);
+		utl::parse_to("threshold", json, type.threshold);
+		utl::parse_to("threshold_min", json, type.threshold_min);
 	}
 
 

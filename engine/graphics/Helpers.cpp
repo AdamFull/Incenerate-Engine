@@ -107,6 +107,16 @@ vk::PresentModeKHR VkHelper::chooseSwapPresentMode(const std::vector<vk::Present
     return bestMode;
 }
 
+glm::vec4 VkHelper::idToColor(uint32_t hex)
+{
+    glm::vec4 color;
+    color.x = static_cast<float>((hex & 0xff) / 255u);
+    color.y = static_cast<float>((hex >> 8) / 255u);
+    color.z = static_cast<float>((hex >> 16) / 255u);
+    color.w = 1.f;
+    return color;
+}
+
 bool VkHelper::hasStencilComponent(vk::Format format)
 {
     return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
@@ -171,6 +181,40 @@ void VkHelper::BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, si
         imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
         imageMemoryBarrier.dstStageMask = vk::PipelineStageFlagBits2::eComputeShader;
         imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
+        imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
+        imageMemoryBarrier.newLayout = image->getLayout();
+        imageMemoryBarrier.image = image->getImage();
+        imageMemoryBarrier.subresourceRange.aspectMask = image->getAspectMask();
+        imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+        imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
+        imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
+
+        vk::DependencyInfoKHR dependencyInfo{};
+        dependencyInfo.imageMemoryBarrierCount = 1;
+        dependencyInfo.pImageMemoryBarriers = &imageMemoryBarrier;
+
+        commandBuffer.pipelineBarrier2KHR(dependencyInfo);
+    }
+}
+
+void VkHelper::BarrierFromGraphicsToTransfer(size_t image_id)
+{
+    auto commandBuffer = EGGraphics->getCommandBuffer();
+    BarrierFromGraphicsToTransfer(commandBuffer, image_id);
+}
+
+void VkHelper::BarrierFromGraphicsToTransfer(vk::CommandBuffer& commandBuffer, size_t image_id)
+{
+    if (image_id != invalid_index)
+    {
+        auto& image = EGGraphics->getImage(image_id);
+
+        vk::ImageMemoryBarrier2KHR imageMemoryBarrier{};
+        imageMemoryBarrier.srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
+        imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
+        imageMemoryBarrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
+        imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits2::eTransferRead | vk::AccessFlagBits2::eTransferWrite;
         imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
         imageMemoryBarrier.newLayout = image->getLayout();
         imageMemoryBarrier.image = image->getImage();

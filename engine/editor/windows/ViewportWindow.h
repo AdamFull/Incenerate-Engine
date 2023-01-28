@@ -18,6 +18,7 @@ namespace engine
 		private:
 			//void onViewportReCreate(CEvent& event);
 			void drawViewport(float offsetx, float offsety);
+			void viewportPicking(float fx, float fy);
 			void drawManipulator(float offsetx, float offsety, float sizex, float sizey);
 			void drawOverlay(float offsetx, float offsety, float fDt);
 

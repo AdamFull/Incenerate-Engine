@@ -148,7 +148,7 @@ void CCameraControlSystem::onKeyInput(CEvent& event)
 		moveRight(false);
 	if (keys.test(EKeyCode::eKeySpace))
 		moveUp(false);
-	if (keys.test(EKeyCode::eKeyZ))
+	if (keys.test(EKeyCode::eKeyLCtrl))
 		moveUp(true);
 	if (keys.test(EKeyCode::eMouseMiddle))
 		bRotationPass = true;

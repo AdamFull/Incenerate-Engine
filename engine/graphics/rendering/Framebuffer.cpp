@@ -284,12 +284,14 @@ void CFramebuffer::createRenderPass()
 
 void CFramebuffer::createFramebuffer()
 {
+    bool isDepthOnly{ true };
     auto framesInFlight = pDevice->getFramesInFlight();
     for (size_t frame = 0; frame < framesInFlight; frame++)
     {
         std::vector<vk::ImageView> imageViews{};
         for (auto& [name, attachment] : mFbAttachments)
         {
+            isDepthOnly = isDepthOnly && (attachment.usageFlags & vk::ImageUsageFlagBits::eDepthStencilAttachment);
             auto fullname = name + "_" + std::to_string(frame);
             if (attachment.usageFlags & vk::ImageUsageFlagBits::eDepthStencilAttachment)
             {
@@ -298,7 +300,6 @@ void CFramebuffer::createFramebuffer()
 
                 depthImageIDX = EGGraphics->addImage(fullname, std::move(depthImage));
                 mFramebufferImages[frame].emplace(name, depthImageIDX);
-                
             }
             else
             {
@@ -320,7 +321,7 @@ void CFramebuffer::createFramebuffer()
         framebufferCI.attachmentCount = static_cast<uint32_t>(imageViews.size());
         framebufferCI.width = renderArea.extent.width;
         framebufferCI.height = renderArea.extent.height;
-        framebufferCI.layers = 1;
+        framebufferCI.layers = isDepthOnly ? 1 : 1;
 
         vk::Framebuffer framebuffer{ VK_NULL_HANDLE };
         vk::Result res = pDevice->create(framebufferCI, &framebuffer);

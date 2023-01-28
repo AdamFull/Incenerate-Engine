@@ -87,6 +87,7 @@ void CEditorInspector::__draw(float fDt)
 	auto& registry = EGCoordinator;
 	auto& selected = EGEditor->getLastSelection();
 
+	// TODO: add replace component operation
 	if (selected != entt::null)
 	{
 		auto& hierarchy = registry.get<FHierarchyComponent>(selected);
@@ -143,7 +144,7 @@ void CEditorInspector::__draw(float fDt)
 				ImGui::GCheckbox("To target", &object->toTarget);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
 			});
-
+		
 		try_show_edit<FPointLightComponent>("Point light", selected,
 			[](auto* object)
 			{
@@ -314,7 +315,9 @@ void CEditorInspector::cameraEdit(FCameraComponent* object)
 		if (ImGui::CollapsingHeader("FXAA", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::GCheckbox("enable", &object->effects.fxaa.enable);
-			ImGui::GDragFloat("quality", &object->effects.fxaa.quality, 0.01f, 0.01f, 1.f);
+			ImGui::GCombo("quality", &object->effects.fxaa.quality, fxaa_quality_variant.data(), 5);
+			ImGui::GCombo("threshold", &object->effects.fxaa.threshold, fxaa_threshold_variant.data(), 5);
+			ImGui::GCombo("threshold min", &object->effects.fxaa.threshold_min, fxaa_threshold_min_variant.data(), 3);
 		}
 
 		if (ImGui::CollapsingHeader("Depth of field", ImGuiTreeNodeFlags_DefaultOpen))

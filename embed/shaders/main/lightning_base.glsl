@@ -7,7 +7,7 @@ struct FDirectionalLight
 	vec3 direction;
     vec3 color;
 	float intencity;
-	bool castShadows;
+	int castShadows;
 };
 
 struct FSpotLight
@@ -19,8 +19,8 @@ struct FSpotLight
 	float intencity;
 	float lightAngleScale; 
     float lightAngleOffset;
-	bool toTarget;
-	bool castShadows;
+	int toTarget;
+	int castShadows;
 };
 
 struct FPointLight
@@ -29,7 +29,7 @@ struct FPointLight
     vec3 color;
 	float intencity;
 	float radius;
-	bool castShadows;
+	int castShadows;
 };
 
 #endif

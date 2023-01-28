@@ -10,7 +10,7 @@ namespace engine
 		{
 			glm::vec3 color{ 1.f };
 			float intencity{ 1.f };
-			bool castShadows{ false };
+			bool castShadows{ 0 };
 		};
 
 		struct FDirectionalLightCommit
@@ -18,7 +18,7 @@ namespace engine
 			alignas(16) glm::vec3 direction;
 			alignas(16) glm::vec3 color;
 			alignas(4) float intencity;
-			alignas(4) bool castShadows;
+			alignas(4) int castShadows;
 		};
 
 		void to_json(nlohmann::json& json, const FDirectionalLightComponent& type);

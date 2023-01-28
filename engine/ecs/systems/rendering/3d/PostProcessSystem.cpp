@@ -63,13 +63,13 @@ void CPostProcessSystem::__update(float fDt)
 	VkHelper::BarrierFromGraphicsToCompute(getSubresource("composition_tex"));
 	VkHelper::BarrierFromGraphicsToCompute(getSubresource("depth_tex"));
 
-	size_t current_image = getSubresource("composition_tex");
-	current_image = fxaa.render(camera, current_image, final_image);
+	size_t current_image = getSubresource("composition_tex");	
 	current_image = bloom.render(camera, current_image);
 	current_image = dof.render(camera, getSubresource("depth_tex"), current_image, final_image);
 	current_image = chromatic_aberration.render(camera, current_image, final_image);
 	current_image = vignette.render(camera, current_image, final_image);
 	current_image = tonemap.render(camera, current_image, final_image);
+	current_image = fxaa.render(camera, current_image, final_image);
 
 	VkHelper::BarrierFromComputeToGraphics();
 }

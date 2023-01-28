@@ -23,6 +23,7 @@ void CCompositionSystem::__create()
 	addSubresource("mrah_tex");
 	addSubresource("emission_tex");
 	addSubresource("depth_tex");
+	//addSubresource("picking_tex");
 	addSubresource("direct_shadowmap_tex");
 	addSubresource("omni_shadowmap_tex");
 
@@ -63,7 +64,7 @@ void CCompositionSystem::__update(float fDt)
 			commit.direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
 			commit.color = light.color;
 			commit.intencity = light.intencity;
-			commit.castShadows = light.castShadows;
+			commit.castShadows = static_cast<int>(light.castShadows);
 
 			directional_lights[directoonal_light_count++] = commit;
 		}
@@ -79,7 +80,7 @@ void CCompositionSystem::__update(float fDt)
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.radius = light.radius;
-			commit.castShadows = light.castShadows;
+			commit.castShadows = static_cast<int>(light.castShadows);
 
 			point_lights[point_light_count++] = commit;
 		}
@@ -98,8 +99,8 @@ void CCompositionSystem::__update(float fDt)
 			commit.intencity = light.intencity;
 			commit.lightAngleScale = 1.f / glm::max(0.001f, glm::cos(light.innerAngle) - glm::cos(light.outerAngle));
 			commit.lightAngleOffset = -glm::cos(light.outerAngle) * commit.lightAngleScale;
-			commit.toTarget = light.toTarget;
-			commit.castShadows = light.castShadows;
+			commit.toTarget = static_cast<int>(light.toTarget);
+			commit.castShadows = static_cast<int>(light.castShadows);
 
 			spot_lights[spot_light_count++] = commit;
 		}
@@ -132,6 +133,7 @@ void CCompositionSystem::__update(float fDt)
 	graphics->bindTexture("mrah_tex", getSubresource("mrah_tex"));
 	graphics->bindTexture("emission_tex", getSubresource("emission_tex"));
 	graphics->bindTexture("depth_tex", getSubresource("depth_tex"));
+	//graphics->bindTexture("picking_tex", getSubresource("picking_tex"));
 
 	graphics->bindTexture("direct_shadowmap_tex", getSubresource("direct_shadowmap_tex"));
 	graphics->bindTexture("omni_shadowmap_tex", getSubresource("omni_shadowmap_tex"));

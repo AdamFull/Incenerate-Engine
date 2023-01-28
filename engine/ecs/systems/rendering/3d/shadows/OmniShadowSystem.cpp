@@ -55,7 +55,6 @@ void COmniShadowSystem::__update(float fDt)
 				auto& pUniform = graphics->getUniformHandle("UBOShadowmap");
 				pUniform->set("viewProjMat", shadowProj * point_light_view_matrices[i]);
 				pUniform->set("position", glm::vec4(ltransform.rposition, 1.f));
-				pUniform->set("stride", array_shift + i);
 				pUniform->set("farPlane", light.radius);
 				graphics->flushShader();
 
@@ -72,6 +71,7 @@ void COmniShadowSystem::__update(float fDt)
 						{
 							auto& pPush = graphics->getPushBlockHandle("modelData");
 							pPush->set("model", mtransform.model);
+							pPush->set("stride", array_shift + i);
 							graphics->flushConstantRanges(pPush);
 
 							graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);

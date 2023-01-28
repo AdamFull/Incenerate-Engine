@@ -16,7 +16,7 @@ std::unique_ptr<CBuffer> CBuffer::MakeBuffer(CDevice* device, size_t size, size_
 std::unique_ptr<CBuffer> CBuffer::MakeStagingBuffer(CDevice* device, size_t size, size_t count)
 {
     auto buffer = std::make_unique<CBuffer>(device);
-    buffer->create(size, count, vma::MemoryUsage::eCpuOnly, vk::BufferUsageFlagBits::eTransferSrc);
+    buffer->create(size, count, vma::MemoryUsage::eCpuOnly, vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst);
     return buffer;
 }
 

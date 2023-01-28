@@ -13,7 +13,7 @@ using namespace engine::graphics;
 using namespace engine::system::window;
 
 std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
-std::vector<const char*> deviceExtensions{ "VK_KHR_swapchain", "VK_KHR_maintenance4", "VK_KHR_synchronization2"};
+std::vector<const char*> deviceExtensions{ "VK_KHR_swapchain", "VK_KHR_maintenance4", "VK_KHR_synchronization2", "VK_EXT_shader_viewport_index_layer"};
 
 VKAPI_ATTR VkBool32 VKAPI_CALL CDevice::validationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
@@ -508,7 +508,7 @@ void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk:
     cmdBuf.submitIdle();
 }
 
-void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation)
+void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation, vma::MemoryUsage usage)
 {
     log_debug("Creating image: [extent {}x{}x{}, type {}, format {}, mips {}, layers {}, samples {}, tiling {}, sharing {}, layout {}]", 
         createInfo.extent.width, createInfo.extent.height, createInfo.extent.depth,
@@ -517,7 +517,7 @@ void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma:
     log_cerror(vkDevice, "Trying to create image, byt logical device is not valid.");
 
     vma::AllocationCreateInfo alloc_create_info = {};
-    alloc_create_info.usage = vma::MemoryUsage::eUnknown; //Device local
+    alloc_create_info.usage = usage;
 
     auto res = vmaAlloc.createImage(&createInfo, &alloc_create_info, &image, &allocation, nullptr);
     log_cerror(VkHelper::check(res), "Image was not created");
@@ -632,6 +632,14 @@ void CDevice::transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image
 
             sourceStage = vk::PipelineStageFlagBits::eTransfer;
             destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+        }
+        else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eGeneral)
+        {
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite | vk::AccessFlagBits::eTransferRead;
+
+            sourceStage = vk::PipelineStageFlagBits::eTransfer;
+            destinationStage = vk::PipelineStageFlagBits::eTransfer;
         }
         else
         {

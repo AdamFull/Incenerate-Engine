@@ -40,6 +40,8 @@ namespace engine
 			static vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>&);
 			static vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>);
 
+			static glm::vec4 idToColor(uint32_t hex);
+
 			static bool hasStencilComponent(vk::Format format);
 
 			static void BarrierFromComputeToCompute();
@@ -48,6 +50,8 @@ namespace engine
 			static void BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer);
 			static void BarrierFromGraphicsToCompute(size_t image_id = invalid_index);
 			static void BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, size_t image_id = invalid_index);
+			static void BarrierFromGraphicsToTransfer(size_t image_id = invalid_index);
+			static void BarrierFromGraphicsToTransfer(vk::CommandBuffer& commandBuffer, size_t image_id = invalid_index);
 		};
 	}
 }

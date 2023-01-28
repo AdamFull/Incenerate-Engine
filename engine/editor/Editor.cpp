@@ -64,6 +64,8 @@ void CEditor::create()
     auto& device = EGGraphics->getDevice();
     auto& fb = EGGraphics->getFramebuffer("present");
 
+    EGEngine->addEventListener(Events::Input::Key, this, &CEditor::onKeyDown);
+
     pEditorProject = std::make_unique<CEditorProject>();
     pActionBuffer = std::make_unique<CEditorActionBuffer>();
 
@@ -171,7 +173,7 @@ void CEditor::create()
     camera = scenegraph::create_node("editor_camera");
     registry.emplace<FCameraComponent>(camera, FCameraComponent{});
     auto& camcomp = registry.get<FCameraComponent>(camera);
-    camcomp.sensitivity = 5.f;
+    camcomp.sensitivity = 15.f;
 
     auto& transform = registry.get<FTransformComponent>(camera);
     transform.position = glm::vec3(0.f, 8.f, 10.f);
@@ -203,7 +205,6 @@ void CEditor::newFrame(float fDt)
 
     //ImGui::ShowDemoWindow();
 
-    const char* open_popup{ nullptr };
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -214,16 +215,16 @@ void CEditor::newFrame(float fDt)
             if (ImGui::MenuItem("New scene", "Ctrl-Shift-N")) { open_popup = "new_scene_dialog"; }
             if (ImGui::MenuItem("Open scene", "Ctrl-Shift-O")) { open_popup = "open_scene_dialog"; }
             ImGui::Separator();
-            if (ImGui::MenuItem((mEditorIcons[icons::save] + " Save").c_str(), "Ctrl-S")) { EGSceneManager->save(); }
-            if (ImGui::MenuItem((mEditorIcons[icons::save_all] + " Save all").c_str(), "Ctrl-Shift-S")) { pEditorProject->save(); }
+            if (ImGui::MenuItem((mEditorIcons[icons::save] + " Save").c_str(), "Ctrl-S")) { bNeedSave = true; }
+            if (ImGui::MenuItem((mEditorIcons[icons::save_all] + " Save all").c_str(), "Ctrl-Shift-S")) { bNeedSaveAll = true; }
             ImGui::Separator();
             if (ImGui::MenuItem((mEditorIcons[icons::close] + " Exit").c_str(), "Ctrl-Q")) {}
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem((mEditorIcons[icons::undo] + " Undo").c_str(), "Ctrl-Z", false, pActionBuffer->canUndo())) { pActionBuffer->undo(); }
-            if (ImGui::MenuItem((mEditorIcons[icons::redo] + " Redo").c_str(), "Ctrl-Y", false, pActionBuffer->canRedo())) { pActionBuffer->redo(); }
+            if (ImGui::MenuItem((mEditorIcons[icons::undo] + " Undo").c_str(), "Ctrl-Z", false, pActionBuffer->canUndo())) { bNeedUndo = true; }
+            if (ImGui::MenuItem((mEditorIcons[icons::redo] + " Redo").c_str(), "Ctrl-Y", false, pActionBuffer->canRedo())) { bNeedRedo = true; }
             ImGui::Separator();
             if (ImGui::MenuItem((mEditorIcons[icons::cut] + " Cut").c_str(), "Ctrl-X")) {}
             if (ImGui::MenuItem((mEditorIcons[icons::copy] + " Copy").c_str(), "Ctrl-C")) {}
@@ -252,8 +253,37 @@ void CEditor::newFrame(float fDt)
         ImGui::EndMainMenuBar();
     }
 
-    if(open_popup)
+    if (open_popup)
+    {
         ImGui::OpenPopup(open_popup);
+        open_popup = nullptr;
+    }
+
+    if (bNeedUndo)
+    {
+        if(pActionBuffer->canUndo())
+            pActionBuffer->undo();
+        bNeedUndo = false;
+    }
+
+    if (bNeedRedo)
+    {
+        if(pActionBuffer->canRedo())
+            pActionBuffer->redo();
+        bNeedRedo = false;
+    }
+
+    if (bNeedSave)
+    {
+        EGSceneManager->save();
+        bNeedSave = false;
+    }
+
+    if (bNeedSaveAll)
+    {
+        pEditorProject->save();
+        bNeedSaveAll = false;
+    }
 
     ImGui::DockSpaceOverViewport();
 
@@ -311,6 +341,38 @@ vk::DescriptorPool& CEditor::getDescriptorPool()
 const std::string& CEditor::getIcon(uint32_t id)
 {
     return mEditorIcons[id];
+}
+
+void CEditor::onKeyDown(CEvent& event)
+{
+    //auto keys = event.getParam<CKeyDecoder>(Events::Input::Key);
+    //
+    ////if (ImGui::MenuItem((mEditorIcons[icons::cut] + " Cut").c_str(), "Ctrl-X")) {}
+    ////if (ImGui::MenuItem((mEditorIcons[icons::copy] + " Copy").c_str(), "Ctrl-C")) {}
+    ////if (ImGui::MenuItem((mEditorIcons[icons::paste] + " Paste").c_str(), "Ctrl-V")) {}
+    //
+    //if (keys.test(EKeyCode::eKeyLCtrl))
+    //{
+    //    if (keys.test(EKeyCode::eKeyLShift))
+    //    {
+    //        if (keys.test(EKeyCode::eKeyN))
+    //            open_popup = "new_scene_dialog";
+    //        else if (keys.test(EKeyCode::eKeyO))
+    //            open_popup = "open_scene_dialog";
+    //        else if (keys.test(EKeyCode::eKeyS))
+    //            bNeedSaveAll = true;
+    //    }
+    //    else if (keys.test(EKeyCode::eKeyZ))
+    //        bNeedUndo = true;
+    //    else if (keys.test(EKeyCode::eKeyY))
+    //        bNeedRedo = true;
+    //    else if (keys.test(EKeyCode::eKeyN))
+    //        open_popup = "new_project_dialog";
+    //    else if (keys.test(EKeyCode::eKeyO))
+    //        open_popup = "open_project_dialog";
+    //    else if (keys.test(EKeyCode::eKeyS))
+    //        bNeedSave = true;
+    //}
 }
 
 void CEditor::NewProjectModal()
