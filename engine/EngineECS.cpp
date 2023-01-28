@@ -159,10 +159,5 @@ void CEngine::initEntityComponentSystem()
 	vSystems.emplace_back(std::make_unique<CCameraControlSystem>());
 	vSystems.emplace_back(std::make_unique<CAudioSystem>());
 	vSystems.emplace_back(std::make_unique<C3DRenderSystem>());
-
-	if (bEditorMode)
-		vSystems.emplace_back(std::make_unique<CEditorRenderSystem>());
-
-
-	//vSystems.emplace_back(std::make_unique<C2DRenderSystem>());
+	vSystems.emplace_back(std::make_unique<CPresentRenderSystem>());
 }

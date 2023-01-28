@@ -62,7 +62,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 			defineBlock << "#define " << defineName << " " << defineValue << '\n';
 
 		if (EGEngine->isEditorMode())
-			defineBlock << "#define " << "EDITOR_MODE";
+			defineBlock << "#define " << "EDITOR_MODE" << "\n";
 
 		auto stages = it->second.stages;
 		if (!it->second.tesselation)
