@@ -8,3 +8,4 @@
 #include "rendering/PresentRenderSystem.h"
 #include "rendering/2DRenderSystem.h"
 #include "rendering/3DRenderSystem.h"
+#include "rendering/3d/BillboardSystem.h"

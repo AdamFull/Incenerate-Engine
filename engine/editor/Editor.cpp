@@ -353,28 +353,28 @@ void CEditor::onKeyDown(CEvent& event)
     
     if (keys.test(EKeyCode::eKeyLCtrl))
     {
-        if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_LeftShift))
+        if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_LeftShift))
         {
-            if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_N))
+            if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_N))
                 open_popup = "new_scene_dialog";
-            else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_O))
+            else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_O))
                 open_popup = "open_scene_dialog";
-            else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_S))
+            else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_S))
                 bNeedSaveAll = true;
         }
-        else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_Z))
+        else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_Z))
             bNeedUndo = true;
-        else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_Y))
+        else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_Y))
             bNeedRedo = true;
-        else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_N))
+        else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_N))
             open_popup = "new_project_dialog";
-        else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_O))
+        else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_O))
             open_popup = "open_project_dialog";
-        else if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_S))
+        else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_S))
             bNeedSave = true;
     }
 
-    if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_PrintScreen))
+    if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_PrintScreen))
     {
         auto& device = EGGraphics->getDevice();
         device->takeScreenshot("screenshot.png");

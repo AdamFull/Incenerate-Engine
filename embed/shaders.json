@@ -36,6 +36,20 @@
     ],
     "defines": {}
   },
+  "billboard": {
+    "stage": "deferred",
+    "vertex_free": true,
+    "bind_point": "Graphics",
+    "cull_mode": "Back",
+    "front_face": "ccw",
+    "depth_test": true,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "shaders/main/material/billboard.vert",
+      "shaders/main/material/billboard.tese"
+    ],
+    "defines": {}
+  },
   "skybox": {
     "stage": "deferred",
     "bind_point": "Graphics",
