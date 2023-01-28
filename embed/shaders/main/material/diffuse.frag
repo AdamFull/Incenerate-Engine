@@ -120,7 +120,9 @@ layout(location = 0) out vec4 outAlbedo;
 layout(location = 1) out vec4 outNormal;
 layout(location = 2) out vec4 outMRAH;
 layout(location = 3) out vec4 outEmissive;
+#ifdef EDITOR_MODE
 layout(location = 4) out vec4 outObjectID;
+#endif
 
 #include "../../shader_util.glsl"
 
@@ -218,6 +220,7 @@ void main()
 	outNormal = vec4(normal_map, 1.0);
 	outMRAH = pbr_map;
 	outEmissive = emission;
-	//outObjectID = data.object_id;
-	outObjectID = vec4(1.0);
+#ifdef EDITOR_MODE
+	outObjectID = data.object_id;
+#endif
 }

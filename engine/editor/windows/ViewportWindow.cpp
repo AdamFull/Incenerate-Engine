@@ -17,8 +17,13 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
+#include <vulkan/vulkan_format_traits.hpp>
+
+#include <Helpers.h>
+
 using namespace engine::ecs;
 using namespace engine::editor;
+using namespace engine::system::window;
 using namespace engine::graphics;
 
 static const float identityMatrix[16] =
@@ -111,15 +116,18 @@ void CEditorViewport::__draw(float fDt)
 	auto editorMode = EGEngine->isEditorMode();
 	auto state = EGEngine->getState();
 
-	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+	viewportPanelSizeX = ImGui::GetContentRegionAvail().x;
+	viewportPanelSizeY = ImGui::GetContentRegionAvail().y;
+
 	ImVec2 viewportPanelPos = ImGui::GetWindowPos();
 	auto textDrawPos = ImGui::GetCursorStartPos();
 
-	drawViewport(viewportPanelSize.x, viewportPanelSize.y);
-	viewportPicking(viewportPanelSize.x, viewportPanelSize.y);
+	drawViewport();
 
 	if (editorMode && state == EEngineState::eEditing)
 	{
+		viewportPicking();
+
 		if (auto camera = registry.try_get<FCameraComponent>(EGEditor->getCamera()))
 			camera->controllable = ImGui::IsWindowHovered(ImGuiFocusedFlags_RootAndChildWindows);
 
@@ -129,7 +137,7 @@ void CEditorViewport::__draw(float fDt)
 	drawOverlay(textDrawPos.x, textDrawPos.y, fDt);
 }
 
-void CEditorViewport::drawViewport(float offsetx, float offsety)
+void CEditorViewport::drawViewport()
 {
 	auto& device = EGGraphics->getDevice();
 	auto frame = EGGraphics->getDevice()->getCurrentFrame();
@@ -142,162 +150,55 @@ void CEditorViewport::drawViewport(float offsetx, float offsety)
 	write.descriptorCount = 1;
 	pDescriptorSet->update(write);
 
-	auto& pause_icon = EGEditor->getIcon(icons::pause);
-	auto& play_icon = EGEditor->getIcon(icons::play);
-	auto& stop_icon = EGEditor->getIcon(icons::stop);
+	//offsety = ImGui::GetContentRegionAvail().y;
 
-	ImGuiStyle& style = ImGui::GetStyle();
-	float width = 0.0f;
-	width += ImGui::CalcTextSize(pause_icon.c_str()).x;
-	width += style.ItemSpacing.x;
-	width += ImGui::CalcTextSize(play_icon.c_str()).x;
-	width += style.ItemSpacing.x;
-	width += ImGui::CalcTextSize(stop_icon.c_str()).x;
-	AlignForWidth(width);
-
-	auto state = EGEngine->getState();
-	auto disablePause = state == EEngineState::ePause || state == EEngineState::eEditing;
-
-	if (disablePause)
-		ImGui::BeginDisabled();
-
-	if (ImGui::Button(pause_icon.c_str()))
-		EGEngine->setState(EEngineState::ePause);
-
-	if (disablePause)
-		ImGui::EndDisabled();
-
-	ImGui::SameLine();
-	if (ImGui::Button(play_icon.c_str()))
-		EGEngine->setState(EEngineState::ePlay);
-	ImGui::SameLine();
-	if (ImGui::Button(stop_icon.c_str()))
-		EGEngine->setState(EEngineState::eEditing);
-
-	offsety = ImGui::GetContentRegionAvail().y;
-
-	ImGui::Image(pDescriptorSet->get(), ImVec2{ offsetx, offsety });
+	ImGui::Image(pDescriptorSet->get(), ImVec2{ viewportPanelSizeX, viewportPanelSizeY });
 
 	if (!ImGui::IsAnyItemActive())
-		device->setViewportExtent(vk::Extent2D{(uint32_t)offsetx, (uint32_t)offsety});
+		device->setViewportExtent(vk::Extent2D{(uint32_t)viewportPanelSizeX, (uint32_t)viewportPanelSizeY });
 }
 
-void CEditorViewport::viewportPicking(float fx, float fy)
+void CEditorViewport::viewportPicking()
 {
 	bool blitSupport{ true };
 
 	auto& device = EGGraphics->getDevice();
 	auto& vmalloc = device->getVMAAllocator();
-	auto& physical = device->getPhysical();
 	auto frame = EGGraphics->getDevice()->getCurrentFrame();
 	auto image_name = "picking_tex_" + std::to_string(frame);
 	auto image_id = EGGraphics->getImageID(image_name);
 	auto& image = EGGraphics->getImage(image_id);
-	auto& srcImage = image->getImage();
-	//auto& image = EGGraphics->getImage("postprocess_tex");
 	auto extent = image->getExtent();
-	auto format = image->getFormat();
 
-	auto formatProps = physical.getFormatProperties2(format); 
+	auto mousePos = ImGui::GetMousePos();
+	mousePos.x = mousePos.x - ImGui::GetCursorScreenPos().x - ImGui::GetScrollX();
+	mousePos.y = (mousePos.y - ImGui::GetCursorScreenPos().y - ImGui::GetScrollY()) * -1.f;
 
-	if (!(formatProps.formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eBlitSrc))
-		blitSupport = false;
-	
-	if(!(formatProps.formatProperties.linearTilingFeatures & vk::FormatFeatureFlagBits::eBlitDst))
-		blitSupport = false;
+	auto mouse_pos_x = glm::clamp(static_cast<uint32_t>(mousePos.x), 0u, extent.width);
+	auto mouse_pos_y = extent.height - glm::clamp(static_cast<uint32_t>(mousePos.y), 0u, extent.height);
 
-	vk::ImageCreateInfo imageInfo{};
-	imageInfo.imageType = vk::ImageType::e2D;
-	imageInfo.extent = extent;
-	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = 1;
-	imageInfo.format = vk::Format::eR8G8B8A8Unorm;
-	imageInfo.tiling = vk::ImageTiling::eLinear;
-	imageInfo.initialLayout = vk::ImageLayout::eUndefined;
-	imageInfo.usage = vk::ImageUsageFlagBits::eTransferDst;
-	imageInfo.samples = vk::SampleCountFlagBits::e1;
-	imageInfo.sharingMode = vk::SharingMode::eExclusive;
-	
-	vk::Image dstImage;
-	vma::Allocation allocation;
-	device->createImage(dstImage, imageInfo, allocation, vma::MemoryUsage::eGpuToCpu);
-
-	CCommandBuffer cmdbuf(device.get());
-	cmdbuf.create(true, vk::QueueFlagBits::eTransfer);
-	auto commandBuffer = cmdbuf.getCommandBuffer();
-	
-	VkHelper::BarrierFromGraphicsToTransfer(commandBuffer, image_id);
-	auto indices = device->findQueueFamilies();
-
-	std::vector<vk::ImageMemoryBarrier> vBarriers;
-	vk::ImageMemoryBarrier barrier{};
-	barrier.srcQueueFamilyIndex = indices.transferFamily.value();
-	barrier.dstQueueFamilyIndex = indices.transferFamily.value();
-	barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 1;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
-	vBarriers.push_back(barrier);
-	device->transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-
-	if (blitSupport)
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver())
 	{
-		vk::Offset3D offset;
-		offset.x = extent.width;
-		offset.y = extent.height;
-		offset.z = extent.depth;
-
-		vk::ImageBlit2 blitRegion;
-		blitRegion.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-		blitRegion.srcSubresource.layerCount = 1;
-		blitRegion.srcOffsets[1] = offset;
-		blitRegion.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-		blitRegion.dstSubresource.layerCount = 1;
-		blitRegion.dstOffsets[1] = offset;
-
-		vk::BlitImageInfo2 blitImageInfo;
-		blitImageInfo.srcImage = srcImage;
-		blitImageInfo.srcImageLayout = vk::ImageLayout::eTransferSrcOptimal;
-		blitImageInfo.dstImage = dstImage;
-		blitImageInfo.dstImageLayout = vk::ImageLayout::eTransferDstOptimal;
-		blitImageInfo.filter = vk::Filter::eNearest;
-		blitImageInfo.pRegions = &blitRegion;
-		blitImageInfo.regionCount = 1;
-
-		commandBuffer.blitImage2(blitImageInfo);
-	}
-	else
-	{
-		vk::ImageCopy2 copyRegion;
-		copyRegion.extent = extent;
-		copyRegion.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-		copyRegion.srcSubresource.layerCount = 1;
-		copyRegion.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-		copyRegion.dstSubresource.layerCount = 1;
-
-		vk::CopyImageInfo2 copyImageInfo;
-		copyImageInfo.srcImage = srcImage;
-		copyImageInfo.srcImageLayout = vk::ImageLayout::eTransferSrcOptimal;
-		copyImageInfo.dstImage = dstImage;
-		copyImageInfo.dstImageLayout = vk::ImageLayout::eTransferDstOptimal;
-		copyImageInfo.pRegions = &copyRegion;
-		copyImageInfo.regionCount = 1;
-
-		commandBuffer.copyImage2(copyImageInfo);
+		uint8_t pixel[4];
+		device->readPixel(image_id, mouse_pos_x, mouse_pos_y, pixel);
+		auto decoded = decodeIdFromColor(pixel[0], pixel[1], pixel[2], pixel[3]);
+		log_debug("X: {} , Y: {}, decoded: {})", mouse_pos_x, mouse_pos_y, decoded);
+		EGEditor->selectObject(static_cast<entt::entity>(decoded));
 	}
 
-	device->transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral);
-	
-	cmdbuf.submitIdle();
-	auto mapped = vmalloc.mapMemory(allocation);
+	if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_PrintScreen))
+	{
+		vk::Image dstImage;
+		vma::Allocation allocation;
+		vk::SubresourceLayout subresourceLayout;
+		device->makeSaveableCopy(image_id, dstImage, allocation, subresourceLayout);
 
-	if(ImGui::IsKeyDown(ImGuiKey::ImGuiKey_PrintScreen))
-		stbi_write_png("testimg.png", extent.width, extent.height, 4, mapped, extent.width * 4);
-
-	vmalloc.unmapMemory(allocation);
-
-	vmalloc.destroyImage(dstImage, allocation);
+		auto mapped = static_cast<uint8_t*>(vmalloc.mapMemory(allocation));
+		mapped += subresourceLayout.offset;
+		stbi_write_png("testimg.png", extent.width, extent.height, 4, mapped, subresourceLayout.rowPitch);
+		vmalloc.unmapMemory(allocation);
+		vmalloc.destroyImage(dstImage, allocation);
+	}
 }
 
 void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex, float sizey)
@@ -424,7 +325,7 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
 	ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0.23529413f, 0.24705884f, 0.25490198f, 0.50f });
-	ImGui::BeginChild("ChildR", ImVec2(overlayX, overlayY), false, window_flags);
+	ImGui::BeginChild("ChildR", ImVec2(viewportPanelSizeX, overlayY), false, window_flags);
 
 	auto& io = ImGui::GetIO();
 	char overlay[64];
@@ -436,8 +337,41 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 	sprintf(overlay, "GPU: %s", props.deviceName.data());
 	ImGui::Text(overlay);
 
-	//overlayX = ImGui::GetCursorPosX();
 	overlayY = ImGui::GetCursorPosY();
+
+	ImGui::SetCursorPosY(0);
+
+	auto& pause_icon = EGEditor->getIcon(icons::pause);
+	auto& play_icon = EGEditor->getIcon(icons::play);
+	auto& stop_icon = EGEditor->getIcon(icons::stop);
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	float width = 0.0f;
+	width += ImGui::CalcTextSize(pause_icon.c_str()).x;
+	width += style.ItemSpacing.x;
+	width += ImGui::CalcTextSize(play_icon.c_str()).x;
+	width += style.ItemSpacing.x;
+	width += ImGui::CalcTextSize(stop_icon.c_str()).x;
+	AlignForWidth(width);
+
+	auto state = EGEngine->getState();
+	auto disablePause = state == EEngineState::ePause || state == EEngineState::eEditing;
+
+	if (disablePause)
+		ImGui::BeginDisabled();
+
+	if (ImGui::Button(pause_icon.c_str()))
+		EGEngine->setState(EEngineState::ePause);
+
+	if (disablePause)
+		ImGui::EndDisabled();
+
+	ImGui::SameLine();
+	if (ImGui::Button(play_icon.c_str()))
+		EGEngine->setState(EEngineState::ePlay);
+	ImGui::SameLine();
+	if (ImGui::Button(stop_icon.c_str()))
+		EGEngine->setState(EEngineState::eEditing);
 
 	ImGui::EndChild();
 	ImGui::PopStyleVar();

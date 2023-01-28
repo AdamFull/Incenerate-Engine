@@ -18,12 +18,10 @@ layout(binding = 0) uniform FUniformData
 } ubo;
 
 layout (location = 0) out vec3 outWorldPos;
-layout (location = 1) out vec4 outObjectID;
 
 void main() 
 {
 	outWorldPos = (ubo.model * vec4(inPosition, 1.0)).xyz;
-	outObjectID = ubo.object_id;
 	mat4 viewModel = ubo.view * ubo.model;
 	viewModel[3] = vec4(0.0, 0.0, 0.0, 1.0);
 	gl_Position = ubo.projection * viewModel * vec4(inPosition, 1.0);

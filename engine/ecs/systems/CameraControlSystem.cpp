@@ -11,14 +11,10 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <Helpers.h>
+
 using namespace engine::ecs;
 using namespace engine::system::window;
-
-template<class _Ty>
-_Ty rangeToRange(_Ty input, _Ty in_min, _Ty in_max, _Ty out_min, _Ty out_max)
-{
-	return (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
 
 // TODO: it's temporary implementation. Maybe need to create special camera controller?
 

@@ -56,6 +56,9 @@ namespace engine
             vk::Format getDepthFormat();
             std::vector<vk::Format> getTextureCompressionFormats();
 
+            void makeSaveableCopy(size_t id, vk::Image& dstImage, vma::Allocation& allocation, vk::SubresourceLayout& subresourceLayout);
+            void readPixel(size_t id, uint32_t x, uint32_t y, void* pixel);
+
             /**************************************************Getters********************************************/
             inline vk::Instance& getVkInstance() { return vkInstance; }
             inline vk::SurfaceKHR& getSurface() { return vkSurface; }

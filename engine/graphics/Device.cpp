@@ -510,10 +510,10 @@ void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk:
 
 void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation, vma::MemoryUsage usage)
 {
-    log_debug("Creating image: [extent {}x{}x{}, type {}, format {}, mips {}, layers {}, samples {}, tiling {}, sharing {}, layout {}]", 
-        createInfo.extent.width, createInfo.extent.height, createInfo.extent.depth,
-        vk::to_string(createInfo.imageType), vk::to_string(createInfo.format), createInfo.mipLevels, createInfo.arrayLayers,
-        vk::to_string(createInfo.samples), vk::to_string(createInfo.tiling), vk::to_string(createInfo.sharingMode), vk::to_string(createInfo.initialLayout));
+    //log_debug("Creating image: [extent {}x{}x{}, type {}, format {}, mips {}, layers {}, samples {}, tiling {}, sharing {}, layout {}]", 
+    //    createInfo.extent.width, createInfo.extent.height, createInfo.extent.depth,
+    //    vk::to_string(createInfo.imageType), vk::to_string(createInfo.format), createInfo.mipLevels, createInfo.arrayLayers,
+    //    vk::to_string(createInfo.samples), vk::to_string(createInfo.tiling), vk::to_string(createInfo.sharingMode), vk::to_string(createInfo.initialLayout));
     log_cerror(vkDevice, "Trying to create image, byt logical device is not valid.");
 
     vma::AllocationCreateInfo alloc_create_info = {};
@@ -842,6 +842,157 @@ std::vector<vk::Format> CDevice::getTextureCompressionFormats()
     }
 
     return vFormats;
+}
+
+void CDevice::makeSaveableCopy(size_t id, vk::Image& dstImage, vma::Allocation& allocation, vk::SubresourceLayout& subresourceLayout)
+{
+    bool blitSupport{ true };
+
+    auto& image = pAPI->getImage(id);
+    auto format = image->getFormat();
+    auto extent = image->getExtent();
+    auto srcImage = image->getImage();
+    
+    auto formatProps = vkPhysical.getFormatProperties2(format);
+    if (!(formatProps.formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eBlitSrc))
+        blitSupport = false;
+
+    if (!(formatProps.formatProperties.linearTilingFeatures & vk::FormatFeatureFlagBits::eBlitDst))
+        blitSupport = false;
+
+    vk::ImageCreateInfo imageInfo{};
+    imageInfo.imageType = vk::ImageType::e2D;
+    imageInfo.extent = extent;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = vk::Format::eR8G8B8A8Unorm;
+    imageInfo.tiling = vk::ImageTiling::eLinear;
+    imageInfo.initialLayout = vk::ImageLayout::eUndefined;
+    imageInfo.usage = vk::ImageUsageFlagBits::eTransferDst;
+    imageInfo.samples = vk::SampleCountFlagBits::e1;
+    imageInfo.sharingMode = vk::SharingMode::eExclusive;
+
+    createImage(dstImage, imageInfo, allocation, vma::MemoryUsage::eGpuToCpu);
+
+    CCommandBuffer cmdbuf(this);
+    cmdbuf.create(true, vk::QueueFlagBits::eTransfer);
+    auto commandBuffer = cmdbuf.getCommandBuffer();
+
+    // Waiting image for be in transfer layout
+    VkHelper::BarrierFromGraphicsToTransfer(commandBuffer, id);
+
+    auto indices = findQueueFamilies();
+
+    // Transfering dst image to transfer dst
+    std::vector<vk::ImageMemoryBarrier> vBarriers;
+    vk::ImageMemoryBarrier barrier{};
+    barrier.srcQueueFamilyIndex = indices.transferFamily.value();
+    barrier.dstQueueFamilyIndex = indices.transferFamily.value();
+    barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    vBarriers.push_back(barrier);
+    transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+
+    if (blitSupport)
+    {
+        vk::Offset3D offset;
+        offset.x = extent.width;
+        offset.y = extent.height;
+        offset.z = extent.depth;
+
+        vk::ImageBlit2 blitRegion;
+        blitRegion.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        blitRegion.srcSubresource.layerCount = 1;
+        blitRegion.srcOffsets[1] = offset;
+        blitRegion.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        blitRegion.dstSubresource.layerCount = 1;
+        blitRegion.dstOffsets[1] = offset;
+
+        vk::BlitImageInfo2 blitImageInfo;
+        blitImageInfo.srcImage = srcImage;
+        blitImageInfo.srcImageLayout = vk::ImageLayout::eTransferSrcOptimal;
+        blitImageInfo.dstImage = dstImage;
+        blitImageInfo.dstImageLayout = vk::ImageLayout::eTransferDstOptimal;
+        blitImageInfo.filter = vk::Filter::eNearest;
+        blitImageInfo.pRegions = &blitRegion;
+        blitImageInfo.regionCount = 1;
+
+        commandBuffer.blitImage2(blitImageInfo);
+    }
+    else
+    {
+        vk::ImageCopy2 copyRegion;
+        copyRegion.extent = extent;
+        copyRegion.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        copyRegion.srcSubresource.layerCount = 1;
+        copyRegion.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        copyRegion.dstSubresource.layerCount = 1;
+
+        vk::CopyImageInfo2 copyImageInfo;
+        copyImageInfo.srcImage = srcImage;
+        copyImageInfo.srcImageLayout = vk::ImageLayout::eTransferSrcOptimal;
+        copyImageInfo.dstImage = dstImage;
+        copyImageInfo.dstImageLayout = vk::ImageLayout::eTransferDstOptimal;
+        copyImageInfo.pRegions = &copyRegion;
+        copyImageInfo.regionCount = 1;
+
+        commandBuffer.copyImage2(copyImageInfo);
+    }
+
+    // Translating dst image to general layout to have read/write access
+    transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral);
+
+    cmdbuf.submitIdle();
+
+    vk::ImageSubresource imageSubresource;
+    imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+    imageSubresource.arrayLayer = 0;
+    imageSubresource.mipLevel = 0;
+    subresourceLayout = vkDevice.getImageSubresourceLayout(dstImage, imageSubresource);
+}
+
+void CDevice::readPixel(size_t id, uint32_t x, uint32_t y, void* pixel)
+{
+    auto& image = pAPI->getImage(id);
+    auto& srcImage = image->getImage();
+
+    // TODO: get pixel size from format here
+    size_t pixel_size = 4ull;
+
+    auto pixelBuffer = CBuffer::MakeStagingBuffer(this, pixel_size, 1);
+    auto buffer = pixelBuffer->getBuffer();
+
+    CCommandBuffer cmdbuf(this);
+    cmdbuf.create(true, vk::QueueFlagBits::eTransfer);
+    auto commandBuffer = cmdbuf.getCommandBuffer();
+
+    vk::BufferImageCopy region;
+    region.bufferOffset = 0;
+    region.bufferImageHeight = 0;
+    region.bufferRowLength = 0;
+
+    region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+
+    region.imageOffset.x = x;
+    region.imageOffset.y = y;
+    region.imageExtent.width = 1;
+    region.imageExtent.height = 1;
+    region.imageExtent.depth = 1;
+
+    commandBuffer.copyImageToBuffer(srcImage, vk::ImageLayout::eTransferSrcOptimal, buffer, 1, &region);
+
+    cmdbuf.submitIdle();
+
+    pixelBuffer->map();
+    auto mapped = pixelBuffer->getMappedMemory();
+    std::memcpy(pixel, mapped, pixel_size);
+    pixelBuffer->unmap();
 }
 
 vk::Result CDevice::acquireNextImage(uint32_t* imageIndex)

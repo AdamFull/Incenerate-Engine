@@ -40,8 +40,6 @@ namespace engine
 			static vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>&);
 			static vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>);
 
-			static glm::vec4 idToColor(uint32_t hex);
-
 			static bool hasStencilComponent(vk::Format format);
 
 			static void BarrierFromComputeToCompute();

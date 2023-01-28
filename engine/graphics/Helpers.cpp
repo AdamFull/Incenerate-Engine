@@ -107,16 +107,6 @@ vk::PresentModeKHR VkHelper::chooseSwapPresentMode(const std::vector<vk::Present
     return bestMode;
 }
 
-glm::vec4 VkHelper::idToColor(uint32_t hex)
-{
-    glm::vec4 color;
-    color.x = static_cast<float>((hex & 0xff) / 255u);
-    color.y = static_cast<float>((hex >> 8) / 255u);
-    color.z = static_cast<float>((hex >> 16) / 255u);
-    color.w = 1.f;
-    return color;
-}
-
 bool VkHelper::hasStencilComponent(vk::Format format)
 {
     return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;

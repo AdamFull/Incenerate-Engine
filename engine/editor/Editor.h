@@ -16,32 +16,32 @@ namespace engine
 		{
 			using namespace utl;
 
-			constexpr uint32_t trash = "trash"_utl_hash;
-			constexpr uint32_t play = "play"_utl_hash;
-			constexpr uint32_t pause = "pause"_utl_hash;
-			constexpr uint32_t stop = "stop"_utl_hash;
-			constexpr uint32_t undo = "undo"_utl_hash;
-			constexpr uint32_t redo = "redo"_utl_hash;
-			constexpr uint32_t cut = "cut"_utl_hash;
-			constexpr uint32_t copy = "copy"_utl_hash;
-			constexpr uint32_t paste = "paste"_utl_hash;
-			constexpr uint32_t save = "save"_utl_hash;
-			constexpr uint32_t save_all = "save_all"_utl_hash;
-			constexpr uint32_t close = "close"_utl_hash;
-			constexpr uint32_t plus = "plus"_utl_hash;
-			constexpr uint32_t node = "node"_utl_hash;
+			constexpr inline uint32_t trash = "trash"_utl_hash;
+			constexpr inline uint32_t play = "play"_utl_hash;
+			constexpr inline uint32_t pause = "pause"_utl_hash;
+			constexpr inline uint32_t stop = "stop"_utl_hash;
+			constexpr inline uint32_t undo = "undo"_utl_hash;
+			constexpr inline uint32_t redo = "redo"_utl_hash;
+			constexpr inline uint32_t cut = "cut"_utl_hash;
+			constexpr inline uint32_t copy = "copy"_utl_hash;
+			constexpr inline uint32_t paste = "paste"_utl_hash;
+			constexpr inline uint32_t save = "save"_utl_hash;
+			constexpr inline uint32_t save_all = "save_all"_utl_hash;
+			constexpr inline uint32_t close = "close"_utl_hash;
+			constexpr inline uint32_t plus = "plus"_utl_hash;
+			constexpr inline uint32_t node = "node"_utl_hash;
 
-			constexpr uint32_t file_copy = "file_copy"_utl_hash;
-			constexpr uint32_t file_paste = "file_paste"_utl_hash;
+			constexpr inline uint32_t file_copy = "file_copy"_utl_hash;
+			constexpr inline uint32_t file_paste = "file_paste"_utl_hash;
 
-			constexpr uint32_t folder = "folder"_utl_hash;
-			constexpr uint32_t file = "file"_utl_hash;
-			constexpr uint32_t image_file = "image_file"_utl_hash;
-			constexpr uint32_t audio_file = "audio_file"_utl_hash;
-			constexpr uint32_t script_file = "script_file"_utl_hash;
-			constexpr uint32_t mesh_file = "mesh_file"_utl_hash;
-			constexpr uint32_t add_folder = "add_folder"_utl_hash;
-			constexpr uint32_t add_file = "add_file"_utl_hash;
+			constexpr inline uint32_t folder = "folder"_utl_hash;
+			constexpr inline uint32_t file = "file"_utl_hash;
+			constexpr inline uint32_t image_file = "image_file"_utl_hash;
+			constexpr inline uint32_t audio_file = "audio_file"_utl_hash;
+			constexpr inline uint32_t script_file = "script_file"_utl_hash;
+			constexpr inline uint32_t mesh_file = "mesh_file"_utl_hash;
+			constexpr inline uint32_t add_folder = "add_folder"_utl_hash;
+			constexpr inline uint32_t add_file = "add_file"_utl_hash;
 		}
 
 		struct FRecentProjects

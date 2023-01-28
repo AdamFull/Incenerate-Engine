@@ -21,18 +21,18 @@ namespace engine
 	{
 		namespace component
 		{
-			constexpr size_t audio = utl::type_hash<FAudioComponent>();
-			constexpr size_t camera = utl::type_hash<FCameraComponent>();
-			constexpr size_t directional_light = utl::type_hash<FDirectionalLightComponent>();
-			constexpr size_t environment = utl::type_hash<FEnvironmentComponent>();
-			constexpr size_t hierarchy = utl::type_hash<FHierarchyComponent>();
-			constexpr size_t mesh = utl::type_hash<FMeshComponent>();
-			constexpr size_t point_light = utl::type_hash<FPointLightComponent>();
-			constexpr size_t scene = utl::type_hash<FSceneComponent>();
-			constexpr size_t script = utl::type_hash<FScriptComponent>();
-			constexpr size_t spot_light = utl::type_hash<FSpotLightComponent>();
-			constexpr size_t sprite = utl::type_hash<FSpriteComponent>();
-			constexpr size_t transform = utl::type_hash<FTransformComponent>();
+			constexpr inline size_t audio = utl::type_hash<FAudioComponent>();
+			constexpr inline size_t camera = utl::type_hash<FCameraComponent>();
+			constexpr inline size_t directional_light = utl::type_hash<FDirectionalLightComponent>();
+			constexpr inline size_t environment = utl::type_hash<FEnvironmentComponent>();
+			constexpr inline size_t hierarchy = utl::type_hash<FHierarchyComponent>();
+			constexpr inline size_t mesh = utl::type_hash<FMeshComponent>();
+			constexpr inline size_t point_light = utl::type_hash<FPointLightComponent>();
+			constexpr inline size_t scene = utl::type_hash<FSceneComponent>();
+			constexpr inline size_t script = utl::type_hash<FScriptComponent>();
+			constexpr inline size_t spot_light = utl::type_hash<FSpotLightComponent>();
+			constexpr inline size_t sprite = utl::type_hash<FSpriteComponent>();
+			constexpr inline size_t transform = utl::type_hash<FTransformComponent>();
 		}
 	}
 }

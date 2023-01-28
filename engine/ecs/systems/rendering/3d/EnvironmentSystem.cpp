@@ -7,6 +7,7 @@
 #include "ecs/components/components.h"
 
 #include "ecs/helper.hpp"
+#include <Helpers.h>
 
 using namespace engine::ecs;
 using namespace engine::graphics;
@@ -51,7 +52,7 @@ void CEnvironmentSystem::__update(float fDt)
 			pUBO->set("viewDir", camera->viewPos);
 			pUBO->set("viewportDim", camera->viewportDim);
 			pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
-			pUBO->set("object_id", VkHelper::idToColor(static_cast<uint32_t>(entity)));
+			pUBO->set("object_id", encodeIdToColor(static_cast<uint32_t>(entity)));
 
 			graphics->bindTexture("samplerCubeMap", skybox.origin);
 
