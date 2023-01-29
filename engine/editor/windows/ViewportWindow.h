@@ -27,6 +27,9 @@ namespace engine
 			float overlayX{ 300.0 }, overlayY{ 50.f };
 			float viewportPanelSizeX{ 0.f }, viewportPanelSizeY{ 0.f };
 			bool isManipulating{ false };
+			uint16_t frameRate{ 0 };
+			uint16_t frameRateCounter{ 0 };
+			float frameRateAccum{ 0.f };
 		};
 	}
 }

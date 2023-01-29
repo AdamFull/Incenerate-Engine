@@ -308,9 +308,21 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0.23529413f, 0.24705884f, 0.25490198f, 0.50f });
 	ImGui::BeginChild("ChildR", ImVec2(viewportPanelSizeX, overlayY), false, window_flags);
 
+	if (frameRateAccum > 1.f)
+	{
+		frameRateAccum = 0.f;
+		frameRate = frameRateCounter;
+		frameRateCounter = 0;
+	}
+	else
+	{
+		frameRateAccum += fDt;
+		frameRateCounter += 1;
+	}
+
 	auto& io = ImGui::GetIO();
 	char overlay[64];
-	sprintf(overlay, "dt: %.3f | FPS: %.3f", fDt, 1.f / fDt);
+	sprintf(overlay, "dt: %.3f | FPS: %u", fDt, frameRate);
 	ImGui::Text(overlay);
 
 	auto& physical = EGGraphics->getDevice()->getPhysical();
