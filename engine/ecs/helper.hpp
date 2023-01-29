@@ -7,15 +7,6 @@ namespace engine
 {
 	namespace ecs
 	{
-		static entt::entity get_active_camera(const entt::registry& registry)
-		{
-			auto view = registry.view<FCameraComponent>();
-			for (auto [entity, camera] : view.each())
-				if (camera.active)
-					return entity;
-			return entt::null;
-		}
-
 		static entt::entity get_active_skybox(const entt::registry& registry)
 		{
 			auto view = registry.view<FEnvironmentComponent>();

@@ -18,15 +18,8 @@ void CMeshSystem::__create()
 void CMeshSystem::__update(float fDt)
 {
 	auto& registry = EGCoordinator;
-	auto editorMode = EGEngine->isEditorMode();
-	auto state = EGEngine->getState();
 
-	FCameraComponent* camera{ nullptr };
-
-	if (editorMode && state == EEngineState::eEditing)
-		camera = registry.try_get<FCameraComponent>(EGEditor->getCamera());
-	else
-		camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
+	auto* camera = EGEngine->getActiveCamera();
 
 	if (!camera)
 		return;

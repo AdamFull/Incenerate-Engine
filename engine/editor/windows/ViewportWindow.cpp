@@ -119,13 +119,14 @@ void CEditorViewport::__draw(float fDt)
 
 	drawViewport();
 
+	auto controlls_enable = ImGui::IsWindowHovered(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowFocused();
+
+	if (auto camera = EGEngine->getActiveCamera())
+		camera->controllable = controlls_enable;
+
 	if (editorMode && state == EEngineState::eEditing)
 	{
 		viewportPicking();
-
-		if (auto camera = registry.try_get<FCameraComponent>(EGEditor->getCamera()))
-			camera->controllable = ImGui::IsWindowHovered(ImGuiFocusedFlags_RootAndChildWindows);
-
 		drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
 	}
 
@@ -144,8 +145,6 @@ void CEditorViewport::drawViewport()
 	write.pImageInfo = &image->getDescriptor();
 	write.descriptorCount = 1;
 	pDescriptorSet->update(write);
-
-	//offsety = ImGui::GetContentRegionAvail().y;
 
 	ImGui::Image(pDescriptorSet->get(), ImVec2{ viewportPanelSizeX, viewportPanelSizeY });
 
@@ -169,7 +168,7 @@ void CEditorViewport::viewportPicking()
 	auto mouse_pos_x = glm::clamp(static_cast<uint32_t>(mousePos.x), 0u, extent.width);
 	auto mouse_pos_y = extent.height - glm::clamp(static_cast<uint32_t>(mousePos.y), 0u, extent.height);
 
-	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver())
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver() && ImGui::IsWindowFocused())
 	{
 		uint8_t pixel[4];
 		device->readPixel(image_id, mouse_pos_x, mouse_pos_y, pixel);
@@ -222,9 +221,6 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 
 		glm::mat4 delta;
 
-		//if (ptransform)
-		//	delta = ptransform->model;
-
 		//Manipulating
 		if (ImGuizmo::Manipulate(glm::value_ptr(camera->view), glm::value_ptr(camera->projection), mCurrentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(transform.model), glm::value_ptr(delta), snap ? snapValues : nullptr))
 		{
@@ -234,40 +230,19 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 			auto rel = glm::abs(translation - transform.position);
 			auto moved = rel.x > 0.05f || rel.y > 0.05f || rel.z > 0.05f;
 
+			if (!isManipulating)
+			{
+				isManipulating = true;
+				oldTranslation = transform.position;
+				oldRotation = transform.rotation;
+				oldScale = transform.scale;
+			}
+
 			switch (mCurrentGizmoOperation)
 			{
-			case ImGuizmo::TRANSLATE: 
-			{ 
-				if (!isManipulating)
-				{
-					isManipulating = true;
-					oldTranslation = transform.position;
-				}
-
-				transform.position += translation; 
-			} break;
-
-			case ImGuizmo::ROTATE: 
-			{
-				if (!isManipulating)
-				{
-					isManipulating = true;
-					oldRotation = transform.rotation;
-				}
-
-				transform.rotation += rotation;
-			} break;
-
-			case ImGuizmo::SCALE: 
-			{ 
-				if (!isManipulating)
-				{
-					isManipulating = true;
-					oldScale = transform.scale;
-				}
-
-				transform.scale *= scale; 
-			} break;
+			case ImGuizmo::TRANSLATE: { transform.position += translation; } break;
+			case ImGuizmo::ROTATE: { transform.rotation += rotation; } break;
+			case ImGuizmo::SCALE: { transform.scale *= scale; } break;
 			}
 
 			return;

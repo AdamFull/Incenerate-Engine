@@ -137,6 +137,30 @@ void destroy_script(entt::registry& reg, entt::entity entity)
 		EGScripting->removeSource(script.data);
 }
 
+FCameraComponent* CEngine::getActiveCamera()
+{
+	if (bEditorMode && eState == EEngineState::eEditing)
+		return registry.try_get<FCameraComponent>(pEditor->getCamera());
+	else
+	{
+		entt::entity found{ entt::null };
+		auto view = registry.view<FCameraComponent>();
+		for (auto [entity, camera] : view.each())
+		{
+			if (camera.active)
+			{
+				found = entity;
+				break;
+			}
+		}
+
+		if(found != entt::null)
+			return registry.try_get<FCameraComponent>(found);
+	}
+
+	return nullptr;
+}
+
 void CEngine::initEntityComponentSystem()
 {
 	registry.on_destroy<FMeshComponent>().connect<&destroy_mesh>();

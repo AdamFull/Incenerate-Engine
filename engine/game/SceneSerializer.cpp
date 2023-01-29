@@ -18,7 +18,7 @@ using namespace engine::audio;
 entt::entity CSceneLoader::load(const std::filesystem::path& scenepath)
 {
 	FIncenerateScene scene;
-	fs::read_json(scenepath, scene);
+	fs::read_bson(scenepath, scene);
 
 	return loadNode(scene.root);
 }
@@ -28,7 +28,7 @@ void CSceneLoader::save(const entt::entity& root, const std::filesystem::path& s
 	FIncenerateScene scene;
 	scene.root = saveNode(root);
 
-	fs::write_json(scenepath, scene, 2);
+	fs::write_bson(scenepath, scene);
 }
 
 entt::entity CSceneLoader::loadNode(FSceneObjectRaw& object)

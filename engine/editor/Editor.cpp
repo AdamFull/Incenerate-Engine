@@ -66,7 +66,7 @@ void CEditor::create()
 
     EGEngine->addEventListener(Events::Input::Key, this, &CEditor::onKeyDown);
 
-    pEditorProject = std::make_unique<CEditorProject>();
+    pEditorProject = std::make_unique<CEditorProject>(camera);
     pActionBuffer = std::make_unique<CEditorActionBuffer>();
 
     vk::DescriptorPoolSize pool_sizes[] =
@@ -169,16 +169,6 @@ void CEditor::create()
     mEditorIcons[get_class_id<FEnvironmentComponent>()] = ICON_MDI_EARTH;
     mEditorIcons[get_class_id<FSpriteComponent>()] = ICON_MDI_IMAGE;
 
-    auto& registry = EGCoordinator;
-    camera = scenegraph::create_node("editor_camera");
-    registry.emplace<FCameraComponent>(camera, FCameraComponent{});
-    auto& camcomp = registry.get<FCameraComponent>(camera);
-    camcomp.sensitivity = 15.f;
-
-    auto& transform = registry.get<FTransformComponent>(camera);
-    transform.position = glm::vec3(0.f, 8.f, 10.f);
-    transform.rotation = glm::vec3(-0.02f, -0.09f, 1.00f);
-
     load_editor();
 
     if (!recproj.recent.empty())
@@ -276,6 +266,7 @@ void CEditor::newFrame(float fDt)
     if (bNeedSave)
     {
         EGSceneManager->save();
+        save_editor();
         bNeedSave = false;
     }
 
@@ -310,7 +301,9 @@ void CEditor::newFrame(float fDt)
 
 void CEditor::selectObject(const entt::entity& object)
 {
-	selected = object;
+    auto& registry = EGCoordinator;
+    if(registry.valid(object))
+	    selected = object;
 }
 
 void CEditor::deselectObject(const entt::entity& object)
@@ -353,7 +346,7 @@ void CEditor::onKeyDown(CEvent& event)
     
     if (keys.test(EKeyCode::eKeyLCtrl))
     {
-        if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_LeftShift))
+        if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_LeftShift))
         {
             if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_N))
                 open_popup = "new_scene_dialog";

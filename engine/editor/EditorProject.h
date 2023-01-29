@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility/uparse.hpp>
+#include "EngineStructures.h"
 
 namespace engine
 {
@@ -9,7 +10,8 @@ namespace engine
 		struct FIncenerateProject
 		{
 			std::string assets;
-			std::string default_scene;
+			std::string last_scene;
+			FSceneObjectRaw camera;
 		};
 
 		void to_json(nlohmann::json& json, const FIncenerateProject& type);
@@ -18,10 +20,13 @@ namespace engine
 		class CEditorProject
 		{
 		public:
+			CEditorProject(entt::entity& editor_camera);
 			bool make_new(const std::filesystem::path& path);
 			bool open(const std::filesystem::path& path);
 			void save();
 		private:
+			void createOrLoadEditorCamera();
+			entt::entity* editor_camera{ nullptr };
 			FIncenerateProject project;
 			std::filesystem::path projectpath;
 		};

@@ -12,6 +12,7 @@
 
 #include "game/SceneManager.h"
 #include "ecs/systems/BaseSystem.h"
+#include "ecs/components/fwd.h"
 
 #define EGEngine CEngine::getInstance()
 #define EGScripting CEngine::getInstance()->getScripting()
@@ -75,6 +76,8 @@ namespace engine
 
 		void sendEvent(CEvent& event);
 		void sendEvent(EventId eventId);
+
+		ecs::FCameraComponent* getActiveCamera();
 
 	private:
 		void destruction();

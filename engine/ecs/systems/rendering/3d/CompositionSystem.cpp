@@ -45,8 +45,6 @@ void CCompositionSystem::__update(float fDt)
 {
 	auto& registry = EGCoordinator;
 	auto& graphics = EGGraphics;
-	auto editorMode = EGEngine->isEditorMode();
-	auto state = EGEngine->getState();
 
 	uint32_t directoonal_light_count{ 0 };
 	std::array<FDirectionalLightCommit, MAX_DIRECTIONAL_LIGHT_COUNT> directional_lights;
@@ -111,12 +109,7 @@ void CCompositionSystem::__update(float fDt)
 	auto eskybox = get_active_skybox(registry);
 	auto* skybox = registry.try_get<FEnvironmentComponent>(eskybox);
 
-	FCameraComponent* camera{ nullptr };
-
-	if (editorMode && state == EEngineState::eEditing)
-		camera = registry.try_get<FCameraComponent>(EGEditor->getCamera());
-	else
-		camera = registry.try_get<FCameraComponent>(get_active_camera(registry));
+	auto* camera = EGEngine->getActiveCamera();
 
 	if (!camera)
 		return;

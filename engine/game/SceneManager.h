@@ -14,6 +14,7 @@ namespace engine
 			void save();
 
 			const entt::entity& getRoot();
+			const std::filesystem::path& getScenePath() const;
 		private:
 			std::filesystem::path scenepath{};
 			entt::entity root{ entt::null };

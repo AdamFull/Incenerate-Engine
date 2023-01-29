@@ -45,3 +45,8 @@ const entt::entity& CSceneManager::getRoot()
 {
 	return root;
 }
+
+const std::filesystem::path& CSceneManager::getScenePath() const
+{
+	return scenepath;
+}
