@@ -24,6 +24,8 @@ namespace engine
 			bool make_new(const std::filesystem::path& path);
 			bool open(const std::filesystem::path& path);
 			void save();
+			void setScenePath(const std::filesystem::path& path);
+			bool isProjectOpen();
 		private:
 			void createOrLoadEditorCamera();
 			entt::entity* editor_camera{ nullptr };

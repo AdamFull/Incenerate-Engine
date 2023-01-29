@@ -34,10 +34,13 @@ void CCameraControlSystem::__update(float fDt)
 	{
 		auto ecamera = EGEditor->getCamera();
 
-		auto& transform = registry.get<FTransformComponent>(ecamera);
-		auto& camera = registry.get<FCameraComponent>(ecamera);
+		if (registry.valid(ecamera))
+		{
+			auto& transform = registry.get<FTransformComponent>(ecamera);
+			auto& camera = registry.get<FCameraComponent>(ecamera);
 
-		updateCamera(camera, transform);
+			updateCamera(camera, transform);
+		}
 	}
 	else
 	{

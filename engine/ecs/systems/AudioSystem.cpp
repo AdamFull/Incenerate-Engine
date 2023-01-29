@@ -23,14 +23,19 @@ void CAudioSystem::__update(float fDt)
 	auto editorMode = EGEngine->isEditorMode();
 	auto state = EGEngine->getState();
 
+	auto* camera = EGEngine->getActiveCamera();
+
 	if (editorMode && state == EEngineState::eEditing)
 	{
 		auto ecamera = EGEditor->getCamera();
 
-		auto& transform = registry.get<FTransformComponent>(ecamera);
-		auto& camera = registry.get<FCameraComponent>(ecamera);
+		if (registry.valid(ecamera))
+		{
+			auto& transform = registry.get<FTransformComponent>(ecamera);
+			auto& camera = registry.get<FCameraComponent>(ecamera);
 
-		updateListener(camera, transform);
+			updateListener(camera, transform);
+		}
 	}
 	else
 	{
@@ -61,7 +66,10 @@ void CAudioSystem::__update(float fDt)
 
 void CAudioSystem::updateListener(FCameraComponent& camera, FTransformComponent& transform)
 {
-	alCall(alListener3f, AL_POSITION, transform.rposition.x, transform.rposition.y, transform.rposition.z);
-	float orient[6] = { camera.forward.x, camera.forward.y, camera.forward.z, camera.right.x, camera.right.y, camera.right.z };
-	alCall(alListenerfv, AL_ORIENTATION, orient);
+	if (!isnan(camera.forward.x) || !isnan(camera.forward.y) || !isnan(camera.forward.z))
+	{
+		alCall(alListener3f, AL_POSITION, transform.rposition.x, transform.rposition.y, transform.rposition.z);
+		float orient[6] = { camera.forward.x, camera.forward.y, camera.forward.z, camera.right.x, camera.right.y, camera.right.z };
+		alCall(alListenerfv, AL_ORIENTATION, orient);
+	}
 }

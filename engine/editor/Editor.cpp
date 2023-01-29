@@ -202,8 +202,8 @@ void CEditor::newFrame(float fDt)
             if (ImGui::MenuItem("New project", "Ctrl-N")) { open_popup = "new_project_dialog"; }
             if (ImGui::MenuItem("Open project", "Ctrl+O")) { open_popup = "open_project_dialog"; }
             ImGui::Separator();
-            if (ImGui::MenuItem("New scene", "Ctrl-Shift-N")) { open_popup = "new_scene_dialog"; }
-            if (ImGui::MenuItem("Open scene", "Ctrl-Shift-O")) { open_popup = "open_scene_dialog"; }
+            if (ImGui::MenuItem("New scene", "Ctrl-Shift-N", false, pEditorProject->isProjectOpen())) { open_popup = "new_scene_dialog"; }
+            if (ImGui::MenuItem("Open scene", "Ctrl-Shift-O", false, pEditorProject->isProjectOpen())) { open_popup = "open_scene_dialog"; }
             ImGui::Separator();
             if (ImGui::MenuItem((mEditorIcons[icons::save] + " Save").c_str(), "Ctrl-S")) { bNeedSave = true; }
             if (ImGui::MenuItem((mEditorIcons[icons::save_all] + " Save all").c_str(), "Ctrl-Shift-S")) { bNeedSaveAll = true; }
@@ -433,13 +433,19 @@ void CEditor::NewSceneModal()
 
     if (ImGui::BeginPopupModal("new_scene_dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
     {
+        if(!pEditorProject->isProjectOpen())
+            ImGui::CloseCurrentPopup();
+
         static char name_buf[512];
-        constexpr const char* filter[] = { "*.json" };
+        constexpr const char* filter[] = { "*.iescene" };
         if (ImGui::FileSave("New scene", "...", name_buf, 512, "New incenerate scene", 1, filter))
         {
             auto path = std::filesystem::path(name_buf);
             if (EGSceneManager->make_new(path))
+            {
+                pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
                 ImGui::CloseCurrentPopup();
+            }
         }
 
         ImGui::EndPopup();
@@ -452,13 +458,19 @@ void CEditor::OpenSceneModal()
 
     if (ImGui::BeginPopupModal("open_scene_dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
     {
+        if (!pEditorProject->isProjectOpen())
+            ImGui::CloseCurrentPopup();
+
         static char name_buf[512];
-        constexpr const char* filter[] = { "*.json" };
+        constexpr const char* filter[] = { "*.iescene" };
         if (ImGui::FileOpen("Open scene", "...", name_buf, 512, "Open incenerate scene", 1, filter))
         {
             auto path = std::filesystem::path(name_buf);
             if (EGSceneManager->load(path))
+            {
+                pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
                 ImGui::CloseCurrentPopup();
+            }
         }
 
         ImGui::SetItemDefaultFocus();

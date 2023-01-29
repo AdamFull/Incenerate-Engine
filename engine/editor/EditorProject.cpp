@@ -85,6 +85,17 @@ void CEditorProject::save()
     EGSceneManager->save();
 }
 
+void CEditorProject::setScenePath(const std::filesystem::path& path)
+{
+    if(!path.empty())
+        project.last_scene = path.string();
+}
+
+bool CEditorProject::isProjectOpen()
+{
+    return !projectpath.empty();
+}
+
 void CEditorProject::createOrLoadEditorCamera()
 {
     if (!project.camera.srName.empty())
@@ -98,7 +109,7 @@ void CEditorProject::createOrLoadEditorCamera()
         camcomp.sensitivity = 15.f;
 
         auto& transform = registry.get<FTransformComponent>(*editor_camera);
-        transform.position = glm::vec3(0.f, 8.f, 10.f);
-        transform.rotation = glm::vec3(-0.02f, -0.09f, 1.00f);
+        transform.position = glm::vec3(0.f, 6.f, 24.f);
+        transform.rotation = glm::vec3(0.f, -0.1f, -0.9f);
     }
 }
