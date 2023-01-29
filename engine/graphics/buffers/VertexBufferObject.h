@@ -60,6 +60,22 @@ namespace engine
 			}
 		};
 
+		struct FQuadPrimitive : public FPrimitive
+		{
+			FQuadPrimitive()
+			{
+				vVertices =
+				{
+					FVertex(glm::vec3(-1.f, 1.f, 0), glm::vec3(0, 1.f, 0), glm::vec2(0.f, 0.f)),
+					FVertex(glm::vec3(1.f, 1.f, 0), glm::vec3(0, 1.f, 0), glm::vec2(1.f, 0.f)),
+					FVertex(glm::vec3(-1.f, -1.f, 0), glm::vec3(0, 1.f, 0), glm::vec2(0.f, 1.f)),
+					FVertex(glm::vec3(1.f, -1.f, 0), glm::vec3(0, 1.f, 0), glm::vec2(1.f, 1.f)),
+				};
+
+				vIndices = {0, 1, 3, 0, 3, 2};
+			}
+		};
+
 		class CVertexBufferObject
 		{
 		public:

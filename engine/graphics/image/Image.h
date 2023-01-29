@@ -14,6 +14,10 @@ namespace engine
 			CImage(CDevice* device);
 			virtual ~CImage();
 
+			void create(std::unique_ptr<loaders::FImageCreateInfo>& info, vk::ImageUsageFlags flags = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+				vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor, vk::SamplerAddressMode addressMode = vk::SamplerAddressMode::eRepeat,
+				vk::Filter filter = vk::Filter::eLinear);
+
 			void create(const std::filesystem::path& srPath, vk::ImageUsageFlags flags = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
 				vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor, vk::SamplerAddressMode addressMode = vk::SamplerAddressMode::eRepeat,
 				vk::Filter filter = vk::Filter::eLinear);

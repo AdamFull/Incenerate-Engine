@@ -280,13 +280,16 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 			switch (mCurrentGizmoOperation)
 			{
 			case ImGuizmo::TRANSLATE:
-				actionBuffer->addOperation(std::make_unique<CPropertyChangedOperation>(oldTranslation, &transform.position, utl::type_hash<glm::vec3>()));
+				if(oldTranslation != transform.position)
+					actionBuffer->addOperation(std::make_unique<CPropertyChangedOperation>(oldTranslation, &transform.position, utl::type_hash<glm::vec3>()));
 				break;
 			case ImGuizmo::ROTATE:
-				actionBuffer->addOperation(std::make_unique<CPropertyChangedOperation>(oldRotation, &transform.rotation, utl::type_hash<glm::vec3>()));
+				if(oldRotation != transform.rotation)
+					actionBuffer->addOperation(std::make_unique<CPropertyChangedOperation>(oldRotation, &transform.rotation, utl::type_hash<glm::vec3>()));
 				break;
 			case ImGuizmo::SCALE:
-				actionBuffer->addOperation(std::make_unique<CPropertyChangedOperation>(oldScale, &transform.scale, utl::type_hash<glm::vec3>()));
+				if(oldScale != transform.scale)
+					actionBuffer->addOperation(std::make_unique<CPropertyChangedOperation>(oldScale, &transform.scale, utl::type_hash<glm::vec3>()));
 				break;
 			default:
 				break;

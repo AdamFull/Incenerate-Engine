@@ -29,24 +29,23 @@
     "tesselation": false,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/material/diffuse.vert",
-      "shaders/main/material/diffuse.frag",
-      "shaders/main/material/diffuse.tesc",
-      "shaders/main/material/diffuse.tese"
+      "shaders/main/default/default.vert",
+      "shaders/main/default/default.frag",
+      "shaders/main/default/default.tesc",
+      "shaders/main/default/default.tese"
     ],
     "defines": {}
   },
   "billboard": {
     "stage": "deferred",
-    "vertex_free": true,
     "bind_point": "Graphics",
-    "cull_mode": "Back",
+    "cull_mode": "Front",
     "front_face": "ccw",
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/material/billboard.vert",
-      "shaders/main/material/billboard.tese"
+      "shaders/main/default/billboard.vert",
+      "shaders/main/default/billboard.frag"
     ],
     "defines": {}
   },
@@ -58,8 +57,8 @@
     "depth_test": false,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/material/skybox.vert",
-      "shaders/main/material/skybox.frag"
+      "shaders/main/default/skybox.vert",
+      "shaders/main/default/skybox.frag"
     ],
     "defines": {}
   },

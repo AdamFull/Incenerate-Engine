@@ -17,10 +17,16 @@ using namespace engine::loaders;
 
 void CImageLoader::load(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
-    auto parentPath = fs::get_workdir();
     imageCI = std::make_unique<FImageCreateInfo>();
 
-    auto fsFullPath = parentPath / fsPath;
+    auto fsFullPath = fs::get_workdir() / fsPath;
+
+    if (!fs::is_file_exists(fsFullPath))
+        fsFullPath = fs::get_workdir(true) / fsPath;
+
+    if (!fs::is_file_exists(fsFullPath))
+        log_error("Image {} was not found.", fsPath.string());
+
     auto texFormat = getTextureFormat(fsPath);
     switch (texFormat)
     {

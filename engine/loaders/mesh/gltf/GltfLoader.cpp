@@ -477,7 +477,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         if (mat.values.find("baseColorTexture") != mat.values.end())
         {
             auto texture = mat.values.at("baseColorTexture");
-            pMaterial->addTexture("color_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
+            pMaterial->addTexture("color_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Srgb));
             params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP");
         }
 
