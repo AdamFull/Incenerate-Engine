@@ -194,6 +194,13 @@
     ],
     "defines": {}
   },
+  "emptypass": {
+    "bind_point": "Compute",
+    "stages": [
+      "shaders/postprocess/emptypass.comp"
+    ],
+    "defines": {}
+  },
 
   "bokeh_blur": {
     "bind_point": "Compute",

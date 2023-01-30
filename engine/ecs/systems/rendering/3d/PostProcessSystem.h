@@ -30,6 +30,7 @@ namespace engine
 			CTonemapEffect tonemap;
 
 			size_t final_image{ invalid_index };
+			size_t shader_id{ invalid_index };
 		};
 	}
 }

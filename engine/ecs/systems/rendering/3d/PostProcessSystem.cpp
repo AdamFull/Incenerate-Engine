@@ -27,6 +27,8 @@ void CPostProcessSystem::__create()
 	final_image = effectshared::createImage("postprocess_tex", vk::Format::eR32G32B32A32Sfloat);
 	auto& image = EGGraphics->getImage(final_image);
 
+	shader_id = EGGraphics->addShader("emptypass", "emptypass");
+
 	addSubresource("composition_tex");
 	addSubresource("depth_tex");
 
@@ -58,13 +60,27 @@ void CPostProcessSystem::__update(float fDt)
 	VkHelper::BarrierFromGraphicsToCompute(getSubresource("composition_tex"));
 	VkHelper::BarrierFromGraphicsToCompute(getSubresource("depth_tex"));
 
-	size_t current_image = getSubresource("composition_tex");	
+	size_t current_image = getSubresource("composition_tex");
 	current_image = bloom.render(camera, current_image);
+	current_image = tonemap.render(camera, current_image, final_image);
+	current_image = fxaa.render(camera, current_image, final_image);
 	current_image = dof.render(camera, getSubresource("depth_tex"), current_image, final_image);
 	current_image = chromatic_aberration.render(camera, current_image, final_image);
 	current_image = vignette.render(camera, current_image, final_image);
-	current_image = tonemap.render(camera, current_image, final_image);
-	current_image = fxaa.render(camera, current_image, final_image);
+
+	if (current_image != final_image)
+	{
+		auto& graphics = EGGraphics;
+
+		graphics->bindShader(shader_id);
+
+		graphics->bindTexture("writeColor", final_image);
+		graphics->bindTexture("samplerColor", current_image);
+
+		graphics->dispatch(resolution);
+
+		graphics->bindShader(invalid_index);
+	}
 
 	VkHelper::BarrierFromComputeToGraphics();
 }

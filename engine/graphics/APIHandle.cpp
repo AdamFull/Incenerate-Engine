@@ -7,6 +7,9 @@
 #include "image/Image2D.h"
 #include "image/ImageCubemap.h"
 
+#define DEBUG_DRAW_IMPLEMENTATION
+#include <debug_draw.hpp>
+
 using namespace engine::graphics;
 using namespace engine::system;
 using namespace engine::ecs;
@@ -109,7 +112,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         mStageInfos["deferred"].viewport.extent = device->getExtent(true);
         mStageInfos["deferred"].bFlipViewport = true;
         mStageInfos["deferred"].bViewportDependent = true;
-        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "albedo_tex", vk::Format::eR8G8B8A8Srgb, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "albedo_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         mStageInfos["deferred"].vOutputs.emplace_back("albedo_tex");
         mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "normal_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         mStageInfos["deferred"].vOutputs.emplace_back("normal_tex");
@@ -314,6 +317,8 @@ vk::CommandBuffer CAPIHandle::begin()
 
 void CAPIHandle::end()
 {
+    //dd::flush();
+
     vk::Result resultPresent;
     try { resultPresent = endFrame(); }
     catch (vk::OutOfDateKHRError err) { resultPresent = vk::Result::eErrorOutOfDateKHR; }

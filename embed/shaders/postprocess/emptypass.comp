@@ -1,0 +1,18 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_ARB_shading_language_420pack : enable
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(binding = 0, r11f_g11f_b10f) uniform writeonly image2D writeColor;
+layout(binding = 1) uniform sampler2D samplerColor;
+
+void main()
+{
+	ivec2 iUV = ivec2(gl_GlobalInvocationID.xy);
+	vec2 uv = (iUV + 0.5f) / vec2(imageSize(writeColor).xy);
+
+	vec4 fragcolor = texture(samplerColor, uv);
+
+	imageStore(writeColor, iUV, fragcolor);
+}
