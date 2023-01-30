@@ -10,7 +10,7 @@ namespace engine
 		{
 		public:
 			virtual ~CCreateEntityOperation() override = default;
-			CCreateEntityOperation(entt::entity entity);
+			CCreateEntityOperation(entt::entity entity, size_t component_id);
 
 			void undo() override;
 			void redo() override;
@@ -18,6 +18,7 @@ namespace engine
 		private:
 			entt::entity entity{ entt::null };
 			entt::entity parent{ entt::null };
+			size_t component_id{ invalid_index };
 			std::string name{ "SceneNode" };
 		};
 	}

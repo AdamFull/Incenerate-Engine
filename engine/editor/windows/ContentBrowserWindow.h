@@ -21,9 +21,12 @@ namespace engine
 		private:
 			std::filesystem::path currentPath{};
 			std::vector<std::filesystem::path> vCurrentDirData;
+			std::filesystem::path selected;
 
 			std::filesystem::path workdir{};
 			std::filesystem::path relative{};
+
+			const char* open_popup_name{ nullptr };
 		};
 	}
 }

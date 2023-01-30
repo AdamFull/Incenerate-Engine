@@ -391,31 +391,20 @@ namespace ImGui
     }
 
 
-    bool FileOpen(const char* label, const char* btn, char* buf, size_t buf_size, const char* title, int filter_num, const char* const* filter_patterns)
+    bool FileOpen(char* buf, size_t buf_size, const char* title, int filter_num, const char* const* filter_patterns)
     {
-        bool ret = InputText(label, buf, buf_size);
-        SameLine();
-
-        if (Button(btn)) {
-            const char* filename = tinyfd_openFileDialog(title, "", filter_num, filter_patterns, nullptr, false);
-            if (filename)
-                strcpy(buf, filename);
-            ret = true;
-        }
-        return ret;
+        
+        const char* filename = tinyfd_openFileDialog(title, "", filter_num, filter_patterns, nullptr, false);
+        if (filename)
+            strcpy(buf, filename);
+        return filename;
     }
 
-    bool FileSave(const char* label, const char* btn, char* buf, size_t buf_size, const char* title, int filter_num, const char* const* filter_patterns) 
+    bool FileSave(char* buf, size_t buf_size, const char* title, int filter_num, const char* const* filter_patterns) 
     {
-        bool ret = InputText(label, buf, buf_size);
-        SameLine();
-
-        if (Button(btn)) {
-            const char* filename = tinyfd_saveFileDialog(title, "", filter_num, filter_patterns, nullptr);
-            if (filename)
-                strcpy(buf, filename);
-            ret = true;
-        }
-        return ret;
+        const char* filename = tinyfd_saveFileDialog(title, "", filter_num, filter_patterns, nullptr);
+        if (filename)
+            strcpy(buf, filename);
+        return filename;
     }
 }

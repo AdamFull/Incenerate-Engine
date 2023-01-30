@@ -3,6 +3,7 @@
 #include "Engine.h"
 
 #include <imgui/imgui.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 
 #include "system/filesystem/filesystem.h"
 
@@ -13,6 +14,34 @@ using namespace engine::editor;
 constexpr const float padding{ 16.0f };
 constexpr const float thumbnailSize{ 64.0f };
 constexpr const float cellSize{ thumbnailSize + padding };
+
+template<class _OnOkFunc>
+void CreateFileModal(const char* label, _OnOkFunc&& onOkFunc)
+{
+	ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, { 0.5f, 0.5f });
+
+	if (ImGui::BeginPopupModal(label, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+	{
+		static std::string* text = new std::string;
+		auto res = ImGui::InputText("##", text);
+
+		ImGui::BeginDisabled(text->empty());
+		if (ImGui::Button("OK"))
+		{
+			if (!text->empty())
+				onOkFunc(*text);
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndDisabled();
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel", { -1.f, 0.f }))
+			ImGui::CloseCurrentPopup();
+
+		ImGui::EndPopup();
+	}
+}
 
 const std::string& getFileIcon(const std::string& filename, bool isDirectory)
 {
@@ -40,38 +69,15 @@ void CEditorContentBrowser::create()
 void CEditorContentBrowser::__draw(float fDt)
 {
 	auto& nfdr = EGEditor->getIcon(icons::add_folder);
-	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
-	{
-		if (ImGui::IsMouseClicked(1))
-			ImGui::OpenPopup("ContentBrowserSubmenu");
-	}
 
-	if (ImGui::BeginPopup("ContentBrowserSubmenu"))
-	{
+	// Top panel
+	auto& upd = EGEditor->getIcon(icons::update);
+	if (ImGui::Button(upd.c_str()))
+		update_path(currentPath);
+	ImGui::SameLine();
 
-		if (ImGui::BeginMenu("create"))
-		{
-			if (ImGui::MenuItem((nfdr + " folder").c_str())); // Requires dialog
-			auto& script = EGEditor->getIcon(icons::script_file);
-			if (ImGui::MenuItem((script + " lua file").c_str()));
-			if (ImGui::MenuItem("scene"));
-			ImGui::EndMenu();
-		}
-
-		auto& copy = EGEditor->getIcon(icons::copy);
-		if (ImGui::MenuItem((copy + " copy").c_str(), "CTRL+C"));
-
-		auto& paste = EGEditor->getIcon(icons::paste);
-		if (ImGui::MenuItem((paste + " paste").c_str(), "CTRL+V"));
-
-		auto& del = EGEditor->getIcon(icons::trash);
-		if (ImGui::MenuItem((del + " delete").c_str(), "DEL"));
-
-		ImGui::EndPopup();
-	}
-
-	
-	if (ImGui::Button(nfdr.c_str()));
+	if (ImGui::Button(nfdr.c_str()))
+		open_popup_name = "Create directory";
 	ImGui::SameLine();
 
 	auto& nfl = EGEditor->getIcon(icons::add_file);
@@ -89,59 +95,123 @@ void CEditorContentBrowser::__draw(float fDt)
 
 	ImGui::Separator();
 
+	if (ImGui::BeginPopup("ContentBrowserSubmenu"))
+	{
+		if (ImGui::BeginMenu("create"))
+		{
+			if (ImGui::MenuItem((nfdr + " folder").c_str()))
+				open_popup_name = "Create directory";
+
+			auto& script = EGEditor->getIcon(icons::script_file);
+			if (ImGui::MenuItem((script + " lua file").c_str()));
+			if (ImGui::MenuItem("scene"));
+			ImGui::EndMenu();
+		}
+
+		auto& copy = EGEditor->getIcon(icons::copy);
+		if (ImGui::MenuItem((copy + " copy").c_str(), "CTRL+C", false, !selected.empty()));
+
+		auto& paste = EGEditor->getIcon(icons::paste);
+		if (ImGui::MenuItem((paste + " paste").c_str(), "CTRL+V", false, false));
+
+		auto& del = EGEditor->getIcon(icons::trash);
+		if (ImGui::MenuItem((del + " delete").c_str(), "DEL", false, !selected.empty()))
+			std::filesystem::remove_all(workdir / selected);
+
+		ImGui::EndPopup();
+	}
+
+	CreateFileModal("Create directory",
+		[this](const std::string& filename)
+		{
+			std::filesystem::create_directories(currentPath / filename);
+			update_path(currentPath);
+		});
+
+	if (open_popup_name)
+	{
+		ImGui::OpenPopup(open_popup_name);
+		open_popup_name = nullptr;
+	}
+
 	float panelWidth = ImGui::GetContentRegionAvail().x;
 	int columnCount = (int)(panelWidth / cellSize);
 	if (columnCount < 1)
 		columnCount = 1;
 
-	ImGui::Columns(columnCount, 0, false);
-
-	auto pLargeIcons = EGEditor->getLargeIcons();
-
-	bool bSelected{ false };
-	for (auto& path : vCurrentDirData)
+	if (ImGui::BeginTable("files", columnCount))
 	{
-		auto relativePath = std::filesystem::relative(path, workdir);
-		auto filename = fs::from_unicode(relativePath.filename().wstring());
-		auto isDirectory = std::filesystem::is_directory(path);
+		int currentColumn{ 0 };
+		auto pLargeIcons = EGEditor->getLargeIcons();
 
-		auto& icon = getFileIcon(filename, isDirectory);
-
-		ImGui::PushFont(pLargeIcons);
-		ImGui::PushID(filename.c_str());
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-		auto double_clicked = ImGui::Button((icon + ("##" + filename)).c_str(), {thumbnailSize, thumbnailSize});
-		ImGui::PopStyleColor();
-		ImGui::PopFont();
-
-		if (double_clicked && ImGui::IsItemHovered())
+		bool bSelected{ false };
+		for (auto& path : vCurrentDirData)
 		{
-			if (isDirectory)
+			if (currentColumn < columnCount)
 			{
-				auto npath = currentPath / path.filename();
-				update_path(npath);
-				ImGui::PopID();
-				break;
+				currentColumn++;
+				ImGui::TableNextColumn();
 			}
-			else if (fs::is_image_format(path))
+			else
+				currentColumn = 0;
+
+			auto relativePath = std::filesystem::relative(path, workdir);
+			auto filename = fs::from_unicode(relativePath.filename().wstring());
+			auto isDirectory = std::filesystem::is_directory(path);
+
+			auto& icon = getFileIcon(filename, isDirectory);
+
+			ImGui::PushFont(pLargeIcons);
+			ImGui::PushID(filename.c_str());
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+			auto double_clicked = ImGui::Button((icon + ("##" + filename)).c_str(), { thumbnailSize, thumbnailSize });
+			ImGui::PopStyleColor();
+			ImGui::PopFont();
+
+			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
 			{
-				CEvent eevent(Events::Editor::OpenImageViewer);
-				eevent.setParam(Events::Editor::OpenImageViewer, path);
-				EGEngine->sendEvent(eevent);
+				if (ImGui::IsMouseClicked(1))
+				{
+					if (ImGui::IsItemHovered())
+						selected = relativePath;
+					else
+						selected = "";
+
+					open_popup_name = "ContentBrowserSubmenu";
+				}
 			}
+
+			if (double_clicked && ImGui::IsItemHovered())
+			{
+				if (isDirectory)
+				{
+					auto npath = currentPath / path.filename();
+					update_path(npath);
+					ImGui::PopID();
+					break;
+				}
+				else if (fs::is_image_format(path))
+				{
+					CEvent eevent(Events::Editor::OpenImageViewer);
+					eevent.setParam(Events::Editor::OpenImageViewer, path);
+					EGEngine->sendEvent(eevent);
+				}
+			}
+
+			if (!isDirectory && ImGui::BeginDragDropSource())
+			{
+				const wchar_t* itemPath = relativePath.c_str();
+				ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
+				ImGui::Text((icon + (" " + fs::from_unicode(relativePath))).c_str());
+				ImGui::EndDragDropSource();
+			}
+
+			ImGui::TextWrapped(filename.c_str());
+			ImGui::NextColumn();
+			ImGui::PopID();
 		}
 
-		if (!isDirectory && ImGui::BeginDragDropSource())
-		{
-			const wchar_t* itemPath = relativePath.c_str();
-			ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
-			ImGui::Text((icon+(" " + fs::from_unicode(relativePath))).c_str());
-			ImGui::EndDragDropSource();
-		}
-
-		ImGui::TextWrapped(filename.c_str());
-		ImGui::NextColumn();
-		ImGui::PopID();
+		ImGui::EndTable();
 	}
 }
 

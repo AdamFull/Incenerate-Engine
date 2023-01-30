@@ -87,8 +87,11 @@ void CEditorProject::save()
 
 void CEditorProject::setScenePath(const std::filesystem::path& path)
 {
-    if(!path.empty())
+    if (!path.empty())
+    {
         project.last_scene = path.string();
+        save();
+    } 
 }
 
 bool CEditorProject::isProjectOpen()

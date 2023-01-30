@@ -20,6 +20,8 @@
 #include "windows/ImageViewerWindow.h"
 #include "windows/SystemPerfomanceViewWindow.h"
 
+#include "operations/RemoveEntityOperation.h"
+
 #include "ecs/components/components.h"
 
 #include "game/SceneGraph.hpp"
@@ -155,8 +157,10 @@ void CEditor::create()
     mEditorIcons[icons::mesh_file] = ICON_MDI_CUBE;
     mEditorIcons[icons::add_folder] = ICON_MDI_FOLDER_PLUS;
     mEditorIcons[icons::add_file] = ICON_MDI_FILE_PLUS;
+    mEditorIcons[icons::update] = ICON_MDI_UPDATE;
 
     // Component icons
+    mEditorIcons[get_class_id<entt::entity>()] = ICON_MDI_CUBE_SCAN;
     mEditorIcons[get_class_id<FTransformComponent>()] = ICON_MDI_AXIS; // ICON_MDI_VECTOR_LINE
     mEditorIcons[get_class_id<FSpotLightComponent>()] = ICON_MDI_LIGHTBULB;
     mEditorIcons[get_class_id<FPointLightComponent>()] = ICON_MDI_LIGHTBULB;
@@ -199,11 +203,11 @@ void CEditor::newFrame(float fDt)
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("New project", "Ctrl-N")) { open_popup = "new_project_dialog"; }
-            if (ImGui::MenuItem("Open project", "Ctrl+O")) { open_popup = "open_project_dialog"; }
+            if (ImGui::MenuItem("New project", "Ctrl-N")) { bNeedNewProject = true; }
+            if (ImGui::MenuItem("Open project", "Ctrl+O")) { bNeedOpenProject = true; }
             ImGui::Separator();
-            if (ImGui::MenuItem("New scene", "Ctrl-Shift-N", false, pEditorProject->isProjectOpen())) { open_popup = "new_scene_dialog"; }
-            if (ImGui::MenuItem("Open scene", "Ctrl-Shift-O", false, pEditorProject->isProjectOpen())) { open_popup = "open_scene_dialog"; }
+            if (ImGui::MenuItem("New scene", "Ctrl-Shift-N", false, pEditorProject->isProjectOpen())) { bNeedNewScene = true; }
+            if (ImGui::MenuItem("Open scene", "Ctrl-Shift-O", false, pEditorProject->isProjectOpen())) { bNeedOpenScene = true; }
             ImGui::Separator();
             if (ImGui::MenuItem((mEditorIcons[icons::save] + " Save").c_str(), "Ctrl-S")) { bNeedSave = true; }
             if (ImGui::MenuItem((mEditorIcons[icons::save_all] + " Save all").c_str(), "Ctrl-Shift-S")) { bNeedSaveAll = true; }
@@ -250,10 +254,71 @@ void CEditor::newFrame(float fDt)
         ImGui::EndMainMenuBar();
     }
 
-    if (open_popup)
+    // File dialogs
+    constexpr const char* project_filter[] = { "*.incenerateproj" };
+    if (bNeedNewProject)
     {
-        ImGui::OpenPopup(open_popup);
-        open_popup = nullptr;
+        static char name_buf[512];
+        if (ImGui::FileSave(name_buf, 512, "New incenerate project", 1, project_filter))
+        {
+            auto path = std::filesystem::path(name_buf);
+            if (pEditorProject->make_new(path))
+            {
+                recproj.recent = fs::from_unicode(path);
+                save_editor();
+                ImGui::CloseCurrentPopup();
+                EGEngine->sendEvent(Events::Editor::ProjectUpdated);
+            }
+        }
+        bNeedNewProject = false;
+    }
+
+    if (bNeedOpenProject)
+    {
+        static char name_buf[512];
+        if (ImGui::FileOpen(name_buf, 512, "Open project", 1, project_filter))
+        {
+            auto path = std::filesystem::path(name_buf);
+            if (pEditorProject->open(path))
+            {
+                recproj.recent = fs::from_unicode(path);
+                save_editor();
+                ImGui::CloseCurrentPopup();
+                EGEngine->sendEvent(Events::Editor::ProjectUpdated);
+            }
+        }
+        bNeedOpenProject = false;
+    }
+
+    constexpr const char* scene_filter[] = { "*.iescene" };
+    if (bNeedNewScene)
+    {
+        static char name_buf[512];
+        if (ImGui::FileSave(name_buf, 512, "New scene", 1, scene_filter))
+        {
+            auto path = std::filesystem::path(name_buf);
+            if (EGSceneManager->make_new(path))
+            {
+                pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        bNeedNewScene = false;
+    }
+
+    if(bNeedOpenScene)
+    {
+        static char name_buf[512];
+        if (ImGui::FileOpen(name_buf, 512, "Open scene", 1, scene_filter))
+        {
+            auto path = std::filesystem::path(name_buf);
+            if (EGSceneManager->load(path))
+            {
+                pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        bNeedOpenScene = false;
     }
 
     if (bNeedUndo)
@@ -284,11 +349,6 @@ void CEditor::newFrame(float fDt)
     }
 
     ImGui::DockSpaceOverViewport();
-
-    NewProjectModal();
-    OpenProjectModal();
-    NewSceneModal();
-    OpenSceneModal();
 
     //ImGui::ShowDemoWindow();
     for (auto& overlay : vEditorWindows)
@@ -356,9 +416,9 @@ void CEditor::onKeyDown(CEvent& event)
         if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_LeftShift))
         {
             if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_N))
-                open_popup = "new_scene_dialog";
+                bNeedNewScene = true;
             else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_O))
-                open_popup = "open_scene_dialog";
+                bNeedOpenScene = true;
             else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_S))
                 bNeedSaveAll = true;
         }
@@ -367,124 +427,23 @@ void CEditor::onKeyDown(CEvent& event)
         else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_Y))
             bNeedRedo = true;
         else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_N))
-            open_popup = "new_project_dialog";
+            bNeedNewProject = true;
         else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_O))
-            open_popup = "open_project_dialog";
+            bNeedOpenProject = true;
         else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_S))
             bNeedSave = true;
+    }
+
+    if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_Delete))
+    {
+        if (selected != entt::null)
+            pActionBuffer->addOperation(std::make_unique<CRemoveEntityOperation>(selected));
     }
 
     if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_PrintScreen))
     {
         auto& device = EGGraphics->getDevice();
         device->takeScreenshot("screenshot.png");
-    }
-}
-
-void CEditor::NewProjectModal()
-{
-    // Project name, default scene and other
-    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, { 0.5f, 0.5f });
-
-    if (ImGui::BeginPopupModal("new_project_dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
-    {
-        static char name_buf[512];
-        constexpr const char* filter[] = { "*.incenerateproj" };
-        if (ImGui::FileSave("New project", "...", name_buf, 512, "New incenerate project", 1, filter))
-        {
-            auto path = std::filesystem::path(name_buf);
-            if (pEditorProject->make_new(path))
-            {
-                recproj.recent = fs::from_unicode(path);
-                save_editor();
-                ImGui::CloseCurrentPopup();
-                EGEngine->sendEvent(Events::Editor::ProjectUpdated);
-            }
-        }
-
-        ImGui::EndPopup();
-    }
-}
-
-void CEditor::OpenProjectModal()
-{
-    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, { 0.5f, 0.5f });
-
-    if (ImGui::BeginPopupModal("open_project_dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar |  ImGuiWindowFlags_NoMove))
-    {
-        static char name_buf[512];
-        constexpr const char* filter[] = { "*.incenerateproj" };
-        if (ImGui::FileOpen("Open project", "...", name_buf, 512, "Open incenerate project", 1, filter))
-        {
-            auto path = std::filesystem::path(name_buf);
-            if (pEditorProject->open(path))
-            {
-                recproj.recent = fs::from_unicode(path);
-                save_editor();
-                ImGui::CloseCurrentPopup();
-                EGEngine->sendEvent(Events::Editor::ProjectUpdated);
-            }
-        }
-
-        ImGui::SetItemDefaultFocus();
-        if (ImGui::Button("Cancel", { -1.f, 0.f }))
-            ImGui::CloseCurrentPopup();
-
-        ImGui::EndPopup();
-    }
-}
-
-void CEditor::NewSceneModal()
-{
-    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, { 0.5f, 0.5f });
-
-    if (ImGui::BeginPopupModal("new_scene_dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
-    {
-        if(!pEditorProject->isProjectOpen())
-            ImGui::CloseCurrentPopup();
-
-        static char name_buf[512];
-        constexpr const char* filter[] = { "*.iescene" };
-        if (ImGui::FileSave("New scene", "...", name_buf, 512, "New incenerate scene", 1, filter))
-        {
-            auto path = std::filesystem::path(name_buf);
-            if (EGSceneManager->make_new(path))
-            {
-                pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
-                ImGui::CloseCurrentPopup();
-            }
-        }
-
-        ImGui::EndPopup();
-    }
-}
-
-void CEditor::OpenSceneModal()
-{
-    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, { 0.5f, 0.5f });
-
-    if (ImGui::BeginPopupModal("open_scene_dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
-    {
-        if (!pEditorProject->isProjectOpen())
-            ImGui::CloseCurrentPopup();
-
-        static char name_buf[512];
-        constexpr const char* filter[] = { "*.iescene" };
-        if (ImGui::FileOpen("Open scene", "...", name_buf, 512, "Open incenerate scene", 1, filter))
-        {
-            auto path = std::filesystem::path(name_buf);
-            if (EGSceneManager->load(path))
-            {
-                pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
-                ImGui::CloseCurrentPopup();
-            }
-        }
-
-        ImGui::SetItemDefaultFocus();
-        if (ImGui::Button("Cancel", { -1.f, 0.f }))
-            ImGui::CloseCurrentPopup();
-
-        ImGui::EndPopup();
     }
 }
 

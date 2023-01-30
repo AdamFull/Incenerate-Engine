@@ -2,7 +2,7 @@
 
 #include "Engine.h"
 
-#include "ecs/components/HierarchyComponent.h"
+#include "ecs/components/components.h"
 
 #include <imgui/imgui.h>
 
@@ -16,6 +16,20 @@
 using namespace engine::editor;
 using namespace engine::game;
 using namespace engine::ecs;
+
+template<class _Ty>
+void try_add_menu_item(const std::string& name, const entt::entity& entity)
+{
+    using namespace engine;
+    auto& actionBuffer = EGEditor->getActionBuffer();
+    auto& registry = EGCoordinator;
+    if (!registry.try_get<_Ty>(entity))
+    {
+        auto& icon = EGEditor->getIcon<_Ty>();
+        if (ImGui::MenuItem((icon + " " + name).c_str()))
+            actionBuffer->addOperation(std::make_unique<CCreateEntityOperation>(entity, utl::type_hash<_Ty>()));
+    }
+}
 
 void CEditorHierarchy::create()
 {
@@ -39,8 +53,18 @@ void CEditorHierarchy::__draw(float fDt)
 
     if (ImGui::BeginPopup("HierarchyOptions"))
     {
-        if (ImGui::MenuItem("create"))
-            actionBuffer->addOperation(std::make_unique<CCreateEntityOperation>(selected_entity));
+        if (ImGui::BeginMenu("create"))
+        {
+            try_add_menu_item<entt::entity>("entity", selected_entity);
+            try_add_menu_item<FAudioComponent>("audio", selected_entity);
+            try_add_menu_item<FCameraComponent>("camera", selected_entity);
+            try_add_menu_item<FEnvironmentComponent>("environment", selected_entity);
+            try_add_menu_item<FDirectionalLightComponent>("directional light", selected_entity);
+            try_add_menu_item<FSpotLightComponent>("spot light", selected_entity);
+            try_add_menu_item<FPointLightComponent>("point light", selected_entity);
+            try_add_menu_item<FSceneComponent>("scene", selected_entity);
+            ImGui::EndMenu();
+        }
 
         if (ImGui::MenuItem("copy", "CTRL+C"))
             copy_entity = selected_entity;

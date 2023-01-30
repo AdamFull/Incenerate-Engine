@@ -728,7 +728,7 @@ void CAPIHandle::bindVertexBuffer(size_t id)
         pBindedVBO->bind(commandBuffer);
     }
     else
-        log_error("Cannot bind vertex buffer, because vertex buffer with id {} is not exists!");
+        log_error("Cannot bind vertex buffer, because vertex buffer with id {} is not exists!", id);
 }
 
 void CAPIHandle::bindRenderer(size_t id)

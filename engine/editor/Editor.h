@@ -42,6 +42,7 @@ namespace engine
 			constexpr inline uint32_t mesh_file = "mesh_file"_utl_hash;
 			constexpr inline uint32_t add_folder = "add_folder"_utl_hash;
 			constexpr inline uint32_t add_file = "add_file"_utl_hash;
+			constexpr inline uint32_t update = "update"_utl_hash;
 		}
 
 		struct FRecentProjects
@@ -80,10 +81,6 @@ namespace engine
 			const std::unique_ptr<CEditorActionBuffer>& getActionBuffer() const { return pActionBuffer; }
 		private:
 			void onKeyDown(CEvent& event);
-			void NewProjectModal();
-			void OpenProjectModal();
-			void NewSceneModal();
-			void OpenSceneModal();
 
 			void load_editor();
 			void save_editor();
@@ -104,7 +101,10 @@ namespace engine
 			entt::entity selected{ entt::null };
 			std::map<uint32_t, std::string> mEditorIcons;
 
-			const char* open_popup{ nullptr };
+			bool bNeedNewProject{ false };
+			bool bNeedOpenProject{ false };
+			bool bNeedNewScene{ false };
+			bool bNeedOpenScene{ false };
 			bool bNeedUndo{ false };
 			bool bNeedRedo{ false };
 			bool bNeedSave{ false };
