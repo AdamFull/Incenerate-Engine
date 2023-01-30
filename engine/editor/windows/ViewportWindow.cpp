@@ -28,6 +28,7 @@ static const float identityMatrix[16] =
 0.f, 0.f, 0.f, 1.f };
 
 ImGuizmo::OPERATION mCurrentGizmoOperation{ ImGuizmo::TRANSLATE };
+ImGuizmo::MODE mCurrentGizmoMode{ ImGuizmo::LOCAL };
 
 void AlignForWidth(float width, float alignment = 0.5f)
 {
@@ -186,19 +187,17 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 
 	bool snap{ false };
 
-	if (ImGui::IsKeyPressed(ImGuiKey_T))
-		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-	if (ImGui::IsKeyPressed(ImGuiKey_R))
-		mCurrentGizmoOperation = ImGuizmo::ROTATE;
-	if (ImGui::IsKeyPressed(ImGuiKey_E))
-		mCurrentGizmoOperation = ImGuizmo::SCALE;
-	if (ImGui::IsKeyPressed(ImGuiKey_V))
-		snap = true;
-
-	float snapValue = 0.5f;
-	if (mCurrentGizmoOperation == ImGuizmo::OPERATION::ROTATE)
-		snapValue = 45.0f;
-	float snapValues[3] = { snapValue, snapValue, snapValue };
+	if (ImGui::IsWindowHovered() && ImGui::IsWindowFocused())
+	{
+		if (ImGui::IsKeyPressed(ImGuiKey_T))
+			mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+		if (ImGui::IsKeyPressed(ImGuiKey_R))
+			mCurrentGizmoOperation = ImGuizmo::ROTATE;
+		if (ImGui::IsKeyPressed(ImGuiKey_E))
+			mCurrentGizmoOperation = ImGuizmo::SCALE;
+		if (ImGui::IsKeyReleased(ImGuiKey_M))
+			mCurrentGizmoMode = mCurrentGizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+	}
 
 	auto selected = EGEditor->getLastSelection();
 	if (selected != entt::null)
@@ -222,7 +221,7 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 		glm::mat4 delta;
 
 		//Manipulating
-		if (ImGuizmo::Manipulate(glm::value_ptr(camera->view), glm::value_ptr(camera->projection), mCurrentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(transform.model), glm::value_ptr(delta), snap ? snapValues : nullptr))
+		if (ImGuizmo::Manipulate(glm::value_ptr(camera->view), glm::value_ptr(camera->projection), mCurrentGizmoOperation, mCurrentGizmoMode, glm::value_ptr(transform.model), glm::value_ptr(delta)))
 		{
 			glm::vec3 translation, rotation, scale;
 			decompose(delta, translation, rotation, scale);

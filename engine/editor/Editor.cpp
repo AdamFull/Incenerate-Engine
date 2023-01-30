@@ -236,6 +236,13 @@ void CEditor::newFrame(float fDt)
             if (ImGui::MenuItem("Darkblue")) { Themes::darkblue(); }
             ImGui::EndMenu();
         }
+        if (ImGui::BeginMenu("Debug"))
+        {
+            auto display_normals = EGEngine->isDebugDrawNormals();
+            if (ImGui::MenuItem("Display normals", "", &display_normals))
+                EGEngine->toggleDebugDrawNormals();
+            ImGui::EndMenu();
+        }
         if (ImGui::BeginMenu("Help"))
         {
             ImGui::EndMenu();

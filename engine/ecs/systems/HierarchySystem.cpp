@@ -46,6 +46,7 @@ void CHierarchySystem::__update(float fDt)
 			auto& transform = registry.get<FTransformComponent>(current);
 			auto& hierarchy = registry.get<FHierarchyComponent>(current);
 			transform.update();
+			transform.normal = glm::transpose(glm::inverse(transform.model));
 
 			for (auto& child : hierarchy.children)
 			{
@@ -57,6 +58,8 @@ void CHierarchySystem::__update(float fDt)
 
 				if (!chierarchy.children.empty())
 					nextparent.push(child);
+				else
+					ctransform.normal = glm::transpose(glm::inverse(ctransform.model));
 			}
 			nextparent.pop();
 		}

@@ -61,6 +61,8 @@ namespace engine
 		const scriptcore_t& getScripting() const;
 
 		const bool isEditorMode() const;
+		const bool isDebugDrawNormals() const;
+		void toggleDebugDrawNormals();
 
 		void setState(EEngineState state) { eState = state; }
 		EEngineState getState() { return eState; }
@@ -94,7 +96,9 @@ namespace engine
 		audiocore_t pAudio;
 		scenemgr_t pSceneManager;
 		scriptcore_t pScripting;
+
 		bool bEditorMode{ true };
+		bool bDebugDrawNormals{ false };
 
 		std::vector<std::unique_ptr<ecs::ISystem>> vSystems;
 	};

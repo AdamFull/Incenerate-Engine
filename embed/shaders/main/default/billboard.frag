@@ -33,7 +33,7 @@ void main()
 	outAlbedo = albedo_map;
 	outNormal = vec4(0.0);
 	outMRAH = vec4(0.0);
-	outEmissive = vec4(2.0);
+	outEmissive = vec4(0.0);
 #ifdef EDITOR_MODE
 	outObjectID = billboard.object_id;
 #endif

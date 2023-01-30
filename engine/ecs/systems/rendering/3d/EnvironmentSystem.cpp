@@ -35,13 +35,11 @@ void CEnvironmentSystem::__update(float fDt)
 			graphics->bindVertexBuffer(skybox.vbo_id);
 			graphics->bindShader(skybox.shader_id);
 
-			auto normal = glm::transpose(glm::inverse(transform.model));
-
 			auto& pUBO = graphics->getUniformHandle("FUniformData");
 			pUBO->set("model", transform.model);
 			pUBO->set("view", camera->view);
 			pUBO->set("projection", camera->projection);
-			pUBO->set("normal", normal);
+			pUBO->set("normal", transform.normal);
 			pUBO->set("viewDir", camera->viewPos);
 			pUBO->set("viewportDim", camera->viewportDim);
 			pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());

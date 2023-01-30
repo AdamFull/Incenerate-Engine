@@ -147,6 +147,16 @@ const bool CEngine::isEditorMode() const
 	return bEditorMode;
 }
 
+const bool CEngine::isDebugDrawNormals() const
+{
+	return bDebugDrawNormals;
+}
+
+void CEngine::toggleDebugDrawNormals()
+{
+	bDebugDrawNormals = !bDebugDrawNormals;
+}
+
 const std::vector<std::unique_ptr<ecs::ISystem>>& CEngine::getSystems() const
 {
 	return vSystems;
