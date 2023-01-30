@@ -9,6 +9,8 @@
 #include "rendering/RenderStage.h"
 #include "rendering/material/Material.h"
 
+#include "DebugDraw.h"
+
 #include "ObjectManager.hpp"
 
 namespace engine
@@ -33,8 +35,10 @@ namespace engine
 			void reCreate(bool bSwapchain, bool bViewport);
 			void shutdown();
 
+			const std::unique_ptr<CDebugDraw>& getDebugDraw() const;
+
 			vk::CommandBuffer begin();
-			void end();
+			void end(float fDT);
 			vk::CommandBuffer getCommandBuffer();
 
 			const std::unique_ptr<CDevice>& getDevice() const;
@@ -115,6 +119,7 @@ namespace engine
 			ERenderApi eAPI;
 			std::unique_ptr<CDevice> pDevice;
 			std::unique_ptr<CShaderLoader> pLoader;
+			std::unique_ptr<CDebugDraw> pDebugDraw;
 
 			std::map<std::string, FCIStage> mStageInfos;
 			std::unique_ptr<CObjectManager<CImage>> pImageManager;

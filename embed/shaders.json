@@ -62,6 +62,36 @@
     ],
     "defines": {}
   },
+  "displaynormal": {
+    "stage": "deferred",
+    "bind_point": "Graphics",
+    "cull_mode": "Back",
+    "front_face": "ccw",
+    "depth_test": true,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "shaders/main/default/debug/displaynormal.vert",
+      "shaders/main/default/debug/displaynormal.geom",
+      "shaders/main/default/debug/displaynormal.frag"
+    ],
+    "defines": {}
+  },
+  "debugdraw": {
+    "stage": "deferred",
+    "bind_point": "Graphics",
+    "topology": "LineList",
+    "cull_mode": "None",
+    "front_face": "cw",
+    "depth_test": true,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "shaders/main/default/debug/debugdraw.vert",
+      "shaders/main/default/debug/displaynormal.frag"
+    ],
+    "defines": {}
+  },
+
+
   "directional_shadow_pass": {
     "stage": "shadow",
     "bind_point": "Graphics",
@@ -113,20 +143,6 @@
     "stages": [
       "shaders/main/screenspace.vert",
       "shaders/main/ssao.frag"
-    ],
-    "defines": {}
-  },
-
-  "displaynormal": {
-    "stage": "deferred",
-    "bind_point": "Graphics",
-    "cull_mode": "back",
-    "front_face": "ccw",
-    "dynamic_states": [ "Viewport", "Scissor" ],
-    "stages": [
-      "shaders/main/default/debug/displaynormal.vert",
-      "shaders/main/default/debug/displaynormal.geom",
-      "shaders/main/default/debug/displaynormal.frag"
     ],
     "defines": {}
   },

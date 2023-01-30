@@ -78,7 +78,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     bool isDepthOnly = colorAttachmentCount == 0;
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
-    inputAssembly.topology = enableTesselation ? vk::PrimitiveTopology::ePatchList : vk::PrimitiveTopology::eTriangleList;
+    inputAssembly.topology = enableTesselation ? vk::PrimitiveTopology::ePatchList : topology;
     inputAssembly.flags = vk::PipelineInputAssemblyStateCreateFlags{};
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 

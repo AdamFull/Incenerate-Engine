@@ -4,6 +4,11 @@
 
 namespace engine
 {
+	namespace ecs
+	{
+		class ISystem;
+	}
+
 	namespace editor
 	{
 		class CEditorPerfomanceView : public IEditorWindow
@@ -14,6 +19,8 @@ namespace engine
 
 			void create() override;
 			void __draw(float fDt) override;
+		private:
+			void expand(ecs::ISystem* system);
 		};
 	}
 }

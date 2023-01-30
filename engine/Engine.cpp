@@ -82,7 +82,7 @@ void CEngine::beginEngineLoop()
 		for (const auto& system : vSystems)
 			system->update(dt);
 
-		pGraphics->end();
+		pGraphics->end(dt);
 
 		pScripting->update();
 		pAudio->update();

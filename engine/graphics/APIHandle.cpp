@@ -7,8 +7,7 @@
 #include "image/Image2D.h"
 #include "image/ImageCubemap.h"
 
-#define DEBUG_DRAW_IMPLEMENTATION
-#include <debug_draw.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace engine::graphics;
 using namespace engine::system;
@@ -44,8 +43,9 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
 
-    auto& device = EGGraphics->getDevice();
-    auto depth_format = device->getDepthFormat();
+    pDebugDraw = std::make_unique<CDebugDraw>(this);
+
+    auto depth_format = pDevice->getDepthFormat();
     
 
     {
@@ -109,7 +109,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     {
         mStageInfos["deferred"].srName = "deferred";
         mStageInfos["deferred"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["deferred"].viewport.extent = device->getExtent(true);
+        mStageInfos["deferred"].viewport.extent = pDevice->getExtent(true);
         mStageInfos["deferred"].bFlipViewport = true;
         mStageInfos["deferred"].bViewportDependent = true;
         mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "albedo_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
@@ -166,7 +166,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     {
         mStageInfos["composition"].srName = "composition";
         mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["composition"].viewport.extent = device->getExtent(true);
+        mStageInfos["composition"].viewport.extent = pDevice->getExtent(true);
         mStageInfos["composition"].bViewportDependent = true;
         mStageInfos["composition"].vImages.emplace_back(FCIImage{ "composition_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled });
         mStageInfos["composition"].vOutputs.emplace_back("composition_tex");
@@ -208,8 +208,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     {
         mStageInfos["present"].srName = "present";
         mStageInfos["present"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["present"].viewport.extent = device->getExtent();
-        mStageInfos["present"].vImages.emplace_back(FCIImage{ "present_khr", device->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
+        mStageInfos["present"].viewport.extent = pDevice->getExtent();
+        mStageInfos["present"].vImages.emplace_back(FCIImage{ "present_khr", pDevice->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
         mStageInfos["present"].vOutputs.emplace_back("present_khr");
         mStageInfos["present"].vDescriptions.emplace_back("");
         mStageInfos["present"].vDependencies.emplace_back(
@@ -231,6 +231,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         auto& pStage = EGGraphics->getRenderStage(stageId);
         pStage->create(mStageInfos["present"]);
     }
+
+    pDebugDraw->create();
 
     log_info("Graphics core initialized.");
 }
@@ -299,11 +301,17 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
 void CAPIHandle::shutdown()
 {
     pDevice->GPUWait();
+    pDebugDraw = nullptr;
     pRenderStageManager = nullptr;
     pMaterialManager = nullptr;
     pVertexBufferManager = nullptr;
     pShaderManager = nullptr;
     pImageManager = nullptr;
+}
+
+const std::unique_ptr<CDebugDraw>& CAPIHandle::getDebugDraw() const
+{
+    return pDebugDraw;
 }
 
 vk::CommandBuffer CAPIHandle::begin()
@@ -315,10 +323,8 @@ vk::CommandBuffer CAPIHandle::begin()
     return commandBuffer;
 }
 
-void CAPIHandle::end()
+void CAPIHandle::end(float fDT)
 {
-    //dd::flush();
-
     vk::Result resultPresent;
     try { resultPresent = endFrame(); }
     catch (vk::OutOfDateKHRError err) { resultPresent = vk::Result::eErrorOutOfDateKHR; }
@@ -675,8 +681,7 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
     return output_id;
 }
 
-
-
+// Draw state machine
 void CAPIHandle::bindShader(size_t id)
 {
     if (id == invalid_index)
@@ -718,7 +723,7 @@ void CAPIHandle::bindVertexBuffer(size_t id)
         pBindedVBO = nullptr;
         return;
     }
-
+    
     auto& vbo = getVertexBuffer(id);
     if (vbo)
     {

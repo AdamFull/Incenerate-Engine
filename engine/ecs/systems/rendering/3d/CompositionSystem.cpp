@@ -45,6 +45,7 @@ void CCompositionSystem::__update(float fDt)
 {
 	auto& registry = EGCoordinator;
 	auto& graphics = EGGraphics;
+	auto& debug_draw = graphics->getDebugDraw();
 
 	uint32_t directoonal_light_count{ 0 };
 	std::array<FDirectionalLightCommit, MAX_DIRECTIONAL_LIGHT_COUNT> directional_lights;
@@ -63,6 +64,8 @@ void CCompositionSystem::__update(float fDt)
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.castShadows = static_cast<int>(light.castShadows);
+
+			debug_draw->drawDebugLine(transform.rposition, transform.rposition + commit.direction, glm::vec3(1.f, 0.f, 0.f));
 
 			directional_lights[directoonal_light_count++] = commit;
 		}
@@ -99,6 +102,8 @@ void CCompositionSystem::__update(float fDt)
 			commit.lightAngleOffset = -glm::cos(light.outerAngle) * commit.lightAngleScale;
 			commit.toTarget = static_cast<int>(light.toTarget);
 			commit.castShadows = static_cast<int>(light.castShadows);
+
+			debug_draw->drawDebugLine(transform.rposition, transform.rposition + commit.direction, glm::vec3(1.f, 0.f, 0.f));
 
 			spot_lights[spot_light_count++] = commit;
 		}

@@ -3,6 +3,8 @@
 #include "Engine.h"
 #include "ecs/components/components.h"
 
+#include <glm/gtx/quaternion.hpp>
+
 using namespace engine::ecs;
 
 void CDebugDrawSystem::__create()
@@ -13,6 +15,7 @@ void CDebugDrawSystem::__create()
 void CDebugDrawSystem::__update(float fDt)
 {
 	auto& graphics = EGGraphics;
+	auto& debug_draw = graphics->getDebugDraw();
 	auto& registry = EGCoordinator;
 
 	auto* camera = EGEngine->getActiveCamera();
@@ -53,4 +56,6 @@ void CDebugDrawSystem::__update(float fDt)
 		graphics->setManualShaderControlFlag(false);
 		graphics->bindShader(invalid_index);
 	}
+
+	debug_draw->draw();
 }

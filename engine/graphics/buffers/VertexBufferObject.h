@@ -84,6 +84,10 @@ namespace engine
 			~CVertexBufferObject() = default;
 
 			void create();
+			void create(size_t vertices, size_t indices);
+			void update(std::vector<FVertex>& vertices);
+			void update(std::vector<uint32_t>& indices);
+			void update(std::vector<FVertex>& vertices, std::vector<uint32_t>& indices);
 			void recreate();
 			void bind(vk::CommandBuffer commandBuffer);
 			void addPrimitive(std::unique_ptr<FPrimitive>&& primitive);

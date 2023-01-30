@@ -19,7 +19,7 @@ namespace engine
 			std::string srStage{};
 			bool vertexfree{ false };
 			vk::PipelineBindPoint bindPoint;
-			vk::PrimitiveTopology topology;
+			vk::PrimitiveTopology topology{ vk::PrimitiveTopology::eTriangleList };
 			vk::CullModeFlagBits  cullMode;
 			vk::FrontFace frontFace;
 			bool depthTest{ false };
@@ -59,6 +59,7 @@ namespace engine
 		struct FVertex
 		{
 			FVertex() = default;
+			FVertex(glm::vec3 p, glm::vec3 c) : pos(p), color(c) {}
 			FVertex(glm::vec3 p, glm::vec3 n, glm::vec2 t) : pos(p), normal(n), texcoord(t) {}
 
 			glm::vec3 pos{};
