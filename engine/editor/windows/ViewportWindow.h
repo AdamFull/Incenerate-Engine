@@ -23,6 +23,7 @@ namespace engine
 			void drawOverlay(float offsetx, float offsety, float fDt);
 
 		private:
+			graphics::CAPIHandle* graphics{ nullptr };
 			std::unique_ptr<graphics::CDescriptorSet> pDescriptorSet;
 			float overlayX{ 300.0 }, overlayY{ 50.f };
 			float viewportPanelSizeX{ 0.f }, viewportPanelSizeY{ 0.f };

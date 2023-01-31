@@ -9,7 +9,7 @@ using namespace engine::game;
 
 entt::entity scenegraph::create_node(const std::string& name)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	auto entity = registry.create();
 	registry.emplace<FTransformComponent>(entity, FTransformComponent{});
@@ -20,7 +20,7 @@ entt::entity scenegraph::create_node(const std::string& name)
 
 void scenegraph::destroy_node(entt::entity node)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	
 	auto& hierarchy = registry.get<FHierarchyComponent>(node);
 
@@ -64,7 +64,7 @@ void scenegraph::attach_child(entt::entity parent, entt::entity child)
 		return;
 	}
 
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	auto& phierarchy = registry.get<FHierarchyComponent>(parent);
 	phierarchy.children.emplace_back(child);
@@ -78,7 +78,7 @@ void scenegraph::detach_child(entt::entity parent, entt::entity child)
 	if (parent == entt::null)
 		return;
 
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	auto& phierarchy = registry.get<FHierarchyComponent>(parent);
 	auto cit = std::find(phierarchy.children.begin(), phierarchy.children.end(), child);
@@ -94,7 +94,7 @@ void scenegraph::detach_child(entt::entity parent, entt::entity child)
 
 void scenegraph::detach_child(entt::entity child)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	auto& chierarchy = registry.get<FHierarchyComponent>(child);
 
 	detach_child(chierarchy.parent, child);
@@ -102,7 +102,7 @@ void scenegraph::detach_child(entt::entity child)
 
 entt::entity scenegraph::duplicate_node(entt::entity entity)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	auto& transform = registry.get<FTransformComponent>(entity);
 	auto& hierarchy = registry.get<FHierarchyComponent>(entity);
@@ -151,7 +151,7 @@ entt::entity scenegraph::duplicate_node(entt::entity entity)
 
 void scenegraph::parent_exchange(entt::entity new_parent, entt::entity child)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	auto& chierarchy = registry.get<FHierarchyComponent>(child);
 	detach_child(chierarchy.parent, child);
 	attach_child(new_parent, child);

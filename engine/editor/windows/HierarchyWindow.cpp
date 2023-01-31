@@ -22,7 +22,7 @@ void try_add_menu_item(const std::string& name, const entt::entity& entity)
 {
     using namespace engine;
     auto& actionBuffer = EGEditor->getActionBuffer();
-    auto& registry = EGCoordinator;
+    auto& registry = EGEngine->getRegistry();
     if (!registry.try_get<_Ty>(entity))
     {
         auto& icon = EGEditor->getIcon<_Ty>();
@@ -39,7 +39,7 @@ void CEditorHierarchy::create()
 void CEditorHierarchy::__draw(float fDt)
 {
     auto& actionBuffer = EGEditor->getActionBuffer();
-    auto& registry = EGCoordinator;
+    auto& registry = EGEngine->getRegistry();
     auto root = EGSceneManager->getRoot();
 	auto current_size = ImGui::GetWindowSize();
 
@@ -114,7 +114,7 @@ void CEditorHierarchy::buildHierarchy(const entt::entity& entity)
         std::string icon{};
 
         uint32_t flags = ImGuiTreeNodeFlags_OpenOnArrow;
-        auto& registry = EGCoordinator;
+        auto& registry = EGEngine->getRegistry();
 
         auto& hierarchy = registry.get<FHierarchyComponent>(entity);
 

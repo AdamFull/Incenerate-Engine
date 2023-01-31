@@ -284,6 +284,8 @@ void CFramebuffer::createRenderPass()
 
 void CFramebuffer::createFramebuffer()
 {
+    auto graphics = pDevice->getAPI();
+
     bool isDepthOnly{ true };
     auto framesInFlight = pDevice->getFramesInFlight();
     for (size_t frame = 0; frame < framesInFlight; frame++)
@@ -298,7 +300,7 @@ void CFramebuffer::createFramebuffer()
                 auto depthImage = createImage(attachment, renderArea.extent);
                 imageViews.push_back(depthImage->getDescriptor().imageView);
 
-                depthImageIDX = EGGraphics->addImage(fullname, std::move(depthImage));
+                depthImageIDX = graphics->addImage(fullname, std::move(depthImage));
                 mFramebufferImages[frame].emplace(name, depthImageIDX);
             }
             else
@@ -309,7 +311,7 @@ void CFramebuffer::createFramebuffer()
                 {
                     auto image = createImage(attachment, renderArea.extent);
                     imageViews.push_back(image->getDescriptor().imageView);
-                    mFramebufferImages[frame].emplace(name, EGGraphics->addImage(fullname, std::move(image)));
+                    mFramebufferImages[frame].emplace(name, graphics->addImage(fullname, std::move(image)));
                 }
             }
         }
@@ -388,10 +390,12 @@ std::unique_ptr<CImage> CFramebuffer::createImage(const FFramebufferAttachmentIn
 
 void CFramebuffer::clearImages()
 {
+    auto graphics = pDevice->getAPI();
+
     for (auto& [frame, images] : mFramebufferImages)
     {
         for (auto& [name, image] : images)
-            EGGraphics->removeImage(image);
+            graphics->removeImage(image);
     }
 
     mFramebufferImages.clear();

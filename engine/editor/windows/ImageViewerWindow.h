@@ -21,6 +21,7 @@ namespace engine
 		private:
 			size_t openned_image{ invalid_index };
 			std::unique_ptr<graphics::CDescriptorSet> pDescriptorSet;
+			graphics::CAPIHandle* graphics{ nullptr };
 		};
 	}
 }

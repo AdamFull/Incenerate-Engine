@@ -22,6 +22,7 @@ void CGraphicsPipeline::create(CShaderObject* pShader, vk::RenderPass& renderPas
 
 void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
 {
+    auto graphics = pDevice->getAPI();
     auto& shader = pShader->getShader();
     auto vertexfree = pShader->isVertexFree();
     auto culling = pShader->getCullMode();
@@ -48,8 +49,8 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     }
 
     uint32_t colorAttachmentCount{ 0 };
-    auto depthformat = EGGraphics->getDevice()->getDepthFormat();
-    auto& framebuffer = EGGraphics->getFramebuffer(pShader->getStage());
+    auto depthformat = graphics->getDevice()->getDepthFormat();
+    auto& framebuffer = graphics->getFramebuffer(pShader->getStage());
     auto descriptions = framebuffer->getAttachmentDescriptions();
 
     std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments;

@@ -16,7 +16,9 @@ CPushHandler::~CPushHandler()
 
 void CPushHandler::create(const CPushConstBlock& pushBlock)
 {
-	auto images = EGGraphics->getDevice()->getFramesInFlight();
+	auto& graphics = EGEngine->getGraphics();
+
+	auto images = graphics->getDevice()->getFramesInFlight();
 
 	for(auto i = 0; i < images; i++)
 		vData.emplace_back(std::make_unique<char[]>(pushBlock.getSize()));
@@ -34,5 +36,7 @@ void CPushHandler::flush(vk::CommandBuffer& commandBuffer)
 
 uint32_t CPushHandler::getCurrentFrameProxy()
 {
-	return EGGraphics->getDevice()->getCurrentFrame();
+	auto& graphics = EGEngine->getGraphics();
+	auto& device = graphics->getDevice();
+	return device->getCurrentFrame();
 }

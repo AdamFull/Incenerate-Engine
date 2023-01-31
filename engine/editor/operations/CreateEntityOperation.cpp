@@ -17,7 +17,7 @@ CCreateEntityOperation::CCreateEntityOperation(entt::entity parent, size_t compo
 
 void CCreateEntityOperation::undo()
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	auto& hierarchy = registry.get<FHierarchyComponent>(entity);
 	name = hierarchy.name;
@@ -28,7 +28,7 @@ void CCreateEntityOperation::undo()
 
 void CCreateEntityOperation::redo()
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	entity = scenegraph::create_node(name);
 

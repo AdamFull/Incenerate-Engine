@@ -16,7 +16,7 @@ CAddComponentOperation::CAddComponentOperation(entt::entity entity, size_t compo
 
 void CAddComponentOperation::undo()
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	switch (component_id)
 	{
@@ -36,7 +36,7 @@ void CAddComponentOperation::undo()
 
 void CAddComponentOperation::redo()
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	switch (component_id)
 	{

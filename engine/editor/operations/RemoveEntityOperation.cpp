@@ -24,7 +24,7 @@ void CRemoveEntityOperation::undo()
 
 void CRemoveEntityOperation::redo()
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	auto& hierarchy = registry.get<FHierarchyComponent>(target);
 	parent = hierarchy.parent;
 

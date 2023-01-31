@@ -33,7 +33,7 @@ void CSceneLoader::save(const entt::entity& root, const std::filesystem::path& s
 
 entt::entity CSceneLoader::loadNode(FSceneObjectRaw& object)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	auto node = scenegraph::create_node(object.srName);
 
@@ -82,7 +82,7 @@ entt::entity CSceneLoader::loadNode(FSceneObjectRaw& object)
 FSceneObjectRaw CSceneLoader::saveNode(const entt::entity& node)
 {
 	bool bIgnoreChildren{ false };
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	FSceneObjectRaw object;
 

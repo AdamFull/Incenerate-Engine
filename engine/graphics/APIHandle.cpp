@@ -101,8 +101,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
             )
         );
 
-        auto stageId = EGGraphics->addRenderStage("shadow");
-        auto& pStage = EGGraphics->getRenderStage(stageId);
+        auto stageId = addRenderStage("shadow");
+        auto& pStage = getRenderStage(stageId);
         pStage->create(mStageInfos["shadow"]);
     }
 
@@ -158,8 +158,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
             )
         );
 
-        auto stageId = EGGraphics->addRenderStage("deferred");
-        auto& pStage = EGGraphics->getRenderStage(stageId);
+        auto stageId = addRenderStage("deferred");
+        auto& pStage = getRenderStage(stageId);
         pStage->create(mStageInfos["deferred"]);
     }
 
@@ -200,8 +200,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
             )
         );
 
-        auto stageId = EGGraphics->addRenderStage("composition");
-        auto& pStage = EGGraphics->getRenderStage(stageId);
+        auto stageId = addRenderStage("composition");
+        auto& pStage = getRenderStage(stageId);
         pStage->create(mStageInfos["composition"]);
     }
     
@@ -227,8 +227,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
             )
         );
 
-        auto stageId = EGGraphics->addRenderStage("present");
-        auto& pStage = EGGraphics->getRenderStage(stageId);
+        auto stageId = addRenderStage("present");
+        auto& pStage = getRenderStage(stageId);
         pStage->create(mStageInfos["present"]);
     }
 

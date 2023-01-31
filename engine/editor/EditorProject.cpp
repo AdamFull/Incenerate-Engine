@@ -105,7 +105,7 @@ void CEditorProject::createOrLoadEditorCamera()
         *editor_camera = CSceneLoader::loadNode(project.camera);
     else
     {
-        auto& registry = EGCoordinator;
+        auto& registry = EGEngine->getRegistry();
         *editor_camera = scenegraph::create_node("editor_camera");
         registry.emplace<FCameraComponent>(*editor_camera, FCameraComponent{});
         auto& camcomp = registry.get<FCameraComponent>(*editor_camera);

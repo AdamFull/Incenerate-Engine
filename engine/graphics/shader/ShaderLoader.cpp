@@ -28,11 +28,12 @@ void CShaderLoader::create()
 
 std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size_t mat_id)
 {
+	auto* graphics = pDevice->getAPI();
 	FShaderSpecials specials;
 
 	if (mat_id != invalid_index)
 	{
-		auto& pMaterial = EGGraphics->getMaterial(mat_id);
+		auto& pMaterial = graphics->getMaterial(mat_id);
 		auto& params = pMaterial->getParameters();
 		specials.usages = pMaterial->getUsageCount();
 		specials.doubleSided = params.doubleSided;
@@ -78,7 +79,8 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 				stages.erase(remit, stages.end());
 		}
 
-		auto api = EGGraphics->getAPI();
+		auto* graphics = pDevice->getAPI();
+		auto api = graphics->getAPI();
 		for (auto& stage : stages)
 		{
 			if (auto compiled = pCompiler->compile(stage, defineBlock.str(), api))

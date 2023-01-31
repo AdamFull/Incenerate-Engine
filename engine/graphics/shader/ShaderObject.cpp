@@ -31,6 +31,7 @@ const std::unique_ptr<CShader>& CShaderObject::getShader()
 
 void CShaderObject::create(uint32_t subpass, size_t usages)
 {
+	auto graphics = pDevice->getAPI();
 	usageCount = usages;
 
 	//Creating pipeline
@@ -38,7 +39,7 @@ void CShaderObject::create(uint32_t subpass, size_t usages)
 	{
 	case vk::PipelineBindPoint::eGraphics: {
 		pPipeline = std::make_unique<CGraphicsPipeline>(pDevice);
-		pPipeline->create(this, EGGraphics->getFramebuffer(programCI.srStage)->getRenderPass(), subpass);
+		pPipeline->create(this, graphics->getFramebuffer(programCI.srStage)->getRenderPass(), subpass);
 	} break;
 	case vk::PipelineBindPoint::eCompute: {
 		pPipeline = std::make_unique<CComputePipeline>(pDevice);
@@ -130,8 +131,8 @@ void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, glm::vec2 size)
 
 void CShaderObject::addTexture(const std::string& attachment, size_t id, uint32_t mip_level)
 {
-	// TODO: in method getDescriptor, add mip level selecting
-	auto& texture = EGGraphics->getImage(id);
+	auto graphics = pDevice->getAPI();
+	auto& texture = graphics->getImage(id);
 	addTexture(attachment, texture->getDescriptor(mip_level));
 }
 

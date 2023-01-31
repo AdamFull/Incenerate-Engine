@@ -57,14 +57,16 @@ CEditor::~CEditor()
 {
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplSDL2_Shutdown();
-    EGGraphics->getDevice()->destroy(&descriptorPool);
+    graphics->getDevice()->destroy(&descriptorPool);
     ImGui::DestroyContext();
 }
 
 void CEditor::create()
 {
-    auto& device = EGGraphics->getDevice();
-    auto& fb = EGGraphics->getFramebuffer("present");
+    graphics = EGEngine->getGraphics().get();
+
+    auto& device = graphics->getDevice();
+    auto& fb = graphics->getFramebuffer("present");
 
     EGEngine->addEventListener(Events::Input::Key, this, &CEditor::onKeyDown);
 
@@ -354,7 +356,7 @@ void CEditor::newFrame(float fDt)
     for (auto& overlay : vEditorWindows)
         overlay->draw(fDt);
 
-    auto commandBuffer = EGGraphics->getCommandBuffer();
+    auto commandBuffer = graphics->getCommandBuffer();
     ImGuiIO& io = ImGui::GetIO();
     ImGui::Render();
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -368,7 +370,7 @@ void CEditor::newFrame(float fDt)
 
 void CEditor::selectObject(const entt::entity& object)
 {
-    auto& registry = EGCoordinator;
+    auto& registry = EGEngine->getRegistry();
     if(registry.valid(object))
 	    selected = object;
 }
@@ -442,7 +444,7 @@ void CEditor::onKeyDown(CEvent& event)
 
     if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_PrintScreen))
     {
-        auto& device = EGGraphics->getDevice();
+        auto& device = graphics->getDevice();
         device->takeScreenshot("screenshot.png");
     }
 }

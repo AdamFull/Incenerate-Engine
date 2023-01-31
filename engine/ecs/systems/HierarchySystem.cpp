@@ -13,7 +13,7 @@ void CHierarchySystem::__create()
 
 void CHierarchySystem::__update(float fDt)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	auto root = EGSceneManager->getRoot();
 
 	// Preparing transformation

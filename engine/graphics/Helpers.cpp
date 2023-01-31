@@ -114,7 +114,8 @@ bool VkHelper::hasStencilComponent(vk::Format format)
 
 void VkHelper::BarrierFromComputeToCompute()
 {
-    auto commandBuffer = EGGraphics->getCommandBuffer();
+    auto& graphics = EGEngine->getGraphics();
+    auto commandBuffer = graphics->getCommandBuffer();
     BarrierFromComputeToCompute(commandBuffer);
 }
 
@@ -135,7 +136,8 @@ void VkHelper::BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer)
 
 void VkHelper::BarrierFromComputeToGraphics()
 {
-    auto commandBuffer = EGGraphics->getCommandBuffer();
+    auto& graphics = EGEngine->getGraphics();
+    auto commandBuffer = graphics->getCommandBuffer();
     BarrierFromComputeToGraphics(commandBuffer);
 }
 
@@ -156,15 +158,18 @@ void VkHelper::BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer)
 
 void VkHelper::BarrierFromGraphicsToCompute(size_t image_id)
 {
-    auto commandBuffer = EGGraphics->getCommandBuffer();
+    auto& graphics = EGEngine->getGraphics();
+    auto commandBuffer = graphics->getCommandBuffer();
     BarrierFromGraphicsToCompute(commandBuffer, image_id);
 }
 
 void VkHelper::BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, size_t image_id)
 {
+    auto& graphics = EGEngine->getGraphics();
+
     if (image_id != invalid_index)
     {
-        auto& image = EGGraphics->getImage(image_id);
+        auto& image = graphics->getImage(image_id);
 
         vk::ImageMemoryBarrier2KHR imageMemoryBarrier{};
         imageMemoryBarrier.srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
@@ -190,15 +195,18 @@ void VkHelper::BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, si
 
 void VkHelper::BarrierFromGraphicsToTransfer(size_t image_id)
 {
-    auto commandBuffer = EGGraphics->getCommandBuffer();
+    auto& graphics = EGEngine->getGraphics();
+    auto commandBuffer = graphics->getCommandBuffer();
     BarrierFromGraphicsToTransfer(commandBuffer, image_id);
 }
 
 void VkHelper::BarrierFromGraphicsToTransfer(vk::CommandBuffer& commandBuffer, size_t image_id)
 {
+    auto& graphics = EGEngine->getGraphics();
+
     if (image_id != invalid_index)
     {
-        auto& image = EGGraphics->getImage(image_id);
+        auto& image = graphics->getImage(image_id);
 
         vk::ImageMemoryBarrier2KHR imageMemoryBarrier{};
         imageMemoryBarrier.srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;

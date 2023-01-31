@@ -16,8 +16,11 @@ void CEditorImageViewer::create()
 {
 	bIsOpen = false;
 
+	graphics = EGEngine->getGraphics().get();
+	auto& device = graphics->getDevice();
+
 	auto pBackend = (ImGui_ImplVulkan_Data*)ImGui::GetIO().BackendRendererUserData;
-	pDescriptorSet = std::make_unique<CDescriptorSet>(EGGraphics->getDevice().get());
+	pDescriptorSet = std::make_unique<CDescriptorSet>(device.get());
 	pDescriptorSet->create(vk::PipelineBindPoint::eGraphics, pBackend->PipelineLayout, EGEditor->getDescriptorPool(), pBackend->DescriptorSetLayout);
 
 	EGEngine->addEventListener(Events::Editor::OpenImageViewer, this, &CEditorImageViewer::OnOpenImage);
@@ -27,7 +30,7 @@ void CEditorImageViewer::__draw(float fDt)
 {
 	if (openned_image != invalid_index)
 	{
-		auto& image = EGGraphics->getImage(openned_image);
+		auto& image = graphics->getImage(openned_image);
 		auto& extent = image->getExtent();
 
 		vk::WriteDescriptorSet write{};
@@ -44,10 +47,10 @@ void CEditorImageViewer::__draw(float fDt)
 void CEditorImageViewer::OnOpenImage(CEvent& event)
 {
 	if (openned_image != invalid_index)
-		EGGraphics->removeImage(openned_image);
+		graphics->removeImage(openned_image);
 
 	auto path = event.getParam<std::filesystem::path>(Events::Editor::OpenImageViewer);
 	auto name = fs::get_filename(path);
-	openned_image = EGGraphics->addImage(name, path);
+	openned_image = graphics->addImage(name, path);
 	bIsOpen = true;
 }

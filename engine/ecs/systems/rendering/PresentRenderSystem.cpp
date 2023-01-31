@@ -9,12 +9,11 @@ void CPresentRenderSystem::__create()
 	if (EGEngine->isEditorMode())
 		EGEditor->create();
 
-	shader_id = EGGraphics->addShader("through_pass", "through_pass");
+	shader_id = graphics->addShader("through_pass", "through_pass");
 }
 
 void CPresentRenderSystem::__update(float fDt)
 {
-	auto& graphics = EGGraphics;
 	auto stage = graphics->getRenderStageID("present");
 	auto present_id = graphics->getImageID("postprocess_tex");
 

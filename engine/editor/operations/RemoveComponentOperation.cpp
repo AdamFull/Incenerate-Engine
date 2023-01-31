@@ -16,7 +16,7 @@ CRemoveComponentOperation::CRemoveComponentOperation(entt::entity entity, size_t
 
 void CRemoveComponentOperation::undo()
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	switch (component_id)
 	{
@@ -91,7 +91,7 @@ void CRemoveComponentOperation::undo()
 
 void CRemoveComponentOperation::redo()
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	switch (component_id)
 	{

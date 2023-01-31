@@ -6,10 +6,11 @@ using namespace engine::graphics;
 
 CMaterial::~CMaterial()
 {
-	EGGraphics->removeShader(shader_id);
+	auto& graphics = EGEngine->getGraphics();
+	graphics->removeShader(shader_id);
 
 	for (auto& [name, id] : mTextures)
-		EGGraphics->removeImage(id);
+		graphics->removeImage(id);
 }
 
 void CMaterial::setParameters(FMaterial&& mat)
