@@ -10,7 +10,8 @@ size_t effectshared::createImage(const std::string& name, vk::Format format, boo
 {
 	using namespace engine;
 
-	auto& device = EGGraphics->getDevice();
+	auto& graphics = EGEngine->getGraphics();
+	auto& device = graphics->getDevice();
 
 	auto pImage = std::make_unique<CImage2D>(device.get());
 	pImage->create(
@@ -25,21 +26,22 @@ size_t effectshared::createImage(const std::string& name, vk::Format format, boo
 		vk::SamplerAddressMode::eClampToEdge,
 		vk::SampleCountFlagBits::e1, true, false, mips, mip_levels);
 
-	return EGGraphics->addImage(name, std::move(pImage));
+	return graphics->addImage(name, std::move(pImage));
 }
 
 void effectshared::tryReCreateImage(const std::string& name, size_t& image_id, vk::Format format, bool mips, uint32_t mip_levels)
 {
 	using namespace engine;
 
-	auto& device = EGGraphics->getDevice();
+	auto& graphics = EGEngine->getGraphics();
+	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 
-	auto& image = EGGraphics->getImage(image_id);
+	auto& image = graphics->getImage(image_id);
 	auto image_ext = image->getExtent();
 	if (image_ext.width != extent.width || image_ext.height != extent.height)
 	{
-		EGGraphics->removeImage(image_id);
+		graphics->removeImage(image_id);
 		image_id = createImage(name, format, mips, mip_levels);
 	}
 }

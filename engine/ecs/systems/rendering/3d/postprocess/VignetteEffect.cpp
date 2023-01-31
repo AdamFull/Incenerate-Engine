@@ -9,12 +9,12 @@ using namespace engine::ecs;
 
 void CVignetteEffect::create()
 {
-	shader_vignette = EGGraphics->addShader("vignette", "vignette");
+	graphics = EGEngine->getGraphics().get();
+	shader_vignette = graphics->addShader("vignette", "vignette");
 }
 
 size_t CVignetteEffect::render(FCameraComponent* camera, size_t in_source, size_t out_source)
 {
-	auto& graphics = EGGraphics;
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));

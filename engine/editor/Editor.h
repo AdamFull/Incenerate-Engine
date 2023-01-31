@@ -1,7 +1,6 @@
 #pragma once
 
 #include "windows/WindowBase.h"
-#include <utility/upattern.hpp>
 
 #include "EditorProject.h"
 #include "EditorActionBuffer.h"
@@ -115,6 +114,7 @@ namespace engine
 
 			std::vector<std::unique_ptr<IEditorWindow>> vEditorWindows;
 			vk::DescriptorPool descriptorPool{};
+			graphics::CAPIHandle* graphics{ nullptr };
 		};
 	}
 }

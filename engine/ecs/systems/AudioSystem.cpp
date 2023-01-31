@@ -19,13 +19,11 @@ void CAudioSystem::__create()
 
 void CAudioSystem::__update(float fDt)
 {
-	auto& registry = EGCoordinator;
-	auto editorMode = EGEngine->isEditorMode();
-	auto state = EGEngine->getState();
+	auto& registry = EGEngine->getRegistry();
 
 	auto* camera = EGEngine->getActiveCamera();
 
-	if (editorMode && state == EEngineState::eEditing)
+	if (EGEngine->isEditorEditing())
 	{
 		auto ecamera = EGEditor->getCamera();
 

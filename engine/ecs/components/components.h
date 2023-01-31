@@ -1,7 +1,5 @@
 #pragma once
 
-#include <utility/upattern.hpp>
-
 #include "AudioComponent.h"
 #include "CameraComponent.h"
 #include "DirectionalLightComponent.h"

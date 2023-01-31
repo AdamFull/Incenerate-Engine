@@ -1,7 +1,5 @@
 #pragma once
 
-#include <utility/uparse.hpp>
-
 namespace engine
 {
 	namespace ecs

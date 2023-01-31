@@ -36,6 +36,7 @@ namespace engine
         bool checkBox(const glm::vec3& start, const glm::vec3& end) const;
 
         const std::array<std::array<float, 4>, 6>& getFrustumSides() const { return frustumSides; }
+        const std::array<float, 16>& getClipMatrix() const { return clip; }
     private:
         void normalizeFrustumSide(size_t side);
 

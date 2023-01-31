@@ -7,10 +7,6 @@
 
 #include "ecs/helper.hpp"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
-
 #include <Helpers.h>
 
 using namespace engine::ecs;
@@ -26,11 +22,10 @@ void CCameraControlSystem::__create()
 
 void CCameraControlSystem::__update(float fDt)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	auto editorMode = EGEngine->isEditorMode();
 	auto state = EGEngine->getState();
 
-	if (editorMode && state == EEngineState::eEditing)
 	{
 		auto ecamera = EGEditor->getCamera();
 
@@ -42,7 +37,7 @@ void CCameraControlSystem::__update(float fDt)
 			updateCamera(camera, transform);
 		}
 	}
-	else
+
 	{
 		auto view = registry.view<FTransformComponent, FCameraComponent>();
 		for (auto [entity, transform, camera] : view.each())
@@ -57,14 +52,15 @@ void CCameraControlSystem::__update(float fDt)
 
 void CCameraControlSystem::updateCamera(FCameraComponent& camera, FTransformComponent& transform)
 {
-	auto& device = EGGraphics->getDevice();
+	auto& graphics = EGEngine->getGraphics();
+	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 
 	camera.forward = glm::normalize(transform.rotation);
 	camera.right = glm::normalize(glm::cross(camera.forward, glm::vec3{ 0.0, 1.0, 0.0 }));
 	camera.up = glm::normalize(glm::cross(camera.right, camera.forward));
 
-	if (extent.width != camera.viewportDim.x && extent.height != camera.viewportDim.y)
+	if (extent.width != camera.viewportDim.x || extent.height != camera.viewportDim.y)
 	{
 		camera.viewportDim.x = extent.width;
 		camera.viewportDim.y = extent.height;
@@ -155,9 +151,7 @@ void CCameraControlSystem::onKeyInput(CEvent& event)
 
 void CCameraControlSystem::onMouseInput(CEvent& event)
 {
-	auto& registry = EGCoordinator;
-	auto editorMode = EGEngine->isEditorMode();
-	auto state = EGEngine->getState();
+	auto& registry = EGEngine->getRegistry();
 
 	auto fx = event.getParam<float>(Events::Input::MouseX);
 	auto fy = event.getParam<float>(Events::Input::MouseY);
@@ -174,7 +168,7 @@ void CCameraControlSystem::onMouseInput(CEvent& event)
 	if (!bRotationPass)
 		return;
 
-	if (editorMode && state == EEngineState::eEditing)
+	if (EGEngine->isEditorEditing())
 	{
 		auto ecamera = EGEditor->getCamera();
 
@@ -199,12 +193,10 @@ void CCameraControlSystem::onMouseInput(CEvent& event)
 
 void CCameraControlSystem::moveForward(bool bInv)
 {
-	auto& registry = EGCoordinator;
-	auto editorMode = EGEngine->isEditorMode();
-	auto state = EGEngine->getState();
+	auto& registry = EGEngine->getRegistry();
 	float dir = bInv ? -1.f : 1.f;
 
-	if (editorMode && state == EEngineState::eEditing)
+	if (EGEngine->isEditorEditing())
 	{
 		auto ecamera = EGEditor->getCamera();
 
@@ -227,12 +219,10 @@ void CCameraControlSystem::moveForward(bool bInv)
 
 void CCameraControlSystem::moveRight(bool bInv)
 {
-	auto& registry = EGCoordinator;
-	auto editorMode = EGEngine->isEditorMode();
-	auto state = EGEngine->getState();
+	auto& registry = EGEngine->getRegistry();
 	float dir = bInv ? -1.f : 1.f;
 
-	if (editorMode && state == EEngineState::eEditing)
+	if (EGEngine->isEditorEditing())
 	{
 		auto ecamera = EGEditor->getCamera();
 
@@ -255,12 +245,10 @@ void CCameraControlSystem::moveRight(bool bInv)
 
 void CCameraControlSystem::moveUp(bool bInv)
 {
-	auto& registry = EGCoordinator;
-	auto editorMode = EGEngine->isEditorMode();
-	auto state = EGEngine->getState();
+	auto& registry = EGEngine->getRegistry();
 	float dir = bInv ? -1.f : 1.f;
 
-	if (editorMode && state == EEngineState::eEditing)
+	if (EGEngine->isEditorEditing())
 	{
 		auto ecamera = EGEditor->getCamera();
 

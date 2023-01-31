@@ -19,8 +19,7 @@ void CEnvironmentSystem::__create()
 
 void CEnvironmentSystem::__update(float fDt)
 {
-	auto& registry = EGCoordinator;
-	auto& graphics = EGGraphics;
+	auto& registry = EGEngine->getRegistry();
 
 	auto* camera = EGEngine->getActiveCamera();
 

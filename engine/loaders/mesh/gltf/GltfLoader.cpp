@@ -12,9 +12,6 @@
 
 #include "system/filesystem/filesystem.h"
 
-#include <utility/logger/logger.h>
-#include <glm/gtc/type_ptr.hpp>
-
 using namespace engine::loaders;
 using namespace engine::system;
 using namespace engine::graphics;
@@ -106,6 +103,8 @@ bool loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::s
 
 void CGltfLoader::load(const const std::filesystem::path& source, const entt::entity& root)
 {
+    auto& graphics = EGEngine->getGraphics();
+
     tinygltf::Model gltfModel;
     tinygltf::TinyGLTF gltfContext;
     std::string error, warning;
@@ -129,7 +128,7 @@ void CGltfLoader::load(const const std::filesystem::path& source, const entt::en
 
     if (fileLoaded)
     {
-        vbo_id = EGGraphics->addVertexBuffer(fs::from_unicode(fpath.filename()));
+        vbo_id = graphics->addVertexBuffer(fs::from_unicode(fpath.filename()));
 
         loadTextures(gltfModel);
         loadMaterials(gltfModel);
@@ -142,17 +141,17 @@ void CGltfLoader::load(const const std::filesystem::path& source, const entt::en
             loadNode(root, node, scene.nodes[i], gltfModel, 1.0);
         }
 
-        auto& pVBO = EGGraphics->getVertexBuffer(vbo_id);
+        auto& pVBO = graphics->getVertexBuffer(vbo_id);
         pVBO->create();
 
         for (auto& mat_id : vMaterials)
-            EGGraphics->addShader("default_" + std::to_string(mat_id), "default", mat_id);
+            graphics->addShader("default_" + std::to_string(mat_id), "default", mat_id);
     }
 }
 
 void CGltfLoader::loadNode(const entt::entity& parent, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, float globalscale)
 {
-    auto& registry = EGCoordinator;
+    auto& registry = EGEngine->getRegistry();
 
     auto& phierarchy = registry.get<FHierarchyComponent>(parent);
 
@@ -201,9 +200,11 @@ void CGltfLoader::loadNode(const entt::entity& parent, const tinygltf::Node& nod
 
 void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::Node& node, const tinygltf::Model& model)
 {
-    auto& registry = EGCoordinator;
+    auto& graphics = EGEngine->getGraphics();
+
+    auto& registry = EGEngine->getRegistry();
     const tinygltf::Mesh mesh = model.meshes[node.mesh];
-    auto& pVBO = EGGraphics->getVertexBuffer(vbo_id);
+    auto& pVBO = graphics->getVertexBuffer(vbo_id);
 
     registry.emplace<FMeshComponent>(parent, FMeshComponent{});
     auto& meshComponent = registry.get<FMeshComponent>(parent);
@@ -388,7 +389,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         if (!vMaterials.empty())
         {
             auto& material = primitive.material > -1 ? vMaterials.at(primitive.material) : vMaterials.back();
-            auto& pMaterial = EGGraphics->getMaterial(material);
+            auto& pMaterial = graphics->getMaterial(material);
             pMaterial->incrementUsageCount();
             auto& params = pMaterial->getParameters();
             if (bHasNormals) params.vCompileDefinitions.emplace_back("HAS_NORMALS");
@@ -406,7 +407,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
 
 void CGltfLoader::loadCameraComponent(const entt::entity& parent, const tinygltf::Node& node, const tinygltf::Model& model)
 {
-    auto& registry = EGCoordinator;
+    auto& registry = EGEngine->getRegistry();
     const tinygltf::Camera camera = model.cameras[node.camera];
     FCameraComponent cameraComponent;
 
@@ -431,7 +432,7 @@ void CGltfLoader::loadCameraComponent(const entt::entity& parent, const tinygltf
 
 void CGltfLoader::loadLightComponent(const entt::entity& parent, uint32_t light_index, const tinygltf::Node& node, const tinygltf::Model& model)
 {
-    auto& registry = EGCoordinator;
+    auto& registry = EGEngine->getRegistry();
     const tinygltf::Light light = model.lights[light_index];
 
     glm::vec3 color;
@@ -469,6 +470,8 @@ void CGltfLoader::loadLightComponent(const entt::entity& parent, uint32_t light_
 
 void CGltfLoader::loadMaterials(const tinygltf::Model& model)
 {
+    auto& graphics = EGEngine->getGraphics();
+
     for (auto& mat : model.materials)
     {
         FMaterial params;
@@ -694,7 +697,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         // TODO: add instances in shader object
         pMaterial->setParameters(std::move(params));
         auto mat_name = mat.name.empty() ? fs::get_filename(fsParentPath) + "_" + std::to_string(vMaterials.size()) : mat.name;
-        vMaterials.emplace_back(EGGraphics->addMaterial(mat_name, std::move(pMaterial)));
+        vMaterials.emplace_back(graphics->addMaterial(mat_name, std::move(pMaterial)));
     }
 }
 
@@ -724,7 +727,8 @@ void CGltfLoader::loadTextures(const tinygltf::Model& model)
 
 size_t CGltfLoader::loadTexture(const std::pair<std::filesystem::path, bool>& texpair, vk::Format oformat)
 {
-    auto& device = EGGraphics->getDevice();
+    auto& graphics = EGEngine->getGraphics();
+    auto& device = graphics->getDevice();
     auto pImage = std::make_unique<CImage>(device.get());
 
     if (texpair.second)
@@ -733,5 +737,5 @@ size_t CGltfLoader::loadTexture(const std::pair<std::filesystem::path, bool>& te
         pImage->create(texpair.first, oformat);
 
     auto name = fs::get_filename(texpair.first);
-    return EGGraphics->addImage(name, std::move(pImage));
+    return graphics->addImage(name, std::move(pImage));
 }

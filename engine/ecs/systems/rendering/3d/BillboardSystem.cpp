@@ -16,14 +16,12 @@ using namespace engine::loaders;
 
 void CBillboardSystem::__create()
 {
-	auto& graphics = EGGraphics;
-
 	FShaderSpecials specials;
 	specials.usages = 4;
 	shader_id = graphics->addShader("billboard", "billboard", specials);
-	vbo_id = EGGraphics->addVertexBuffer("billboard");
+	vbo_id = graphics->addVertexBuffer("billboard");
 
-	auto& pVBO = EGGraphics->getVertexBuffer(vbo_id);
+	auto& pVBO = graphics->getVertexBuffer(vbo_id);
 	pVBO->addPrimitive(std::make_unique<FQuadPrimitive>());
 	pVBO->create();
 
@@ -51,10 +49,7 @@ void CBillboardSystem::__create()
 
 void CBillboardSystem::__update(float fDt)
 {
-	auto& registry = EGCoordinator;
-	auto& graphics = EGGraphics;
-	auto editorMode = EGEngine->isEditorMode();
-	auto state = EGEngine->getState();
+	auto& registry = EGEngine->getRegistry();
 
 	auto* camera = EGEngine->getActiveCamera();
 
@@ -69,7 +64,7 @@ void CBillboardSystem::__update(float fDt)
 	pPush->set("projection", camera->projection);
 	pPush->set("view", camera->view);
 
-	if (editorMode && state == EEngineState::eEditing)
+	if (EGEngine->isEditorEditing())
 	{
 		{
 			graphics->bindTexture("color_tex", audio_icon);
@@ -123,7 +118,6 @@ void CBillboardSystem::__update(float fDt)
 
 void CBillboardSystem::draw(FCameraComponent* camera, const glm::vec3& position, const glm::vec3& color, entt::entity entity)
 {
-	auto& graphics = EGGraphics;
 	auto& pPush = graphics->getPushBlockHandle("billboard");
 
 	auto needToDraw = camera->frustum.checkPoint(position);

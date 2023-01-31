@@ -1,6 +1,5 @@
 #pragma once
 
-#include <utility/upattern.hpp>
 #include <any>
 #include <unordered_map>
 

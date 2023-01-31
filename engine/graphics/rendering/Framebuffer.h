@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.hpp>
 
 #include <fifo_map.hpp>
-#include <utility/logger/logger.h>
 #include "EngineStructures.h"
 
 namespace engine

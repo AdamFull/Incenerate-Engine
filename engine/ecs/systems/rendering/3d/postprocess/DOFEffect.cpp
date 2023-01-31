@@ -10,19 +10,20 @@ using namespace engine::ecs;
 
 void CDOFEffect::create()
 {
+	graphics = EGEngine->getGraphics().get();
 	init();
 
-	shader_dof = EGGraphics->addShader("dof", "dof");
+	shader_dof = graphics->addShader("dof", "dof");
 
 	FShaderSpecials specials;
 	specials.usages = 1;
-	shader_blur = EGGraphics->addShader("bokeh_blur", "bokeh_blur", specials);
+	shader_blur = graphics->addShader("bokeh_blur", "bokeh_blur", specials);
 }
 
 void CDOFEffect::update()
 {
-	auto& device = EGGraphics->getDevice();
-	auto& image = EGGraphics->getImage(blur_image);
+	auto& device = graphics->getDevice();
+	auto& image = graphics->getImage(blur_image);
 	auto extent = device->getExtent(true);
 	auto img_extent = image->getExtent();
 
@@ -32,15 +33,14 @@ void CDOFEffect::update()
 
 void CDOFEffect::init()
 {
-	EGGraphics->removeImage(blur_image);
-	EGGraphics->removeImage(temp_image);
+	graphics->removeImage(blur_image);
+	graphics->removeImage(temp_image);
 	blur_image = effectshared::createImage("dof_blur_tex", vk::Format::eB10G11R11UfloatPack32);
 	temp_image = effectshared::createImage("dof_temp_tex", vk::Format::eB10G11R11UfloatPack32);
 }
 
 size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t in_source, size_t out_source)
 {
-	auto& graphics = EGGraphics;
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));

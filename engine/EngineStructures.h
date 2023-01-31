@@ -1,8 +1,5 @@
 #pragma once
 
-#include <utility/uparse.hpp>
-#include <utility/uflag.hpp>
-
 namespace engine
 {
 	const std::array<const char*, 5> fxaa_quality_variant{ "1.0", "0.75", "0.5", "0.25", "0.0" };

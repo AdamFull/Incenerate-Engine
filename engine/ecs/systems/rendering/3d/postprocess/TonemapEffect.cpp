@@ -9,12 +9,12 @@ using namespace engine::ecs;
 
 void CTonemapEffect::create()
 {
-	shader_tonemap = EGGraphics->addShader("tonemap", "tonemap");
+	graphics = EGEngine->getGraphics().get();
+	shader_tonemap = graphics->addShader("tonemap", "tonemap");
 }
 
 size_t CTonemapEffect::render(FCameraComponent* camera, size_t in_source, size_t out_source)
 {
-	auto& graphics = EGGraphics;
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));

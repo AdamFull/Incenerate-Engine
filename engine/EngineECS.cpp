@@ -27,10 +27,11 @@ void destroy_mesh(entt::registry& reg, entt::entity entity)
 
 	if (mesh.loaded)
 	{
-		EGGraphics->removeVertexBuffer(mesh.vbo_id);
+		auto& graphics = EGEngine->getGraphics();
+		graphics->removeVertexBuffer(mesh.vbo_id);
 
 		for (auto& meshlet : mesh.vMeshlets)
-			EGGraphics->removeMaterial(meshlet.material);
+			graphics->removeMaterial(meshlet.material);
 	}
 }
 
@@ -65,18 +66,19 @@ void destroy_scene(entt::registry& reg, entt::entity entity)
 
 void construct_skybox(entt::registry& reg, entt::entity entity)
 {
+	auto& graphics = EGEngine->getGraphics();
 	auto& skybox = reg.get<FEnvironmentComponent>(entity);
 
 	if (!skybox.loaded && !skybox.source.empty())
 	{
-		skybox.origin = EGGraphics->addImage(fs::get_filename(skybox.source), skybox.source);
-		skybox.irradiance = EGGraphics->computeIrradiance(skybox.origin, 64);
-		skybox.prefiltred = EGGraphics->computePrefiltered(skybox.origin, 512);
-		skybox.vbo_id = EGGraphics->addVertexBuffer(skybox.source);
-		skybox.shader_id = EGGraphics->addShader(skybox.source, "skybox");
+		skybox.origin = graphics->addImage(fs::get_filename(skybox.source), skybox.source);
+		skybox.irradiance = graphics->computeIrradiance(skybox.origin, 64);
+		skybox.prefiltred = graphics->computePrefiltered(skybox.origin, 512);
+		skybox.vbo_id = graphics->addVertexBuffer(skybox.source);
+		skybox.shader_id = graphics->addShader(skybox.source, "skybox");
 		skybox.loaded = true;
 
-		auto& pVBO = EGGraphics->getVertexBuffer(skybox.vbo_id);
+		auto& pVBO = graphics->getVertexBuffer(skybox.vbo_id);
 		pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
 		pVBO->create();
 		set_active_skybox(reg, entity);
@@ -85,15 +87,16 @@ void construct_skybox(entt::registry& reg, entt::entity entity)
 
 void destroy_skybox(entt::registry& reg, entt::entity entity)
 {
+	auto& graphics = EGEngine->getGraphics();
 	auto& skybox = reg.get<FEnvironmentComponent>(entity);
 
 	if (skybox.loaded)
 	{
-		EGGraphics->removeVertexBuffer(skybox.vbo_id);
-		EGGraphics->removeShader(skybox.shader_id);
-		EGGraphics->removeImage(skybox.origin);
-		EGGraphics->removeImage(skybox.prefiltred);
-		EGGraphics->removeImage(skybox.irradiance);
+		graphics->removeVertexBuffer(skybox.vbo_id);
+		graphics->removeShader(skybox.shader_id);
+		graphics->removeImage(skybox.origin);
+		graphics->removeImage(skybox.prefiltred);
+		graphics->removeImage(skybox.irradiance);
 	}
 }
 
@@ -139,7 +142,7 @@ void destroy_script(entt::registry& reg, entt::entity entity)
 
 FCameraComponent* CEngine::getActiveCamera()
 {
-	if (bEditorMode && eState == EEngineState::eEditing)
+	if (isEditorEditing())
 		return registry.try_get<FCameraComponent>(pEditor->getCamera());
 	else
 	{

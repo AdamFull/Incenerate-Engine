@@ -4,6 +4,12 @@
 
 using namespace engine::ecs;
 
+void CBaseGraphicsSystem::create()
+{
+	graphics = EGEngine->getGraphics().get();
+	ISystem::create();
+}
+
 void CBaseGraphicsSystem::__create()
 {
 	EGEngine->addEventListener(Events::Graphics::ReCreate, this, &CBaseGraphicsSystem::onViewportUpdated);
@@ -28,7 +34,7 @@ void CBaseGraphicsSystem::addSubresource(const std::string& name)
 
 size_t CBaseGraphicsSystem::getSubresource(const std::string& name)
 {
-	auto& device = EGGraphics->getDevice();
+	auto& device = graphics->getDevice();
 	auto index = device->getCurrentFrame();
 
 	return mSubresourceMap[name].at(index);
@@ -36,12 +42,12 @@ size_t CBaseGraphicsSystem::getSubresource(const std::string& name)
 
 void CBaseGraphicsSystem::updateSubresources()
 {
-	auto& device = EGGraphics->getDevice();
+	auto& device = graphics->getDevice();
 	auto framesInFlight = device->getFramesInFlight();
 
 	for (auto& name : vSubresourceNames)
 	{
 		for (uint32_t i = 0; i < framesInFlight; i++)
-			mSubresourceMap[name].emplace_back(EGGraphics->getImageID(name + "_" + std::to_string(i)));
+			mSubresourceMap[name].emplace_back(graphics->getImageID(name + "_" + std::to_string(i)));
 	}
 }

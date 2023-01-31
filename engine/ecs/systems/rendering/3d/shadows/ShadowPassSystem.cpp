@@ -17,7 +17,6 @@ void CShadowPassSystem::__create()
 
 void CShadowPassSystem::__update(float fDt)
 {
-	auto& graphics = EGGraphics;
 	auto stage = graphics->getRenderStageID("shadow");
 	// TODO: remove commandBuffer here
 	auto commandBuffer = graphics->getCommandBuffer();

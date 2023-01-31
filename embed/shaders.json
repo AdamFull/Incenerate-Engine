@@ -81,7 +81,7 @@
     "bind_point": "Graphics",
     "topology": "LineList",
     "cull_mode": "None",
-    "front_face": "cw",
+    "front_face": "ccw",
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [

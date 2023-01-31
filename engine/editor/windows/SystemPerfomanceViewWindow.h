@@ -20,7 +20,8 @@ namespace engine
 			void create() override;
 			void __draw(float fDt) override;
 		private:
-			void expand(ecs::ISystem* system);
+			void expand_create(ecs::ISystem* system);
+			void expand_update(ecs::ISystem* system);
 		};
 	}
 }

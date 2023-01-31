@@ -1,6 +1,5 @@
 #pragma once
 
-#include <utility/upattern.hpp>
 #include <vulkan/vulkan.hpp>
 
 namespace engine

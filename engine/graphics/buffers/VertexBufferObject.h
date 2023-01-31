@@ -3,8 +3,6 @@
 #include "Buffer.h"
 #include "APIStructures.h"
 
-#include <utility/upattern.hpp>
-
 namespace engine
 {
 	namespace graphics

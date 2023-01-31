@@ -11,7 +11,7 @@ namespace engine
 		public:
 			virtual ~ISystem() {}
 
-			void create();
+			virtual void create();
 			void update(float fDt);
 
 			const float createElapsed() const;

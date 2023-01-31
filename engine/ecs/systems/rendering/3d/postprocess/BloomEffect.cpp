@@ -10,8 +10,6 @@ using namespace engine::ecs;
 
 CBloomEffect::~CBloomEffect()
 {
-	auto& graphics = EGGraphics;
-	
 	graphics->removeShader(shader_brightdetect);
 	graphics->removeShader(shader_downsample);
 	graphics->removeShader(shader_upsample);
@@ -23,21 +21,22 @@ CBloomEffect::~CBloomEffect()
 
 void CBloomEffect::create()
 {
+	graphics = EGEngine->getGraphics().get();
 	init();
-	auto& image = EGGraphics->getImage(bloom_image);
+	auto& image = graphics->getImage(bloom_image);
 
 	FShaderSpecials specials;
 	specials.usages = mipLevels;
-	shader_downsample = EGGraphics->addShader("downsample", "downsample", specials);
-	shader_upsample = EGGraphics->addShader("upsample", "upsample", specials);
-	shader_brightdetect = EGGraphics->addShader("brightdetect", "brightdetect");
-	shader_applybloom = EGGraphics->addShader("applybloom", "applybloom");
+	shader_downsample = graphics->addShader("downsample", "downsample", specials);
+	shader_upsample = graphics->addShader("upsample", "upsample", specials);
+	shader_brightdetect = graphics->addShader("brightdetect", "brightdetect");
+	shader_applybloom = graphics->addShader("applybloom", "applybloom");
 }
 
 void CBloomEffect::update()
 {
-	auto& device = EGGraphics->getDevice();
-	auto& image = EGGraphics->getImage(bloom_image);
+	auto& device = graphics->getDevice();
+	auto& image = graphics->getImage(bloom_image);
 	auto extent = device->getExtent(true);
 	auto img_extent = image->getExtent();
 
@@ -47,7 +46,6 @@ void CBloomEffect::update()
 
 void CBloomEffect::init()
 {
-	auto& graphics = EGGraphics;
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 
@@ -70,7 +68,6 @@ void CBloomEffect::init()
 
 size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 {
-	auto& graphics = EGGraphics;
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));

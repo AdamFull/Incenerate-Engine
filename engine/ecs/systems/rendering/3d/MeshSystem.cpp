@@ -17,7 +17,7 @@ void CMeshSystem::__create()
 
 void CMeshSystem::__update(float fDt)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	auto* camera = EGEngine->getActiveCamera();
 
@@ -31,8 +31,9 @@ void CMeshSystem::__update(float fDt)
 
 void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 {
-	auto& registry = EGCoordinator;
-	auto& graphics = EGGraphics;
+	auto& registry = EGEngine->getRegistry();
+	auto& device = graphics->getDevice();
+	auto& debug_draw = graphics->getDebugDraw();
 	
 	auto view = registry.view<FTransformComponent, FMeshComponent>();
 	for (auto [entity, transform, mesh] : view.each())
@@ -51,15 +52,19 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 
 			if (needToRender)
 			{
+				//debug_draw->drawDebugAABB(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
+
 				auto& pUBO = graphics->getUniformHandle("FUniformData");
 				pUBO->set("model", transform.model);
 				pUBO->set("view", camera->view);
 				pUBO->set("projection", camera->projection);
 				pUBO->set("normal", transform.normal);
 				pUBO->set("viewDir", camera->viewPos);
-				pUBO->set("viewportDim", EGGraphics->getDevice()->getExtent(true));
+				pUBO->set("viewportDim", device->getExtent(true));
 				pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
 				pUBO->set("object_id", encodeIdToColor(static_cast<uint32_t>(entity)));
+
+
 
 				graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
 			}

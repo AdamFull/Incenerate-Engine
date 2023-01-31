@@ -1,8 +1,6 @@
 #include "Engine.h"
 #include "system/filesystem/filesystem.h"
 
-#include <utility/utime.hpp>
-
 #include "game/SceneSerializer.h"
 
 using namespace engine;
@@ -107,7 +105,7 @@ void CEngine::destruction()
 	log_debug("Engine was shutdown.");
 }
 
-entt::registry& CEngine::getCoordinator()
+entt::registry& CEngine::getRegistry()
 {
 	return registry;
 }
@@ -145,6 +143,11 @@ const scriptcore_t& CEngine::getScripting() const
 const bool CEngine::isEditorMode() const
 {
 	return bEditorMode;
+}
+
+const bool CEngine::isEditorEditing() const
+{
+	return bEditorMode && eState == EEngineState::eEditing;
 }
 
 const bool CEngine::isDebugDrawNormals() const

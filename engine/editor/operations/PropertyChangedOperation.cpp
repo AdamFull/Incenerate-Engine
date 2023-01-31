@@ -1,7 +1,5 @@
 #include "PropertyChangedOperation.h"
 
-#include <utility/udetail.hpp>
-
 using namespace engine::editor;
 
 namespace property_type

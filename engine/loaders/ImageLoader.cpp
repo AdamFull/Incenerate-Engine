@@ -6,8 +6,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include <utility/logger/logger.h>
-
 #include "system/filesystem/filesystem.h"
 
 

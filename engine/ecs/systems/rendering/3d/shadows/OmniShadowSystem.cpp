@@ -12,15 +12,14 @@ void COmniShadowSystem::__create()
 	FShaderSpecials specials;
 	specials.subpass = 1;
 	specials.usages = MAX_POINT_LIGHT_COUNT * 6;
-	shader_id = EGGraphics->addShader("omni_shadow_pass", "omni_shadow_pass", specials);
+	shader_id = graphics->addShader("omni_shadow_pass", "omni_shadow_pass", specials);
 
 	CBaseGraphicsSystem::__create();
 }
 
 void COmniShadowSystem::__update(float fDt)
 {
-	auto& graphics = EGGraphics;
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 
 	uint32_t point_light_count{ 0 };
 	std::array<glm::mat4, 6> point_light_view_matrices;

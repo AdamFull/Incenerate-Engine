@@ -1,7 +1,5 @@
 #include "CompositionSystem.h"
 
-#include <glm/gtx/quaternion.hpp>
-
 #include "Engine.h"
 #include "graphics/image/ImageCubemap.h"
 
@@ -14,9 +12,9 @@ using namespace engine::graphics;
 
 void CCompositionSystem::__create()
 {
-	auto& device = EGGraphics->getDevice();
-	shader_id = EGGraphics->addShader("pbr_composition", "pbr_composition");
-	brdflut_id = EGGraphics->computeBRDFLUT(512);
+	auto& device = graphics->getDevice();
+	shader_id = graphics->addShader("pbr_composition", "pbr_composition");
+	brdflut_id = graphics->computeBRDFLUT(512);
 
 	addSubresource("albedo_tex");
 	addSubresource("normal_tex");
@@ -36,16 +34,14 @@ void CCompositionSystem::__create()
 		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
 		vk::ImageUsageFlagBits::eStorage);
 
-	empty_cube_id = EGGraphics->addImage("empty_cubemap", std::move(emptyCubemap));
+	empty_cube_id = graphics->addImage("empty_cubemap", std::move(emptyCubemap));
 
 	CBaseGraphicsSystem::__create();
 }
 
 void CCompositionSystem::__update(float fDt)
 {
-	auto& registry = EGCoordinator;
-	auto& graphics = EGGraphics;
-	auto& debug_draw = graphics->getDebugDraw();
+	auto& registry = EGEngine->getRegistry();
 
 	uint32_t directoonal_light_count{ 0 };
 	std::array<FDirectionalLightCommit, MAX_DIRECTIONAL_LIGHT_COUNT> directional_lights;
@@ -64,8 +60,6 @@ void CCompositionSystem::__update(float fDt)
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.castShadows = static_cast<int>(light.castShadows);
-
-			debug_draw->drawDebugLine(transform.rposition, transform.rposition + commit.direction, glm::vec3(1.f, 0.f, 0.f));
 
 			directional_lights[directoonal_light_count++] = commit;
 		}
@@ -102,8 +96,6 @@ void CCompositionSystem::__update(float fDt)
 			commit.lightAngleOffset = -glm::cos(light.outerAngle) * commit.lightAngleScale;
 			commit.toTarget = static_cast<int>(light.toTarget);
 			commit.castShadows = static_cast<int>(light.castShadows);
-
-			debug_draw->drawDebugLine(transform.rposition, transform.rposition + commit.direction, glm::vec3(1.f, 0.f, 0.f));
 
 			spot_lights[spot_light_count++] = commit;
 		}

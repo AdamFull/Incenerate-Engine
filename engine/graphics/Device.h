@@ -5,8 +5,6 @@
 #include "Helpers.h"
 #include "buffers/CommandPool.h"
 
-#include <utility/logger/logger.h>
-
 namespace engine
 {
 	namespace graphics

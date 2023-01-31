@@ -9,12 +9,12 @@ using namespace engine::ecs;
 
 void CChromaticAberrationEffect::create()
 {
-	shader_aberr = EGGraphics->addShader("chromatic_aberration", "chromatic_aberration");
+	graphics = EGEngine->getGraphics().get();
+	shader_aberr = graphics->addShader("chromatic_aberration", "chromatic_aberration");
 }
 
 size_t CChromaticAberrationEffect::render(FCameraComponent* camera, size_t in_source, size_t out_source)
 {
-	auto& graphics = EGGraphics;
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <utility/upattern.hpp>
-
 #include "EngineStructures.h"
 #include "system/window/WindowHandle.h"
 #include "graphics/APIHandle.h"
@@ -17,10 +15,8 @@
 #define EGEngine CEngine::getInstance()
 #define EGScripting CEngine::getInstance()->getScripting()
 #define EGEditor CEngine::getInstance()->getEditor()
-#define EGCoordinator CEngine::getInstance()->getCoordinator()
 #define EGAudio CEngine::getInstance()->getAudio()
 #define EGWindow CEngine::getInstance()->getWindow()
-#define EGGraphics CEngine::getInstance()->getGraphics()
 #define EGSceneManager CEngine::getInstance()->getSceneManager()
 
 namespace engine
@@ -52,7 +48,7 @@ namespace engine
 
 		void beginEngineLoop();
 
-		entt::registry& getCoordinator();
+		entt::registry& getRegistry();
 		const editorptr_t& getEditor() const;
 		const winptr_t& getWindow() const;
 		const graphptr_t& getGraphics() const;
@@ -61,6 +57,7 @@ namespace engine
 		const scriptcore_t& getScripting() const;
 
 		const bool isEditorMode() const;
+		const bool isEditorEditing() const;
 		const bool isDebugDrawNormals() const;
 		void toggleDebugDrawNormals();
 

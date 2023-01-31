@@ -9,12 +9,12 @@ using namespace engine::ecs;
 
 void CFXAAEffect::create()
 {
-	shader_fxaa = EGGraphics->addShader("fxaa", "fxaa");
+	graphics = EGEngine->getGraphics().get();
+	shader_fxaa = graphics->addShader("fxaa", "fxaa");
 }
 
 size_t CFXAAEffect::render(FCameraComponent* camera, size_t in_source, size_t out_source)
 {
-	auto& graphics = EGGraphics;
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));

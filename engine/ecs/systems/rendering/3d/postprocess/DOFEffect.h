@@ -15,6 +15,8 @@ namespace engine
 		private:
 			void init();
 
+			graphics::CAPIHandle* graphics{ nullptr };
+
 			size_t shader_dof{ invalid_index };
 			size_t shader_blur{ invalid_index };
 			size_t blur_image{ invalid_index };

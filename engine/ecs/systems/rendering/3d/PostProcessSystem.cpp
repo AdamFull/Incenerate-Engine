@@ -25,9 +25,9 @@ void CPostProcessSystem::__create()
 	tonemap.create();
 
 	final_image = effectshared::createImage("postprocess_tex", vk::Format::eR32G32B32A32Sfloat);
-	auto& image = EGGraphics->getImage(final_image);
+	auto& image = graphics->getImage(final_image);
 
-	shader_id = EGGraphics->addShader("emptypass", "emptypass");
+	shader_id = graphics->addShader("emptypass", "emptypass");
 
 	addSubresource("composition_tex");
 	addSubresource("depth_tex");
@@ -37,12 +37,12 @@ void CPostProcessSystem::__create()
 
 void CPostProcessSystem::__update(float fDt)
 {
-	auto& device = EGGraphics->getDevice();
+	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
 
 	// TODO: move to engine "getActiveCamera"
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	auto editorMode = EGEngine->isEditorMode();
 	auto state = EGEngine->getState();
 
@@ -70,8 +70,6 @@ void CPostProcessSystem::__update(float fDt)
 
 	if (current_image != final_image)
 	{
-		auto& graphics = EGGraphics;
-
 		graphics->bindShader(shader_id);
 
 		graphics->bindTexture("writeColor", final_image);

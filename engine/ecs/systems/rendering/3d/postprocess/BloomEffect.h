@@ -20,6 +20,8 @@ namespace engine
 			std::vector<glm::vec2> vMips;
 			const uint32_t mipLevels{ 5 };
 
+			graphics::CAPIHandle* graphics{ nullptr };
+
 			size_t shader_brightdetect{ invalid_index };
 			size_t shader_downsample{ invalid_index };
 			size_t shader_upsample{ invalid_index };

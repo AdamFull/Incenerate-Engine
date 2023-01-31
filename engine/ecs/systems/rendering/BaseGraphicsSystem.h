@@ -13,6 +13,7 @@ namespace engine
 			CBaseGraphicsSystem() { name = "Base graphics"; }
 			virtual ~CBaseGraphicsSystem() override = default;
 
+			virtual void create() override;
 			virtual void __create() override;
 			virtual void __update(float fDt) override;
 		protected:
@@ -20,10 +21,13 @@ namespace engine
 			void addSubresource(const std::string& name);
 			size_t getSubresource(const std::string& name);
 
+		protected:
+			graphics::CAPIHandle* graphics{ nullptr };
 		private:
 			void updateSubresources();
 			std::vector<std::string> vSubresourceNames;
 			std::map<std::string, std::vector<size_t>> mSubresourceMap;
+
 		};
 	}
 }

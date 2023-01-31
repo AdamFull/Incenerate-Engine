@@ -32,7 +32,7 @@ void try_show_edit(const std::string& name, const entt::entity& entity, _EditPre
 	using namespace engine;
 
 	auto& actionBuffer = EGEditor->getActionBuffer();
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	if (auto object = registry.try_get<_Ty>(entity))
 	{
 		auto& icon = EGEditor->getIcon<_Ty>();
@@ -68,7 +68,7 @@ void try_add_menu_item(const std::string& name, const entt::entity& entity)
 {
 	using namespace engine;
 	auto& actionBuffer = EGEditor->getActionBuffer();
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	if (!registry.try_get<_Ty>(entity))
 	{
 		auto& icon = EGEditor->getIcon<_Ty>();
@@ -84,12 +84,15 @@ void CEditorInspector::create()
 
 void CEditorInspector::__draw(float fDt)
 {
-	auto& registry = EGCoordinator;
+	auto& graphics = EGEngine->getGraphics();
+	auto& debug_draw = graphics->getDebugDraw();
+	auto& registry = EGEngine->getRegistry();
 	auto& selected = EGEditor->getLastSelection();
 
 	// TODO: add replace component operation
 	if (selected != entt::null)
 	{
+		auto& transform = registry.get<FTransformComponent>(selected);
 		auto& hierarchy = registry.get<FHierarchyComponent>(selected);
 		
 		if (ImGui::BeginPopup("add_component_popup"))
@@ -126,15 +129,18 @@ void CEditorInspector::__draw(float fDt)
 			[this](auto* object) { sceneEdit(object); });
 
 		try_show_edit<FDirectionalLightComponent>("Directional light", selected,
-			[](auto* object)
+			[&](auto* object)
 			{
 				ImGui::GColorEdit3("Color", object->color);
 				ImGui::GDragFloat("Intencity", &object->intencity, 0.01f, 0.01f, 50.f);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
+
+				auto direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
+				debug_draw->drawDebugArrow(transform.rposition, transform.rposition + direction, 0.2f, object->color);
 			});
 
 		try_show_edit<FSpotLightComponent>("Spot light", selected,
-			[](auto* object)
+			[&](auto* object)
 			{
 				ImGui::GColorEdit3("Color", object->color);
 				ImGui::GDragFloatVec3("Target", object->target, 0.01f);
@@ -143,15 +149,20 @@ void CEditorInspector::__draw(float fDt)
 				ImGui::GDragFloat("Outer angle", &object->outerAngle, 0.01f, object->innerAngle, 3.14f);
 				ImGui::GCheckbox("To target", &object->toTarget);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
+
+				auto direction = object->toTarget ? object->target : glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
+				debug_draw->drawDebugArrow(transform.rposition, transform.rposition + direction, 0.2f, object->color);
 			});
 		
 		try_show_edit<FPointLightComponent>("Point light", selected,
-			[](auto* object)
+			[&](auto* object)
 			{
 				ImGui::GColorEdit3("Color", object->color);
 				ImGui::GDragFloat("Intencity", &object->intencity, 0.01f, 0.01f, 50.f);
 				ImGui::GDragFloat("Radius", &object->radius, 0.01f, 0.01f);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
+
+				debug_draw->drawDebugSphere(transform.rposition, object->radius, object->color);
 			});
 
 		auto& plus = EGEditor->getIcon(icons::plus);
@@ -239,7 +250,7 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 					else
 					{
 						auto self = EGEditor->getLastSelection();
-						auto& registry = EGCoordinator;
+						auto& registry = EGEngine->getRegistry();
 
 						FAudioComponent naudio{};
 						naudio.source = fs::from_unicode(source);
@@ -297,6 +308,9 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 // camera editor
 void CEditorInspector::cameraEdit(FCameraComponent* object)
 {
+	auto& graphics = EGEngine->getGraphics();
+	auto& debug_draw = graphics->getDebugDraw();
+
 	ImGui::GDragFloat("FoV", &object->fieldOfView, 0.01f, 0.01f, 180.f);
 	ImGui::GDragFloat("Near", &object->nearPlane, 0.01f, 0.01f, 1024.f);
 	ImGui::GDragFloat("Far", &object->farPlane, 0.01f, 0.01f, 2048.f);
@@ -368,6 +382,11 @@ void CEditorInspector::cameraEdit(FCameraComponent* object)
 			ImGui::GDragFloat("exposure", &object->effects.tonemap.exposure, 0.01f, 0.01f, 11.f);
 		}
 	}
+
+	auto clip = object->frustum.getClipMatrix();
+	auto clipMat = glm::make_mat4(clip.data());
+	clipMat = glm::inverse(object->projection * object->view);
+	debug_draw->drawDebugFrustum(clipMat);
 }
 
 // script editor
@@ -391,7 +410,7 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 				}
 				else
 				{
-					auto& registry = EGCoordinator;
+					auto& registry = EGEngine->getRegistry();
 					auto self = EGEditor->getLastSelection();
 
 					FScriptComponent nscript{};
@@ -408,7 +427,7 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 
 void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	auto self = EGEditor->getLastSelection();
 
 	ImGui::GAssetHolder("Source", fs::get_filename(object->source));
@@ -429,12 +448,13 @@ void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 					object->source = fs::from_unicode(source);
 					if (object->loaded)
 					{
-						EGGraphics->removeImage(object->prefiltred);
-						EGGraphics->removeImage(object->irradiance);
-						EGGraphics->removeImage(object->origin);
-						object->origin = EGGraphics->addImage(object->source, object->source);
-						object->irradiance = EGGraphics->computeIrradiance(object->origin, 64);
-						object->prefiltred = EGGraphics->computePrefiltered(object->origin, 512);
+						auto& graphics = EGEngine->getGraphics();
+						graphics->removeImage(object->prefiltred);
+						graphics->removeImage(object->irradiance);
+						graphics->removeImage(object->origin);
+						object->origin = graphics->addImage(object->source, object->source);
+						object->irradiance = graphics->computeIrradiance(object->origin, 64);
+						object->prefiltred = graphics->computePrefiltered(object->origin, 512);
 					}
 					else
 					{
@@ -455,7 +475,7 @@ void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 
 void CEditorInspector::sceneEdit(FSceneComponent* object)
 {
-	auto& registry = EGCoordinator;
+	auto& registry = EGEngine->getRegistry();
 	auto self = EGEditor->getLastSelection();
 
 	ImGui::GAssetHolder("Source", fs::get_filename(object->source));
@@ -484,7 +504,7 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 					}
 					else
 					{
-						auto& registry = EGCoordinator;
+						auto& registry = EGEngine->getRegistry();
 
 						FSceneComponent nscene{};
 						nscene.source = fs::from_unicode(source);

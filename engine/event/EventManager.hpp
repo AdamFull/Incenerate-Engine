@@ -2,7 +2,6 @@
 
 #include "Event.hpp"
 
-#include <utility/ufunction.hpp>
 #include <list>
 
 namespace engine

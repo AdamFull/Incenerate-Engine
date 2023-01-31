@@ -1,8 +1,5 @@
 #include "ShaderCompiler.h"
 
-#include <utility/logger/logger.h>
-#include <utility/upattern.hpp>
-
 #include "system/filesystem/filesystem.h"
 
 #include <glslanglib/SPIRV/GlslangToSpv.h>

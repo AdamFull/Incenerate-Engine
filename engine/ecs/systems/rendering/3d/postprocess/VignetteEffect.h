@@ -13,6 +13,7 @@ namespace engine
 			size_t render(FCameraComponent* camera, size_t in_source, size_t out_source);
 		private:
 			size_t shader_vignette{ invalid_index };
+			graphics::CAPIHandle* graphics{ nullptr };
 		};
 	}
 }

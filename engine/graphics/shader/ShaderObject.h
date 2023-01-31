@@ -8,8 +8,6 @@
 #include "descriptors/DescriptorHandler.h"
 #include "APIStructures.h"
 
-#include <utility/ufunction.hpp>
-
 namespace engine
 {
 	namespace graphics

@@ -9,9 +9,6 @@
 #include "ecs/components/components.h"
 #include "ecs/helper.hpp"
 
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/epsilon.hpp>
-
 #include "editor/operations/PropertyChangedOperation.h"
 
 #include <Helpers.h>
@@ -101,16 +98,19 @@ CEditorViewport::~CEditorViewport()
 
 void CEditorViewport::create()
 {
+	graphics = EGEngine->getGraphics().get();
+	auto& device = graphics->getDevice();
+
 	auto pBackend = (ImGui_ImplVulkan_Data*)ImGui::GetIO().BackendRendererUserData;
-	pDescriptorSet = std::make_unique<CDescriptorSet>(EGGraphics->getDevice().get());
+	pDescriptorSet = std::make_unique<CDescriptorSet>(device.get());
 	pDescriptorSet->create(vk::PipelineBindPoint::eGraphics, pBackend->PipelineLayout, EGEditor->getDescriptorPool(), pBackend->DescriptorSetLayout);
 }
 
 void CEditorViewport::__draw(float fDt)
 {
-	auto& registry = EGCoordinator;
-	auto editorMode = EGEngine->isEditorMode();
-	auto state = EGEngine->getState();
+	auto& registry = EGEngine->getRegistry();
+	auto& graphics = EGEngine->getGraphics();
+	auto& debug_draw = graphics->getDebugDraw();
 
 	viewportPanelSizeX = ImGui::GetContentRegionAvail().x;
 	viewportPanelSizeY = ImGui::GetContentRegionAvail().y;
@@ -125,10 +125,12 @@ void CEditorViewport::__draw(float fDt)
 	if (auto camera = EGEngine->getActiveCamera())
 		camera->controllable = controlls_enable;
 
-	if (editorMode && state == EEngineState::eEditing)
+	if (EGEngine->isEditorEditing())
 	{
 		viewportPicking();
 		drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+		debug_draw->drawDebugGrid(-100.f, 100.f, 0.f, 1.f);
+		debug_draw->drawDebugCross(glm::vec3(0.f), 3.f);
 	}
 
 	drawOverlay(textDrawPos.x, textDrawPos.y, fDt);
@@ -136,9 +138,9 @@ void CEditorViewport::__draw(float fDt)
 
 void CEditorViewport::drawViewport()
 {
-	auto& device = EGGraphics->getDevice();
-	auto frame = EGGraphics->getDevice()->getCurrentFrame();
-	auto& image = EGGraphics->getImage("postprocess_tex");
+	auto& device = graphics->getDevice();
+	auto frame = device->getCurrentFrame();
+	auto& image = graphics->getImage("postprocess_tex");
 	
 	vk::WriteDescriptorSet write{};
 	write.descriptorType = vk::DescriptorType::eCombinedImageSampler;
@@ -155,11 +157,11 @@ void CEditorViewport::drawViewport()
 
 void CEditorViewport::viewportPicking()
 {
-	auto& device = EGGraphics->getDevice();
-	auto frame = EGGraphics->getDevice()->getCurrentFrame();
+	auto& device = graphics->getDevice();
+	auto frame = device->getCurrentFrame();
 	auto image_name = "picking_tex_" + std::to_string(frame);
-	auto image_id = EGGraphics->getImageID(image_name);
-	auto& image = EGGraphics->getImage(image_id);
+	auto image_id = graphics->getImageID(image_name);
+	auto& image = graphics->getImage(image_id);
 	auto extent = image->getExtent();
 
 	auto mousePos = ImGui::GetMousePos();
@@ -202,7 +204,7 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 	auto selected = EGEditor->getLastSelection();
 	if (selected != entt::null)
 	{
-		auto& registry = EGCoordinator;
+		auto& registry = EGEngine->getRegistry();
 
 		auto camera = registry.try_get<FCameraComponent>(EGEditor->getCamera());
 
@@ -299,7 +301,7 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 	sprintf(overlay, "dt: %.3f | FPS: %u", fDt, frameRate);
 	ImGui::Text(overlay);
 
-	auto& physical = EGGraphics->getDevice()->getPhysical();
+	auto& physical = graphics->getDevice()->getPhysical();
 	auto props = physical.getProperties();
 	sprintf(overlay, "GPU: %s", props.deviceName.data());
 	ImGui::Text(overlay);

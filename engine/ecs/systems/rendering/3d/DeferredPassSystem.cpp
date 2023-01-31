@@ -25,7 +25,6 @@ void CDeferredPassSystem::__create()
 
 void CDeferredPassSystem::__update(float fDt)
 {
-	auto& graphics = EGGraphics;
 	auto stage = graphics->getRenderStageID("deferred");
 
 	graphics->bindRenderer(stage);
