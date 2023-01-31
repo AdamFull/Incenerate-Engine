@@ -47,6 +47,10 @@ endif()
 add_subdirectory(vma)
 target_link_libraries(${PROJECT_NAME} PUBLIC VulkanMemoryAllocator)
 
+add_subdirectory(bullet3)
+target_link_libraries(${PROJECT_NAME} PUBLIC BulletCollision)
+target_link_libraries(${PROJECT_NAME} PUBLIC BulletDynamics)
+
 target_include_directories(${PROJECT_NAME} 
     PUBLIC "${Vulkan_INCLUDE_DIR}"
 	PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
