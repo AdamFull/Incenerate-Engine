@@ -3,6 +3,7 @@
 #include "ScriptingSystem.h"
 #include "InputSystem.h"
 #include "HierarchySystem.h"
+#include "PhysicsSystem.h"
 #include "CameraControlSystem.h"
 #include "AudioSystem.h"
 #include "rendering/PresentRenderSystem.h"

@@ -4,6 +4,7 @@
 #include "system/window/WindowHandle.h"
 #include "graphics/APIHandle.h"
 #include "audio/AudioCore.h"
+#include "physics/PhysicsCore.h"
 #include "event/EventManager.hpp"
 #include "scripting/ScriptingCore.h"
 #include "editor/Editor.h"
@@ -34,6 +35,7 @@ namespace engine
 	using audiocore_t = std::unique_ptr<audio::CAudioCore>;
 	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
 	using scriptcore_t = std::unique_ptr<scripting::CScriptingCore>;
+	using physicscore_t = std::unique_ptr<physics::CPhysicsCore>;
 
 	class CEngine : public utl::singleton<CEngine>
 	{
@@ -55,6 +57,7 @@ namespace engine
 		const audiocore_t& getAudio() const;
 		const scenemgr_t& getSceneManager() const;
 		const scriptcore_t& getScripting() const;
+		const physicscore_t& getPhysics() const;
 
 		const bool isEditorMode() const;
 		const bool isEditorEditing() const;
@@ -93,6 +96,7 @@ namespace engine
 		audiocore_t pAudio;
 		scenemgr_t pSceneManager;
 		scriptcore_t pScripting;
+		physicscore_t pPhysics;
 
 		bool bEditorMode{ true };
 		bool bDebugDrawNormals{ false };

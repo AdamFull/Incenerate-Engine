@@ -50,6 +50,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC VulkanMemoryAllocator)
 add_subdirectory(bullet3)
 target_link_libraries(${PROJECT_NAME} PUBLIC BulletCollision)
 target_link_libraries(${PROJECT_NAME} PUBLIC BulletDynamics)
+target_link_libraries(${PROJECT_NAME} PUBLIC LinearMath)
 
 target_include_directories(${PROJECT_NAME} 
     PUBLIC "${Vulkan_INCLUDE_DIR}"

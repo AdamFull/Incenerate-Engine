@@ -181,6 +181,7 @@ void CEngine::initEntityComponentSystem()
 	registry.on_destroy<FScriptComponent>().connect<&destroy_script>();
 
 	vSystems.emplace_back(std::make_unique<CHierarchySystem>());
+	vSystems.emplace_back(std::make_unique<CPhysicsSystem>());
 	vSystems.emplace_back(std::make_unique<CInputSystem>());
 	vSystems.emplace_back(std::make_unique<CScriptingSystem>());
 	vSystems.emplace_back(std::make_unique<CCameraControlSystem>());

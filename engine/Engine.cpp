@@ -12,6 +12,7 @@ using namespace engine::system;
 using namespace engine::system::window;
 using namespace engine::audio;
 using namespace engine::scripting;
+using namespace engine::physics;
 
 CEngine::CEngine()
 {
@@ -37,6 +38,9 @@ void CEngine::create()
 	pEventManager = std::make_unique<CEventManager>();
 
 	pSceneManager = std::make_unique<CSceneManager>();
+
+	pPhysics = std::make_unique<CPhysicsCore>();
+	pPhysics->create();
 
 	pAudio = std::make_unique<CAudioCore>();
 	pAudio->create();
@@ -138,6 +142,11 @@ const scenemgr_t& CEngine::getSceneManager() const
 const scriptcore_t& CEngine::getScripting() const
 {
 	return pScripting;
+}
+
+const physicscore_t& CEngine::getPhysics() const
+{
+	return pPhysics;
 }
 
 const bool CEngine::isEditorMode() const
