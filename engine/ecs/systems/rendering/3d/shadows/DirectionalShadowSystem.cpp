@@ -19,13 +19,11 @@ void CDirectionalShadowSystem::__create()
 
 void CDirectionalShadowSystem::__update(float fDt)
 {
-	auto& registry = EGEngine->getRegistry();
-
 	uint32_t lightStride{ 0 };
 
 	// Calculating spot light matrices
 	{
-		auto lights = registry.view<FTransformComponent, FSpotLightComponent>();
+		auto lights = registry->view<FTransformComponent, FSpotLightComponent>();
 		for (auto [entity, ltransform, light] : lights.each())
 		{
 			if (!light.castShadows && lightStride < MAX_SPOT_LIGHT_COUNT)
@@ -48,7 +46,7 @@ void CDirectionalShadowSystem::__update(float fDt)
 			pUniform->set("stride", lightStride);
 			graphics->flushShader();
 
-			auto meshes = registry.view<FTransformComponent, FMeshComponent>();
+			auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 			for (auto [entity, mtransform, mesh] : meshes.each())
 			{
 				graphics->bindVertexBuffer(mesh.vbo_id);

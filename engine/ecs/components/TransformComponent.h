@@ -27,6 +27,16 @@ namespace engine
 				qrotation = glm::conjugate(qrotation);
 				rrotation = glm::eulerAngles(qrotation);
 			}
+
+			void update_local(const glm::mat4& mat)
+			{
+				glm::vec3 skew;
+				glm::quat qrotation;
+				glm::vec4 perspective;
+				glm::decompose(mat, scale, qrotation, position, skew, perspective);
+				qrotation = glm::conjugate(qrotation);
+				rotation = glm::eulerAngles(qrotation);
+			}
 		};
 
 		void to_json(nlohmann::json& json, const FTransformComponent& type);

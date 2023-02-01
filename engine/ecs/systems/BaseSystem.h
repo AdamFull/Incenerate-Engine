@@ -24,6 +24,7 @@ namespace engine
 			virtual void __create() = 0;
 			virtual void __update(float fDf) = 0;
 
+			entt::registry* registry{ nullptr };
 			std::string name;
 			utl::stopwatch sw;
 			float ct{ 0.f }, ut{ 0.f };

@@ -19,8 +19,6 @@ void COmniShadowSystem::__create()
 
 void COmniShadowSystem::__update(float fDt)
 {
-	auto& registry = EGEngine->getRegistry();
-
 	uint32_t point_light_count{ 0 };
 	std::array<glm::mat4, 6> point_light_view_matrices;
 	std::array<FFrustum, 6> point_light_frustums;
@@ -29,7 +27,7 @@ void COmniShadowSystem::__update(float fDt)
 	{
 		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 32.f);
 
-		auto lights = registry.view<FTransformComponent, FPointLightComponent>();
+		auto lights = registry->view<FTransformComponent, FPointLightComponent>();
 		for (auto [entity, ltransform, light] : lights.each())
 		{
 			if (!light.castShadows)
@@ -57,7 +55,7 @@ void COmniShadowSystem::__update(float fDt)
 				pUniform->set("farPlane", light.radius);
 				graphics->flushShader();
 
-				auto meshes = registry.view<FTransformComponent, FMeshComponent>();
+				auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 				for (auto [entity, mtransform, mesh] : meshes.each())
 				{
 					graphics->bindVertexBuffer(mesh.vbo_id);

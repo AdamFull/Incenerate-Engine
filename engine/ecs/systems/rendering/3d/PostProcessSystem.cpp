@@ -41,11 +41,6 @@ void CPostProcessSystem::__update(float fDt)
 	auto extent = device->getExtent(true);
 	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
 
-	// TODO: move to engine "getActiveCamera"
-	auto& registry = EGEngine->getRegistry();
-	auto editorMode = EGEngine->isEditorMode();
-	auto state = EGEngine->getState();
-
 	auto* camera = EGEngine->getActiveCamera();
 
 	if (!camera)

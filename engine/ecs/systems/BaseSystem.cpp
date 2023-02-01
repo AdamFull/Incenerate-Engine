@@ -1,5 +1,7 @@
 #include "BaseSystem.h"
 
+#include "Engine.h"
+
 #include "event/Event.hpp"
 
 using namespace engine;
@@ -7,6 +9,7 @@ using namespace engine::ecs;
 
 void ISystem::create()
 {
+	registry = &EGEngine->getRegistry();
 	sw.stop<float>();
 	__create();
 	ct = sw.stop<float>();

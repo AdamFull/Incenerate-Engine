@@ -35,6 +35,42 @@ void destroy_mesh(entt::registry& reg, entt::entity entity)
 	}
 }
 
+void construct_rigidbody(entt::registry& reg, entt::entity entity)
+{
+	auto& rigidbody = reg.get<FRigidBodyComponent>(entity);
+
+	if (rigidbody.object_id == invalid_index)
+	{
+		auto& physics = EGEngine->getPhysics();
+
+		rigidbody.object_id = physics->addObject(std::to_string(static_cast<uint32_t>(entity)));
+
+		auto& object = physics->getObject(rigidbody.object_id);
+
+		switch (rigidbody.type)
+		{
+		case EPhysicsShapeType::eBox: { object->setBoxCollider(rigidbody.sizes); } break;
+		case EPhysicsShapeType::eCapsule: { object->setCapsuleCollider(rigidbody.radius, rigidbody.height); } break;
+		case EPhysicsShapeType::eCone: { object->setConeCollider(rigidbody.radius, rigidbody.height); } break;
+		case EPhysicsShapeType::eCylinder: { object->setCylinderCollider(rigidbody.sizes); } break;
+		case EPhysicsShapeType::eSphere: { object->setSphereCollider(rigidbody.radius); } break;
+		}
+
+		object->initialize(rigidbody.mass);
+	}
+}
+
+void destroy_rigidbody(entt::registry& reg, entt::entity entity)
+{
+	auto& rigidbody = reg.get<FRigidBodyComponent>(entity);
+
+	if (rigidbody.object_id != invalid_index)
+	{
+		auto& physics = EGEngine->getPhysics();
+		physics->removeObject(rigidbody.object_id);
+	}
+}
+
 void construct_scene(entt::registry& reg, entt::entity entity)
 {
 	auto& scene = reg.get<FSceneComponent>(entity);
@@ -168,6 +204,9 @@ void CEngine::initEntityComponentSystem()
 {
 	registry.on_destroy<FMeshComponent>().connect<&destroy_mesh>();
 
+	registry.on_construct<FRigidBodyComponent>().connect<&construct_rigidbody>();
+	registry.on_destroy<FRigidBodyComponent>().connect<&destroy_rigidbody>();
+
 	registry.on_construct<FSceneComponent>().connect<&construct_scene>();
 	registry.on_destroy<FSceneComponent>().connect<&destroy_scene>();
 
@@ -182,6 +221,8 @@ void CEngine::initEntityComponentSystem()
 
 	vSystems.emplace_back(std::make_unique<CHierarchySystem>());
 	vSystems.emplace_back(std::make_unique<CPhysicsSystem>());
+	//vSystems.emplace_back(std::make_unique<CHierarchySystem>());
+
 	vSystems.emplace_back(std::make_unique<CInputSystem>());
 	vSystems.emplace_back(std::make_unique<CScriptingSystem>());
 	vSystems.emplace_back(std::make_unique<CCameraControlSystem>());

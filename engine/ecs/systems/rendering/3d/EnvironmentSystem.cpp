@@ -19,14 +19,12 @@ void CEnvironmentSystem::__create()
 
 void CEnvironmentSystem::__update(float fDt)
 {
-	auto& registry = EGEngine->getRegistry();
-
 	auto* camera = EGEngine->getActiveCamera();
 
 	if (!camera)
 		return;
 
-	auto view = registry.view<FTransformComponent, FEnvironmentComponent>();
+	auto view = registry->view<FTransformComponent, FEnvironmentComponent>();
 	for (auto [entity, transform, skybox] : view.each())
 	{
 		if (skybox.active && skybox.loaded)

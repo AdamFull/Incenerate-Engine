@@ -22,24 +22,23 @@ void CCameraControlSystem::__create()
 
 void CCameraControlSystem::__update(float fDt)
 {
-	auto& registry = EGEngine->getRegistry();
 	auto editorMode = EGEngine->isEditorMode();
 	auto state = EGEngine->getState();
 
 	{
 		auto ecamera = EGEditor->getCamera();
 
-		if (registry.valid(ecamera))
+		if (registry->valid(ecamera))
 		{
-			auto& transform = registry.get<FTransformComponent>(ecamera);
-			auto& camera = registry.get<FCameraComponent>(ecamera);
+			auto& transform = registry->get<FTransformComponent>(ecamera);
+			auto& camera = registry->get<FCameraComponent>(ecamera);
 
 			updateCamera(camera, transform);
 		}
 	}
 
 	{
-		auto view = registry.view<FTransformComponent, FCameraComponent>();
+		auto view = registry->view<FTransformComponent, FCameraComponent>();
 		for (auto [entity, transform, camera] : view.each())
 		{
 			if (camera.active)
@@ -151,8 +150,6 @@ void CCameraControlSystem::onKeyInput(CEvent& event)
 
 void CCameraControlSystem::onMouseInput(CEvent& event)
 {
-	auto& registry = EGEngine->getRegistry();
-
 	auto fx = event.getParam<float>(Events::Input::MouseX);
 	auto fy = event.getParam<float>(Events::Input::MouseY);
 
@@ -172,15 +169,15 @@ void CCameraControlSystem::onMouseInput(CEvent& event)
 	{
 		auto ecamera = EGEditor->getCamera();
 
-		auto& transform = registry.get<FTransformComponent>(ecamera);
-		auto& camera = registry.get<FCameraComponent>(ecamera);
+		auto& transform = registry->get<FTransformComponent>(ecamera);
+		auto& camera = registry->get<FCameraComponent>(ecamera);
 
 		if(camera.controllable)
 			rotate(camera, transform);
 	}
 	else
 	{
-		auto view = registry.view<FTransformComponent, FCameraComponent>();
+		auto view = registry->view<FTransformComponent, FCameraComponent>();
 		for (auto [entity, transform, camera] : view.each())
 		{
 			if (camera.active && camera.controllable)
@@ -193,22 +190,21 @@ void CCameraControlSystem::onMouseInput(CEvent& event)
 
 void CCameraControlSystem::moveForward(bool bInv)
 {
-	auto& registry = EGEngine->getRegistry();
 	float dir = bInv ? -1.f : 1.f;
 
 	if (EGEngine->isEditorEditing())
 	{
 		auto ecamera = EGEditor->getCamera();
 
-		auto& transform = registry.get<FTransformComponent>(ecamera);
-		auto& camera = registry.get<FCameraComponent>(ecamera);
+		auto& transform = registry->get<FTransformComponent>(ecamera);
+		auto& camera = registry->get<FCameraComponent>(ecamera);
 
 		if (camera.controllable)
 			forward(camera, transform, dir);
 	}
 	else
 	{
-		auto view = registry.view<FTransformComponent, FCameraComponent>();
+		auto view = registry->view<FTransformComponent, FCameraComponent>();
 		for (auto [entity, transform, camera] : view.each())
 		{
 			if (camera.active && camera.controllable)
@@ -219,22 +215,21 @@ void CCameraControlSystem::moveForward(bool bInv)
 
 void CCameraControlSystem::moveRight(bool bInv)
 {
-	auto& registry = EGEngine->getRegistry();
 	float dir = bInv ? -1.f : 1.f;
 
 	if (EGEngine->isEditorEditing())
 	{
 		auto ecamera = EGEditor->getCamera();
 
-		auto& transform = registry.get<FTransformComponent>(ecamera);
-		auto& camera = registry.get<FCameraComponent>(ecamera);
+		auto& transform = registry->get<FTransformComponent>(ecamera);
+		auto& camera = registry->get<FCameraComponent>(ecamera);
 
 		if (camera.controllable)
 			right(camera, transform, dir);
 	}
 	else
 	{
-		auto view = registry.view<FTransformComponent, FCameraComponent>();
+		auto view = registry->view<FTransformComponent, FCameraComponent>();
 		for (auto [entity, transform, camera] : view.each())
 		{
 			if (camera.active && camera.controllable)
@@ -245,22 +240,21 @@ void CCameraControlSystem::moveRight(bool bInv)
 
 void CCameraControlSystem::moveUp(bool bInv)
 {
-	auto& registry = EGEngine->getRegistry();
 	float dir = bInv ? -1.f : 1.f;
 
 	if (EGEngine->isEditorEditing())
 	{
 		auto ecamera = EGEditor->getCamera();
 
-		auto& transform = registry.get<FTransformComponent>(ecamera);
-		auto& camera = registry.get<FCameraComponent>(ecamera);
+		auto& transform = registry->get<FTransformComponent>(ecamera);
+		auto& camera = registry->get<FCameraComponent>(ecamera);
 
 		if (camera.controllable)
 			up(camera, transform, dir);
 	}
 	else
 	{
-		auto view = registry.view<FTransformComponent, FCameraComponent>();
+		auto view = registry->view<FTransformComponent, FCameraComponent>();
 		for (auto [entity, transform, camera] : view.each())
 		{
 			if (camera.active && camera.controllable)

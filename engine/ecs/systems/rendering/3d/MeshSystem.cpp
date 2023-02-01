@@ -17,8 +17,6 @@ void CMeshSystem::__create()
 
 void CMeshSystem::__update(float fDt)
 {
-	auto& registry = EGEngine->getRegistry();
-
 	auto* camera = EGEngine->getActiveCamera();
 
 	if (!camera)
@@ -31,11 +29,10 @@ void CMeshSystem::__update(float fDt)
 
 void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 {
-	auto& registry = EGEngine->getRegistry();
 	auto& device = graphics->getDevice();
 	auto& debug_draw = graphics->getDebugDraw();
 	
-	auto view = registry.view<FTransformComponent, FMeshComponent>();
+	auto view = registry->view<FTransformComponent, FMeshComponent>();
 	for (auto [entity, transform, mesh] : view.each())
 	{
 		graphics->bindVertexBuffer(mesh.vbo_id);

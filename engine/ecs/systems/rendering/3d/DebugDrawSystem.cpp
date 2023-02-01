@@ -13,7 +13,6 @@ void CDebugDrawSystem::__create()
 void CDebugDrawSystem::__update(float fDt)
 {
 	auto& debug_draw = graphics->getDebugDraw();
-	auto& registry = EGEngine->getRegistry();
 
 	auto* camera = EGEngine->getActiveCamera();
 
@@ -26,7 +25,7 @@ void CDebugDrawSystem::__update(float fDt)
 		graphics->setManualShaderControlFlag(true);
 		graphics->flushShader();
 
-		auto view = registry.view<FTransformComponent, FMeshComponent>();
+		auto view = registry->view<FTransformComponent, FMeshComponent>();
 		for (auto [entity, transform, mesh] : view.each())
 		{
 			graphics->bindVertexBuffer(mesh.vbo_id);

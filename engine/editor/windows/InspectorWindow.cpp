@@ -64,7 +64,7 @@ void try_show_edit(const std::string& name, const entt::entity& entity, _EditPre
 }
 
 template<class _Ty>
-void try_add_menu_item(const std::string& name, const entt::entity& entity)
+void try_add_menu_item_i(const std::string& name, const entt::entity& entity)
 {
 	using namespace engine;
 	auto& actionBuffer = EGEditor->getActionBuffer();
@@ -97,14 +97,15 @@ void CEditorInspector::__draw(float fDt)
 		
 		if (ImGui::BeginPopup("add_component_popup"))
 		{
-			try_add_menu_item<FAudioComponent>("Audio", selected);
-			try_add_menu_item<FCameraComponent>("Camera", selected);
-			try_add_menu_item<FScriptComponent>("Script", selected);
-			try_add_menu_item<FEnvironmentComponent>("Environment", selected);
-			try_add_menu_item<FDirectionalLightComponent>("Directional light", selected);
-			try_add_menu_item<FSpotLightComponent>("Spot light", selected);
-			try_add_menu_item<FPointLightComponent>("Point light", selected);
-			try_add_menu_item<FSceneComponent>("Scene", selected);
+			try_add_menu_item_i<FAudioComponent>("Audio", selected);
+			try_add_menu_item_i<FCameraComponent>("Camera", selected);
+			try_add_menu_item_i<FScriptComponent>("Script", selected);
+			try_add_menu_item_i<FEnvironmentComponent>("Environment", selected);
+			try_add_menu_item_i<FDirectionalLightComponent>("Directional light", selected);
+			try_add_menu_item_i<FSpotLightComponent>("Spot light", selected);
+			try_add_menu_item_i<FPointLightComponent>("Point light", selected);
+			try_add_menu_item_i<FSceneComponent>("Scene", selected);
+			try_add_menu_item_i<FRigidBodyComponent>("RigidBody", selected);
 			ImGui::EndPopup();
 		}
 
@@ -127,6 +128,8 @@ void CEditorInspector::__draw(float fDt)
 			[this](auto* object) { skyboxEdit(object); });
 		try_show_edit<FSceneComponent>("Scene", selected,
 			[this](auto* object) { sceneEdit(object); });
+		try_show_edit<FRigidBodyComponent>("RigidBody", selected,
+			[this](auto* object) { rigidbodyEdit(object); });
 
 		try_show_edit<FDirectionalLightComponent>("Directional light", selected,
 			[&](auto* object)
@@ -518,4 +521,31 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 		ImGui::EndDragDropTarget();
 	}
 	ImGui::Text("");
+}
+
+void CEditorInspector::rigidbodyEdit(FRigidBodyComponent* object)
+{
+	auto& registry = EGEngine->getRegistry();
+
+	ImGui::GDragFloat("Mass", &object->mass, 0.1f, 0.f, INFINITE);
+	switch (object->type)
+	{
+	case EPhysicsShapeType::eBox: {
+		ImGui::GDragFloatVec3("Size", object->sizes);
+	} break;
+	case EPhysicsShapeType::eCapsule: {
+		ImGui::GDragFloat("Radius", &object->radius, 0.01f, 0.f, 9999.f);
+		ImGui::GDragFloat("Height", &object->height, 0.01f, 0.f, 9999.f);
+	} break;
+	case EPhysicsShapeType::eCone: {
+		ImGui::GDragFloat("Radius", &object->radius, 0.01f, 0.f, 9999.f);
+		ImGui::GDragFloat("Height", &object->height, 0.01f, 0.f, 9999.f);
+	} break;
+	case EPhysicsShapeType::eCylinder: {
+		ImGui::GDragFloatVec3("Size", object->sizes);
+	} break;
+	case EPhysicsShapeType::eSphere: {
+		ImGui::GDragFloat("Radius", &object->radius, 0.01f, 0.f, 9999.f);
+	} break;
+	}
 }

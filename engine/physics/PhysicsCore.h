@@ -3,7 +3,6 @@
 #include "ObjectManager.hpp"
 #include "PhysicsObject.h"
 
-class btDynamicsWorld;
 class btDefaultCollisionConfiguration;
 class btCollisionDispatcher;
 struct btDbvtBroadphase;
@@ -35,6 +34,14 @@ namespace engine
 			bool rayCast(const glm::vec3& startPos, const glm::vec3& endPos, FHitResult* hitResult);
 
 			void setGravity(const glm::vec3& gravity);
+
+			size_t addObject(const std::string& name);
+			size_t addObject(const std::string& name, std::unique_ptr<CPhysicsObject>&& source);
+			void removeObject(const std::string& name);
+			void removeObject(size_t id);
+			const std::unique_ptr<CPhysicsObject>& getObject(const std::string& name);
+			const std::unique_ptr<CPhysicsObject>& getObject(size_t id);
+
 		private:
 			std::unique_ptr<CObjectManager<CPhysicsObject>> pPhysicsObjectManager;
 

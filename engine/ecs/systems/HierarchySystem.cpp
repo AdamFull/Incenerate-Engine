@@ -13,13 +13,14 @@ void CHierarchySystem::__create()
 
 void CHierarchySystem::__update(float fDt)
 {
-	auto& registry = EGEngine->getRegistry();
 	auto root = EGSceneManager->getRoot();
 
 	// Preparing transformation
-	auto view = registry.view<FTransformComponent>();
+	auto view = registry->view<FTransformComponent>();
 	for (auto [entity, transform] : view.each())
 	{
+		transform.model_old = transform.model;
+
 		transform.model = glm::mat4(1.f);
 
 		transform.model = glm::translate(transform.model, transform.position);
@@ -43,15 +44,15 @@ void CHierarchySystem::__update(float fDt)
 		{
 			auto current = nextparent.front();
 
-			auto& transform = registry.get<FTransformComponent>(current);
-			auto& hierarchy = registry.get<FHierarchyComponent>(current);
+			auto& transform = registry->get<FTransformComponent>(current);
+			auto& hierarchy = registry->get<FHierarchyComponent>(current);
 			transform.update();
 			transform.normal = glm::transpose(glm::inverse(transform.model));
 
 			for (auto& child : hierarchy.children)
 			{
-				auto& ctransform = registry.get<FTransformComponent>(child);
-				auto& chierarchy = registry.get<FHierarchyComponent>(child);
+				auto& ctransform = registry->get<FTransformComponent>(child);
+				auto& chierarchy = registry->get<FHierarchyComponent>(child);
 
 				ctransform.model = transform.model * ctransform.model;
 				ctransform.update();

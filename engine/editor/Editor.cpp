@@ -171,6 +171,7 @@ void CEditor::create()
     mEditorIcons[get_class_id<FCameraComponent>()] = ICON_MDI_CAMERA;
     mEditorIcons[get_class_id<FMeshComponent>()] = ICON_MDI_SHAPE;
     mEditorIcons[get_class_id<FSceneComponent>()] = ICON_MDI_SHAPE;
+    mEditorIcons[get_class_id<FRigidBodyComponent>()] = ICON_MDI_SHAPE;
     mEditorIcons[get_class_id<FScriptComponent>()] = ICON_MDI_SCRIPT;
     mEditorIcons[get_class_id<FEnvironmentComponent>()] = ICON_MDI_EARTH;
     mEditorIcons[get_class_id<FSpriteComponent>()] = ICON_MDI_IMAGE;

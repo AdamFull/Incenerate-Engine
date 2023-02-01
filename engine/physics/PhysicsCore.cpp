@@ -1,8 +1,5 @@
 #include "PhysicsCore.h"
 
-#include <bullet3/src/btBulletDynamicsCommon.h>
-#include <bullet3/src/btBulletCollisionCommon.h>
-
 #include "PhysicsHelper.h"
 
 using namespace engine::physics;
@@ -40,7 +37,7 @@ void CPhysicsCore::create()
 
 void CPhysicsCore::simulate(float fDT)
 {
-	dynamicsWorld->stepSimulation(fDT, 3);
+	dynamicsWorld->stepSimulation(fDT, 10);
 }
 
 bool CPhysicsCore::rayCast(const glm::vec3& startPos, const glm::vec3& endPos, FHitResult* hitResult)
@@ -64,4 +61,34 @@ bool CPhysicsCore::rayCast(const glm::vec3& startPos, const glm::vec3& endPos, F
 void CPhysicsCore::setGravity(const glm::vec3& gravity)
 {
 	dynamicsWorld->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
+}
+
+size_t CPhysicsCore::addObject(const std::string& name)
+{
+	return pPhysicsObjectManager->add(name, std::make_unique<CPhysicsObject>(dynamicsWorld));
+}
+
+size_t CPhysicsCore::addObject(const std::string& name, std::unique_ptr<CPhysicsObject>&& source)
+{
+	return pPhysicsObjectManager->add(name, std::move(source));
+}
+
+void CPhysicsCore::removeObject(const std::string& name)
+{
+	pPhysicsObjectManager->remove(name);
+}
+
+void CPhysicsCore::removeObject(size_t id)
+{
+	pPhysicsObjectManager->remove(id);
+}
+
+const std::unique_ptr<CPhysicsObject>& CPhysicsCore::getObject(const std::string& name)
+{
+	return pPhysicsObjectManager->get(name);
+}
+
+const std::unique_ptr<CPhysicsObject>& CPhysicsCore::getObject(size_t id)
+{
+	return pPhysicsObjectManager->get(id);
 }

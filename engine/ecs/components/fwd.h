@@ -15,5 +15,6 @@ namespace engine
 		struct FSpotLightComponent;
 		struct FSpriteComponent;
 		struct FTransformComponent;
+		struct FRigidBodyComponent;
 	}
 }

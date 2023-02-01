@@ -19,25 +19,23 @@ void CAudioSystem::__create()
 
 void CAudioSystem::__update(float fDt)
 {
-	auto& registry = EGEngine->getRegistry();
-
 	auto* camera = EGEngine->getActiveCamera();
 
 	if (EGEngine->isEditorEditing())
 	{
 		auto ecamera = EGEditor->getCamera();
 
-		if (registry.valid(ecamera))
+		if (registry->valid(ecamera))
 		{
-			auto& transform = registry.get<FTransformComponent>(ecamera);
-			auto& camera = registry.get<FCameraComponent>(ecamera);
+			auto& transform = registry->get<FTransformComponent>(ecamera);
+			auto& camera = registry->get<FCameraComponent>(ecamera);
 
 			updateListener(camera, transform);
 		}
 	}
 	else
 	{
-		auto view = registry.view<FTransformComponent, FCameraComponent>();
+		auto view = registry->view<FTransformComponent, FCameraComponent>();
 		for (auto [entity, transform, camera] : view.each())
 		{
 			if (camera.active)
@@ -47,7 +45,7 @@ void CAudioSystem::__update(float fDt)
 
 	
 	{
-		auto view = registry.view<FTransformComponent, FAudioComponent>();
+		auto view = registry->view<FTransformComponent, FAudioComponent>();
 		for (auto [entity, transform, audio] : view.each())
 		{
 			auto& pSource = EGAudio->getSource(audio.asource);

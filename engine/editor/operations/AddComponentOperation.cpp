@@ -29,6 +29,7 @@ void CAddComponentOperation::undo()
 	case component::script: { registry.remove<FScriptComponent>(target); } break;
 	case component::spot_light: { registry.remove<FSpotLightComponent>(target); } break;
 	case component::sprite: { registry.remove<FSpriteComponent>(target); } break;
+	case component::rigidbody: { registry.remove<FRigidBodyComponent>(target); } break;
 	default:
 		break;
 	}
@@ -49,6 +50,7 @@ void CAddComponentOperation::redo()
 	case component::script: { registry.emplace<FScriptComponent>(target, FScriptComponent{}); } break;
 	case component::spot_light: { registry.emplace<FSpotLightComponent>(target, FSpotLightComponent{}); } break;
 	case component::sprite: { registry.emplace<FSpriteComponent>(target, FSpriteComponent{}); } break;
+	case component::rigidbody: { registry.emplace<FRigidBodyComponent>(target, FRigidBodyComponent{}); } break;
 	default:
 		break;
 	}

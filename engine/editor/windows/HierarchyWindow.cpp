@@ -18,7 +18,7 @@ using namespace engine::game;
 using namespace engine::ecs;
 
 template<class _Ty>
-void try_add_menu_item(const std::string& name, const entt::entity& entity)
+void try_add_menu_item_h(const std::string& name, const entt::entity& entity)
 {
     using namespace engine;
     auto& actionBuffer = EGEditor->getActionBuffer();
@@ -55,14 +55,15 @@ void CEditorHierarchy::__draw(float fDt)
     {
         if (ImGui::BeginMenu("create"))
         {
-            try_add_menu_item<entt::entity>("entity", selected_entity);
-            try_add_menu_item<FAudioComponent>("audio", selected_entity);
-            try_add_menu_item<FCameraComponent>("camera", selected_entity);
-            try_add_menu_item<FEnvironmentComponent>("environment", selected_entity);
-            try_add_menu_item<FDirectionalLightComponent>("directional light", selected_entity);
-            try_add_menu_item<FSpotLightComponent>("spot light", selected_entity);
-            try_add_menu_item<FPointLightComponent>("point light", selected_entity);
-            try_add_menu_item<FSceneComponent>("scene", selected_entity);
+            try_add_menu_item_h<entt::entity>("entity", selected_entity);
+            try_add_menu_item_h<FAudioComponent>("audio", selected_entity);
+            try_add_menu_item_h<FCameraComponent>("camera", selected_entity);
+            try_add_menu_item_h<FEnvironmentComponent>("environment", selected_entity);
+            try_add_menu_item_h<FDirectionalLightComponent>("directional light", selected_entity);
+            try_add_menu_item_h<FSpotLightComponent>("spot light", selected_entity);
+            try_add_menu_item_h<FPointLightComponent>("point light", selected_entity);
+            try_add_menu_item_h<FSceneComponent>("scene", selected_entity);
+            try_add_menu_item_h<FRigidBodyComponent>("rigidbody", selected_entity);
             ImGui::EndMenu();
         }
 

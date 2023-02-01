@@ -41,8 +41,6 @@ void CCompositionSystem::__create()
 
 void CCompositionSystem::__update(float fDt)
 {
-	auto& registry = EGEngine->getRegistry();
-
 	uint32_t directoonal_light_count{ 0 };
 	std::array<FDirectionalLightCommit, MAX_DIRECTIONAL_LIGHT_COUNT> directional_lights;
 	uint32_t point_light_count{ 0 };
@@ -52,7 +50,7 @@ void CCompositionSystem::__update(float fDt)
 
 	// Collecting directional lights
 	{
-		auto view = registry.view<FTransformComponent, FDirectionalLightComponent>();
+		auto view = registry->view<FTransformComponent, FDirectionalLightComponent>();
 		for (auto [entity, transform, light] : view.each())
 		{
 			FDirectionalLightCommit commit;
@@ -67,7 +65,7 @@ void CCompositionSystem::__update(float fDt)
 	
 	// Collecting point lights
 	{
-		auto view = registry.view<FTransformComponent, FPointLightComponent>();
+		auto view = registry->view<FTransformComponent, FPointLightComponent>();
 		for (auto [entity, transform, light] : view.each())
 		{
 			FPointLightCommit commit;
@@ -84,7 +82,7 @@ void CCompositionSystem::__update(float fDt)
 	// Collecting spot lights
 	{
 		// TODO: direction as dot product of rotation and some vec
-		auto view = registry.view<FTransformComponent, FSpotLightComponent>();
+		auto view = registry->view<FTransformComponent, FSpotLightComponent>();
 		for (auto [entity, transform, light] : view.each())
 		{
 			FSpotLightCommit commit;
@@ -103,8 +101,8 @@ void CCompositionSystem::__update(float fDt)
 
 	auto stage = graphics->getRenderStageID("composition");
 
-	auto eskybox = get_active_skybox(registry);
-	auto* skybox = registry.try_get<FEnvironmentComponent>(eskybox);
+	auto eskybox = get_active_skybox(*registry);
+	auto* skybox = registry->try_get<FEnvironmentComponent>(eskybox);
 
 	auto* camera = EGEngine->getActiveCamera();
 

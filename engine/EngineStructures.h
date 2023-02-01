@@ -172,6 +172,15 @@ namespace engine
 
 	void to_json(nlohmann::json& json, const FPostProcess& type);
 	void from_json(const nlohmann::json& json, FPostProcess& type);
+
+	enum class EPhysicsShapeType
+	{
+		eBox,
+		eCapsule,
+		eCone,
+		eCylinder,
+		eSphere
+	};
 }
 
 template <>

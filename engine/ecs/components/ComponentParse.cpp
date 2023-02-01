@@ -10,6 +10,7 @@
 #include "ScriptComponent.h"
 #include "SceneComponent.h"
 #include "HierarchyComponent.h"
+#include "RigidBodyComponent.h"
 
 #include "Engine.h"
 #include "game/SceneGraph.hpp"

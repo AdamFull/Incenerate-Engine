@@ -49,8 +49,6 @@ void CBillboardSystem::__create()
 
 void CBillboardSystem::__update(float fDt)
 {
-	auto& registry = EGEngine->getRegistry();
-
 	auto* camera = EGEngine->getActiveCamera();
 
 	if (!camera)
@@ -70,7 +68,7 @@ void CBillboardSystem::__update(float fDt)
 			graphics->bindTexture("color_tex", audio_icon);
 			graphics->flushShader();
 
-			auto view = registry.view<FTransformComponent, FAudioComponent>();
+			auto view = registry->view<FTransformComponent, FAudioComponent>();
 			for (auto [entity, transform, audio] : view.each())
 				draw(camera, transform.rposition, glm::vec3(1.f), entity);
 		}
@@ -79,7 +77,7 @@ void CBillboardSystem::__update(float fDt)
 			graphics->bindTexture("color_tex", camera_icon);
 			graphics->flushShader();
 
-			auto view = registry.view<FTransformComponent, FCameraComponent>();
+			auto view = registry->view<FTransformComponent, FCameraComponent>();
 			for (auto [entity, transform, cam] : view.each())
 				draw(camera, transform.rposition, glm::vec3(1.f), entity);
 		}
@@ -88,7 +86,7 @@ void CBillboardSystem::__update(float fDt)
 			graphics->bindTexture("color_tex", environment_icon);
 			graphics->flushShader();
 
-			auto view = registry.view<FTransformComponent, FEnvironmentComponent>();
+			auto view = registry->view<FTransformComponent, FEnvironmentComponent>();
 			for (auto [entity, transform, env] : view.each())
 				draw(camera, transform.rposition, glm::vec3(1.f), entity);
 		}
@@ -97,15 +95,15 @@ void CBillboardSystem::__update(float fDt)
 			graphics->bindTexture("color_tex", light_icon);
 			graphics->flushShader();
 
-			auto dir = registry.view<FTransformComponent, FDirectionalLightComponent>();
+			auto dir = registry->view<FTransformComponent, FDirectionalLightComponent>();
 			for (auto [entity, transform, light] : dir.each())
 				draw(camera, transform.rposition, light.color, entity);
 
-			auto point = registry.view<FTransformComponent, FPointLightComponent>();
+			auto point = registry->view<FTransformComponent, FPointLightComponent>();
 			for (auto [entity, transform, light] : point.each())
 				draw(camera, transform.rposition, light.color, entity);
 
-			auto spot = registry.view<FTransformComponent, FSpotLightComponent>();
+			auto spot = registry->view<FTransformComponent, FSpotLightComponent>();
 			for (auto [entity, transform, light] : spot.each())
 				draw(camera, transform.rposition, light.color, entity);
 		}
