@@ -71,7 +71,7 @@ void CPhysicsCore::simulate(float fDT)
 {
 	pPhysicsObjectManager->perform_deletion();
 
-	if (dynamicsWorld->getDebugDrawer())
+	if (dynamicsWorld->getDebugDrawer() && EGEngine->isDebugDrawPhysics())
 		dynamicsWorld->debugDrawWorld();
 
 	dynamicsWorld->stepSimulation(fDT, 10);

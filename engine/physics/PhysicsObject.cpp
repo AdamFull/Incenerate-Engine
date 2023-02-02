@@ -187,6 +187,11 @@ glm::mat4 CPhysicsObject::getWorldTranslation()
 	return btTransform_to_mat4(btTranslation);
 }
 
+const bool CPhysicsObject::isActive() const
+{
+	return pRigidBody->isActive();
+}
+
 void CPhysicsObject::tryDestroyMotionState()
 {
 	if (pMotionState)

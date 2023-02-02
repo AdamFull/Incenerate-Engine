@@ -37,6 +37,8 @@ namespace engine
 			void setWorldTranslation(const glm::mat4& translation);
 			glm::mat4 getWorldTranslation();
 
+			const bool isActive() const;
+
 			EPhysicsShapeType getShapeType() const { return eShapeType; }
 
 		private:

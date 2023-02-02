@@ -164,9 +164,19 @@ const bool CEngine::isDebugDrawNormals() const
 	return bDebugDrawNormals;
 }
 
+const bool CEngine::isDebugDrawPhysics() const
+{
+	return bDebugDrawPhysics;
+}
+
 void CEngine::toggleDebugDrawNormals()
 {
 	bDebugDrawNormals = !bDebugDrawNormals;
+}
+
+void CEngine::toggleDebugDrawPhysics()
+{
+	bDebugDrawPhysics = !bDebugDrawPhysics;
 }
 
 const std::vector<std::unique_ptr<ecs::ISystem>>& CEngine::getSystems() const

@@ -30,7 +30,7 @@ void CPhysicsSystem::__update(float fDt)
 				object->setMass(rigidbody.mass);
 				object->setWorldTranslation(transform.model);
 
-				switch (rigidbody.type)
+				switch (static_cast<EPhysicsShapeType>(rigidbody.type))
 				{
 				case EPhysicsShapeType::eBox: { object->setBoxColliderSizes(rigidbody.sizes); } break;
 				case EPhysicsShapeType::eCapsule: {} break;
@@ -49,14 +49,18 @@ void CPhysicsSystem::__update(float fDt)
 			for (auto [entity, transform, rigidbody] : view.each())
 			{
 				auto& object = physics->getObject(rigidbody.object_id);
-				transform.model = object->getWorldTranslation();
-				transform.update();
 
-				auto delta = transform.model - transform.model_old + glm::mat4(1.f);
-				transform.apply_delta(delta);
+				if (object->isActive())
+				{
+					transform.model = object->getWorldTranslation();
+					transform.update();
 
-				CHierarchySystem::initialize_matrices(registry, entity);
-				CHierarchySystem::calculate_matrices(registry, entity);
+					auto delta = transform.model - transform.model_old + glm::mat4(1.f);
+					transform.apply_delta(delta);
+
+					CHierarchySystem::initialize_matrices(registry, entity);
+					CHierarchySystem::calculate_matrices(registry, entity);
+				}
 			}
 		}
 	}

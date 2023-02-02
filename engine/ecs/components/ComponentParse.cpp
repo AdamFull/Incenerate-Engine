@@ -187,7 +187,7 @@ namespace engine
 		void to_json(nlohmann::json& json, const FRigidBodyComponent& type)
 		{
 			utl::serialize_from("mass", json, type.mass, type.mass != 1.f);
-			utl::serialize_from("type", json, type.type, type.type != EPhysicsShapeType::eBox);
+			utl::serialize_from("type", json, type.type, type.type != 0);
 			utl::serialize_from("sizes", json, type.sizes, type.sizes != glm::vec3(1.f));
 			utl::serialize_from("radius", json, type.radius, type.radius != 1.f);
 			utl::serialize_from("height", json, type.height, type.height != 1.f);

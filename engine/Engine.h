@@ -62,7 +62,10 @@ namespace engine
 		const bool isEditorMode() const;
 		const bool isEditorEditing() const;
 		const bool isDebugDrawNormals() const;
+		const bool isDebugDrawPhysics() const;
+
 		void toggleDebugDrawNormals();
+		void toggleDebugDrawPhysics();
 
 		void setState(EEngineState state) { eState = state; }
 		EEngineState getState() { return eState; }
@@ -100,6 +103,7 @@ namespace engine
 
 		bool bEditorMode{ true };
 		bool bDebugDrawNormals{ false };
+		bool bDebugDrawPhysics{ false };
 
 		std::vector<std::unique_ptr<ecs::ISystem>> vSystems;
 	};

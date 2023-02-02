@@ -11,7 +11,7 @@ namespace engine
 			float mass{ 1.f };
 			size_t object_id{ invalid_index };
 
-			EPhysicsShapeType type{ EPhysicsShapeType::eBox };
+			int32_t type{ 0 };
 
 			// For box/cylinder
 			glm::vec3 sizes{ 1.f };

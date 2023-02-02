@@ -530,7 +530,22 @@ void CEditorInspector::rigidbodyEdit(FTransformComponent* transform, FRigidBodyC
 	auto& registry = EGEngine->getRegistry();
 
 	ImGui::GDragFloat("Mass", &object->mass, 0.1f, 0.f, INFINITE);
-	switch (object->type)
+	if (ImGui::GCombo("Shape", &object->type, collision_variant.data(), collision_variant.size()))
+	{
+		auto& physics = EGEngine->getPhysics();
+		auto& pobject = physics->getObject(object->object_id);
+
+		switch (static_cast<EPhysicsShapeType>(object->type))
+		{
+		case EPhysicsShapeType::eBox: { pobject->setBoxCollider(object->sizes); } break;
+		case EPhysicsShapeType::eCapsule: { pobject->setCapsuleCollider(object->radius, object->height); } break;
+		case EPhysicsShapeType::eCone: { pobject->setConeCollider(object->radius, object->height); } break;
+		case EPhysicsShapeType::eCylinder: { pobject->setCylinderCollider(object->sizes); } break;
+		case EPhysicsShapeType::eSphere: { pobject->setSphereCollider(object->radius); } break;
+		}
+	}
+
+	switch (static_cast<EPhysicsShapeType>(object->type))
 	{
 	case EPhysicsShapeType::eBox: {
 		ImGui::GDragFloatVec3("Size", object->sizes);
@@ -550,6 +565,7 @@ void CEditorInspector::rigidbodyEdit(FTransformComponent* transform, FRigidBodyC
 	} break;
 	case EPhysicsShapeType::eSphere: {
 		ImGui::GDragFloat("Radius", &object->radius, 0.01f, 0.f, 9999.f);
+		debug_draw->drawDebugSphere(transform->rposition, object->radius);
 	} break;
 	}
 }

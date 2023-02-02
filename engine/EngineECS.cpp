@@ -47,7 +47,7 @@ void construct_rigidbody(entt::registry& reg, entt::entity entity)
 
 		auto& object = physics->getObject(rigidbody.object_id);
 
-		switch (rigidbody.type)
+		switch (static_cast<EPhysicsShapeType>(rigidbody.type))
 		{
 		case EPhysicsShapeType::eBox: { object->setBoxCollider(rigidbody.sizes); } break;
 		case EPhysicsShapeType::eCapsule: { object->setCapsuleCollider(rigidbody.radius, rigidbody.height); } break;

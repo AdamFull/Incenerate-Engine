@@ -249,6 +249,10 @@ void CEditor::newFrame(float fDt)
             auto display_normals = EGEngine->isDebugDrawNormals();
             if (ImGui::MenuItem("Display normals", "", &display_normals))
                 EGEngine->toggleDebugDrawNormals();
+            auto display_physics = EGEngine->isDebugDrawPhysics();
+            if (ImGui::MenuItem("Display physics", "", &display_normals))
+                EGEngine->toggleDebugDrawPhysics();
+
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Help"))

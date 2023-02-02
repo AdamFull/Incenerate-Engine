@@ -5,6 +5,7 @@ namespace engine
 	const std::array<const char*, 5> fxaa_quality_variant{ "1.0", "0.75", "0.5", "0.25", "0.0" };
 	const std::array<const char*, 5> fxaa_threshold_variant{ "0.333", "0.250", "0.166", "0.125", "0.063" };
 	const std::array<const char*, 3> fxaa_threshold_min_variant{ "0.0833", "0.0625", "0.0312" };
+	const std::array<const char*, 5> collision_variant{ "box", "capsule", "cone", "cylinder", "sphere" };
 
 	enum class ERenderApi
 	{
