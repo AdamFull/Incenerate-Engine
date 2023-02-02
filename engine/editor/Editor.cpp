@@ -25,6 +25,7 @@
 #include "ecs/components/components.h"
 
 #include "game/SceneGraph.hpp"
+#include "game/SceneSerializer.h"
 
 constexpr const char* editor_local_data = "editorloc";
 
@@ -394,6 +395,28 @@ bool CEditor::isSelected(const entt::entity& object) const
 const entt::entity& CEditor::getLastSelection() const
 {
 	return selected;
+}
+
+void CEditor::captureSceneState()
+{
+    auto& registry = EGEngine->getRegistry();
+
+    mCaptureStates.clear();
+
+    auto view = registry.view<FTransformComponent>();
+    for (auto [entity, transform] : view.each())
+    {
+        mCaptureStates[entity] = {};
+        CSceneLoader::saveComponents(mCaptureStates[entity], entity);
+    }
+}
+
+void CEditor::restoreSceneState()
+{
+    auto& registry = EGEngine->getRegistry();
+    auto view = registry.view<FTransformComponent>();
+    for (auto [entity, transform] : view.each())
+        CSceneLoader::applyComponents(mCaptureStates[entity], entity);
 }
 
 vk::DescriptorPool& CEditor::getDescriptorPool()

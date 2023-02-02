@@ -18,7 +18,7 @@ void CPhysicsSystem::__update(float fDt)
 
 	if (!EGEngine->isEditorEditing())
 	{
-		// Pre simulate
+		// Synchronize scene with physics
 		{
 			auto view = registry->view<FTransformComponent, FRigidBodyComponent>();
 			for (auto [entity, transform, rigidbody] : view.each())
@@ -39,9 +39,9 @@ void CPhysicsSystem::__update(float fDt)
 			}
 		}
 
-		physics->simulate(fDt);
+		physics->simulate(1.f / 60.f);
 
-		// After simulation
+		// Synchronize physics with scene
 		{
 			auto view = registry->view<FTransformComponent, FRigidBodyComponent>();
 			for (auto [entity, transform, rigidbody] : view.each())
@@ -50,8 +50,10 @@ void CPhysicsSystem::__update(float fDt)
 				transform.model = object->getWorldTranslation();
 				transform.update();
 
-				auto delta = transform.model - transform.model_old;
-				transform.update_local(delta);
+				auto delta = transform.model - transform.model_old + glm::mat4(1.f);
+				transform.apply_delta(delta);
+
+				// recalculate child matrices
 			}
 		}
 	}

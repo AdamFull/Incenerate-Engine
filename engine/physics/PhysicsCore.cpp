@@ -63,6 +63,11 @@ void CPhysicsCore::setGravity(const glm::vec3& gravity)
 	dynamicsWorld->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
 }
 
+void CPhysicsCore::reset()
+{
+	dynamicsWorld->clearForces();
+}
+
 size_t CPhysicsCore::addObject(const std::string& name)
 {
 	return pPhysicsObjectManager->add(name, std::make_unique<CPhysicsObject>(dynamicsWorld));

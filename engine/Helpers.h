@@ -10,4 +10,6 @@ namespace engine
 
 	glm::vec4 encodeIdToColor(uint32_t hex);
 	uint32_t decodeIdFromColor(uint8_t x, uint8_t y, uint8_t z, uint8_t w);
+
+	bool decompose(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale);
 }

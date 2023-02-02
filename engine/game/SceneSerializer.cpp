@@ -71,6 +71,9 @@ entt::entity CSceneLoader::loadNode(FSceneObjectRaw& object)
 
 		if (name == "script")
 			registry.emplace<FScriptComponent>(node, component.get<FScriptComponent>());
+
+		if (name == "rigidbody")
+			registry.emplace<FRigidBodyComponent>(node, component.get<FRigidBodyComponent>());
 	}
 
 	for(auto& child : object.vChildren)
@@ -112,9 +115,70 @@ FSceneObjectRaw CSceneLoader::saveNode(const entt::entity& node)
 		object.mComponents.emplace("spotlight", nlohmann::json(*spotlight));
 	if (auto script = registry.try_get<FScriptComponent>(node))
 		object.mComponents.emplace("script", nlohmann::json(*script));
+	if (auto script = registry.try_get<FRigidBodyComponent>(node))
+		object.mComponents.emplace("rigidbody", nlohmann::json(*script));
 
 	for (auto& child : hierarchy.children)
 		object.vChildren.emplace_back(saveNode(child));
 
 	return object;
+}
+
+void CSceneLoader::saveComponents(std::map<std::string, std::any>& components, const entt::entity& node)
+{
+	auto& registry = EGEngine->getRegistry();
+
+	if (auto transform = registry.try_get<FTransformComponent>(node))
+		components.emplace("transform", *transform);
+	if (auto scene = registry.try_get<FSceneComponent>(node))
+		components.emplace("scene", *scene);
+	if (auto camera = registry.try_get<FCameraComponent>(node))
+		components.emplace("camera", *camera);
+	if (auto audio = registry.try_get<FAudioComponent>(node))
+		components.emplace("audio", *audio);
+	if (auto environment = registry.try_get<FEnvironmentComponent>(node))
+		components.emplace("environment", *environment);
+	if (auto sprite = registry.try_get<FSpriteComponent>(node))
+		components.emplace("sprite", *sprite);
+	if (auto directionallight = registry.try_get<FDirectionalLightComponent>(node))
+		components.emplace("directionallight", *directionallight);
+	if (auto pointlight = registry.try_get<FPointLightComponent>(node))
+		components.emplace("pointlight", *pointlight);
+	if (auto spotlight = registry.try_get<FSpotLightComponent>(node))
+		components.emplace("spotlight", *spotlight);
+	if (auto script = registry.try_get<FScriptComponent>(node))
+		components.emplace("script", *script);
+	if (auto script = registry.try_get<FRigidBodyComponent>(node))
+		components.emplace("rigidbody", *script);
+}
+
+void CSceneLoader::applyComponents(const std::map<std::string, std::any>& components, const entt::entity& node)
+{
+	auto& registry = EGEngine->getRegistry();
+
+	for (auto& [name, component] : components)
+	{
+		if (name == "transform")
+			registry.emplace_or_replace<FTransformComponent>(node, std::any_cast<FTransformComponent>(component));
+		if (name == "camera")
+			registry.emplace_or_replace<FCameraComponent>(node, std::any_cast<FCameraComponent>(component));
+		if (name == "audio")
+			registry.emplace_or_replace<FAudioComponent>(node, std::any_cast<FAudioComponent>(component));
+		if (name == "environment")
+			registry.emplace_or_replace<FEnvironmentComponent>(node, std::any_cast<FEnvironmentComponent>(component));
+		if (name == "sprite")
+			registry.emplace_or_replace<FSpriteComponent>(node, std::any_cast<FSpriteComponent>(component));
+		if (name == "scene")
+			registry.emplace_or_replace<FSceneComponent>(node, std::any_cast<FSceneComponent>(component));
+		if (name == "directionallight")
+			registry.emplace_or_replace<FDirectionalLightComponent>(node, std::any_cast<FDirectionalLightComponent>(component));
+		if (name == "pointlight")
+			registry.emplace_or_replace<FPointLightComponent>(node, std::any_cast<FPointLightComponent>(component));
+		if (name == "spotlight")
+			registry.emplace_or_replace<FSpotLightComponent>(node, std::any_cast<FSpotLightComponent>(component));
+		if (name == "script")
+			registry.emplace_or_replace<FScriptComponent>(node, std::any_cast<FScriptComponent>(component));
+		if (name == "rigidbody")
+			registry.emplace_or_replace<FRigidBodyComponent>(node, std::any_cast<FRigidBodyComponent>(component));
+	}
 }

@@ -150,7 +150,12 @@ void CPhysicsObject::setWorldTranslation(const glm::mat4& translation)
 	auto btTranslate = mat4_to_btTransform(translation);
 
 	if (pMotionState)
+	{
 		pMotionState->setWorldTransform(btTranslate);
+
+		if (pRigidBody)
+			pRigidBody->setMotionState(pMotionState);
+	}
 	else
 		pRigidBody->setWorldTransform(btTranslate);
 }
@@ -159,9 +164,9 @@ glm::mat4 CPhysicsObject::getWorldTranslation()
 {
 	btTransform btTranslation;
 
-	if (pMotionState)
-		pMotionState->getWorldTransform(btTranslation);
-	else
+	//if (pMotionState)
+	//	pMotionState->getWorldTransform(btTranslation);
+	//else
 		btTranslation = pRigidBody->getWorldTransform();
 
 	return btTransform_to_mat4(btTranslation);

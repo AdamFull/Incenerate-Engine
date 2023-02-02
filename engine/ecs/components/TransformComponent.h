@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Helpers.h"
+
 namespace engine
 {
 	namespace ecs
@@ -28,14 +30,13 @@ namespace engine
 				rrotation = glm::eulerAngles(qrotation);
 			}
 
-			void update_local(const glm::mat4& mat)
+			void apply_delta(const glm::mat4& mat)
 			{
-				glm::vec3 skew;
-				glm::quat qrotation;
-				glm::vec4 perspective;
-				glm::decompose(mat, scale, qrotation, position, skew, perspective);
-				qrotation = glm::conjugate(qrotation);
-				rotation = glm::eulerAngles(qrotation);
+				glm::vec3 dposition;
+				glm::vec3 drotation;
+				decompose(mat, dposition, drotation, scale);
+				position += dposition;
+				rotation += drotation;
 			}
 		};
 

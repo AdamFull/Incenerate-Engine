@@ -63,9 +63,13 @@ namespace engine
 			void deselectObject(const entt::entity& object);
 			void deselectAll();
 
+
 			bool isSelected(const entt::entity& object) const;
 
 			const entt::entity& getLastSelection() const;
+
+			void captureSceneState();
+			void restoreSceneState();
 
 			vk::DescriptorPool& getDescriptorPool();
 
@@ -99,6 +103,8 @@ namespace engine
 			entt::entity camera{ entt::null };
 			entt::entity selected{ entt::null };
 			std::map<uint32_t, std::string> mEditorIcons;
+
+			std::map<entt::entity, std::map<std::string, std::any>> mCaptureStates;
 
 			bool bNeedNewProject{ false };
 			bool bNeedOpenProject{ false };

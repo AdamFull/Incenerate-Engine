@@ -20,7 +20,7 @@ namespace engine
 			float height{ 1.f };
 		};
 
-		//void to_json(nlohmann::json& json, const FPointLightComponent& type);
-		//void from_json(const nlohmann::json& json, FPointLightComponent& type);
+		void to_json(nlohmann::json& json, const FRigidBodyComponent& type);
+		void from_json(const nlohmann::json& json, FRigidBodyComponent& type);
 	}
 }

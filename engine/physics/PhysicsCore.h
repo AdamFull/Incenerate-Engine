@@ -35,6 +35,8 @@ namespace engine
 
 			void setGravity(const glm::vec3& gravity);
 
+			void reset();
+
 			size_t addObject(const std::string& name);
 			size_t addObject(const std::string& name, std::unique_ptr<CPhysicsObject>&& source);
 			void removeObject(const std::string& name);

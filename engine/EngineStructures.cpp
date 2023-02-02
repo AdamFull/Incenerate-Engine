@@ -47,6 +47,18 @@ namespace engine
 		}
 	);
 
+	NLOHMANN_JSON_SERIALIZE_ENUM
+	(
+		EPhysicsShapeType,
+		{
+			{EPhysicsShapeType::eBox, "box"},
+			{EPhysicsShapeType::eCapsule, "capsule"},
+			{EPhysicsShapeType::eCone, "cone"},
+			{EPhysicsShapeType::eCylinder, "cylinder"},
+			{EPhysicsShapeType::eSphere, "sphere"},
+		}
+	);
+
 
 	void to_json(nlohmann::json& json, const FWindowCreateInfo& type)
 	{

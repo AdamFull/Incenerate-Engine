@@ -129,7 +129,7 @@ void CEditorInspector::__draw(float fDt)
 		try_show_edit<FSceneComponent>("Scene", selected,
 			[this](auto* object) { sceneEdit(object); });
 		try_show_edit<FRigidBodyComponent>("RigidBody", selected,
-			[this](auto* object) { rigidbodyEdit(object); });
+			[this, &transform](auto* object) { rigidbodyEdit(&transform, object); });
 
 		try_show_edit<FDirectionalLightComponent>("Directional light", selected,
 			[&](auto* object)
@@ -523,8 +523,10 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 	ImGui::Text("");
 }
 
-void CEditorInspector::rigidbodyEdit(FRigidBodyComponent* object)
+void CEditorInspector::rigidbodyEdit(FTransformComponent* transform, FRigidBodyComponent* object)
 {
+	auto& graphics = EGEngine->getGraphics();
+	auto& debug_draw = graphics->getDebugDraw();
 	auto& registry = EGEngine->getRegistry();
 
 	ImGui::GDragFloat("Mass", &object->mass, 0.1f, 0.f, INFINITE);
@@ -532,6 +534,8 @@ void CEditorInspector::rigidbodyEdit(FRigidBodyComponent* object)
 	{
 	case EPhysicsShapeType::eBox: {
 		ImGui::GDragFloatVec3("Size", object->sizes);
+		debug_draw->drawDebugBox(transform->rposition, object->sizes.x * 2.f, object->sizes.y * 2.f, object->sizes.z * 2.f);
+
 	} break;
 	case EPhysicsShapeType::eCapsule: {
 		ImGui::GDragFloat("Radius", &object->radius, 0.01f, 0.f, 9999.f);

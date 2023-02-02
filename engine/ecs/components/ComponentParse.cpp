@@ -69,7 +69,7 @@ namespace engine
 			utl::serialize_from("rot", json, type.rotation, type.rotation != glm::vec3(0.f));
 			utl::serialize_from("scale", json, type.scale, type.scale != glm::vec3(1.f));
 		}
-		
+
 		void from_json(const nlohmann::json& json, FTransformComponent& type)
 		{
 			utl::parse_to("pos", json, type.position);
@@ -181,6 +181,25 @@ namespace engine
 		void from_json(const nlohmann::json& json, FSceneComponent& type)
 		{
 			utl::parse_to("source", json, type.source);
+		}
+
+
+		void to_json(nlohmann::json& json, const FRigidBodyComponent& type)
+		{
+			utl::serialize_from("mass", json, type.mass, type.mass != 1.f);
+			utl::serialize_from("type", json, type.type, type.type != EPhysicsShapeType::eBox);
+			utl::serialize_from("sizes", json, type.sizes, type.sizes != glm::vec3(1.f));
+			utl::serialize_from("radius", json, type.radius, type.radius != 1.f);
+			utl::serialize_from("height", json, type.height, type.height != 1.f);
+		}
+
+		void from_json(const nlohmann::json& json, FRigidBodyComponent& type)
+		{
+			utl::parse_to("mass", json, type.mass);
+			utl::parse_to("type", json, type.type);
+			utl::parse_to("sizes", json, type.sizes);
+			utl::parse_to("radius", json, type.radius);
+			utl::parse_to("height", json, type.height);
 		}
 	}
 }
