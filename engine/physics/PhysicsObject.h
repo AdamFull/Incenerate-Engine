@@ -18,6 +18,7 @@ namespace engine
 			~CPhysicsObject();
 
 			void initialize(float fMass);
+			void clear();
 
 			void setBoxCollider(const glm::vec3& sizes);
 			void setCapsuleCollider(const float radius, const float height);

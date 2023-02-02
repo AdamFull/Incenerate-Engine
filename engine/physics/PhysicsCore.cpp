@@ -1,25 +1,51 @@
-#include "PhysicsCore.h"
+#include "Engine.h"
 
 #include "PhysicsHelper.h"
+#include "PhysicsDebugDraw.h"
 
 using namespace engine::physics;
 
 CPhysicsCore::~CPhysicsCore()
 {
-	delete dynamicsWorld;
-	dynamicsWorld = nullptr;
+	pPhysicsObjectManager = nullptr;
 
-	delete solver;
-	solver = nullptr;
+	if (debugDraw)
+	{
+		dynamicsWorld->setDebugDrawer(nullptr);
 
-	delete overlappingPairCache;
-	overlappingPairCache = nullptr;
+		delete debugDraw;
+		debugDraw = nullptr;
+	}
 
-	delete dispatcher;
-	dispatcher = nullptr;
+	if (dynamicsWorld)
+	{
+		delete dynamicsWorld;
+		dynamicsWorld = nullptr;
+	}
 
-	delete configuration;
-	configuration = nullptr;
+	if (solver)
+	{
+		delete solver;
+		solver = nullptr;
+	}
+
+	if (overlappingPairCache)
+	{
+		delete overlappingPairCache;
+		overlappingPairCache = nullptr;
+	}
+	
+	if (dispatcher)
+	{
+		delete dispatcher;
+		dispatcher = nullptr;
+	}
+
+	if (configuration)
+	{
+		delete configuration;
+		configuration = nullptr;
+	}
 }
 
 void CPhysicsCore::create()
@@ -29,14 +55,22 @@ void CPhysicsCore::create()
 	configuration = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(configuration);
 	overlappingPairCache = new btDbvtBroadphase();
-	solver = new btSequentialImpulseConstraintSolver;
+	solver = new btSequentialImpulseConstraintSolver();
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, configuration);
+
+	// if physics debug
+	{
+		auto& graphics = EGEngine->getGraphics();
+		debugDraw = new CPhysicsDebugDraw(graphics.get());
+		dynamicsWorld->setDebugDrawer(debugDraw);
+	}
 
 	setGravity(glm::vec3(0.f, -9.8f, 0.f));
 }
 
 void CPhysicsCore::simulate(float fDT)
 {
+	pPhysicsObjectManager->perform_deletion();
 	dynamicsWorld->stepSimulation(fDT, 10);
 }
 
@@ -66,6 +100,24 @@ void CPhysicsCore::setGravity(const glm::vec3& gravity)
 void CPhysicsCore::reset()
 {
 	dynamicsWorld->clearForces();
+
+	auto& objects = pPhysicsObjectManager->getWhole();
+	for (auto& [id, object] : objects)
+		object->clear();
+}
+
+void CPhysicsCore::setDebugDrawEnable(bool enable)
+{
+	if (enable && !debugDraw)
+	{
+		auto& graphics = EGEngine->getGraphics();
+		debugDraw = new CPhysicsDebugDraw(graphics.get());
+	}
+
+	if (enable)
+		dynamicsWorld->setDebugDrawer(debugDraw);
+	else
+		dynamicsWorld->setDebugDrawer(nullptr);
 }
 
 size_t CPhysicsCore::addObject(const std::string& name)

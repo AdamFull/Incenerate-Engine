@@ -12,6 +12,7 @@ class btRigidBody;
 class btCollisionObject;
 class btBroadphaseInterface;
 class btDiscreteDynamicsWorld;
+class btIDebugDraw;
 
 namespace engine
 {
@@ -37,6 +38,8 @@ namespace engine
 
 			void reset();
 
+			void setDebugDrawEnable(bool enable);
+
 			size_t addObject(const std::string& name);
 			size_t addObject(const std::string& name, std::unique_ptr<CPhysicsObject>&& source);
 			void removeObject(const std::string& name);
@@ -52,6 +55,7 @@ namespace engine
 			btBroadphaseInterface* overlappingPairCache{ nullptr };
 			btSequentialImpulseConstraintSolver* solver{ nullptr };
 			btDiscreteDynamicsWorld* dynamicsWorld{ nullptr };
+			btIDebugDraw* debugDraw{ nullptr };
 		};
 	}
 }

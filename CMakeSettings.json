@@ -518,6 +518,11 @@
           "name": "SDL_OPENGL",
           "value": "False",
           "type": "BOOL"
+        },
+        {
+          "name": "BUILD_UNIT_TESTS",
+          "value": "False",
+          "type": "BOOL"
         }
       ]
     }

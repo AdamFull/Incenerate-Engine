@@ -33,6 +33,21 @@ void CPhysicsObject::initialize(float fMass)
 	pWorld->addRigidBody(pRigidBody);
 }
 
+void CPhysicsObject::clear()
+{
+	pWorld->removeRigidBody(pRigidBody);
+
+	pRigidBody->clearForces();
+	pRigidBody->clearGravity();
+
+	btVector3 zeroVector(0, 0, 0);
+	pRigidBody->setLinearVelocity(zeroVector);
+	pRigidBody->setAngularVelocity(zeroVector);
+	pRigidBody->activate();
+
+	pWorld->addRigidBody(pRigidBody);
+}
+
 void CPhysicsObject::setBoxCollider(const glm::vec3& sizes)
 {
 	eShapeType = EPhysicsShapeType::eBox;
@@ -139,7 +154,7 @@ void CPhysicsObject::setMass(const float mass)
 
 		btVector3 localInertia(0, 0, 0);
 		if(fMass != 0.f)
-			pCollider->calculateLocalInertia(mass, localInertia);
+			pCollider->calculateLocalInertia(fMass, localInertia);
 
 		pRigidBody->setMassProps(fMass, localInertia);
 	}

@@ -4,6 +4,8 @@
 
 #include "ecs/components/RigidBodyComponent.h"
 #include "ecs/components/TransformComponent.h"
+#include "ecs/components/HierarchyComponent.h"
+#include "ecs/systems/HierarchySystem.h"
 
 using namespace engine::ecs;
 
@@ -39,7 +41,7 @@ void CPhysicsSystem::__update(float fDt)
 			}
 		}
 
-		physics->simulate(1.f / 60.f);
+		physics->simulate(fDt);
 
 		// Synchronize physics with scene
 		{
@@ -53,7 +55,8 @@ void CPhysicsSystem::__update(float fDt)
 				auto delta = transform.model - transform.model_old + glm::mat4(1.f);
 				transform.apply_delta(delta);
 
-				// recalculate child matrices
+				CHierarchySystem::initialize_matrices(registry, entity);
+				CHierarchySystem::calculate_matrices(registry, entity);
 			}
 		}
 	}

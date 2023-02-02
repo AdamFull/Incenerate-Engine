@@ -20,49 +20,80 @@ void CHierarchySystem::__update(float fDt)
 	for (auto [entity, transform] : view.each())
 	{
 		transform.model_old = transform.model;
-
-		transform.model = glm::mat4(1.f);
-
-		transform.model = glm::translate(transform.model, transform.position);
-		if (transform.rotation.x != 0)
-			transform.model = glm::rotate(transform.model, transform.rotation.x, glm::vec3(1.0, 0.0, 0.0));
-		if (transform.rotation.y != 0)
-			transform.model = glm::rotate(transform.model, transform.rotation.y, glm::vec3(0.0, 1.0, 0.0));
-		if (transform.rotation.z != 0)
-			transform.model = glm::rotate(transform.model, transform.rotation.z, glm::vec3(0.0, 0.0, 1.0));
-		transform.model = glm::scale(transform.model, transform.scale);
-		transform.update();
+		initialize_matrix(&transform);
 	}
 
 	if (root != entt::null)
+		calculate_matrices(registry, root);
+}
+
+void CHierarchySystem::initialize_matrix(FTransformComponent* transform)
+{
+	transform->model = glm::mat4(1.f);
+
+	transform->model = glm::translate(transform->model, transform->position);
+	if (transform->rotation.x != 0)
+		transform->model = glm::rotate(transform->model, transform->rotation.x, glm::vec3(1.0, 0.0, 0.0));
+	if (transform->rotation.y != 0)
+		transform->model = glm::rotate(transform->model, transform->rotation.y, glm::vec3(0.0, 1.0, 0.0));
+	if (transform->rotation.z != 0)
+		transform->model = glm::rotate(transform->model, transform->rotation.z, glm::vec3(0.0, 0.0, 1.0));
+	transform->model = glm::scale(transform->model, transform->scale);
+	transform->update();
+}
+
+// Only for children
+void CHierarchySystem::initialize_matrices(entt::registry* registry, entt::entity node)
+{
+	std::queue<entt::entity> nextparent;
+	nextparent.push(node);
+
+	while (!nextparent.empty())
 	{
-		// Calculating relative transform
-		std::queue<entt::entity> nextparent;
-		nextparent.push(root);
+		auto current = nextparent.front();
 
-		while (!nextparent.empty())
+		auto& hierarchy = registry->get<FHierarchyComponent>(current);
+		for (auto& child : hierarchy.children)
 		{
-			auto current = nextparent.front();
+			auto& ctransform = registry->get<FTransformComponent>(child);
+			auto& chierarchy = registry->get<FHierarchyComponent>(child);
 
-			auto& transform = registry->get<FTransformComponent>(current);
-			auto& hierarchy = registry->get<FHierarchyComponent>(current);
-			transform.update();
-			transform.normal = glm::transpose(glm::inverse(transform.model));
+			initialize_matrix(&ctransform);
 
-			for (auto& child : hierarchy.children)
-			{
-				auto& ctransform = registry->get<FTransformComponent>(child);
-				auto& chierarchy = registry->get<FHierarchyComponent>(child);
-
-				ctransform.model = transform.model * ctransform.model;
-				ctransform.update();
-
-				if (!chierarchy.children.empty())
-					nextparent.push(child);
-				else
-					ctransform.normal = glm::transpose(glm::inverse(ctransform.model));
-			}
-			nextparent.pop();
+			if (!chierarchy.children.empty())
+				nextparent.push(child);
 		}
+		nextparent.pop();
+	}
+}
+
+void CHierarchySystem::calculate_matrices(entt::registry* registry, entt::entity node)
+{
+	std::queue<entt::entity> nextparent;
+	nextparent.push(node);
+
+	while (!nextparent.empty())
+	{
+		auto current = nextparent.front();
+
+		auto& transform = registry->get<FTransformComponent>(current);
+		auto& hierarchy = registry->get<FHierarchyComponent>(current);
+		transform.update();
+		transform.normal = glm::transpose(glm::inverse(transform.model));
+
+		for (auto& child : hierarchy.children)
+		{
+			auto& ctransform = registry->get<FTransformComponent>(child);
+			auto& chierarchy = registry->get<FHierarchyComponent>(child);
+
+			ctransform.model = transform.model * ctransform.model;
+			ctransform.update();
+
+			if (!chierarchy.children.empty())
+				nextparent.push(child);
+			else
+				ctransform.normal = glm::transpose(glm::inverse(ctransform.model));
+		}
+		nextparent.pop();
 	}
 }

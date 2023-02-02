@@ -88,6 +88,8 @@ namespace engine
 				qDelete.pop();
 		}
 
+		const std::map<size_t, std::unique_ptr<_Ty>>& getWhole() const { return mIdToObject; }
+
 	private:
 		void nextid()
 		{

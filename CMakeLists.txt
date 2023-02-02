@@ -20,7 +20,7 @@ if(MSVC)
         add_compile_options(/Od /Ob0 /Zc:inline /Zp16 /Oi /Ot)
     endif()
 
-	add_compile_options(/W4 /bigobj -D_WIN32_WINNT=0x0601)
+	add_compile_options(/W4 /bigobj -D_WIN32_WINNT=0x0601 /arch:AVX2)
 else()
 	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic")
 endif()
@@ -28,9 +28,9 @@ endif()
 add_compile_definitions(
     GLM_FORCE_INLINE 
     GLM_FORCE_XYZW_ONLY
-    GLM_CORCE_PURE
     GLM_FORCE_CXX17
-    GLM_FORCE_ALIGNED_GENTYPES
+    GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+    GLM_FORCE_SIMD_AVX2
     GLM_ENABLE_EXPERIMENTAL
     GLM_EXT_INCLUDED
     VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
