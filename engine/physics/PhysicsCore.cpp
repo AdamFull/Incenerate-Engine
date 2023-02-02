@@ -60,8 +60,7 @@ void CPhysicsCore::create()
 
 	// if physics debug
 	{
-		auto& graphics = EGEngine->getGraphics();
-		debugDraw = new CPhysicsDebugDraw(graphics.get());
+		debugDraw = new CPhysicsDebugDraw();
 		dynamicsWorld->setDebugDrawer(debugDraw);
 	}
 
@@ -71,6 +70,10 @@ void CPhysicsCore::create()
 void CPhysicsCore::simulate(float fDT)
 {
 	pPhysicsObjectManager->perform_deletion();
+
+	if (dynamicsWorld->getDebugDrawer())
+		dynamicsWorld->debugDrawWorld();
+
 	dynamicsWorld->stepSimulation(fDT, 10);
 }
 
@@ -109,10 +112,7 @@ void CPhysicsCore::reset()
 void CPhysicsCore::setDebugDrawEnable(bool enable)
 {
 	if (enable && !debugDraw)
-	{
-		auto& graphics = EGEngine->getGraphics();
-		debugDraw = new CPhysicsDebugDraw(graphics.get());
-	}
+		debugDraw = new CPhysicsDebugDraw();
 
 	if (enable)
 		dynamicsWorld->setDebugDrawer(debugDraw);

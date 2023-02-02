@@ -7,13 +7,9 @@
 using namespace engine::graphics;
 using namespace engine::physics;
 
-CPhysicsDebugDraw::CPhysicsDebugDraw(CAPIHandle* handle)
-{
-	graphics = handle;
-}
-
 void CPhysicsDebugDraw::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
+	auto& graphics = EGEngine->getGraphics();
 	auto& debug_draw = graphics->getDebugDraw();
 	debug_draw->drawDebugLine(btVector3_to_vec3(from), btVector3_to_vec3(to), btVector3_to_vec3(color));
 }
