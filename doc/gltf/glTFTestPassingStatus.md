@@ -3,14 +3,14 @@
 - [ ] AttenuationTest
 - [x] ClearCoatTest
 - [x] EmissiveStrengthTest
-- [ ] EnvironmentTest
+- [x] EnvironmentTest
 - [ ] InterpolationTest
 - [ ] MorphPrimitivesTest
 - [ ] MorphStressTest
 - [ ] MultiUVTest
-- [ ] NormalTangentMirrorTest
+- [x] NormalTangentMirrorTest
 - [ ] NormalTangentTest
-- [ ] OrientationTest
+- [x] OrientationTest
 - [ ] SpecularTest
 - [x] TextureCoordinateTest
 - [ ] TextureEncodingTest
