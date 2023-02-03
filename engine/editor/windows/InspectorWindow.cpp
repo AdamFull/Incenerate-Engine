@@ -503,7 +503,7 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 							scenegraph::destroy_node(child);
 						}
 
-						CMeshLoader::load(object->source, self);
+						CMeshLoader::load(object->source, self, object);
 					}
 					else
 					{

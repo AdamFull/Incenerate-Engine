@@ -12,6 +12,9 @@
 
 #include "system/filesystem/filesystem.h"
 
+#include "loaders/ImageLoader.h"
+
+using namespace engine;
 using namespace engine::loaders;
 using namespace engine::system;
 using namespace engine::graphics;
@@ -86,29 +89,31 @@ glm::vec3 getVec3OrDefault(const std::string& name, const tinygltf::Value& val, 
 }
 
 // Based on https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanglTFModel.cpp
-bool loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* userData)
+bool CGltfLoader::loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* userData)
 {
-    // KTX files will be handled by our own code
-    //if (image->uri.find_last_of(".") != std::string::npos)
-    //{
-    //    if (image->uri.substr(image->uri.find_last_of(".") + 1) == "ktx")
-    //        return true;
-    //    if (image->uri.substr(image->uri.find_last_of(".") + 1) == "ktx2")
-    //        return true;
+    auto* loader = static_cast<CGltfLoader*>(userData);
+
+    // Full path
+    //auto texture_path = std::filesystem::weakly_canonical(loader->fsParentPath / url_decode(image->uri));
+
+    //std::unique_ptr<FImageCreateInfo> pImageCI;
+    //CImageLoader::load(texture_path, pImageCI);
     //
-    //}
+    //image->width = pImageCI->baseWidth;
+    //image->height = pImageCI->baseHeight;
+    //image->component = pImageCI->dataSize / (pImageCI->baseWidth * pImageCI->baseHeight);
 
     return true;//tinygltf::LoadImageData(image, imageIndex, error, warning, req_width, req_height, bytes, size, userData);
 }
 
-void CGltfLoader::load(const const std::filesystem::path& source, const entt::entity& root)
+void CGltfLoader::load(const const std::filesystem::path& source, const entt::entity& root, FSceneComponent* component)
 {
     auto& graphics = EGEngine->getGraphics();
 
     tinygltf::Model gltfModel;
     tinygltf::TinyGLTF gltfContext;
     std::string error, warning;
-    gltfContext.SetImageLoader(loadImageDataFuncEmpty, this);
+    gltfContext.SetImageLoader(&CGltfLoader::loadImageDataFuncEmpty, this);
 
     auto fpath = std::filesystem::weakly_canonical(fs::get_workdir() / source);
     fsParentPath = std::filesystem::weakly_canonical(fpath.parent_path());
@@ -135,10 +140,10 @@ void CGltfLoader::load(const const std::filesystem::path& source, const entt::en
 
         const tinygltf::Scene& scene = gltfModel.scenes[gltfModel.defaultScene > -1 ? gltfModel.defaultScene : 0];
 
-        for (size_t i = 0; i < scene.nodes.size(); i++)
+        for (auto& node_idx : scene.nodes)
         {
-            const tinygltf::Node node = gltfModel.nodes[scene.nodes[i]];
-            loadNode(root, node, scene.nodes[i], gltfModel, 1.0);
+            const tinygltf::Node node = gltfModel.nodes[node_idx];
+            loadNode(root, node, node_idx, gltfModel, 1.0);
         }
 
         auto& pVBO = graphics->getVertexBuffer(vbo_id);
@@ -146,6 +151,10 @@ void CGltfLoader::load(const const std::filesystem::path& source, const entt::en
 
         for (auto& mat_id : vMaterials)
             graphics->addShader("default_" + std::to_string(mat_id), "default", mat_id);
+
+        if (gltfModel.animations.size() > 0)
+            loadAnimations(gltfModel, component);
+        loadSkins(gltfModel, component);
     }
 }
 
@@ -158,21 +167,35 @@ void CGltfLoader::loadNode(const entt::entity& parent, const tinygltf::Node& nod
     auto obj_name = node.name.empty() ? phierarchy.name + "_" + std::to_string(nodeIndex) : node.name;
     auto entity = scenegraph::create_node(obj_name);
 
+    mIndexToEntity[nodeIndex] = entity;
+
     auto& transform = registry.get<FTransformComponent>(entity);
 
     // Loading position data
-    if (node.translation.size() == 3)
+    if (!node.translation.empty())
         transform.position = glm::make_vec3(node.translation.data());
     // Loading rotation data
-    if (node.rotation.size() == 4)
+    if (!node.rotation.empty())
     {
         //TODO: refactor transform for using quaterion
         glm::quat quat = glm::make_quat(node.rotation.data());
         transform.rotation = glm::eulerAngles(quat); //  * glm::vec3(-1.0, 1.0, 1.0)
     }
     // Loading scale data
-    if (node.scale.size() == 3)
+    if (!node.scale.empty())
         transform.scale = glm::make_vec3(node.scale.data());
+
+    if (!node.matrix.empty())
+    {
+        glm::mat4 translation = glm::make_mat4(node.matrix.data());
+
+        glm::vec3 skew;
+        glm::quat qrotation;
+        glm::vec4 perspective;
+        glm::decompose(translation, transform.scale, qrotation, transform.position, skew, perspective);
+        qrotation = glm::conjugate(qrotation);
+        transform.rotation = glm::eulerAngles(qrotation);
+    }
 
     // Node with children
     if (node.children.size() > 0)
@@ -472,6 +495,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
 {
     auto& graphics = EGEngine->getGraphics();
 
+    uint32_t matIndex{ 0 };
     for (auto& mat : model.materials)
     {
         FMaterial params;
@@ -697,7 +721,11 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         // TODO: add instances in shader object
         pMaterial->setParameters(std::move(params));
         auto mat_name = mat.name.empty() ? fs::get_filename(fsParentPath) + "_" + std::to_string(vMaterials.size()) : mat.name;
+        if (graphics->getMaterial(mat_name))
+            mat_name = mat_name + "_" + std::to_string(matIndex);
+
         vMaterials.emplace_back(graphics->addMaterial(mat_name, std::move(pMaterial)));
+        matIndex++;
     }
 }
 
@@ -722,6 +750,154 @@ void CGltfLoader::loadTextures(const tinygltf::Model& model)
         auto& image = model.images.at(image_index); 
         auto texture_path = std::filesystem::weakly_canonical(fsParentPath / url_decode(image.uri));
         vTextures.emplace_back(fs::from_unicode(texture_path), isBasisU || fs::is_ktx_format(texture_path));
+    }
+}
+
+void CGltfLoader::loadAnimations(const tinygltf::Model& model, FSceneComponent* component)
+{
+    for (auto& anim : model.animations)
+    {
+        FMeshAnimation animation;
+        animation.name = anim.name;
+
+        if (anim.name.empty())
+            animation.name = std::to_string(component->animations.size());
+
+        for (auto& samp : anim.samplers)
+        {
+            FAnimationSampler sampler{};
+
+            if (samp.interpolation == "LINEAR")
+                sampler.interpolation = EInterpolationType::eLinear;
+            if (samp.interpolation == "STEP")
+                sampler.interpolation = EInterpolationType::eStep;
+            if (samp.interpolation == "CUBICSPLINE")
+                sampler.interpolation = EInterpolationType::eCubicSpline;
+
+            // Read sampler input time values
+            {
+                const tinygltf::Accessor& accessor = model.accessors[samp.input];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+
+                assert(accessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
+
+                float* buf = new float[accessor.count];
+                memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(float));
+                for (size_t index = 0; index < accessor.count; index++)
+                    sampler.inputs.push_back(buf[index]);
+
+                for (auto input : sampler.inputs)
+                {
+                    if (input < animation.start)
+                        animation.start = input;
+                    if (input > animation.end)
+                        animation.end = input;
+                }
+            }
+
+            // Read sampler output T/R/S values 
+            {
+                const tinygltf::Accessor& accessor = model.accessors[samp.output];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+
+                assert(accessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
+
+                switch (accessor.type)
+                {
+                case TINYGLTF_TYPE_VEC3:
+                {
+                    glm::vec3* buf = new glm::vec3[accessor.count];
+                    memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::vec3));
+                    for (size_t index = 0; index < accessor.count; index++)
+                        sampler.outputsVec4.push_back(glm::vec4(buf[index], 0.0f));
+                    break;
+                }
+                case TINYGLTF_TYPE_VEC4:
+                {
+                    glm::vec4* buf = new glm::vec4[accessor.count];
+                    memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::vec4));
+                    for (size_t index = 0; index < accessor.count; index++)
+                        sampler.outputsVec4.push_back(buf[index]);
+                    break;
+                }
+                default:
+                {
+                    log_warning("Unknown animation sampler type.");
+                    break;
+                }
+                }
+            }
+
+            animation.samplers.push_back(sampler);
+        }
+
+        // Channels
+        for (auto& source : anim.channels)
+        {
+            FAnimationChannel channel{};
+
+            if (source.target_path == "rotation")
+                channel.path = EPathType::eRotation;
+            if (source.target_path == "translation")
+                channel.path = EPathType::eTranslation;
+            if (source.target_path == "scale")
+                channel.path = EPathType::eScale;
+
+            if (source.target_path == "weights") {
+                log_warning("Weights channel is not yet supported. Skipping.");
+                continue;
+            }
+            channel.samplerIndex = source.sampler;
+
+            auto target = mIndexToEntity.find(source.target_node);
+            if (target != mIndexToEntity.end())
+                channel.node = target->second;
+            else
+                continue;
+
+            animation.channels.push_back(channel);
+        }
+
+        component->animations.emplace_back();
+    }
+}
+
+void CGltfLoader::loadSkins(const tinygltf::Model& model, FSceneComponent* component)
+{
+    for (auto& source : model.skins)
+    {
+        FMeshSkin skin{};
+        skin.name = source.name;
+
+        // Find skeleton root node
+        if (source.skeleton > -1)
+        {
+            auto target = mIndexToEntity.find(source.skeleton);
+            if (target != mIndexToEntity.end())
+                skin.root = target->second;
+        }
+
+        // Find joint nodes
+        for (int jointIndex : source.joints)
+        {
+            auto target = mIndexToEntity.find(jointIndex);
+            if (target != mIndexToEntity.end())
+                skin.joints.emplace_back(target->second);
+        }
+
+        // Get inverse bind matrices from buffer
+        if (source.inverseBindMatrices > -1)
+        {
+            const tinygltf::Accessor& accessor = model.accessors[source.inverseBindMatrices];
+            const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+            const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+            skin.inverseBindMatrices.resize(accessor.count);
+            memcpy(skin.inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
+        }
+
+        component->skins.emplace_back(skin);
     }
 }
 

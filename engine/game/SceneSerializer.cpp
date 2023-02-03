@@ -118,6 +118,9 @@ FSceneObjectRaw CSceneLoader::saveNode(const entt::entity& node)
 	if (auto script = registry.try_get<FRigidBodyComponent>(node))
 		object.mComponents.emplace("rigidbody", nlohmann::json(*script));
 
+	if (bIgnoreChildren)
+		return object;
+
 	for (auto& child : hierarchy.children)
 		object.vChildren.emplace_back(saveNode(child));
 

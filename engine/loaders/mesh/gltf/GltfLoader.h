@@ -4,6 +4,8 @@
 
 #include <utility/tiny_gltf.h>
 
+#include "ecs/components/fwd.h"
+
 namespace engine
 {
 	namespace loaders
@@ -72,9 +74,10 @@ namespace engine
 		class CGltfLoader
 		{
 		public:
-			void load(const std::filesystem::path& source, const entt::entity& pRoot);
+			void load(const std::filesystem::path& source, const entt::entity& pRoot, ecs::FSceneComponent* component);
 
 		private:
+			static bool loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* userData);
 			void loadNode(const entt::entity& entity, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, float globalscale);
 			void loadMeshComponent(const entt::entity& entity, const tinygltf::Node& node, const tinygltf::Model& model);
 			void loadCameraComponent(const entt::entity& entity, const tinygltf::Node& node, const tinygltf::Model& model);
@@ -82,10 +85,13 @@ namespace engine
 
 			void loadMaterials(const tinygltf::Model& model);
 			void loadTextures(const tinygltf::Model& model);
+			void loadAnimations(const tinygltf::Model& model, ecs::FSceneComponent* component);
+			void loadSkins(const tinygltf::Model& model, ecs::FSceneComponent* component);
 			size_t loadTexture(const std::pair<std::filesystem::path, bool>& texpair, vk::Format override);
 		private:
 			std::vector<std::pair<std::filesystem::path, bool>> vTextures;
 			std::vector<size_t> vMaterials;
+			std::map<uint32_t, entt::entity> mIndexToEntity;
 
 			size_t vbo_id{ invalid_index };
 			uint32_t current_primitive{ 0 };

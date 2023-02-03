@@ -90,6 +90,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 		pShader->buildReflection();
 
 		pShaderObject->programCI = it->second;
+		pShaderObject->programCI.cullMode = specials.doubleSided ? vk::CullModeFlagBits::eNone : pShaderObject->programCI.cullMode;
 
 		pShaderObject->create(specials.subpass, specials.usages);
 

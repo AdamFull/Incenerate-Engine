@@ -69,6 +69,9 @@ void construct_scene(entt::registry& reg, entt::entity entity)
 	{
 		CMeshLoader::load(scene.source, entity);
 		scene.loaded = true;
+
+		auto& hierarchy = reg.get<FHierarchyComponent>(entity);
+		int iii = 0;
 	}
 }
 

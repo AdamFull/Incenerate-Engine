@@ -1,12 +1,14 @@
 #include "PhysicsObject.h"
 
 #include "PhysicsHelper.h"
-#include <bullet3/src/BulletCollision/CollisionDispatch/btGhostObject.h>
+//#include <bullet3/src/BulletCollision/CollisionDispatch/btGhostObject.h>
 
 #include "ecs/components/RigidBodyComponent.h"
 
 using namespace engine::ecs;
 using namespace engine::physics;
+
+// Make collision overlapping like here https://github.com/cocos2d/cocos2d-x/blob/v4/cocos/physics3d/CCPhysics3DWorld.cpp
 
 // Base class
 CPhysicsObject::~CPhysicsObject()
@@ -201,10 +203,11 @@ void CColliderObject::clear()
 
 void CColliderObject::setWorldTranslation(const glm::mat4& translation)
 {
-	pGhost->setWorldTransform(mat4_to_btTransform(translation));
+	//pGhost->setWorldTransform(mat4_to_btTransform(translation));
 }
 
 glm::mat4 CColliderObject::getWorldTranslation()
 {
-	return btTransform_to_mat4(pGhost->getWorldTransform());
+	//return btTransform_to_mat4(pGhost->getWorldTransform());
+	return glm::mat4();
 }

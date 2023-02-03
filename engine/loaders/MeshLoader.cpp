@@ -7,10 +7,11 @@
 
 using namespace engine::loaders;
 using namespace engine::system;
+using namespace engine::ecs;
 using namespace engine::game;
 
-void CMeshLoader::load(const std::filesystem::path& source, const entt::entity& root)
+void CMeshLoader::load(const std::filesystem::path& source, const entt::entity& root, FSceneComponent* component)
 {
 	if (fs::is_gltf_format(source))
-		std::make_unique<CGltfLoader>()->load(source, root);
+		std::make_unique<CGltfLoader>()->load(source, root, component);
 }
