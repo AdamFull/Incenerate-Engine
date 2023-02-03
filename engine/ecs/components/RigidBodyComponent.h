@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EngineStructures.h"
+#include "PhysicsShapeComponent.h"
 
 namespace engine
 {
@@ -10,14 +11,7 @@ namespace engine
 		{
 			float mass{ 1.f };
 			size_t object_id{ invalid_index };
-
-			int32_t type{ 0 };
-
-			// For box/cylinder
-			glm::vec3 sizes{ 1.f };
-			// For capsule/cone/sphere
-			float radius{ 1.f };
-			float height{ 1.f };
+			FPhysicsShapeComponent shape;
 		};
 
 		void to_json(nlohmann::json& json, const FRigidBodyComponent& type);

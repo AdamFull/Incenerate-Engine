@@ -58,6 +58,8 @@ void CPhysicsCore::create()
 	solver = new btSequentialImpulseConstraintSolver();
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, configuration);
 
+	//ghostPairCB = new btGhostPairCallback();
+
 	// if physics debug
 	{
 		debugDraw = new CPhysicsDebugDraw();
@@ -120,12 +122,22 @@ void CPhysicsCore::setDebugDrawEnable(bool enable)
 		dynamicsWorld->setDebugDrawer(nullptr);
 }
 
-size_t CPhysicsCore::addObject(const std::string& name)
+size_t CPhysicsCore::addRigidBody(const std::string& name)
 {
-	return pPhysicsObjectManager->add(name, std::make_unique<CPhysicsObject>(dynamicsWorld));
+	return pPhysicsObjectManager->add(name, std::make_unique<CRigidBodyObject>(dynamicsWorld));
 }
 
-size_t CPhysicsCore::addObject(const std::string& name, std::unique_ptr<CPhysicsObject>&& source)
+size_t CPhysicsCore::addRigidBody(const std::string& name, std::unique_ptr<CRigidBodyObject>&& source)
+{
+	return pPhysicsObjectManager->add(name, std::move(source));
+}
+
+size_t CPhysicsCore::addCollider(const std::string& name)
+{
+	return pPhysicsObjectManager->add(name, std::make_unique<CColliderObject>(dynamicsWorld));
+}
+
+size_t CPhysicsCore::addCollider(const std::string& name, std::unique_ptr<CColliderObject>&& source)
 {
 	return pPhysicsObjectManager->add(name, std::move(source));
 }

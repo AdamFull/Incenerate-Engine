@@ -11,6 +11,7 @@
 #include "SceneComponent.h"
 #include "HierarchyComponent.h"
 #include "RigidBodyComponent.h"
+#include "ColliderComponent.h"
 
 #include "Engine.h"
 #include "game/SceneGraph.hpp"
@@ -184,22 +185,44 @@ namespace engine
 		}
 
 
-		void to_json(nlohmann::json& json, const FRigidBodyComponent& type)
+		void to_json(nlohmann::json& json, const FPhysicsShapeComponent& type)
 		{
-			utl::serialize_from("mass", json, type.mass, type.mass != 1.f);
 			utl::serialize_from("type", json, type.type, type.type != 0);
 			utl::serialize_from("sizes", json, type.sizes, type.sizes != glm::vec3(1.f));
 			utl::serialize_from("radius", json, type.radius, type.radius != 1.f);
 			utl::serialize_from("height", json, type.height, type.height != 1.f);
 		}
 
-		void from_json(const nlohmann::json& json, FRigidBodyComponent& type)
+		void from_json(const nlohmann::json& json, FPhysicsShapeComponent& type)
 		{
-			utl::parse_to("mass", json, type.mass);
 			utl::parse_to("type", json, type.type);
 			utl::parse_to("sizes", json, type.sizes);
 			utl::parse_to("radius", json, type.radius);
 			utl::parse_to("height", json, type.height);
+		}
+
+
+		void to_json(nlohmann::json& json, const FRigidBodyComponent& type)
+		{
+			utl::serialize_from("mass", json, type.mass, type.mass != 1.f);
+			utl::serialize_from("collider", json, type.shape, true);
+		}
+
+		void from_json(const nlohmann::json& json, FRigidBodyComponent& type)
+		{
+			utl::parse_to("mass", json, type.mass);
+			utl::parse_to("collider", json, type.shape);
+		}
+
+
+		void to_json(nlohmann::json& json, const FColliderComponent& type)
+		{
+			//utl::parse_to("collider", json, type.shape);
+		}
+
+		void from_json(const nlohmann::json& json, FColliderComponent& type)
+		{
+			//utl::parse_to("collider", json, type.shape);
 		}
 	}
 }

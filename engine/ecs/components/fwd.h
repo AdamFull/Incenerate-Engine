@@ -16,5 +16,7 @@ namespace engine
 		struct FSpriteComponent;
 		struct FTransformComponent;
 		struct FRigidBodyComponent;
+		struct FPhysicsShapeComponent;
+		struct FColliderComponent;
 	}
 }

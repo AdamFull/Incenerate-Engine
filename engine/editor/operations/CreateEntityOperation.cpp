@@ -44,6 +44,7 @@ void CCreateEntityOperation::redo()
 	case component::spot_light: { registry.emplace<FSpotLightComponent>(entity, FSpotLightComponent{}); } break;
 	case component::sprite: { registry.emplace<FSpriteComponent>(entity, FSpriteComponent{}); } break;
 	case component::rigidbody: { registry.emplace<FRigidBodyComponent>(entity, FRigidBodyComponent{}); } break;
+	case component::collider: { registry.emplace<FColliderComponent>(entity, FColliderComponent{}); } break;
 	default:
 		break;
 	}

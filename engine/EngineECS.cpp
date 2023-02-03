@@ -43,20 +43,10 @@ void construct_rigidbody(entt::registry& reg, entt::entity entity)
 	{
 		auto& physics = EGEngine->getPhysics();
 
-		rigidbody.object_id = physics->addObject(std::to_string(static_cast<uint32_t>(entity)));
+		rigidbody.object_id = physics->addRigidBody(std::to_string(static_cast<uint32_t>(entity)));
 
 		auto& object = physics->getObject(rigidbody.object_id);
-
-		switch (static_cast<EPhysicsShapeType>(rigidbody.type))
-		{
-		case EPhysicsShapeType::eBox: { object->setBoxCollider(rigidbody.sizes); } break;
-		case EPhysicsShapeType::eCapsule: { object->setCapsuleCollider(rigidbody.radius, rigidbody.height); } break;
-		case EPhysicsShapeType::eCone: { object->setConeCollider(rigidbody.radius, rigidbody.height); } break;
-		case EPhysicsShapeType::eCylinder: { object->setCylinderCollider(rigidbody.sizes); } break;
-		case EPhysicsShapeType::eSphere: { object->setSphereCollider(rigidbody.radius); } break;
-		}
-
-		object->initialize(rigidbody.mass);
+		object->initialize(&rigidbody);
 	}
 }
 

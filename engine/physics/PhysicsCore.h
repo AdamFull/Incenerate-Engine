@@ -40,12 +40,28 @@ namespace engine
 
 			void setDebugDrawEnable(bool enable);
 
-			size_t addObject(const std::string& name);
-			size_t addObject(const std::string& name, std::unique_ptr<CPhysicsObject>&& source);
+			size_t addRigidBody(const std::string& name);
+			size_t addRigidBody(const std::string& name, std::unique_ptr<CRigidBodyObject>&& source);
+			size_t addCollider(const std::string& name);
+			size_t addCollider(const std::string& name, std::unique_ptr<CColliderObject>&& source);
 			void removeObject(const std::string& name);
 			void removeObject(size_t id);
 			const std::unique_ptr<CPhysicsObject>& getObject(const std::string& name);
 			const std::unique_ptr<CPhysicsObject>& getObject(size_t id);
+
+			template<class _Ty>
+			_Ty* getObjectAs(const std::string& name)
+			{
+				auto& object = getObject(name);
+				return static_cast<_Ty*>(object.get());
+			}
+
+			template<class _Ty>
+			_Ty* getObjectAs(size_t id)
+			{
+				auto& object = getObject(id);
+				return static_cast<_Ty*>(object.get());
+			}
 
 		private:
 			std::unique_ptr<CObjectManager<CPhysicsObject>> pPhysicsObjectManager;
@@ -54,6 +70,7 @@ namespace engine
 			btCollisionDispatcher* dispatcher{ nullptr };
 			btBroadphaseInterface* overlappingPairCache{ nullptr };
 			btSequentialImpulseConstraintSolver* solver{ nullptr };
+			btGhostPairCallback* ghostPairCB{ nullptr };
 			btDiscreteDynamicsWorld* dynamicsWorld{ nullptr };
 			btIDebugDraw* debugDraw{ nullptr };
 		};

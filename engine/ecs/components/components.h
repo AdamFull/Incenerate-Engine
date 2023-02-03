@@ -13,6 +13,7 @@
 #include "SpriteComponent.h"
 #include "TransformComponent.h"
 #include "RigidBodyComponent.h"
+#include "ColliderComponent.h"
 
 namespace engine
 {
@@ -33,6 +34,7 @@ namespace engine
 			constexpr inline size_t sprite = utl::type_hash<FSpriteComponent>();
 			constexpr inline size_t transform = utl::type_hash<FTransformComponent>();
 			constexpr inline size_t rigidbody = utl::type_hash<FRigidBodyComponent>();
+			constexpr inline size_t collider = utl::type_hash<FColliderComponent>();
 		}
 	}
 }

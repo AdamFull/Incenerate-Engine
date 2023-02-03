@@ -34,7 +34,8 @@ namespace engine
 			{
 				glm::vec3 dposition;
 				glm::vec3 drotation;
-				decompose(mat, dposition, drotation, scale);
+				glm::vec3 dscale;
+				decompose(mat, dposition, drotation, dscale);
 				position += dposition;
 				rotation += drotation;
 			}

@@ -81,10 +81,17 @@ void CRemoveComponentOperation::undo()
 		auto pComp = std::any_cast<FSpriteComponent>(component);
 		registry.emplace<FSpriteComponent>(target, pComp);
 	} break;
+
 	case component::rigidbody:
 	{
 		auto pComp = std::any_cast<FRigidBodyComponent>(component);
 		registry.emplace<FRigidBodyComponent>(target, pComp);
+	} break;
+
+	case component::collider:
+	{
+		auto pComp = std::any_cast<FColliderComponent>(component);
+		registry.emplace<FColliderComponent>(target, pComp);
 	} break;
 
 	default:
@@ -157,6 +164,11 @@ void CRemoveComponentOperation::redo()
 	{
 		component = registry.get<FRigidBodyComponent>(target);
 		registry.remove<FRigidBodyComponent>(target);
+	} break;
+	case component::collider:
+	{
+		component = registry.get<FColliderComponent>(target);
+		registry.remove<FColliderComponent>(target);
 	} break;
 	default:
 		break;
