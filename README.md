@@ -61,13 +61,13 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 
 ### Other features
 - [x] shader reflection (spirv-cross)
+- [x] Bullet3 physics
+- [x] Animation (gltf only now)
 
 ### In future
 - [ ] lua (sol2 in future)
 - [ ] Material editor (now working with default pbr material)
 - [ ] Mesh (scene) metadata (custom materials and custom loading rules)
-- [ ] Bullet physics
-- [ ] Animation
 - [ ] Skinning
 - [ ] OpenGL 4+ support
 
