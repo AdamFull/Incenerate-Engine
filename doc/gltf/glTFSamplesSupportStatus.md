@@ -23,12 +23,12 @@
 
 
 ## glTF 2.0
-- [ ] 2CylinderEngine
-- [ ] ABeautifulGame
-- [ ] AnimatedCube
+- [ ] 2CylinderEngine (super hudge, and incorrect releasing)
+- [x] ABeautifulGame
+- [x] AnimatedCube
 - [ ] AnimatedMorphCube
 - [ ] AnimatedMorphSphere
-- [ ] AnimatedTriangle
+- [ ] AnimatedTriangle (not working, because no material inside)
 - [x] AntiqueCamera
 - [x] Avocado
 - [x] BarramundiFish
@@ -36,24 +36,24 @@
 - [x] BoomBoxWithAxes
 - [x] Box
 - [x] Box With Spaces
-- [ ] BoxAnimated
-- [ ] BoxInterleaved
+- [x] BoxAnimated
+- [ ] BoxInterleaved (missing something)
 - [x] BoxTextured
 - [x] BoxTexturedNonPowerOfTwo
 - [x] BoxVertexColors
 - [ ] BrainStem
 - [ ] Buggy (Loading incorrect)
-- [ ] Cameras
+- [ ] Cameras (not working, because no material inside)
 - [ ] CesiumMan
-- [ ] CesiumMilkTruck (Loading with incorrect rotation)
+- [x] CesiumMilkTruck (Loading with incorrect rotation)
 - [x] Corset
 - [x] Cube
 - [x] DamagedHelmet
-- [ ] DragonAttenuation
+- [ ] DragonAttenuation (ok, but material not supported)
 - [x] Duck
 - [x] FlightHelmet
 - [x] Fox
-- [ ] GearboxAssy (Loading incorrect)
+- [ ] GearboxAssy (Not loading at all)
 - [ ] GlamVelvetSofa (Loading, but without materials)
 - [ ] IridescenceDielectricSpheres
 - [ ] IridescenceLamp
@@ -64,10 +64,10 @@
 - [ ] LightsPunctualLamp (Loading but without materials)
 - [ ] MaterialsVariantsShoe
 - [x] MetalRoughSpheres
-- [ ] MetalRoughSpheresNoTextures
+- [ ] MetalRoughSpheresNoTextures (Nothing loading and not releasing)
 - [ ] MosquitoInAmber
 - [ ] MultipleScenes
-- [ ] ReciprocatingSaw
+- [ ] ReciprocatingSaw (too big, incorrect releasing)
 - [ ] RecursiveSkeletons
 - [ ] RiggedFigure
 - [ ] RiggedSimple
