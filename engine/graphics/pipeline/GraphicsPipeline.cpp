@@ -59,7 +59,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
         if (desc.format == depthformat)
             continue;
 
-        bool hasAlpha = desc.format == vk::Format::eR8G8B8A8Srgb && alphaMode == EAlphaMode::EBLEND;
+        bool hasAlpha = alphaMode == EAlphaMode::EBLEND;
 
         vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;

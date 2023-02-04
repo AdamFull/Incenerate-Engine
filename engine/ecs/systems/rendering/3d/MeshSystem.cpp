@@ -40,13 +40,15 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 		graphics->bindVertexBuffer(mesh.vbo_id);
 
 		bool bHasSkin{ false };
+		entt::entity armature{ entt::null };
 		if (mesh.skin > -1)
 		{
 			bHasSkin = true;
 			auto& scene = registry->get<FSceneComponent>(mesh.head);
 			auto invTransform = glm::inverse(transform.model);
 			auto& skin = scene.skins[mesh.skin];
-			
+			armature = skin.root;
+
 			for (uint32_t i = 0; i < skin.joints.size(); i++)
 			{
 				auto& jtransform = registry->get<FTransformComponent>(skin.joints[i]);
@@ -79,9 +81,10 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 				pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
 				pUBO->set("object_id", encodeIdToColor(static_cast<uint32_t>(entity)));
 
-				auto& pJoints = graphics->getUniformHandle("JointMatrices");
-				if(pJoints && bHasSkin)
+				auto& pJoints = graphics->getUniformHandle("FSkinning");
+				if (pJoints && bHasSkin)
 					pJoints->set("jointMatrices", joints);
+					
 
 				graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
 			}

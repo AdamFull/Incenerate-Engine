@@ -36,7 +36,8 @@ layout(std140, binding = 0) uniform FUniformData
 } data;
 
 #ifdef HAS_SKIN
-layout(std430, set = 0, binding = 1) readonly buffer JointMatrices {
+layout(std140, set = 0, binding = 1) uniform FSkinning 
+{
 	mat4 jointMatrices[128];
 };
 #endif
@@ -67,7 +68,7 @@ vec4 localPos;
 #endif 
 
 #ifdef USE_TESSELLATION
-	outPosition = inPosition;
+	outPosition = vec4(localPos.xyz / localPos.w, 1.0);
 	gl_Position = vec4(inPosition, 1.0);
 #else
 
