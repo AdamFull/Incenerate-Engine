@@ -55,6 +55,7 @@ namespace engine
 			bool loaded{ false };
 			std::vector<FMeshAnimation> animations;
 			std::vector<FMeshSkin> skins;
+			std::map<uint32_t, float> timers;
 		};
 
 		void to_json(nlohmann::json& json, const FSceneComponent& type);

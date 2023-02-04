@@ -67,7 +67,7 @@ void construct_scene(entt::registry& reg, entt::entity entity)
 
 	if (!scene.loaded && !scene.source.empty())
 	{
-		CMeshLoader::load(scene.source, entity);
+		CMeshLoader::load(scene.source, entity, &scene);
 		scene.loaded = true;
 
 		auto& hierarchy = reg.get<FHierarchyComponent>(entity);
@@ -212,9 +212,9 @@ void CEngine::initEntityComponentSystem()
 	registry.on_construct<FScriptComponent>().connect<&construct_script>();
 	registry.on_destroy<FScriptComponent>().connect<&destroy_script>();
 
+	vSystems.emplace_back(std::make_unique<CAnimationSystem>());
 	vSystems.emplace_back(std::make_unique<CHierarchySystem>());
 	vSystems.emplace_back(std::make_unique<CPhysicsSystem>());
-	//vSystems.emplace_back(std::make_unique<CHierarchySystem>());
 
 	vSystems.emplace_back(std::make_unique<CInputSystem>());
 	vSystems.emplace_back(std::make_unique<CScriptingSystem>());

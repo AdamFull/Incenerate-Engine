@@ -787,6 +787,8 @@ void CGltfLoader::loadAnimations(const tinygltf::Model& model, FSceneComponent* 
                 for (size_t index = 0; index < accessor.count; index++)
                     sampler.inputs.push_back(buf[index]);
 
+                delete buf;
+
                 for (auto input : sampler.inputs)
                 {
                     if (input < animation.start)
@@ -812,6 +814,8 @@ void CGltfLoader::loadAnimations(const tinygltf::Model& model, FSceneComponent* 
                     memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::vec3));
                     for (size_t index = 0; index < accessor.count; index++)
                         sampler.outputsVec4.push_back(glm::vec4(buf[index], 0.0f));
+
+                    delete buf;
                     break;
                 }
                 case TINYGLTF_TYPE_VEC4:
@@ -820,6 +824,8 @@ void CGltfLoader::loadAnimations(const tinygltf::Model& model, FSceneComponent* 
                     memcpy(buf, &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::vec4));
                     for (size_t index = 0; index < accessor.count; index++)
                         sampler.outputsVec4.push_back(buf[index]);
+
+                    delete buf;
                     break;
                 }
                 default:
@@ -860,7 +866,7 @@ void CGltfLoader::loadAnimations(const tinygltf::Model& model, FSceneComponent* 
             animation.channels.push_back(channel);
         }
 
-        component->animations.emplace_back();
+        component->animations.emplace_back(animation);
     }
 }
 
