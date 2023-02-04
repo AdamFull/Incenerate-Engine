@@ -4,7 +4,7 @@
 - [x] ClearCoatTest
 - [x] EmissiveStrengthTest
 - [x] EnvironmentTest
-- [ ] InterpolationTest
+- [x] InterpolationTest
 - [ ] MorphPrimitivesTest
 - [ ] MorphStressTest
 - [ ] MultiUVTest
