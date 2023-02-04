@@ -32,10 +32,28 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 	auto& device = graphics->getDevice();
 	auto& debug_draw = graphics->getDebugDraw();
 	
+	static std::array<glm::mat4, 128> joints{glm::mat4(1.f)};
+
 	auto view = registry->view<FTransformComponent, FMeshComponent>();
 	for (auto [entity, transform, mesh] : view.each())
 	{
 		graphics->bindVertexBuffer(mesh.vbo_id);
+
+		bool bHasSkin{ false };
+		if (mesh.skin > -1)
+		{
+			bHasSkin = true;
+			auto& scene = registry->get<FSceneComponent>(mesh.head);
+			auto invTransform = glm::inverse(transform.model);
+			auto& skin = scene.skins[mesh.skin];
+			
+			for (uint32_t i = 0; i < skin.joints.size(); i++)
+			{
+				auto& jtransform = registry->get<FTransformComponent>(skin.joints[i]);
+				joints[i] = jtransform.model * skin.inverseBindMatrices[i];
+				joints[i] = invTransform * joints[i];
+			}
+		}
 
 		for (auto& meshlet : mesh.vMeshlets)
 		{
@@ -61,7 +79,9 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 				pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
 				pUBO->set("object_id", encodeIdToColor(static_cast<uint32_t>(entity)));
 
-
+				auto& pJoints = graphics->getUniformHandle("JointMatrices");
+				if(pJoints && bHasSkin)
+					pJoints->set("jointMatrices", joints);
 
 				graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
 			}

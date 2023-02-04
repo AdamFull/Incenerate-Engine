@@ -35,6 +35,8 @@ namespace engine
 		{
 			size_t vbo_id{ invalid_index };
 			std::vector<FMeshlet> vMeshlets;
+			int32_t skin{ -1 };
+			entt::entity head{ entt::null };
 			bool loaded{ false };
 		};
 	}

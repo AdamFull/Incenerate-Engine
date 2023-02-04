@@ -4,6 +4,8 @@ layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec3 inNormal;
 layout(location = 3) in vec2 inTexCoord;
 layout(location = 4) in vec4 inTangent;
+layout (location = 5) in vec4 inWeight0;
+layout (location = 6) in vec4 inJoint0;
 
 layout(binding = 0) uniform FUniformData 
 {
@@ -21,8 +23,8 @@ layout (location = 0) out vec3 outWorldPos;
 
 void main() 
 {
-	outWorldPos = (ubo.model * vec4(inPosition, 1.0)).xyz;
-	mat4 viewModel = ubo.view * ubo.model;
-	viewModel[3] = vec4(0.0, 0.0, 0.0, 1.0);
-	gl_Position = ubo.projection * viewModel * vec4(inPosition, 1.0);
+	outWorldPos = inPosition;
+	mat4 view = ubo.view;
+	view[3] = vec4(0.0, 0.0, 0.0, 1.0);
+	gl_Position = ubo.projection * view * vec4(inPosition, 1.0);
 }

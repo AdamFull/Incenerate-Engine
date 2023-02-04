@@ -92,6 +92,7 @@ namespace engine
 			std::vector<std::pair<std::filesystem::path, bool>> vTextures;
 			std::vector<size_t> vMaterials;
 			std::map<uint32_t, entt::entity> mIndexToEntity;
+			entt::entity head{ entt::null };
 
 			size_t vbo_id{ invalid_index };
 			uint32_t current_primitive{ 0 };

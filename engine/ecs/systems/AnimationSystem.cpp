@@ -135,7 +135,7 @@ void CAnimationSystem::__create()
 
 void CAnimationSystem::__update(float fDt)
 {
-	if (!EGEngine->isEditorEditing());
+	if (!EGEngine->isEditorEditing())
 	{
 		auto view = registry->view<FSceneComponent>();
 		for (auto [entity, scene] : view.each())

@@ -54,7 +54,55 @@ namespace engine
 		void to_json(nlohmann::json& json, const FCachedShader& type);
 		void from_json(const nlohmann::json& json, FCachedShader& type);
 
+
+
+		// For debug drawing
+		struct FSimpleVertex
+		{
+			FSimpleVertex() = default;
+			FSimpleVertex(glm::vec3 p, glm::vec3 c) : pos(p), color(c) {}
+
+			glm::vec3 pos{};
+			glm::vec3 color{};
+
+			bool operator==(const FSimpleVertex& other) const
+			{
+				return
+					pos == other.pos &&
+					color == other.color;
+			}
+
+			static vk::VertexInputBindingDescription getBindingDescription()
+			{
+				vk::VertexInputBindingDescription bindingDescription = {};
+				bindingDescription.binding = 0;
+				bindingDescription.stride = sizeof(FSimpleVertex);
+				bindingDescription.inputRate = vk::VertexInputRate::eVertex;
+
+				return bindingDescription;
+			}
+
+			static std::vector<vk::VertexInputAttributeDescription> getAttributeDescriptions()
+			{
+				std::vector<vk::VertexInputAttributeDescription> attributeDescriptions = {};
+				attributeDescriptions.resize(2);
+
+				attributeDescriptions[0].binding = 0;
+				attributeDescriptions[0].location = 0;
+				attributeDescriptions[0].format = vk::Format::eR32G32B32Sfloat;
+				attributeDescriptions[0].offset = offsetof(FSimpleVertex, pos);
+
+				attributeDescriptions[1].binding = 0;
+				attributeDescriptions[1].location = 1;
+				attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
+				attributeDescriptions[1].offset = offsetof(FSimpleVertex, color);
+
+				return attributeDescriptions;
+			}
+		};
+
 		
+		// For skeletal meshes with animation support
 		struct FVertex
 		{
 			FVertex() = default;
@@ -66,10 +114,19 @@ namespace engine
 			glm::vec3 normal{};
 			glm::vec2 texcoord{};
 			glm::vec4 tangent{};
+			glm::vec4 joint0{};
+			glm::vec4 weight0{};
 
 			bool operator==(const FVertex& other) const
 			{
-				return pos == other.pos && color == other.color && normal == other.normal && texcoord == other.texcoord && tangent == other.tangent;
+				return 
+					pos == other.pos && 
+					color == other.color && 
+					normal == other.normal && 
+					texcoord == other.texcoord && 
+					tangent == other.tangent && 
+					joint0 == other.joint0 && 
+					weight0 == other.weight0;
 			}
 
 			static vk::VertexInputBindingDescription getBindingDescription()
@@ -85,7 +142,7 @@ namespace engine
 			static std::vector<vk::VertexInputAttributeDescription> getAttributeDescriptions()
 			{
 				std::vector<vk::VertexInputAttributeDescription> attributeDescriptions = {};
-				attributeDescriptions.resize(5);
+				attributeDescriptions.resize(7);
 
 				attributeDescriptions[0].binding = 0;
 				attributeDescriptions[0].location = 0;
@@ -112,6 +169,16 @@ namespace engine
 				attributeDescriptions[4].format = vk::Format::eR32G32B32A32Sfloat;
 				attributeDescriptions[4].offset = offsetof(FVertex, tangent);
 
+				attributeDescriptions[5].binding = 0;
+				attributeDescriptions[5].location = 5;
+				attributeDescriptions[5].format = vk::Format::eR32G32B32A32Sfloat;
+				attributeDescriptions[5].offset = offsetof(FVertex, joint0);
+
+				attributeDescriptions[6].binding = 0;
+				attributeDescriptions[6].location = 6;
+				attributeDescriptions[6].format = vk::Format::eR32G32B32A32Sfloat;
+				attributeDescriptions[6].offset = offsetof(FVertex, weight0);
+
 				return attributeDescriptions;
 			}
 		};
@@ -133,7 +200,7 @@ namespace std
 		size_t operator()(engine::graphics::FVertex const& vertex) const
 		{
 			size_t seed = 0;
-			engine::graphics::hashCombine(seed, vertex.pos, vertex.color, vertex.normal, vertex.texcoord, vertex.tangent);
+			engine::graphics::hashCombine(seed, vertex.pos, vertex.color, vertex.normal, vertex.texcoord, vertex.tangent, vertex.joint0, vertex.weight0);
 			return seed;
 		}
 	};

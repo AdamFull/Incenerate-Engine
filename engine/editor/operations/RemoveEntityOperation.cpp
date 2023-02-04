@@ -27,8 +27,9 @@ void CRemoveEntityOperation::redo()
 	auto& registry = EGEngine->getRegistry();
 	auto& hierarchy = registry.get<FHierarchyComponent>(target);
 	parent = hierarchy.parent;
-
+	
 	serialized = CSceneLoader::saveNode(target);
 	scenegraph::destroy_node(target);
 	EGEditor->deselectAll();
+	//EGEngine->getSceneManager()->save();
 }

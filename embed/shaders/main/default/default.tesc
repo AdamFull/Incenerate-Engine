@@ -13,7 +13,7 @@ layout(std140, binding = 0) uniform FUniformData
 	vec4 object_id;
 } data;
 
-layout(std140, binding = 18) uniform UBOMaterial
+layout(std140, binding = 19) uniform UBOMaterial
 {
 	vec4 baseColorFactor;
 	vec3 emissiveFactor;
@@ -27,7 +27,7 @@ layout(std140, binding = 18) uniform UBOMaterial
 } material;
 
 #ifdef HAS_HEIGHTMAP
-layout(binding = 6) uniform sampler2D height_tex;
+layout(binding = 7) uniform sampler2D height_tex;
 #endif
 
 #define VERTICES_COUNT 3

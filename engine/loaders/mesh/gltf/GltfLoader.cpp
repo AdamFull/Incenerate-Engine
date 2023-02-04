@@ -109,6 +109,7 @@ bool CGltfLoader::loadImageDataFuncEmpty(tinygltf::Image* image, const int image
 void CGltfLoader::load(const const std::filesystem::path& source, const entt::entity& root, FSceneComponent* component)
 {
     auto& graphics = EGEngine->getGraphics();
+    head = root;
 
     tinygltf::Model gltfModel;
     tinygltf::TinyGLTF gltfContext;
@@ -192,9 +193,13 @@ void CGltfLoader::loadNode(const entt::entity& parent, const tinygltf::Node& nod
         glm::vec3 skew;
         glm::quat qrotation;
         glm::vec4 perspective;
-        glm::decompose(translation, transform.scale, qrotation, transform.position, skew, perspective);
+        glm::vec3 scale;
+        glm::vec3 position;
+        glm::decompose(translation, scale, qrotation, position, skew, perspective);
         qrotation = glm::conjugate(qrotation);
-        transform.rotation = glm::eulerAngles(qrotation);
+        transform.position += position;
+        transform.rotation += glm::eulerAngles(qrotation);
+        transform.scale *= scale;
     }
 
     // Node with children
@@ -231,6 +236,8 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
 
     registry.emplace<FMeshComponent>(parent, FMeshComponent{});
     auto& meshComponent = registry.get<FMeshComponent>(parent);
+    meshComponent.skin = node.skin;
+    meshComponent.head = head;
 
     for (size_t j = 0; j < mesh.primitives.size(); j++)
     {
@@ -348,8 +355,8 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
                 vert.tangent = bufferTangents ? glm::vec4(glm::make_vec4(&bufferTangents[v * 4])) : glm::vec4(0.0f);
                 //vert.tangent = glm::vec4(0.f);
                 // TODO: Add skinning
-                //vert.joint0 = bHasSkin ? glm::vec4(glm::make_vec4(&bufferJoints[v * 4])) : glm::vec4(0.0f);
-                //vert.weight0 = bHasSkin ? glm::make_vec4(&bufferWeights[v * 4]) : glm::vec4(0.0f);
+                vert.joint0 = bHasSkin ? glm::vec4(glm::make_vec4(&bufferJoints[v * 4])) : glm::vec4(0.0f);
+                vert.weight0 = bHasSkin ? glm::make_vec4(&bufferWeights[v * 4]) : glm::vec4(0.0f);
                 vertexBuffer.push_back(vert);
             }
         }
@@ -417,6 +424,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             auto& params = pMaterial->getParameters();
             if (bHasNormals) params.vCompileDefinitions.emplace_back("HAS_NORMALS");
             if (bHasTangents) params.vCompileDefinitions.emplace_back("HAS_TANGENTS");
+            if (bHasSkin) params.vCompileDefinitions.emplace_back("HAS_SKIN");
             meshlet.material = material;
         }
 
