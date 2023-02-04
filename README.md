@@ -61,7 +61,7 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 
 ### Other features
 - [x] shader reflection (spirv-cross)
-- [x] Bullet3 physics
+- [x] Bullet3 physics (rigidbody only)
 - [x] Animation (gltf only now)
 
 ### In future
