@@ -9,9 +9,11 @@ layout (location = 5) in vec4 inJointIndices;
 layout (location = 6) in vec4 inJointWeights;
 
 layout (location = 0) out vec3 outNormal;
+layout (location = 1) out vec4 outTangent;
 
 void main(void)
 {
 	outNormal = inNormal;
+	outTangent = inTangent;
 	gl_Position = vec4(inPosition.xyz, 1.0);
 }

@@ -14,12 +14,7 @@ layout (location = 6) in vec4 inWeight0;
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outColor;
 layout(location = 2) out vec4 outPosition;
-#ifdef HAS_NORMALS
-layout(location = 3) out vec3 outNormal;
-#endif
-#ifdef HAS_TANGENTS
-layout (location = 4) out vec4 outTangent;
-#endif
+layout(location = 3) out mat3 outTBN;
 
 #include "../../shader_util.glsl"
 
@@ -60,12 +55,10 @@ vec4 localPos;
 
 	outUV = inTexCoord * 1.0;
   	outColor = inColor;
-#ifdef HAS_NORMALS
-	outNormal = inNormal;
-#endif
-#ifdef HAS_TANGENTS
-	outTangent = inTangent;
-#endif 
+
+	vec3 normal = mat3(data.normal) * inNormal;
+	vec4 tangent = vec4(mat3(data.normal) * inTangent.xyz, inTangent.w);
+	outTBN = calculateTBN(normal, tangent);
 
 #ifdef USE_TESSELLATION
 	outPosition = vec4(localPos.xyz / localPos.w, 1.0);

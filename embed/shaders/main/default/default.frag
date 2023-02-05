@@ -109,12 +109,7 @@ layout(std140, binding = 19) uniform UBOMaterial
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec4 inPosition;
-#ifdef HAS_NORMALS
-layout(location = 3) in vec3 inNormal;
-#endif
-#ifdef HAS_TANGENTS
-layout (location = 4) in vec4 inTangent;
-#endif
+layout(location = 3) in mat3 inTBN;
 
 layout(location = 0) out vec4 outAlbedo;
 layout(location = 1) out vec4 outNormal;
@@ -172,31 +167,12 @@ void main()
 	pbr_map = vec4(roughness, metallic, 0.0, 0.0);
 
 //NORMALS
-	mat4 normal = data.normal;
-#ifndef HAS_TANGENTS
-    vec3 pos_dx = dFdx(inPosition.xyz);
-    vec3 pos_dy = dFdy(inPosition.xyz);
-    vec3 tex_dx = dFdx(vec3(texCoord, 0.0));
-    vec3 tex_dy = dFdy(vec3(texCoord, 0.0));
-    vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
-
-#ifdef HAS_NORMALS
-    vec3 ng = normalize(normal * vec4(inNormal, 0.0)).xyz;
-#else
-    vec3 ng = cross(pos_dx, pos_dy);
-#endif
-    t = vec3(normal * vec4(normalize(t - ng * dot(ng, t)), 0.0));
-    vec3 b = normalize(cross(ng, t));
-    mat3 tbn = mat3(t, b, ng);
-#else // HAS_TANGENTS
-    mat3 tbn = calculateTBN(vec3(normal * vec4(inNormal, 0)), vec4(vec3(normal * vec4(inTangent.xyz, 0.0)), inTangent.w));
-#endif //END HAS_TANGENTS
 
 	vec3 normal_map = vec3(0.0);
 #ifdef HAS_NORMALMAP
-	normal_map = getTangentSpaceNormalMap(normal_tex, tbn, texCoord, material.normalScale);
+	normal_map = getTangentSpaceNormalMap(normal_tex, inTBN, texCoord, material.normalScale);
 #else
-	normal_map = tbn[2].xyz;
+	normal_map = inTBN[2].xyz;
 #endif
 
 //AMBIENT OCCLUSION

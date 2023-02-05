@@ -12,6 +12,7 @@ layout(push_constant) uniform UBODisplayNormal
 } debug;
 
 layout (location = 0) in vec3 inNormal[];
+layout (location = 1) in vec4 inTangent[];
 
 layout (location = 0) out vec3 outColor;
 
@@ -22,14 +23,43 @@ void main(void)
 	for(int i=0; i<gl_in.length(); i++)
 	{
 		vec3 pos = gl_in[i].gl_Position.xyz;
-		vec3 normal = normalize(debug.normal * vec4(inNormal[i], 0.0)).xyz;
+		mat3 nmat = mat3(debug.normal);
+
+		// Normal
+		vec3 normal = normalize(nmat * inNormal[i]);
+
+		gl_Position = debug.projection * debug.view * (debug.model * vec4(pos, 1.0));
+		outColor = vec3(0.0, 1.0, 0.0);
+		EmitVertex();
+
+		gl_Position = debug.projection * debug.view * (debug.model * vec4(pos + normal * normalLength, 1.0));
+		outColor = vec3(0.0, 1.0, 0.0);
+		EmitVertex();
+
+		EndPrimitive();
+
+		// Tangent
+		vec3 tangent = normalize(nmat * inTangent[i].xyz);
 
 		gl_Position = debug.projection * debug.view * (debug.model * vec4(pos, 1.0));
 		outColor = vec3(1.0, 0.0, 0.0);
 		EmitVertex();
 
-		gl_Position = debug.projection * debug.view * (debug.model * vec4(pos + normal * normalLength, 1.0));
-		outColor = vec3(0.0, 1.0, 0.0);
+		gl_Position = debug.projection * debug.view * (debug.model * vec4(pos + tangent * normalLength, 1.0));
+		outColor = vec3(1.0, 0.0, 0.0);
+		EmitVertex();
+
+		EndPrimitive();
+
+		// Bitangent
+		vec3 bitangent = normalize(cross(normal, tangent) * inTangent[i].w);
+
+		gl_Position = debug.projection * debug.view * (debug.model * vec4(pos, 1.0));
+		outColor = vec3(0.0, 0.0, 1.0);
+		EmitVertex();
+
+		gl_Position = debug.projection * debug.view * (debug.model * vec4(pos + bitangent * normalLength, 1.0));
+		outColor = vec3(0.0, 0.0, 1.0);
 		EmitVertex();
 
 		EndPrimitive();

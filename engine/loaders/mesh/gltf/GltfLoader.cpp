@@ -88,6 +88,51 @@ glm::vec3 getVec3OrDefault(const std::string& name, const tinygltf::Value& val, 
     return _default;
 }
 
+void calculate_normals(std::vector<FVertex>& vertices, const std::vector<uint32_t>& indices, uint64_t startIndex)
+{
+    for (auto idx = 0; idx < indices.size(); idx += 3)
+    {
+        auto& v0 = vertices.at(indices.at(idx) - startIndex);
+        auto& v1 = vertices.at(indices.at(idx + 1) - startIndex);
+        auto& v2 = vertices.at(indices.at(idx + 2) - startIndex);
+
+        glm::vec3 deltaPos1 = v1.pos - v0.pos;
+        glm::vec3 deltaPos2 = v2.pos - v0.pos;
+
+        v0.normal = v1.normal = v2.normal = glm::normalize(glm::cross(deltaPos1, deltaPos2));
+    }
+
+    for (auto& vertex : vertices)
+        vertex.normal = glm::normalize(vertex.normal);
+}
+
+void calculate_tangents(std::vector<FVertex>& vertices, const std::vector<uint32_t>& indices, uint64_t startIndex)
+{
+    for (auto idx = 0; idx < indices.size(); idx += 3)
+    {
+        auto& v0 = vertices.at(indices.at(idx) - startIndex);
+        auto& v1 = vertices.at(indices.at(idx + 1) - startIndex);
+        auto& v2 = vertices.at(indices.at(idx + 2) - startIndex);
+
+        glm::vec3 deltaPos1 = v1.pos - v0.pos;
+        glm::vec3 deltaPos2 = v2.pos - v0.pos;
+
+        glm::vec2 deltaUV1 = v1.texcoord - v0.texcoord;
+        glm::vec2 deltaUV2 = v2.texcoord - v0.texcoord;
+
+        float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+        glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+        tangent = glm::normalize(tangent);
+
+        float w = (glm::dot(glm::cross(v0.normal, tangent), tangent) < 0.0f) ? -1.0f : 1.0f;
+        v0.tangent = v1.tangent = v2.tangent = glm::vec4(tangent, w);
+    }
+
+    for (auto& vertex : vertices)
+        vertex.tangent = glm::normalize(vertex.tangent);
+        
+}
+
 // Based on https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanglTFModel.cpp
 bool CGltfLoader::loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* userData)
 {
@@ -409,6 +454,12 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             }
         }
 
+        if (!bHasNormals)
+            calculate_normals(vertexBuffer, indexBuffer, indexStart);
+
+        if (!bHasTangents)
+            calculate_tangents(vertexBuffer, indexBuffer, indexStart);
+
         FMeshlet meshlet;
         meshlet.begin_index = indexStart;
         meshlet.index_count = indexCount;
@@ -422,8 +473,6 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             auto& pMaterial = graphics->getMaterial(material);
             pMaterial->incrementUsageCount();
             auto& params = pMaterial->getParameters();
-            if (bHasNormals) params.vCompileDefinitions.emplace_back("HAS_NORMALS");
-            if (bHasTangents) params.vCompileDefinitions.emplace_back("HAS_TANGENTS");
             if (bHasSkin) params.vCompileDefinitions.emplace_back("HAS_SKIN");
             meshlet.material = material;
         }
