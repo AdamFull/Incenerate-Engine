@@ -14,6 +14,7 @@
 #include "TransformComponent.h"
 #include "RigidBodyComponent.h"
 #include "ColliderComponent.h"
+#include "ParticleComponent.h"
 
 namespace engine
 {
@@ -35,6 +36,7 @@ namespace engine
 			constexpr inline size_t transform = utl::type_hash<FTransformComponent>();
 			constexpr inline size_t rigidbody = utl::type_hash<FRigidBodyComponent>();
 			constexpr inline size_t collider = utl::type_hash<FColliderComponent>();
+			constexpr inline size_t particle = utl::type_hash<FParticleComponent>();
 		}
 	}
 }

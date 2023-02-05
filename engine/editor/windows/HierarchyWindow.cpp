@@ -64,6 +64,7 @@ void CEditorHierarchy::__draw(float fDt)
             try_add_menu_item_h<FPointLightComponent>("point light", selected_entity);
             try_add_menu_item_h<FSceneComponent>("scene", selected_entity);
             try_add_menu_item_h<FRigidBodyComponent>("rigidbody", selected_entity);
+            try_add_menu_item_h<FParticleComponent>("particle", selected_entity);
             ImGui::EndMenu();
         }
 

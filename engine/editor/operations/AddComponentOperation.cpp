@@ -31,6 +31,7 @@ void CAddComponentOperation::undo()
 	case component::sprite: { registry.remove<FSpriteComponent>(target); } break;
 	case component::rigidbody: { registry.remove<FRigidBodyComponent>(target); } break;
 	case component::collider: { registry.remove<FColliderComponent>(target); } break;
+	case component::particle: { registry.remove<FParticleComponent>(target); } break;
 	default:
 		break;
 	}
@@ -53,6 +54,7 @@ void CAddComponentOperation::redo()
 	case component::sprite: { registry.emplace<FSpriteComponent>(target, FSpriteComponent{}); } break;
 	case component::rigidbody: { registry.emplace<FRigidBodyComponent>(target, FRigidBodyComponent{}); } break;
 	case component::collider: { registry.emplace<FColliderComponent>(target, FColliderComponent{}); } break;
+	case component::particle: { registry.emplace<FParticleComponent>(target, FParticleComponent{}); } break;
 	default:
 		break;
 	}

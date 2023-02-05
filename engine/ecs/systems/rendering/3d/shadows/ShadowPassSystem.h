@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CascadeShadowSystem.h"
 #include "DirectionalShadowSystem.h"
 #include "OmniShadowSystem.h"
 

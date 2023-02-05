@@ -91,7 +91,19 @@
     "defines": {}
   },
 
-
+  "cascade_shadow_pass": {
+    "stage": "shadow",
+    "bind_point": "Graphics",
+    "cull_mode": "Front",
+    "front_face": "cw",
+    "depth_test": true,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "shaders/main/shadows/cascade_shadow.vert",
+      "shaders/main/shadows/cascade_shadow.geom"
+    ],
+    "defines": {}
+  },
   "directional_shadow_pass": {
     "stage": "shadow",
     "bind_point": "Graphics",

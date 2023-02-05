@@ -169,6 +169,25 @@ void destroy_script(entt::registry& reg, entt::entity entity)
 		EGScripting->removeSource(script.data);
 }
 
+void construct_particle(entt::registry& reg, entt::entity entity)
+{
+	auto& script = reg.get<FParticleComponent>(entity);
+
+	if (!script.loaded && !script.source.empty())
+	{
+		//script.data = EGScripting->addSource(script.source, script.source);
+		script.loaded = true;
+	}
+}
+
+void destroy_particle(entt::registry& reg, entt::entity entity)
+{
+	auto& script = reg.get<FParticleComponent>(entity);
+
+	//if (script.loaded)
+	//	EGScripting->removeSource(script.data);
+}
+
 FCameraComponent* CEngine::getActiveCamera()
 {
 	if (isEditorEditing())
@@ -212,9 +231,13 @@ void CEngine::initEntityComponentSystem()
 	registry.on_construct<FScriptComponent>().connect<&construct_script>();
 	registry.on_destroy<FScriptComponent>().connect<&destroy_script>();
 
+	registry.on_construct<FParticleComponent>().connect<&construct_particle>();
+	registry.on_destroy<FParticleComponent>().connect<&destroy_particle>();
+
 	vSystems.emplace_back(std::make_unique<CAnimationSystem>());
 	vSystems.emplace_back(std::make_unique<CHierarchySystem>());
 	vSystems.emplace_back(std::make_unique<CPhysicsSystem>());
+	vSystems.emplace_back(std::make_unique<CParticlesSystem>());
 
 	vSystems.emplace_back(std::make_unique<CInputSystem>());
 	vSystems.emplace_back(std::make_unique<CScriptingSystem>());

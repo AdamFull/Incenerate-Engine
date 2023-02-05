@@ -6,6 +6,7 @@ using namespace engine::ecs;
 
 void CShadowPassSystem::__create()
 {
+	vSubSystems.emplace_back(std::make_unique<CCascadeShadowSystem>());
 	vSubSystems.emplace_back(std::make_unique<CDirectionalShadowSystem>());
 	vSubSystems.emplace_back(std::make_unique<COmniShadowSystem>());
 

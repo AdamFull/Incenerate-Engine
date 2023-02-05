@@ -149,7 +149,7 @@ void CEditor::create()
     mEditorIcons[icons::save_all] = ICON_MDI_CONTENT_SAVE_ALL;
     mEditorIcons[icons::close] = ICON_MDI_WINDOW_CLOSE;
     mEditorIcons[icons::plus] = ICON_MDI_PLUS;
-    mEditorIcons[icons::node] = ICON_MDI_CUBE_SCAN;
+    mEditorIcons[icons::node] = ICON_MDI_GRAPH;
 
     // File icons
     mEditorIcons[icons::folder] = ICON_MDI_FOLDER;
@@ -163,11 +163,11 @@ void CEditor::create()
     mEditorIcons[icons::update] = ICON_MDI_UPDATE;
 
     // Component icons
-    mEditorIcons[get_class_id<entt::entity>()] = ICON_MDI_CUBE_SCAN;
+    mEditorIcons[get_class_id<entt::entity>()] = ICON_MDI_GRAPH;
     mEditorIcons[get_class_id<FTransformComponent>()] = ICON_MDI_AXIS; // ICON_MDI_VECTOR_LINE
-    mEditorIcons[get_class_id<FSpotLightComponent>()] = ICON_MDI_LIGHTBULB;
+    mEditorIcons[get_class_id<FSpotLightComponent>()] = ICON_MDI_HEAD_LIGHTBULB;
     mEditorIcons[get_class_id<FPointLightComponent>()] = ICON_MDI_LIGHTBULB;
-    mEditorIcons[get_class_id<FDirectionalLightComponent>()] = ICON_MDI_LIGHTBULB;
+    mEditorIcons[get_class_id<FDirectionalLightComponent>()] = ICON_MDI_BRIGHTNESS_7;
     mEditorIcons[get_class_id<FAudioComponent>()] = ICON_MDI_VOLUME_HIGH;
     mEditorIcons[get_class_id<FCameraComponent>()] = ICON_MDI_CAMERA;
     mEditorIcons[get_class_id<FMeshComponent>()] = ICON_MDI_SHAPE;
@@ -176,6 +176,7 @@ void CEditor::create()
     mEditorIcons[get_class_id<FScriptComponent>()] = ICON_MDI_SCRIPT;
     mEditorIcons[get_class_id<FEnvironmentComponent>()] = ICON_MDI_EARTH;
     mEditorIcons[get_class_id<FSpriteComponent>()] = ICON_MDI_IMAGE;
+    mEditorIcons[get_class_id<FParticleComponent>()] = ICON_MDI_CREATION;
 
     load_editor();
 

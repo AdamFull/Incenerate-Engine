@@ -12,6 +12,7 @@
 #include "HierarchyComponent.h"
 #include "RigidBodyComponent.h"
 #include "ColliderComponent.h"
+#include "ParticleComponent.h"
 
 #include "Engine.h"
 #include "game/SceneGraph.hpp"
@@ -223,6 +224,16 @@ namespace engine
 		void from_json(const nlohmann::json& json, FColliderComponent& type)
 		{
 			//utl::parse_to("collider", json, type.shape);
+		}
+
+		void to_json(nlohmann::json& json, const FParticleComponent& type)
+		{
+			utl::serialize_from("source", json, type.source, !type.source.empty());
+		}
+
+		void from_json(const nlohmann::json& json, FParticleComponent& type)
+		{
+			utl::parse_to("source", json, type.source);
 		}
 	}
 }

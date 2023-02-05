@@ -94,6 +94,12 @@ void CRemoveComponentOperation::undo()
 		registry.emplace<FColliderComponent>(target, pComp);
 	} break;
 
+	case component::particle:
+	{
+		auto pComp = std::any_cast<FParticleComponent>(component);
+		registry.emplace<FParticleComponent>(target, pComp);
+	} break;
+
 	default:
 		break;
 	}
@@ -169,6 +175,11 @@ void CRemoveComponentOperation::redo()
 	{
 		component = registry.get<FColliderComponent>(target);
 		registry.remove<FColliderComponent>(target);
+	} break;
+	case component::particle:
+	{
+		component = registry.get<FParticleComponent>(target);
+		registry.remove<FParticleComponent>(target);
 	} break;
 	default:
 		break;

@@ -171,6 +171,18 @@ bool fs::is_audio_format(const std::filesystem::path& path)
     return is_audio_format(utl::const_hash(ext.c_str(), ext.size()));
 }
 
+bool fs::is_particle_format(const std::string& path)
+{
+    auto ext = get_ext(path);
+    return is_particle_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
+bool fs::is_particle_format(const std::filesystem::path& path)
+{
+    auto ext = get_ext(path);
+    return is_particle_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
 void fs::set_workdir(const std::filesystem::path& nworkdir)
 {
     _workdir = std::filesystem::weakly_canonical(nworkdir);
@@ -235,4 +247,9 @@ bool fs::is_audio_format(uint32_t format)
         format == format::wav ||
         format == format::wave ||
         format == format::ogg;
+}
+
+bool fs::is_particle_format(uint32_t format)
+{
+    return format == format::efkefc;
 }

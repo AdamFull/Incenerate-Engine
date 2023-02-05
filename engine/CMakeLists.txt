@@ -9,6 +9,7 @@ add_subdirectory("external")
 file(GLOB_RECURSE ENGINE_EDITOR_SOURCE "editor/*.cpp" "editor/*.c" "editor/*.cc" "editor/*.h" "editor/*.hpp")
 file(GLOB_RECURSE ENGINE_LOADERS_SOURCE "loaders/*.cpp" "loaders/*.c" "loaders/*.cc" "loaders/*.h" "loaders/*.hpp")
 file(GLOB_RECURSE ENGINE_PHYSICS_SOURCE "physics/*.cpp" "physics/*.c" "physics/*.cc" "physics/*.h" "physics/*.hpp")
+file(GLOB_RECURSE ENGINE_PARTICLES_SOURCE "particles/*.cpp" "particles/*.c" "particles/*.cc" "particles/*.h" "particles/*.hpp")
 file(GLOB_RECURSE ENGINE_PARSE_SOURCE "parse/*.cpp" "parse/*.c" "parse/*.cc" "parse/*.h" "parse/*.hpp")
 file(GLOB_RECURSE ENGINE_ECS_SOURCE "ecs/*.cpp" "ecs/*.c" "ecs/*.cc" "ecs/*.h" "ecs/*.hpp")
 file(GLOB_RECURSE ENGINE_EVENT_SOURCE "event/*.cpp" "event/*.c" "event/*.cc" "event/*.h" "event/*.event")
@@ -26,6 +27,7 @@ ${ENGINE_EDITOR_SOURCE}
 ${ENGINE_LOADERS_SOURCE}
 ${ENGINE_PARSE_SOURCE}
 ${ENGINE_PHYSICS_SOURCE}
+${ENGINE_PARTICLES_SOURCE}
 ${ENGINE_ECS_SOURCE}
 ${ENGINE_EVENT_SOURCE}
 ${ENGINE_GRAPHICS_SOURCE} 

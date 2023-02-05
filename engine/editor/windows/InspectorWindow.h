@@ -23,6 +23,7 @@ namespace engine
 			void skyboxEdit(ecs::FEnvironmentComponent* object);
 			void sceneEdit(ecs::FSceneComponent* object);
 			void rigidbodyEdit(ecs::FTransformComponent* transform, ecs::FRigidBodyComponent* object);
+			void particleSystemEdit(ecs::FTransformComponent* transform, ecs::FParticleComponent* object);
 		};
 	}
 }

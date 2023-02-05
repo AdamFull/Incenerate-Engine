@@ -12,32 +12,35 @@ namespace engine
         {
             using namespace utl;
             // images
-            constexpr uint32_t ktx = ".ktx"_utl_hash;
-            constexpr uint32_t ktx2 = ".ktx2"_utl_hash;
-            constexpr uint32_t dds = ".dds"_utl_hash;
-            constexpr uint32_t png = ".png"_utl_hash;
-            constexpr uint32_t jpg = ".jpg"_utl_hash;
-            constexpr size_t image_ts = 5;
+            constexpr inline uint32_t ktx = ".ktx"_utl_hash;
+            constexpr inline uint32_t ktx2 = ".ktx2"_utl_hash;
+            constexpr inline uint32_t dds = ".dds"_utl_hash;
+            constexpr inline uint32_t png = ".png"_utl_hash;
+            constexpr inline uint32_t jpg = ".jpg"_utl_hash;
+            constexpr inline size_t image_ts = 5;
 
             // meshes
-            constexpr uint32_t gltf = ".gltf"_utl_hash;
-            constexpr uint32_t glb = ".glb"_utl_hash;
-            constexpr size_t mesh_ts = 2;
+            constexpr inline uint32_t gltf = ".gltf"_utl_hash;
+            constexpr inline uint32_t glb = ".glb"_utl_hash;
+            constexpr inline size_t mesh_ts = 2;
 
             // scripts
-            constexpr uint32_t js = ".js"_utl_hash;
-            constexpr size_t script_ts = 1;
+            constexpr inline uint32_t js = ".js"_utl_hash;
+            constexpr inline size_t script_ts = 1;
 
             // scenes
-            constexpr uint32_t is = ".is"_utl_hash; // incenerate scene
-            constexpr uint32_t isb = ".isb"_utl_hash; // incenerate scene binary
-            constexpr size_t scene_ts = 2;
+            constexpr inline uint32_t is = ".is"_utl_hash; // incenerate scene
+            constexpr inline uint32_t isb = ".isb"_utl_hash; // incenerate scene binary
+            constexpr inline size_t scene_ts = 2;
 
             // audio
-            constexpr uint32_t wav = ".wav"_utl_hash;
-            constexpr uint32_t wave = ".wave"_utl_hash;
-            constexpr uint32_t ogg = ".ogg"_utl_hash;
-            constexpr size_t audio_ts = 3;
+            constexpr inline uint32_t wav = ".wav"_utl_hash;
+            constexpr inline uint32_t wave = ".wave"_utl_hash;
+            constexpr inline uint32_t ogg = ".ogg"_utl_hash;
+            constexpr inline size_t audio_ts = 3;
+
+            // particles
+            constexpr inline uint32_t efkefc = ".efkefc"_utl_hash;
         }
 
 		struct fs
@@ -78,6 +81,9 @@ namespace engine
 
             static bool is_audio_format(const std::string& path);
             static bool is_audio_format(const std::filesystem::path& path);
+
+            static bool is_particle_format(const std::string& path);
+            static bool is_particle_format(const std::filesystem::path& path);
 
             template<class _Ty>
             static bool read_json(const std::filesystem::path& path, _Ty& type, bool local = false)
@@ -157,6 +163,7 @@ namespace engine
             static bool is_skybox_format(uint32_t format);
             static bool is_script_format(uint32_t format);
             static bool is_audio_format(uint32_t format);
+            static bool is_particle_format(uint32_t format);
 		};
 	}
 }

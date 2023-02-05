@@ -455,10 +455,10 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         }
 
         if (!bHasNormals)
-            calculate_normals(vertexBuffer, indexBuffer, indexStart);
+            calculate_normals(vertexBuffer, indexBuffer, vertexStart);
 
         if (!bHasTangents)
-            calculate_tangents(vertexBuffer, indexBuffer, indexStart);
+            calculate_tangents(vertexBuffer, indexBuffer, vertexStart);
 
         FMeshlet meshlet;
         meshlet.begin_index = indexStart;

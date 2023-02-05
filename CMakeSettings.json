@@ -260,13 +260,68 @@
           "name": "BUILD_UNIT_TESTS",
           "value": "False",
           "type": "BOOL"
+        },
+        {
+          "name": "BUILD_SERIALIZE_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_OBJ2SDF_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_INVERSE_DYNAMIC_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_HACD_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_GIMPACTUTILS_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_EXTRAS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_CPU_DEMOS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_CONVEX_DECOMPOSITION_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_BULLET2_DEMOS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_BULLET_ROBOTICS_GUI_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_BULLET_ROBOTICS_EXTRA",
+          "value": "False",
+          "type": "BOOL"
         }
       ]
     },
     {
       "name": "x64-Release",
       "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "Release",
       "buildRoot": "${projectDir}\\build\\release\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
@@ -521,6 +576,61 @@
         },
         {
           "name": "BUILD_UNIT_TESTS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_SERIALIZE_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_OBJ2SDF_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_INVERSE_DYNAMIC_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_HACD_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_GIMPACTUTILS_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_EXTRAS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_CPU_DEMOS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_CONVEX_DECOMPOSITION_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_BULLET2_DEMOS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_BULLET_ROBOTICS_GUI_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_BULLET_ROBOTICS_EXTRA",
           "value": "False",
           "type": "BOOL"
         }

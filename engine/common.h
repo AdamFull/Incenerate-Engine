@@ -37,3 +37,4 @@ constexpr inline const size_t invalid_index{ -1ull };
 #define MAX_SPOT_LIGHT_COUNT 15
 #define MAX_POINT_LIGHT_COUNT 16
 #define SHADOW_MAP_RESOLUTION 512
+#define SHADOW_MAP_CASCADE_COUNT 4

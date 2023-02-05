@@ -18,5 +18,6 @@ namespace engine
 		struct FRigidBodyComponent;
 		struct FPhysicsShapeComponent;
 		struct FColliderComponent;
+		struct FParticleComponent;
 	}
 }
