@@ -171,21 +171,28 @@ void destroy_script(entt::registry& reg, entt::entity entity)
 
 void construct_particle(entt::registry& reg, entt::entity entity)
 {
-	auto& script = reg.get<FParticleComponent>(entity);
+	auto& particle = reg.get<FParticleComponent>(entity);
 
-	if (!script.loaded && !script.source.empty())
+	if (!particle.loaded && !particle.source.empty())
 	{
-		//script.data = EGScripting->addSource(script.source, script.source);
-		script.loaded = true;
+		auto& particles = EGEngine->getParticles();
+		particle.particle_id = particles->addParticle(particle.source);
+		
+		auto& pObject = particles->getParticle(particle.particle_id);
+
+		particle.loaded = true;
 	}
 }
 
 void destroy_particle(entt::registry& reg, entt::entity entity)
 {
-	auto& script = reg.get<FParticleComponent>(entity);
+	auto& particle = reg.get<FParticleComponent>(entity);
 
-	//if (script.loaded)
-	//	EGScripting->removeSource(script.data);
+	if (particle.loaded)
+	{
+		auto& particles = EGEngine->getParticles();
+		particles->removeParticle(particle.particle_id);
+	}
 }
 
 FCameraComponent* CEngine::getActiveCamera()

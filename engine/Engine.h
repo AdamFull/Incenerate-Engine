@@ -7,6 +7,7 @@
 #include "physics/PhysicsCore.h"
 #include "event/EventManager.hpp"
 #include "scripting/ScriptingCore.h"
+#include "particles/ParticlesCore.h"
 #include "editor/Editor.h"
 
 #include "game/SceneManager.h"
@@ -36,6 +37,7 @@ namespace engine
 	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
 	using scriptcore_t = std::unique_ptr<scripting::CScriptingCore>;
 	using physicscore_t = std::unique_ptr<physics::CPhysicsCore>;
+	using particlescore_t = std::unique_ptr<particles::CParticlesCore>;
 
 	class CEngine : public utl::singleton<CEngine>
 	{
@@ -58,6 +60,7 @@ namespace engine
 		const scenemgr_t& getSceneManager() const;
 		const scriptcore_t& getScripting() const;
 		const physicscore_t& getPhysics() const;
+		const particlescore_t& getParticles() const;
 
 		const bool isEditorMode() const;
 		const bool isEditorEditing() const;
@@ -100,6 +103,7 @@ namespace engine
 		scenemgr_t pSceneManager;
 		scriptcore_t pScripting;
 		physicscore_t pPhysics;
+		particlescore_t pParticles;
 
 		bool bEditorMode{ true };
 		bool bDebugDrawNormals{ false };

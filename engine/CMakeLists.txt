@@ -48,6 +48,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${EXTERNALS_PATH}/ktx/include"
     PUBLIC "${EXTERNALS_PATH}/openal-soft/include"
     PUBLIC "${EXTERNALS_PATH}/glmlib"
+    PUBLIC "${EXTERNALS_PATH}/Effekseer/Dev/Cpp"
     PUBLIC "${ENGINE_ROOT}"
     PUBLIC "${ENGINE_ROOT}/graphics"
     PUBLIC "${ENGINE_ROOT}/system"

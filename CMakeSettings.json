@@ -315,6 +315,51 @@
           "name": "BUILD_BULLET_ROBOTICS_EXTRA",
           "value": "False",
           "type": "BOOL"
+        },
+        {
+          "name": "USE_GRAPHICAL_BENCHMARK",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_DX11",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_DX12",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_DX9",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_GL",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_EXAMPLES",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_OPENGL3_DEMOS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "KTX_FEATURE_GL_UPLOAD",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "USE_GLUT",
+          "value": "False",
+          "type": "BOOL"
         }
       ]
     },
@@ -631,6 +676,51 @@
         },
         {
           "name": "BUILD_BULLET_ROBOTICS_EXTRA",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "USE_GRAPHICAL_BENCHMARK",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_DX11",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_DX12",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_DX9",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_GL",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_EXAMPLES",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "BUILD_OPENGL3_DEMOS",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "KTX_FEATURE_GL_UPLOAD",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "USE_GLUT",
           "value": "False",
           "type": "BOOL"
         }
