@@ -244,7 +244,6 @@ void CEngine::initEntityComponentSystem()
 	vSystems.emplace_back(std::make_unique<CAnimationSystem>());
 	vSystems.emplace_back(std::make_unique<CHierarchySystem>());
 	vSystems.emplace_back(std::make_unique<CPhysicsSystem>());
-	vSystems.emplace_back(std::make_unique<CParticlesSystem>());
 
 	vSystems.emplace_back(std::make_unique<CInputSystem>());
 	vSystems.emplace_back(std::make_unique<CScriptingSystem>());

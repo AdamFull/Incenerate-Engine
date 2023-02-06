@@ -360,6 +360,26 @@
           "name": "USE_GLUT",
           "value": "False",
           "type": "BOOL"
+        },
+        {
+          "name": "USE_OPENAL",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "USE_XAUDIO2",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "USE_DSOUND",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "USE_OSM",
+          "value": "False",
+          "type": "BOOL"
         }
       ]
     },
@@ -721,6 +741,26 @@
         },
         {
           "name": "USE_GLUT",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "USE_OPENAL",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "USE_XAUDIO2",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "USE_DSOUND",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "USE_OSM",
           "value": "False",
           "type": "BOOL"
         }

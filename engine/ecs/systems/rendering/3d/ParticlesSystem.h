@@ -1,12 +1,12 @@
 #pragma once
 
-#include "BaseSystem.h"
+#include "ecs/systems/rendering/BaseGraphicsSystem.h"
 
 namespace engine
 {
 	namespace ecs
 	{
-		class CParticlesSystem : public ISystem
+		class CParticlesSystem : public CBaseGraphicsSystem
 		{
 		public:
 			CParticlesSystem() { name = "Particles system"; }

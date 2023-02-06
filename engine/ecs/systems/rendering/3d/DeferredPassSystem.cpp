@@ -6,6 +6,7 @@
 #include "MeshSystem.h"
 #include "BillboardSystem.h"
 #include "DebugDrawSystem.h"
+#include "ParticlesSystem.h"
 
 using namespace engine::graphics;
 using namespace engine::ecs;
@@ -15,6 +16,7 @@ void CDeferredPassSystem::__create()
 	vSubSystems.emplace_back(std::make_unique<CEnvironmentSystem>());
 	vSubSystems.emplace_back(std::make_unique<CMeshSystem>());
 	vSubSystems.emplace_back(std::make_unique<CBillboardSystem>());
+	vSubSystems.emplace_back(std::make_unique<CParticlesSystem>());
 	vSubSystems.emplace_back(std::make_unique<CDebugDrawSystem>());
 
 	for (auto& system : vSubSystems)

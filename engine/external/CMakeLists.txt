@@ -35,8 +35,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC tfd)
 add_subdirectory(lua)
 target_link_libraries(${PROJECT_NAME} PUBLIC lualib)
 
-add_subdirectory(Effekseer)
-target_link_libraries(${PROJECT_NAME} PUBLIC Effekseer EffekseerRendererVulkan)
+#add_subdirectory(Effekseer)
+#target_link_libraries(${PROJECT_NAME} PUBLIC Effekseer)
 
 if(ANDROID)
     add_definitions(-DVULKAN_HPP_TYPESAFE_CONVERSION -DVMA_IMPLEMENTATION -DVMA_STATS_STRING_ENABLED=0)

@@ -1,7 +1,5 @@
 #include "ParticlesCore.h"
 
-#include <Effekseer/Effekseer.h>
-
 using namespace engine::particles;
 
 void CParticlesCore::create()
@@ -10,18 +8,59 @@ void CParticlesCore::create()
 
 	pRenderer = std::make_unique<CParticleRenderer>();
 
-	efkManager = Effekseer::Manager::Create(8000);
+	//efkManager = Effekseer::Manager::Create(8000);
 
-	pRenderer->create(efkManager);
+	//pRenderer->create(efkManager);
 }
 
 void CParticlesCore::update(float fDT)
 {
+	fTime += fDT;
+
 	pParticleObjectManager->perform_deletion();
+
+	Effekseer::Manager::UpdateParameter updateParameter;
+	//efkManager->Update(updateParameter);
+
+	pRenderer->setTime(fTime);
+
+	pRenderer->begin();
+
+	//auto efkRenderer = pRenderer->getEffekseerRenderer();
+
+	//Effekseer::Manager::DrawParameter drawParameter;
+	//drawParameter.ZNear = fNear;
+	//drawParameter.ZFar = fFar;
+	//drawParameter.ViewProjectionMatrix = efkRenderer->GetCameraProjectionMatrix();
+	//efkManager->Draw(drawParameter);
+
+	pRenderer->end();
+}
+
+void CParticlesCore::update_camera(float zNear, float zFar, const glm::mat4& view, const glm::mat4& projection)
+{
+	//auto efkRenderer = pRenderer->getEffekseerRenderer();
+
+	//fNear = zNear;
+	//fFar = zFar;
+	//
+	//Effekseer::Matrix44 efkView;
+	//for (int x = 0; x < 4; x++)
+	//	for (int y = 0; y < 4; y++)
+	//		efkView.Values[y][x] = view[y][x];
+	//
+	//Effekseer::Matrix44 efkProjection;
+	//for (int x = 0; x < 4; x++)
+	//	for (int y = 0; y < 4; y++)
+	//		efkProjection.Values[y][x] = projection[y][x];
+
+	//efkRenderer->SetProjectionMatrix(efkProjection);
+	//efkRenderer->SetCameraMatrix(efkView);
 }
 
 size_t CParticlesCore::addParticle(const std::string& name)
 {
+	//return pParticleObjectManager->add(name, std::make_unique<CParticleObject>(efkManager));
 	return pParticleObjectManager->add(name, std::make_unique<CParticleObject>());
 }
 

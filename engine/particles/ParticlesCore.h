@@ -13,6 +13,7 @@ namespace engine
 		public:
 			void create();
 			void update(float fDT);
+			void update_camera(float zNear, float zFar, const glm::mat4& view, const glm::mat4& projection);
 
 			size_t addParticle(const std::string& name);
 			size_t addParticle(const std::string& name, std::unique_ptr<CParticleObject>&& source);
@@ -23,8 +24,11 @@ namespace engine
 		private:
 			std::unique_ptr<CObjectManager<CParticleObject>> pParticleObjectManager;
 			std::unique_ptr<CParticleRenderer> pRenderer;
+			float fTime{ 0.f };
+			float fNear{ 0.f };
+			float fFar{ 1.f };
 
-			Effekseer::ManagerRef efkManager;
+			//Effekseer::ManagerRef efkManager;
 		};
 	}
 }

@@ -22,7 +22,7 @@ file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc" "*.h" "*.hpp")
 
 include_directories(${Vulkan_INCLUDE_DIR})
 
-add_library(${PROJECT_NAME} STATIC 
+add_library(${PROJECT_NAME} SHARED 
 ${ENGINE_EDITOR_SOURCE}
 ${ENGINE_LOADERS_SOURCE}
 ${ENGINE_PARSE_SOURCE}
@@ -48,7 +48,8 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${EXTERNALS_PATH}/ktx/include"
     PUBLIC "${EXTERNALS_PATH}/openal-soft/include"
     PUBLIC "${EXTERNALS_PATH}/glmlib"
-    PUBLIC "${EXTERNALS_PATH}/Effekseer/Dev/Cpp"
+    PUBLIC "${EXTERNALS_PATH}/Effekseer/Dev/Cpp/Effekseer"
+    PUBLIC "${EXTERNALS_PATH}/Effekseer/Dev/Cpp/EffekseerRendererVulkan"
     PUBLIC "${ENGINE_ROOT}"
     PUBLIC "${ENGINE_ROOT}/graphics"
     PUBLIC "${ENGINE_ROOT}/system"
