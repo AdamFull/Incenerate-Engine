@@ -135,6 +135,30 @@ bool fs::is_gltf_format(const std::filesystem::path& path)
     return is_gltf_format(utl::const_hash(ext.c_str(), ext.size()));
 }
 
+bool fs::is_obj_format(const std::string& path)
+{
+    auto ext = get_ext(path);
+    return is_obj_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
+bool fs::is_obj_format(const std::filesystem::path& path)
+{
+    auto ext = get_ext(path);
+    return is_obj_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
+bool fs::is_fbx_format(const std::string& path)
+{
+    auto ext = get_ext(path);
+    return is_fbx_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
+bool fs::is_fbx_format(const std::filesystem::path& path)
+{
+    auto ext = get_ext(path);
+    return is_fbx_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
 bool fs::is_skybox_format(const std::string& path)
 {
     auto ext = get_ext(path);
@@ -218,7 +242,9 @@ bool fs::is_mesh_format(uint32_t format)
 {
     return 
         format == format::gltf ||
-        format == format::glb;
+        format == format::glb ||
+        format == format::obj ||
+        format == format::fbx;
 }
 
 bool fs::is_gltf_format(uint32_t format)
@@ -226,6 +252,16 @@ bool fs::is_gltf_format(uint32_t format)
     return
         format == format::gltf ||
         format == format::glb;
+}
+
+bool fs::is_obj_format(uint32_t format)
+{
+    return format == format::obj;
+}
+
+bool fs::is_fbx_format(uint32_t format)
+{
+    return format == format::fbx;
 }
 
 bool fs::is_skybox_format(uint32_t format)

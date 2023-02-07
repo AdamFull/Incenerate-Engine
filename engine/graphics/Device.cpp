@@ -1236,17 +1236,43 @@ vk::PhysicalDevice CDevice::getPhysicalDevice(const std::vector<const char*>& de
 {
     vk::PhysicalDevice selected_device{nullptr};
     auto devices = getAvaliablePhysicalDevices(deviceExtensions);
+    constexpr auto ver10 = VK_API_VERSION_1_0;
+    constexpr auto ver11 = VK_API_VERSION_1_1;
+    constexpr auto ver12 = VK_API_VERSION_1_2;
+    constexpr auto ver13 = VK_API_VERSION_1_3;
 
+    bool bVersionSupport{ false };
     for (auto& device : devices)
     {
         auto props = device.getProperties();
 
-        if (!selected_device && props.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
-            selected_device = device;
+        auto vapi = props.apiVersion; 
+        switch (pAPI->getAPI())
+        {
+        case ERenderApi::eVulkan_1_0: bVersionSupport = vapi >= ver10; break;
+        case ERenderApi::eVulkan_1_1: bVersionSupport = vapi >= ver11; break;
+        case ERenderApi::eVulkan_1_2: bVersionSupport = vapi >= ver12; break;
+        case ERenderApi::eVulkan_1_3: bVersionSupport = vapi >= ver13; break;
+        default: bVersionSupport = false; break;
+        }
+        
+        if (!selected_device)
+        {
+            if(props.deviceType == vk::PhysicalDeviceType::eDiscreteGpu && bVersionSupport)
+                selected_device = device;
+        }
+            
     }
 
     if (!selected_device)
-        selected_device = devices.front();
+    {
+        for (auto& device : devices)
+        {
+            auto props = device.getProperties();
+            if(props.deviceType == vk::PhysicalDeviceType::eIntegratedGpu)
+                selected_device = device;
+        }
+    }
 
     if (selected_device && isDeviceSuitable(selected_device, deviceExtensions))
         return selected_device;

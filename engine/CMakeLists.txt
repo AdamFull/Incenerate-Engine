@@ -22,7 +22,7 @@ file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc" "*.h" "*.hpp")
 
 include_directories(${Vulkan_INCLUDE_DIR})
 
-add_library(${PROJECT_NAME} SHARED 
+add_library(${PROJECT_NAME} STATIC 
 ${ENGINE_EDITOR_SOURCE}
 ${ENGINE_LOADERS_SOURCE}
 ${ENGINE_PARSE_SOURCE}
