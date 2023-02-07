@@ -47,7 +47,8 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [x] HDR
 - [x] IBL
 - [x] PBR (UE4 like)
-- [ ] Bloom
+- [x] Bloom
+- [x] DOF
 - [ ] Shadow mapping
 - [ ] SSAO
 - [ ] SSR
