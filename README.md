@@ -30,7 +30,7 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 
 ### Supported mesh formats
 - [x] gltf
-- [ ] gltf2.0
+- [x] gltf2.0
 - [ ] obj
 - [ ] fbx
 
@@ -68,7 +68,8 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [ ] lua (sol2 in future)
 - [ ] Material editor (now working with default pbr material)
 - [ ] Mesh (scene) metadata (custom materials and custom loading rules)
-- [ ] Skinning
+- [ ] Skinning (working incorrect)
+- [ ] Effekseer particles
 - [ ] OpenGL 4+ support
 
 ### glTF support
