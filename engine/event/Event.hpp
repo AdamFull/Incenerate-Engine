@@ -12,33 +12,33 @@ namespace engine
 	namespace Events::Debug
 	{
 		using namespace utl;
-		const ParamId SystemCreateTime = "Events::Debug::SystemCreateTime"_utl_hash;
-		const ParamId SystemUpdateTime = "Events::Debug::SystemUpdateTime"_utl_hash;
+		constexpr const inline ParamId SystemCreateTime = "Events::Debug::SystemCreateTime"_utl_hash;
+		constexpr const inline ParamId SystemUpdateTime = "Events::Debug::SystemUpdateTime"_utl_hash;
 	}
 
 	namespace Events::Editor
 	{
 		using namespace utl;
-		const ParamId OpenImageViewer = "Events::Editor::OpenImageViewer"_utl_hash;
-		const ParamId ProjectUpdated = "Events::Editor::ProjectUpdated"_utl_hash;
+		constexpr const inline ParamId OpenImageViewer = "Events::Editor::OpenImageViewer"_utl_hash;
+		constexpr const inline ParamId ProjectUpdated = "Events::Editor::ProjectUpdated"_utl_hash;
 	}
 
 	namespace Events::Graphics
 	{
 		using namespace utl;
-		const ParamId ReCreate = "Events::Graphics::ReCreate"_utl_hash;
-		const ParamId ViewportReCreate = "Events::Graphics::ViewportReCreate"_utl_hash;
-		const ParamId PerformDelete = "Events::Graphics::PerformDelete"_utl_hash;
+		constexpr const inline ParamId ReCreate = "Events::Graphics::ReCreate"_utl_hash;
+		constexpr const inline ParamId ViewportReCreate = "Events::Graphics::ViewportReCreate"_utl_hash;
+		constexpr const inline ParamId PerformDelete = "Events::Graphics::PerformDelete"_utl_hash;
 	}
 
 	namespace Events::Input
 	{
 		using namespace utl;
-		const ParamId Key = "Events::Input::Key"_utl_hash;
-		const ParamId Mouse = "Events::Input::Mouse"_utl_hash;
-		const ParamId MouseX = "Events::Input::MouseX"_utl_hash;
-		const ParamId MouseY = "Events::Input::MouseY"_utl_hash;
-		const ParamId Axis = "Events::Input::Axis"_utl_hash;
+		constexpr const inline ParamId Key = "Events::Input::Key"_utl_hash;
+		constexpr const inline ParamId Mouse = "Events::Input::Mouse"_utl_hash;
+		constexpr const inline ParamId MouseX = "Events::Input::MouseX"_utl_hash;
+		constexpr const inline ParamId MouseY = "Events::Input::MouseY"_utl_hash;
+		constexpr const inline ParamId Axis = "Events::Input::Axis"_utl_hash;
 	}
 
 	class CEvent

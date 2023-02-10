@@ -278,7 +278,7 @@ void CFramebuffer::createRenderPass()
     renderPassCI.pSubpasses = vSubpassDesc.data();
     renderPassCI.dependencyCount = static_cast<uint32_t>(vSubpassDep.size());
     renderPassCI.pDependencies = vSubpassDep.data();
-    vk::Result res = pDevice->create(renderPassCI, &renderPass);
+    vk::Result res = pDevice->create(renderPassCI, &renderPass); 
     log_cerror(VkHelper::check(res), "Cannot create render pass.");
 }
 
@@ -286,18 +286,18 @@ void CFramebuffer::createFramebuffer()
 {
     auto graphics = pDevice->getAPI();
 
-    bool isDepthOnly{ true };
+    uint32_t layers = std::numeric_limits<uint32_t>::max();
     auto framesInFlight = pDevice->getFramesInFlight();
     for (size_t frame = 0; frame < framesInFlight; frame++)
     {
         std::vector<vk::ImageView> imageViews{};
         for (auto& [name, attachment] : mFbAttachments)
         {
-            isDepthOnly = isDepthOnly && (attachment.usageFlags & vk::ImageUsageFlagBits::eDepthStencilAttachment);
             auto fullname = name + "_" + std::to_string(frame);
             if (attachment.usageFlags & vk::ImageUsageFlagBits::eDepthStencilAttachment)
             {
                 auto depthImage = createImage(attachment, renderArea.extent);
+                layers = std::min(layers, depthImage->getLayers());
                 imageViews.push_back(depthImage->getDescriptor().imageView);
 
                 depthImageIDX = graphics->addImage(fullname, std::move(depthImage));
@@ -306,10 +306,14 @@ void CFramebuffer::createFramebuffer()
             else
             {
                 if (attachment.format == pDevice->getImageFormat())
+                {
                     imageViews.push_back(pDevice->getImageViews()[frame]);
+                    layers = 1;
+                }
                 else
                 {
                     auto image = createImage(attachment, renderArea.extent);
+                    layers = std::min(layers, image->getLayers());
                     imageViews.push_back(image->getDescriptor().imageView);
                     mFramebufferImages[frame].emplace(name, graphics->addImage(fullname, std::move(image)));
                 }
@@ -323,7 +327,7 @@ void CFramebuffer::createFramebuffer()
         framebufferCI.attachmentCount = static_cast<uint32_t>(imageViews.size());
         framebufferCI.width = renderArea.extent.width;
         framebufferCI.height = renderArea.extent.height;
-        framebufferCI.layers = isDepthOnly ? 1 : 1;
+        framebufferCI.layers = layers;
 
         vk::Framebuffer framebuffer{ VK_NULL_HANDLE };
         vk::Result res = pDevice->create(framebufferCI, &framebuffer);

@@ -15,6 +15,5 @@ layout(push_constant) uniform UBOShadowmapModelData
 
 void main()
 {
-	gl_Layer = modelData.stride;
 	gl_Position = modelData.model * vec4(inPosition, 1.0);
 }

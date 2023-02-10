@@ -30,24 +30,6 @@ void scenegraph::destroy_node(entt::entity node)
 		destroy_node(child);
 	}
 
-	if (registry.try_get<FAudioComponent>(node))
-		registry.remove<FAudioComponent>(node);
-
-	if (registry.try_get<FEnvironmentComponent>(node))
-		registry.remove<FEnvironmentComponent>(node);
-
-	if (registry.try_get<FMeshComponent>(node))
-		registry.remove<FMeshComponent>(node);
-
-	if (registry.try_get<FSpriteComponent>(node))
-		registry.remove<FSpriteComponent>(node);
-	
-	if (registry.try_get<FScriptComponent>(node))
-		registry.remove<FScriptComponent>(node);
-	
-	if (registry.try_get<FSceneComponent>(node))
-		registry.remove<FSceneComponent>(node);
-
 	detach_child(node);
 	hierarchy.children.clear();
 

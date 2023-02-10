@@ -10,7 +10,7 @@ using namespace engine::ecs;
 void COmniShadowSystem::__create()
 {
 	FShaderSpecials specials;
-	specials.subpass = 1;
+	specials.subpass = 2;
 	specials.usages = MAX_POINT_LIGHT_COUNT * 6;
 	shader_id = graphics->addShader("omni_shadow_pass", "omni_shadow_pass", specials);
 

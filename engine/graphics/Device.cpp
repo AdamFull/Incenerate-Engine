@@ -16,7 +16,11 @@ using namespace engine::graphics;
 using namespace engine::system::window;
 
 std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
-std::vector<const char*> deviceExtensions{ "VK_KHR_swapchain", "VK_KHR_maintenance4", "VK_KHR_synchronization2", "VK_EXT_shader_viewport_index_layer"};
+std::vector<const char*> deviceExtensions{ 
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME, 
+    VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+    VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME
+};
 
 VKAPI_ATTR VkBool32 VKAPI_CALL CDevice::validationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
@@ -227,11 +231,7 @@ void CDevice::createDevice()
     for (uint32_t queueFamily : uniqueQueueFamilies)
         queueCreateInfos.push_back({ vk::DeviceQueueCreateFlags(), queueFamily, 1, &queuePriority });
 
-    
-    vk::PhysicalDeviceVulkan13Features vk13features{};
-    vk13features.synchronization2 = true;
-    vk13features.maintenance4 = true;
-
+    // vk 1.0 features
     vk::PhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.samplerAnisotropy = true;
     deviceFeatures.sampleRateShading = true;
@@ -245,11 +245,23 @@ void CDevice::createDevice()
     deviceFeatures.depthClamp = true;
     deviceFeatures.independentBlend = true;
 
+    // vk 1.3 features
+    vk::PhysicalDeviceVulkan13Features vk13features{};
+    vk13features.synchronization2 = true;
+    vk13features.maintenance4 = true;
+
+    // vk 1.2 features
+    vk::PhysicalDeviceVulkan12Features vk12features{};
+    vk12features.shaderOutputLayer = true;
+    vk12features.shaderOutputViewportIndex = true;
+    vk12features.pNext = &vk13features;
+    
+
     auto createInfo = vk::DeviceCreateInfo{};
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.pNext = &vk13features;
+    createInfo.pNext = &vk12features;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
