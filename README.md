@@ -31,7 +31,7 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 ### Supported mesh formats
 - [x] gltf
 - [x] gltf2.0
-- [ ] obj
+- [x] obj
 - [ ] fbx
 
 ### Supported audio formats
