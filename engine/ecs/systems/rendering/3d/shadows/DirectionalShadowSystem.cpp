@@ -11,7 +11,6 @@ void CDirectionalShadowSystem::__create()
 {
 	FShaderSpecials specials;
 	specials.usages = MAX_SPOT_LIGHT_COUNT;
-	specials.subpass = 1;
 	//specials.defines = { {"INVOCATION_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)} };
 	shader_id = graphics->addShader("directional_shadow_pass", "directional_shadow_pass", specials);
 
@@ -21,6 +20,9 @@ void CDirectionalShadowSystem::__create()
 void CDirectionalShadowSystem::__update(float fDt)
 {
 	uint32_t lightStride{ 0 };
+
+	auto stage = graphics->getRenderStageID("direct_shadow");
+	graphics->bindRenderer(stage);
 
 	// Calculating spot light matrices
 	{
@@ -33,8 +35,9 @@ void CDirectionalShadowSystem::__update(float fDt)
 			FFrustum frustum;
 			const glm::vec3 dp(0.0000001f);
 
+			auto lightDir = light.toTarget ? light.target : glm::normalize(glm::toQuat(ltransform.model) * glm::vec3(0.f, 0.f, 1.f));
 			glm::mat4 shadowProj = glm::perspective(glm::radians(45.f), 1.0f, 0.1f, 64.f);
-			glm::mat4 shadowView = glm::lookAt(ltransform.rposition + dp, ltransform.rrotation, glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::mat4 shadowView = glm::lookAt(ltransform.rposition + dp, lightDir, glm::vec3(0.0f, 1.0f, 0.0f));
 			auto lightViewProj = shadowProj * shadowView;
 
 			frustum.update(shadowView, shadowProj);
@@ -75,4 +78,6 @@ void CDirectionalShadowSystem::__update(float fDt)
 			lightStride++;
 		}
 	}
+
+	graphics->bindRenderer(invalid_index);
 }

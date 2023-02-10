@@ -35,6 +35,9 @@ void CCascadeShadowSystem::__update(float fDt)
 	float range = maxZ - minZ;
 	float ratio = maxZ / minZ;
 
+	auto stage = graphics->getRenderStageID("cascade_shadow");
+	graphics->bindRenderer(stage);
+
 	auto lights = registry->view<FTransformComponent, FDirectionalLightComponent>();
 	for (auto [entity, ltransform, light] : lights.each())
 	{
@@ -145,4 +148,6 @@ void CCascadeShadowSystem::__update(float fDt)
 			graphics->bindShader(invalid_index);
 		}
 	}
+
+	graphics->bindRenderer(invalid_index);
 }

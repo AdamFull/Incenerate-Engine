@@ -10,7 +10,6 @@ using namespace engine::ecs;
 void COmniShadowSystem::__create()
 {
 	FShaderSpecials specials;
-	specials.subpass = 2;
 	specials.usages = MAX_POINT_LIGHT_COUNT * 6;
 	shader_id = graphics->addShader("omni_shadow_pass", "omni_shadow_pass", specials);
 
@@ -22,6 +21,9 @@ void COmniShadowSystem::__update(float fDt)
 	uint32_t point_light_count{ 0 };
 	std::array<glm::mat4, 6> point_light_view_matrices;
 	std::array<FFrustum, 6> point_light_frustums;
+
+	auto stage = graphics->getRenderStageID("omni_shadow");
+	graphics->bindRenderer(stage);
 
 	// Calculating point light matrices
 	{
@@ -85,4 +87,6 @@ void COmniShadowSystem::__update(float fDt)
 			point_light_count++;
 		}
 	}
+
+	graphics->bindRenderer(invalid_index);
 }

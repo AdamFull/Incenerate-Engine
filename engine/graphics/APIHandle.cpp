@@ -47,20 +47,15 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
     auto depth_format = pDevice->getDepthFormat();
     
-
     {
-        mStageInfos["shadow"].srName = "shadow";
-        mStageInfos["shadow"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-        mStageInfos["shadow"].bIgnoreRecreation = true;
-        mStageInfos["shadow"].bFlipViewport = false;
-        mStageInfos["shadow"].vImages.emplace_back("cascade_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, SHADOW_MAP_CASCADE_COUNT);
-        mStageInfos["shadow"].vDescriptions.emplace_back("cascade_shadowmap_tex");
-        mStageInfos["shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, MAX_SPOT_LIGHT_COUNT);
-        mStageInfos["shadow"].vDescriptions.emplace_back("direct_shadowmap_tex");
-        mStageInfos["shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArrayCube, MAX_POINT_LIGHT_COUNT);
-        mStageInfos["shadow"].vDescriptions.emplace_back("omni_shadowmap_tex");
-        mStageInfos["shadow"].vDependencies.emplace_back(
+        mStageInfos["cascade_shadow"].srName = "cascade_shadow";
+        mStageInfos["cascade_shadow"].viewport.offset = vk::Offset2D(0, 0);
+        mStageInfos["cascade_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        mStageInfos["cascade_shadow"].bIgnoreRecreation = true;
+        mStageInfos["cascade_shadow"].bFlipViewport = false;
+        mStageInfos["cascade_shadow"].vImages.emplace_back("cascade_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, SHADOW_MAP_CASCADE_COUNT);
+        mStageInfos["cascade_shadow"].vDescriptions.emplace_back("cascade_shadowmap_tex");
+        mStageInfos["cascade_shadow"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     VK_SUBPASS_EXTERNAL,
@@ -74,35 +69,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
                 )
             )
         );
-        mStageInfos["shadow"].vDependencies.emplace_back(
-            FCIDependency(
-                FCIDependencyDesc(
-                    1,
-                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
-                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
-                ),
-                FCIDependencyDesc(
-                    VK_SUBPASS_EXTERNAL,
-                    vk::PipelineStageFlagBits::eFragmentShader,
-                    vk::AccessFlagBits::eShaderRead
-                )
-            )
-        );
-        mStageInfos["shadow"].vDependencies.emplace_back(
-            FCIDependency(
-                FCIDependencyDesc(
-                    2,
-                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
-                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
-                ),
-                FCIDependencyDesc(
-                    VK_SUBPASS_EXTERNAL,
-                    vk::PipelineStageFlagBits::eFragmentShader,
-                    vk::AccessFlagBits::eShaderRead
-                )
-            )
-        );
-        mStageInfos["shadow"].vDependencies.emplace_back(
+        mStageInfos["cascade_shadow"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     0,
@@ -117,10 +84,95 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
             )
         );
 
-        auto stageId = addRenderStage("shadow");
+        auto stageId = addRenderStage("cascade_shadow");
         auto& pStage = getRenderStage(stageId);
-        pStage->create(mStageInfos["shadow"]);
+        pStage->create(mStageInfos["cascade_shadow"]);
     }
+
+    {
+        mStageInfos["direct_shadow"].srName = "direct_shadow";
+        mStageInfos["direct_shadow"].viewport.offset = vk::Offset2D(0, 0);
+        mStageInfos["direct_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        mStageInfos["direct_shadow"].bIgnoreRecreation = true;
+        mStageInfos["direct_shadow"].bFlipViewport = false;
+        mStageInfos["direct_shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, MAX_SPOT_LIGHT_COUNT);
+        mStageInfos["direct_shadow"].vDescriptions.emplace_back("direct_shadowmap_tex");
+        mStageInfos["direct_shadow"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eBottomOfPipe,
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                ),
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+                )
+            )
+        );
+        mStageInfos["direct_shadow"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eFragmentShader,
+                    vk::AccessFlagBits::eShaderRead
+                )
+            )
+        );
+
+        auto stageId = addRenderStage("direct_shadow");
+        auto& pStage = getRenderStage(stageId);
+        pStage->create(mStageInfos["direct_shadow"]);
+    }
+
+    {
+        mStageInfos["omni_shadow"].srName = "omni_shadow";
+        mStageInfos["omni_shadow"].viewport.offset = vk::Offset2D(0, 0);
+        mStageInfos["omni_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        mStageInfos["omni_shadow"].bIgnoreRecreation = true;
+        mStageInfos["omni_shadow"].bFlipViewport = false;
+        mStageInfos["omni_shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArrayCube, MAX_POINT_LIGHT_COUNT);
+        mStageInfos["omni_shadow"].vDescriptions.emplace_back("omni_shadowmap_tex");
+        mStageInfos["omni_shadow"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eBottomOfPipe,
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                ),
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+                )
+            )
+        );
+        mStageInfos["omni_shadow"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+                    vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eFragmentShader,
+                    vk::AccessFlagBits::eShaderRead
+                )
+            )
+        );
+
+        auto stageId = addRenderStage("omni_shadow");
+        auto& pStage = getRenderStage(stageId);
+        pStage->create(mStageInfos["omni_shadow"]);
+    }
+
 
     {
         mStageInfos["deferred"].srName = "deferred";

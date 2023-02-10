@@ -92,7 +92,7 @@
   },
 
   "cascade_shadow_pass": {
-    "stage": "shadow",
+    "stage": "cascade_shadow",
     "bind_point": "Graphics",
     "cull_mode": "Front",
     "front_face": "cw",
@@ -105,7 +105,7 @@
     "defines": {}
   },
   "directional_shadow_pass": {
-    "stage": "shadow",
+    "stage": "direct_shadow",
     "bind_point": "Graphics",
     "cull_mode": "Front",
     "front_face": "cw",
@@ -118,7 +118,7 @@
     "defines": {}
   },
   "omni_shadow_pass": {
-    "stage": "shadow",
+    "stage": "omni_shadow",
     "bind_point": "Graphics",
     "cull_mode": "Front",
     "front_face": "cw",
