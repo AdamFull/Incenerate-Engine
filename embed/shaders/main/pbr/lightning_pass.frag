@@ -5,10 +5,12 @@
 #extension GL_ARB_texture_cube_map_array : enable
 #extension GL_GOOGLE_include_directive : require
 
+#define SHADOW_MAP_CASCADE_COUNT 5
+
 //--------------------Includes--------------------
 #include "light_models/sascha_williems.glsl"
 
-//#include "../shadows/projection/cascade_shadows.glsl"
+#include "../shadows/projection/cascade_shadows.glsl"
 #include "../shadows/projection/directional_shadows.glsl"
 #include "../shadows/projection/omni_shadows.glsl"
 
@@ -28,7 +30,7 @@ layout (binding = 7) uniform sampler2D depth_tex;
 //layout (binding = 8) uniform sampler2D picking_tex;
 //layout (binding = 6) uniform sampler2D ssr_tex;
 
-//layout (binding = 7) uniform sampler2DArray cascade_shadowmap_tex;
+layout (binding = 8) uniform sampler2DArray cascade_shadowmap_tex;
 layout (binding = 9) uniform sampler2DArrayShadow direct_shadowmap_tex;
 layout (binding = 10) uniform samplerCubeArrayShadow omni_shadowmap_tex;
 
@@ -67,8 +69,10 @@ vec3 calculateDirectionalLight(FDirectionalLight light, vec3 worldPosition, vec3
 
 	vec3 color = lightContribution(albedo, L, V, N, F0, metallic, roughness);
 
-	//float shadow_factor = getCascadeShadow(cascade_shadowmap_tex, ubo.viewPos.xyz, worldPosition, N, light);
 	float shadow_factor = 1.0;
+
+	if(light.castShadows > 0)
+		shadow_factor = getCascadeShadow(cascade_shadowmap_tex, ubo.viewPos.xyz, worldPosition, N, light);
 
 	return light.color * light.intencity * color * shadow_factor;
 }

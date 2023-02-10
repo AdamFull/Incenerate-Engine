@@ -4,6 +4,8 @@
 
 struct FDirectionalLight
 {
+	float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
+	mat4 cascadeViewProjMat[SHADOW_MAP_CASCADE_COUNT];
 	vec3 direction;
     vec3 color;
 	float intencity;
