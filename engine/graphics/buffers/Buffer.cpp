@@ -23,14 +23,14 @@ std::unique_ptr<CBuffer> CBuffer::MakeStagingBuffer(CDevice* device, size_t size
 std::unique_ptr<CBuffer> CBuffer::MakeVertexBuffer(CDevice* device, size_t size, size_t count)
 {
     auto buffer = std::make_unique<CBuffer>(device);
-    buffer->create(size, count, vma::MemoryUsage::eUnknown, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, 1);
+    buffer->create(size, count, vma::MemoryUsage::eUnknown, vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, 1);
     return buffer;
 }
 
 std::unique_ptr<CBuffer> CBuffer::MakeIndexBuffer(CDevice* device, size_t size, size_t count)
 {
     auto buffer = std::make_unique<CBuffer>(device);
-    buffer->create(size, count, vma::MemoryUsage::eUnknown, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, 1);
+    buffer->create(size, count, vma::MemoryUsage::eUnknown, vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, 1);
     return buffer;
 }
 
@@ -79,6 +79,7 @@ void CBuffer::create(vk::DeviceSize instanceSize, vk::DeviceSize instanceCount, 
 {
     auto logical = pDevice->getLogical();
     alignmentSize = getAlignment(instanceSize, minOffsetAlignment);
+    this->instanceCount = instanceCount;
     bufferSize = alignmentSize * instanceCount;
 
     auto queueFamilies = pDevice->findQueueFamilies();

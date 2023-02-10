@@ -502,15 +502,15 @@ bool CDevice::isSupportedSampleCount(vk::SampleCountFlagBits samples)
     return found != avaliableSamples.end();
 }
 
-void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size)
+void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size, vk::DeviceSize srcOffset, vk::DeviceSize dstOffset)
 {
     auto cmdBuf = CCommandBuffer(this);
     cmdBuf.create(true, vk::QueueFlagBits::eTransfer);
     auto commandBuffer = cmdBuf.getCommandBuffer();
 
     vk::BufferCopy copyRegion = {};
-    copyRegion.srcOffset = 0; // Optional
-    copyRegion.dstOffset = 0; // Optional
+    copyRegion.srcOffset = srcOffset; // Optional
+    copyRegion.dstOffset = dstOffset; // Optional
     copyRegion.size = size;
     commandBuffer.copyBuffer(srcBuffer, dstBuffer, copyRegion);
 

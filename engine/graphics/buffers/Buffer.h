@@ -39,7 +39,7 @@ namespace engine
 
 			vk::Buffer getBuffer() const { return buffer; }
 			void* getMappedMemory() const { return mappedMemory; }
-			uint32_t getInstanceCount() const { return instanceCount; }
+			size_t getInstanceCount() const { return instanceCount; }
 			vk::DeviceSize getInstanceSize() const { return instanceSize; }
 			vk::DeviceSize getAlignmentSize() const { return instanceSize; }
 			vk::BufferUsageFlags getUsageFlags() const { return usageFlags; }
@@ -55,7 +55,7 @@ namespace engine
 
 			vk::DescriptorBufferInfo bufferInfo;
 			vk::DeviceSize bufferSize;
-			uint32_t instanceCount;
+			size_t instanceCount{ 0 };
 			vk::DeviceSize instanceSize{ 0 };
 			vk::DeviceSize alignmentSize{ 0 };
 			vk::BufferUsageFlags usageFlags;

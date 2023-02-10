@@ -23,7 +23,6 @@ void CBillboardSystem::__create()
 
 	auto& pVBO = graphics->getVertexBuffer(vbo_id);
 	pVBO->addPrimitive(std::make_unique<FQuadPrimitive>());
-	pVBO->create();
 
 	if (EGEngine->isEditorMode())
 	{

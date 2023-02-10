@@ -149,9 +149,6 @@ void CGltfLoader::load(const const std::filesystem::path& source, const entt::en
             loadNode(root, node, node_idx, gltfModel, 1.0);
         }
 
-        auto& pVBO = graphics->getVertexBuffer(vbo_id);
-        pVBO->create();
-
         for (auto& mat_id : vMaterials)
             graphics->addShader("default_" + std::to_string(mat_id), "default", mat_id);
 

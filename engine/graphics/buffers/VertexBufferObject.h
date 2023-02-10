@@ -81,33 +81,61 @@ namespace engine
 			CVertexBufferObject(CDevice* device);
 			~CVertexBufferObject() = default;
 
-			void create();
-			void create(size_t vertices, size_t indices);
-			void update(std::vector<FVertex>& vertices);
-			void update(std::vector<uint32_t>& indices);
-			void update(std::vector<FVertex>& vertices, std::vector<uint32_t>& indices);
-			void recreate();
+			void reserve(size_t vertex_size, size_t vertices, size_t index_size, size_t indices);
+			void clear();
+
+			template<class _Ty>
+			void addData(const std::vector<_Ty>& data, size_t& last_point, uint32_t type)
+			{
+				if (!data.empty())
+				{
+					auto instance_size = sizeof(_Ty);
+					auto instances = data.size();
+
+					auto& target = allocate_or_reallocate(instance_size, instances, last_point, type);
+
+					auto stagingBuffer = make_staging(instance_size, instances);
+					stagingBuffer->map();
+					stagingBuffer->write((void*)data.data());
+
+					copy_buffer_to_buffer(stagingBuffer->getBuffer(), target->getBuffer(), instance_size * instances, 0, last_point * instance_size);
+
+					last_point += instances;
+				}
+			}
+
+			template<class _Ty>
+			void addVertices(const std::vector<_Ty>& vertices)
+			{
+				addData(vertices, last_vertex, 0);
+			}
+
+			void addIndices(const std::vector<uint32_t>& indices)
+			{
+				addData(indices, last_index, 1);
+			}
+
 			void bind(vk::CommandBuffer commandBuffer);
 			void addPrimitive(std::unique_ptr<FPrimitive>&& primitive);
-			void addVertices(std::vector<FVertex>&& vertices);
-			void addIndices(std::vector<uint32_t>&& indices);
-			void addMeshData(std::vector<FVertex>&& vertices, std::vector<uint32_t>&& indices);
-			uint64_t getLastIndex();
-			uint64_t getLastVertex();
+			void addMeshData(const std::vector<FVertex>& vertices, const std::vector<uint32_t>& indices);
+			const size_t getLastIndex() const { return last_index; }
+			const size_t getLastVertex() const { return last_vertex; }
 
 		private:
-			void createVertexBuffer();
-			void createIndexBuffer();
+			void copy_buffer_to_buffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, size_t size, size_t srcOffset, size_t dstOffset);
+			std::unique_ptr<CBuffer> allocate_buffer(size_t instance_size, size_t instances, uint32_t buffer_type);
+			std::unique_ptr<CBuffer>& allocate_or_reallocate(size_t instance_size, size_t instances, size_t current_size, uint32_t buffer_type);
+			std::unique_ptr<CBuffer> make_staging(size_t instance_size, size_t instances);
 
 		private:
 			CDevice* pDevice{ nullptr };
 			bool bBuffersCreated{ false };
 
-			std::vector<FVertex> vVertices;
 			std::unique_ptr<CBuffer> vertexBuffer;
+			size_t last_vertex{ 0 };
 
-			std::vector<uint32_t> vIndices;
 			std::unique_ptr<CBuffer> indexBuffer;
+			size_t last_index{ 0 };
 		};
 	}
 }

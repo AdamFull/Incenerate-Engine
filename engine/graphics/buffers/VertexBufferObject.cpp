@@ -9,129 +9,91 @@ CVertexBufferObject::CVertexBufferObject(CDevice* device)
 	pDevice = device;
 }
 
-void CVertexBufferObject::create()
-{
-	recreate();
-}
-
-void CVertexBufferObject::create(size_t vertices, size_t indices)
+void CVertexBufferObject::reserve(size_t vertex_size, size_t vertices, size_t index_size, size_t indices)
 {
 	if (vertices != 0)
-	{
-		auto vertexSize = sizeof(FVertex);
-		vertexBuffer = CBuffer::MakeVertexBuffer(pDevice, vertexSize, vertices);
-	}
-	
+		vertexBuffer = CBuffer::MakeVertexBuffer(pDevice, vertex_size, vertices);
+
 	if (indices != 0)
-	{
-		auto indexSize = sizeof(uint32_t);
-		indexBuffer = CBuffer::MakeIndexBuffer(pDevice, indexSize, vIndices.size());
-	}
+		indexBuffer = CBuffer::MakeIndexBuffer(pDevice, index_size, indices);
 }
 
-void CVertexBufferObject::update(std::vector<FVertex>& vertices)
+void CVertexBufferObject::clear()
 {
-	vVertices = vertices;
-	createVertexBuffer();
-}
-
-void CVertexBufferObject::update(std::vector<uint32_t>& indices)
-{
-	vIndices = indices;
-	createIndexBuffer();
-}
-
-void CVertexBufferObject::update(std::vector<FVertex>& vertices, std::vector<uint32_t>& indices)
-{
-	update(vertices);
-	update(indices);
-}
-
-void CVertexBufferObject::recreate()
-{
-	createVertexBuffer();
-	createIndexBuffer();
+	last_vertex = 0;
+	last_index = 0;
 }
 
 void CVertexBufferObject::bind(vk::CommandBuffer commandBuffer)
 {
-	auto hasVertices = !vVertices.empty();
-
-	if (hasVertices)
+	// Has vertices
+	if (last_vertex != 0ull)
 	{
-		auto hasIndex = !vIndices.empty();
+		{
+			vk::DeviceSize offsets[] = { 0 };
+			auto buffer = vertexBuffer->getBuffer();
+			commandBuffer.bindVertexBuffers(0, 1, &buffer, offsets);
+		}
 
-		vk::DeviceSize offsets[] = { 0 };
-		auto buffer = vertexBuffer->getBuffer();
-		commandBuffer.bindVertexBuffers(0, 1, &buffer, offsets);
-
-		if (hasIndex)
-			commandBuffer.bindIndexBuffer(indexBuffer->getBuffer(), 0, vk::IndexType::eUint32);
+		// Has indices
+		if (last_index != 0ull)
+		{
+			auto buffer = indexBuffer->getBuffer();
+			commandBuffer.bindIndexBuffer(buffer, 0, vk::IndexType::eUint32);
+		}
 	}
 }
 
 void CVertexBufferObject::addPrimitive(std::unique_ptr<FPrimitive>&& primitive)
 {
-	addMeshData(std::move(primitive->vVertices), std::move(primitive->vIndices));
+	addMeshData(primitive->vVertices, primitive->vIndices);
 }
 
-void CVertexBufferObject::addVertices(std::vector<FVertex>&& vertices)
+void CVertexBufferObject::addMeshData(const std::vector<FVertex>& vertices, const std::vector<uint32_t>& indices)
 {
-	vVertices.insert(vVertices.end(), vertices.begin(), vertices.end());
+	addVertices(vertices);
+	addIndices(indices);
 }
 
-void CVertexBufferObject::addIndices(std::vector<uint32_t>&& indices)
+void CVertexBufferObject::copy_buffer_to_buffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, size_t size, size_t srcOffset, size_t dstOffset)
 {
-	vIndices.insert(vIndices.end(), indices.begin(), indices.end());
+	pDevice->copyOnDeviceBuffer(srcBuffer, dstBuffer, size, srcOffset, dstOffset);
 }
 
-void CVertexBufferObject::addMeshData(std::vector<FVertex>&& vertices, std::vector<uint32_t>&& indices)
+std::unique_ptr<CBuffer> CVertexBufferObject::allocate_buffer(size_t instance_size, size_t instances, uint32_t buffer_type)
 {
-	addVertices(std::move(vertices));
-	addIndices(std::move(indices));
-}
-uint64_t CVertexBufferObject::getLastIndex()
-{
-	return vIndices.size();
+	return buffer_type == 0 ? CBuffer::MakeVertexBuffer(pDevice, instance_size, instances) : CBuffer::MakeIndexBuffer(pDevice, instance_size, instances);
 }
 
-uint64_t CVertexBufferObject::getLastVertex()
+std::unique_ptr<CBuffer>& CVertexBufferObject::allocate_or_reallocate(size_t instance_size, size_t instances, size_t current_size, uint32_t buffer_type)
 {
-	return vVertices.size();
-}
+	auto& buffer = buffer_type == 0 ? vertexBuffer : indexBuffer;
 
-void CVertexBufferObject::createVertexBuffer()
-{
-	if (!vVertices.empty())
+	if (!buffer)
+		buffer = allocate_buffer(instance_size, instances, buffer_type);
+	else
 	{
-		auto vertexSize = sizeof(FVertex);
-		vk::DeviceSize bufferSize = vertexSize * vVertices.size();
+		// When we already have data
+		if (current_size != 0)
+		{
+			auto tempBuffer = make_staging(instance_size, current_size);
+			auto oldSize = instance_size * current_size;
+			auto newCount = instances + current_size;
 
-		auto stagingBuffer = CBuffer::MakeStagingBuffer(pDevice, vertexSize, vVertices.size());
-		stagingBuffer->map();
-		stagingBuffer->write((void*)vVertices.data());
+			// Copy old data to temporary buffer
+			pDevice->copyOnDeviceBuffer(buffer->getBuffer(), tempBuffer->getBuffer(), oldSize);
 
-		if(!vertexBuffer)
-			vertexBuffer = CBuffer::MakeVertexBuffer(pDevice, vertexSize, vVertices.size());
+			buffer = allocate_buffer(instance_size, newCount, buffer_type);
 
-		pDevice->copyOnDeviceBuffer(stagingBuffer->getBuffer(), vertexBuffer->getBuffer(), bufferSize);
+			// Copy old data back to vertex buffer
+			pDevice->copyOnDeviceBuffer(tempBuffer->getBuffer(), buffer->getBuffer(), oldSize);
+		}
 	}
+
+	return buffer;
 }
 
-void CVertexBufferObject::createIndexBuffer()
+std::unique_ptr<CBuffer> CVertexBufferObject::make_staging(size_t instance_size, size_t instances)
 {
-	if (!vIndices.empty())
-	{
-		auto indexSize = sizeof(uint32_t);
-		vk::DeviceSize bufferSize = indexSize * vIndices.size();
-
-		auto stagingBuffer = CBuffer::MakeStagingBuffer(pDevice, indexSize, vIndices.size());
-		stagingBuffer->map();
-		stagingBuffer->write((void*)vIndices.data());
-
-		if(!indexBuffer)
-			indexBuffer = CBuffer::MakeIndexBuffer(pDevice, indexSize, vIndices.size());
-
-		pDevice->copyOnDeviceBuffer(stagingBuffer->getBuffer(), indexBuffer->getBuffer(), bufferSize);
-	}
+	return CBuffer::MakeStagingBuffer(pDevice, instance_size, instances);
 }

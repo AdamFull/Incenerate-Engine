@@ -19,7 +19,7 @@ void CDebugDraw::create()
 	vbo_id = graphics->addVertexBuffer("debug_draw_vbo");
 
 	auto& vbo = graphics->getVertexBuffer(vbo_id);
-	vbo->create(DEBUG_DRAW_MAX_VERTICES, 0);
+	vbo->reserve(sizeof(FVertex), DEBUG_DRAW_MAX_VERTICES, sizeof(uint32_t), 0);
 
 	shader_id = graphics->addShader("debug_draw_shader", "debugdraw");
 }
@@ -34,7 +34,8 @@ void CDebugDraw::draw()
 	if (!vDrawData.empty())
 	{
 		auto& vbo = graphics->getVertexBuffer(vbo_id);
-		vbo->update(vDrawData);
+		vbo->clear();
+		vbo->addVertices(vDrawData);
 
 		graphics->bindShader(shader_id);
 		graphics->bindVertexBuffer(vbo_id);

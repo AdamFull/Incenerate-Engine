@@ -260,7 +260,9 @@ void CObjLoader::load(const std::filesystem::path& source, const entt::entity& p
 			params.ior = material.ior;
 
 			params.baseColorFactor = glm::vec4(glm::make_vec3(material.diffuse), 1.f);
-			params.emissiveFactor = glm::make_vec3(material.emission);
+
+			auto emissiveFactor = glm::make_vec3(material.emission);
+			params.emissiveFactor = emissiveFactor == glm::vec3(0.f) ? glm::vec3(1.f) : emissiveFactor;
 
 			pMaterial->setParameters(std::move(params));
 			auto mat_name = material.name.empty() ? fs::get_filename(fsParentPath) + "_" + std::to_string(vMaterials.size()) : material.name;
@@ -322,7 +324,7 @@ void CObjLoader::load(const std::filesystem::path& source, const entt::entity& p
 
 				vertex.texcoord = glm::vec2(
 					attrib.texcoords[2 * index.texcoord_index], 
-					attrib.texcoords[2 * index.texcoord_index + 1]);
+					1.f - attrib.texcoords[2 * index.texcoord_index + 1]);
 
 				vertex.color = glm::vec3(
 					attrib.colors[3 * index.vertex_index], 
@@ -353,15 +355,13 @@ void CObjLoader::load(const std::filesystem::path& source, const entt::entity& p
 			auto& pMaterial = graphics->getMaterial(meshlet.material);
 			pMaterial->incrementUsageCount();
 
-			calculate_tangents(vertexBuffer, indexBuffer, meshlet.begin_vertex);
+			calculate_tangents(vertexBuffer, indexBuffer, 0);
 
 			meshComponent.vMeshlets.emplace_back(meshlet);
 			vbo->addMeshData(std::move(vertexBuffer), std::move(indexBuffer));
 		}
 
 		meshComponent.loaded = true;
-
-		vbo->create();
 
 		for (auto& mat_id : vMaterials)
 			graphics->addShader("default_" + std::to_string(mat_id), "default", mat_id);

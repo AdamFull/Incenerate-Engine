@@ -109,7 +109,6 @@ void construct_skybox(entt::registry& reg, entt::entity entity)
 
 		auto& pVBO = graphics->getVertexBuffer(skybox.vbo_id);
 		pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
-		pVBO->create();
 		set_active_skybox(reg, entity);
 	}
 }
