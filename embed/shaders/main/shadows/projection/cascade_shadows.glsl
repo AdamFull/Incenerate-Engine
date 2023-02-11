@@ -61,8 +61,8 @@ float getCascadeShadow(sampler2DArray shadomwap_tex, vec3 viewPosition, vec3 wor
 
 	float farPlane = 128.0;
 	// calculate bias (based on depth map resolution and slope)
-    vec3 normal = normalize(N);
-    float bias = max(0.05 * (1.0 - dot(normal, light.direction)), 0.005);
+    //vec3 normal = normalize(N);
+    //float bias = max(0.05 * (1.0 - dot(normal, light.direction)), 0.005);
 	//bias = 0.0;
     //const float biasModifier = 0.5f;
     //if (layer == SHADOW_MAP_CASCADE_COUNT - 1)
@@ -71,11 +71,11 @@ float getCascadeShadow(sampler2DArray shadomwap_tex, vec3 viewPosition, vec3 wor
     //    bias *= 1 / (light.cascadeSplits[layer] * biasModifier);
 
 	float shadow = 1.0;
-	bool enablePCF = true;
+	bool enablePCF = false;
 	if (enablePCF) {
-		shadow = cascadeShadowFilterPCF(shadomwap_tex, shadowCoord, cascadeIndex, bias);
+		shadow = cascadeShadowFilterPCF(shadomwap_tex, shadowCoord, cascadeIndex, 0.005);
 	} else {
-		shadow = cassadeShadowProjection(shadomwap_tex, shadowCoord, vec2(0.0), cascadeIndex, bias);
+		shadow = cassadeShadowProjection(shadomwap_tex, shadowCoord, vec2(0.0), cascadeIndex, 0.005);
 	}
 	return shadow;
 }

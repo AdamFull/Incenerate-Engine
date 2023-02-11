@@ -12,6 +12,7 @@ namespace ImGui
     bool GAssetHolder(const char* label, const std::string& source);
     bool GTextInput(const char* label, std::string* source, bool enabled = true);
     bool GCombo(const char* label, int* current_item, const char* const items[], int item_count, int height_in_items = -1);
+    bool GSliderInt(const char* label, int* value, int min, int max);
 
     bool FileOpen(char* buf, size_t buf_size, const char* title, int filter_num, const char* const* filter_patterns);
     bool FileSave(char* buf, size_t buf_size, const char* title, int filter_num, const char* const* filter_patterns);

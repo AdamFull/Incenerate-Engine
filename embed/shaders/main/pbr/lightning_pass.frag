@@ -56,6 +56,15 @@ layout(std430, binding = 15) buffer readonly UBOLights
 	FPointLight pointLights[16];
 } lights;
 
+layout(std140, binding = 13) uniform UBODebug
+{
+	int mode;
+	int cascadeSplit;
+	int spotShadowIndex;
+	int omniShadowIndex;
+	int omniShadowView;
+} debug;
+
 #define SHADING_MODEL_CUSTOM
 
 vec3 lightContribution(vec3 albedo, vec3 L, vec3 V, vec3 N, vec3 F0, float metallic, float roughness)
@@ -208,6 +217,32 @@ void main()
 		fragcolor = albedo;
 	}
 
+	if(debug.mode == 0)
+		fragcolor = fragcolor;
+	else if(debug.mode == 1)
+		fragcolor = inWorldPos;
+	else if(debug.mode == 2)
+		fragcolor = vec3(depth);
+	else if(debug.mode == 3)
+		fragcolor = albedo;
+	else if(debug.mode == 4)
+		fragcolor = normal;
+	else if(debug.mode == 5)
+		fragcolor = emission;
+	else if(debug.mode == 6)
+		fragcolor = vec3(roughness);
+	else if(debug.mode == 7)
+		fragcolor = vec3(metallic);
+	else if(debug.mode == 8)
+		fragcolor = vec3(occlusion);
+	else if(debug.mode == 9)
+		fragcolor = vec3(occlusionStrength);
+	else if(debug.mode == 10)
+		fragcolor = texture(cascade_shadowmap_tex, vec3(inUV, debug.cascadeSplit)).rrr;
+	else if(debug.mode == 11)
+		fragcolor = texture(direct_shadowmap_tex, vec4(inUV, debug.spotShadowIndex, 0.005)).rrr;
+	else if(debug.mode == 12)
+		fragcolor = texture(omni_shadowmap_tex, vec4(inUV, debug.omniShadowView, debug.omniShadowIndex), 0.005).rrr;
+
   	outFragcolor = vec4(fragcolor, 1.0);
-  	//outFragcolor = texture(picking_tex, inUV);
 }

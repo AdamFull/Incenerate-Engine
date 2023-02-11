@@ -19,6 +19,7 @@
 #include "windows/ContentBrowserWindow.h"
 #include "windows/ImageViewerWindow.h"
 #include "windows/SystemPerfomanceViewWindow.h"
+#include "windows/RenderDebugWindow.h"
 
 #include "operations/RemoveEntityOperation.h"
 
@@ -107,6 +108,7 @@ void CEditor::create()
     vEditorWindows.emplace_back(std::make_unique<CEditorContentBrowser>("Content browser"));
     vEditorWindows.emplace_back(std::make_unique<CEditorImageViewer>("Image viewer"));
     vEditorWindows.emplace_back(std::make_unique<CEditorPerfomanceView>("System perfomance view"));
+    vEditorWindows.emplace_back(std::make_unique<CRenderDebugWindow>("RenderDebugWindow"));
 
     ImGui_ImplSDL2_InitForVulkan(EGWindow->getWindowPointer());
     ImGui_ImplVulkan_InitInfo init_info = {};
@@ -251,7 +253,7 @@ void CEditor::newFrame(float fDt)
             if (ImGui::MenuItem("Display normals", "", &display_normals))
                 EGEngine->toggleDebugDrawNormals();
             auto display_physics = EGEngine->isDebugDrawPhysics();
-            if (ImGui::MenuItem("Display physics", "", &display_normals))
+            if (ImGui::MenuItem("Display physics", "", &display_physics))
                 EGEngine->toggleDebugDrawPhysics();
 
             ImGui::EndMenu();

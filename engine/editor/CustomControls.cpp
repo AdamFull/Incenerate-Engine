@@ -388,6 +388,54 @@ namespace ImGui
         return result;
     }
 
+    bool GSliderInt(const char* label, int* value, int min, int max)
+    {
+        static int oldValue{ 0 };
+
+        bool bValueChanged{ false };
+        ImGuiIO& io = GetIO();
+        auto boldFont = io.Fonts->Fonts[0];
+
+        PushID(label);
+
+        if (BeginTable("table", 2))
+        {
+            TableNextColumn(); Text(label);
+
+            TableNextColumn();
+            PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+
+            float lineHeight = boldFont->FontSize + 6.0f;
+            ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+            PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+            PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+            PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+            PushFont(boldFont);
+            if (Button("N", buttonSize))
+            {
+                bValueChanged = true;
+                *value = min;
+            }
+            PopFont();
+            PopStyleColor(3);
+
+            SameLine();
+
+            SetNextItemWidth(GetContentRegionAvail().x);
+            bValueChanged |= SliderInt("##N", value, min, max);
+            applyPropertyChange(oldValue, value);
+
+            PopStyleVar();
+
+            ImGui::EndTable();
+        }
+
+        PopID();
+
+        return bValueChanged;
+    }
+
 
     bool FileOpen(char* buf, size_t buf_size, const char* title, int filter_num, const char* const* filter_patterns)
     {

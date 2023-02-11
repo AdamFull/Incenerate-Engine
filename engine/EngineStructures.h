@@ -157,7 +157,7 @@ namespace engine
 
 	struct FPostProcessFilmGrain
 	{
-		bool enable{ true };
+		bool enable{ false };
 		float amount{ 0.01f };
 	};
 

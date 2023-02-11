@@ -1,6 +1,7 @@
 #include "CompositionSystem.h"
 
 #include "Engine.h"
+#include "editor/DebugGlobals.h"
 #include "graphics/image/ImageCubemap.h"
 
 #include "ecs/components/components.h"
@@ -141,6 +142,13 @@ void CCompositionSystem::__update(float fDt)
 	pUBOLights->set("directionalLights", directional_lights);
 	pUBOLights->set("spotLights", spot_lights);
 	pUBOLights->set("pointLights", point_lights);
+
+	auto& pUBODebug = graphics->getUniformHandle("UBODebug");
+	pUBODebug->set("mode", FDebugGlobal::mode);
+	pUBODebug->set("cascadeSplit", FDebugGlobal::cascadeSplit);
+	pUBODebug->set("spotShadowIndex", FDebugGlobal::spotShadowIndex);
+	pUBODebug->set("omniShadowIndex", FDebugGlobal::omniShadowIndex);
+	pUBODebug->set("omniShadowView", FDebugGlobal::omniShadowView);
 
 	// Drawing 
 	graphics->bindRenderer(stage);
