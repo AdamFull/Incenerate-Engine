@@ -19,7 +19,7 @@ void CDebugDraw::create()
 	vbo_id = graphics->addVertexBuffer("debug_draw_vbo");
 
 	auto& vbo = graphics->getVertexBuffer(vbo_id);
-	vbo->reserve(sizeof(FVertex), DEBUG_DRAW_MAX_VERTICES, sizeof(uint32_t), 0);
+	vbo->reserve(sizeof(FSimpleVertex), DEBUG_DRAW_MAX_VERTICES, sizeof(uint32_t), 0);
 
 	shader_id = graphics->addShader("debug_draw_shader", "debugdraw");
 }
@@ -61,8 +61,8 @@ void CDebugDraw::drawDebugPoint(const glm::vec3& pos, const float size, const gl
 
 void CDebugDraw::drawDebugLine(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color)
 {
-	vDrawData.emplace_back(FVertex{ from, color });
-	vDrawData.emplace_back(FVertex{ to, color });
+	vDrawData.emplace_back(FSimpleVertex{ from, color });
+	vDrawData.emplace_back(FSimpleVertex{ to, color });
 }
 
 void CDebugDraw::drawDebugVector(const glm::vec3& origin, const glm::vec3& to, const float length, const glm::vec3& color)

@@ -53,6 +53,7 @@ namespace engine
 		{
 			std::string source;
 			bool loaded{ false };
+			bool castShadows{ true };
 			std::vector<FMeshAnimation> animations;
 			std::vector<FMeshSkin> skins;
 			std::map<uint32_t, float> timers;

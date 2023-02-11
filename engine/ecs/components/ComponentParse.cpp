@@ -178,11 +178,13 @@ namespace engine
 		{
 			json = nlohmann::json{};
 			utl::serialize_from("source", json, type.source, !type.source.empty());
+			utl::serialize_from("castShadows", json, type.castShadows, !type.castShadows);
 		}
 
 		void from_json(const nlohmann::json& json, FSceneComponent& type)
 		{
 			utl::parse_to("source", json, type.source);
+			utl::parse_to("castShadows", json, type.castShadows);
 		}
 
 

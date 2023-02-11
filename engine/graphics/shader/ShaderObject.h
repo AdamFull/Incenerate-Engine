@@ -50,6 +50,7 @@ namespace engine
 			vk::PrimitiveTopology getPrimitiveTopology() const { return programCI.topology; }
 			bool getTesselationFlag() const { return programCI.tesselation; }
 			bool isVertexFree() const { return programCI.vertexfree; }
+			EVertexType getVertexType() const { return programCI.vertexType; }
 			const std::string& getStage() const { return programCI.srStage; }
 			const EAlphaMode alphaMode() const { return _alphaMode; }
 			const bool isDoubleSided() const { return bDoubleSided; }

@@ -201,11 +201,21 @@ namespace engine
 {
 	namespace graphics
 	{
+		NLOHMANN_JSON_SERIALIZE_ENUM
+		(
+			EVertexType,
+			{
+				{EVertexType::eDefault, "default"},
+				{EVertexType::eSmall, "small"}
+			}
+		);
+
 		void to_json(nlohmann::json& json, const FProgramCreateInfo& type)
 		{
 			json = nlohmann::json
 			{
 				{"stage", type.srStage},
+				{"vertex", type.vertexType},
 				{"vertex_free", type.srStage},
 				{"bind_point", type.srStage},
 				{"topology", type.srStage},
@@ -222,6 +232,7 @@ namespace engine
 		void from_json(const nlohmann::json& json, FProgramCreateInfo& type)
 		{
 			utl::parse_to("stage", json, type.srStage);
+			utl::parse_to("vertex", json, type.vertexType);
 			utl::parse_to("vertex_free", json, type.vertexfree);
 			utl::parse_to("bind_point", json, type.bindPoint);
 			utl::parse_to("topology", json, type.topology);

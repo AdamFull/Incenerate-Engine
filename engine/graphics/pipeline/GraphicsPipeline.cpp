@@ -25,6 +25,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     auto graphics = pDevice->getAPI();
     auto& shader = pShader->getShader();
     auto vertexfree = pShader->isVertexFree();
+    auto vertexType = pShader->getVertexType();
     auto culling = pShader->getCullMode();
     auto frontface = pShader->getFrontFace();
     auto depthTest = pShader->getDepthTestFlag();
@@ -34,14 +35,28 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     auto alphaMode = pShader->alphaMode();
     auto doubleSided = pShader->isDoubleSided();
 
-    auto attributeDescription = FVertex::getAttributeDescriptions();
-    auto bindingDescription = FVertex::getBindingDescription();
+    
 
     vk::PipelineVertexInputStateCreateInfo vertexInputCI{};
     vertexInputCI.vertexBindingDescriptionCount = 0;
     vertexInputCI.vertexAttributeDescriptionCount = 0;
+
+    std::vector<vk::VertexInputAttributeDescription> attributeDescription;
+    vk::VertexInputBindingDescription bindingDescription;
+
     if (!vertexfree)
     {
+        if (vertexType == EVertexType::eDefault)
+        {
+            attributeDescription = FVertex::getAttributeDescriptions();
+            bindingDescription = FVertex::getBindingDescription();
+        }
+        else if (vertexType == EVertexType::eSmall)
+        {
+            attributeDescription = FSimpleVertex::getAttributeDescriptions();
+            bindingDescription = FSimpleVertex::getBindingDescription();
+        }
+        
         vertexInputCI.vertexBindingDescriptionCount = attributeDescription.size() > 0 ? 1 : 0;
         vertexInputCI.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());
         vertexInputCI.pVertexBindingDescriptions = &bindingDescription;

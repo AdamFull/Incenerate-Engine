@@ -523,7 +523,7 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 		}
 		ImGui::EndDragDropTarget();
 	}
-	ImGui::Text("");
+	ImGui::GCheckbox("Cast Shadows", &object->castShadows);
 }
 
 void CEditorInspector::rigidbodyEdit(FTransformComponent* transform, FRigidBodyComponent* object)

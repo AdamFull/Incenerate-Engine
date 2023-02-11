@@ -33,7 +33,7 @@ namespace engine
 			
 		private:
 			CAPIHandle* graphics{ nullptr };
-			std::vector<FVertex> vDrawData;
+			std::vector<FSimpleVertex> vDrawData;
 
 			size_t vbo_id{ invalid_index };
 			size_t shader_id{ invalid_index };

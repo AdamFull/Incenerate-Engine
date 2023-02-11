@@ -62,9 +62,11 @@ void COmniShadowSystem::__update(float fDt)
 				{
 					graphics->bindVertexBuffer(mesh.vbo_id);
 
+					auto& head = registry->get<FSceneComponent>(mesh.head);
+
 					for (auto& meshlet : mesh.vMeshlets)
 					{
-						auto inLightView = point_light_frustums[i].checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
+						auto inLightView = head.castShadows && point_light_frustums[i].checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
 
 						if (inLightView)
 						{

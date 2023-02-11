@@ -126,13 +126,15 @@ void CCascadeShadowSystem::__update(float fDt)
 			auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 			for (auto [entity, mtransform, mesh] : meshes.each())
 			{
+				auto& head = registry->get<FSceneComponent>(mesh.head);
+
 				graphics->bindVertexBuffer(mesh.vbo_id);
 
 				for (auto& meshlet : mesh.vMeshlets)
 				{
 					//auto inLightView = frustum.checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
 
-					//if (inLightView)
+					if (head.castShadows)
 					{
 						auto& pPush = graphics->getPushBlockHandle("modelData");
 						pPush->set("model", mtransform.model);

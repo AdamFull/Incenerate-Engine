@@ -13,9 +13,16 @@ namespace engine
 			EBLEND
 		};
 
+		enum class EVertexType
+		{
+			eDefault,
+			eSmall
+		};
+
 		struct FProgramCreateInfo
 		{
 			std::string srStage{};
+			EVertexType vertexType{ EVertexType::eDefault };
 			bool vertexfree{ false };
 			vk::PipelineBindPoint bindPoint;
 			vk::PrimitiveTopology topology{ vk::PrimitiveTopology::eTriangleList };
