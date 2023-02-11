@@ -1,5 +1,7 @@
 #include "EngineStructures.h"
 
+#include "parse/glmparse.h"
+
 namespace engine
 {
 	NLOHMANN_JSON_SERIALIZE_ENUM
@@ -249,6 +251,20 @@ namespace engine
 		utl::parse_to("amount", json, type.amount);
 	}
 
+	void to_json(nlohmann::json& json, const FPostProcessFog& type)
+	{
+		utl::serialize_from("enable", json, type.enable, type.enable != false);
+		utl::serialize_from("color", json, type.color, type.color != glm::vec3(1.f));
+		utl::serialize_from("density", json, type.density, type.density != 1.f);
+	}
+
+	void from_json(const nlohmann::json& json, FPostProcessFog& type)
+	{
+		utl::parse_to("enable", json, type.enable);
+		utl::parse_to("color", json, type.color);
+		utl::parse_to("density", json, type.density);
+	}
+
 
 	void to_json(nlohmann::json& json, const FPostProcess& type)
 	{
@@ -257,6 +273,8 @@ namespace engine
 		utl::serialize_from("bloom", json, type.bloom, true);
 		utl::serialize_from("chromatic_aberration", json, type.aberration, true);
 		utl::serialize_from("vignette", json, type.vignette, true);
+		utl::serialize_from("filmgrain", json, type.filmgrain, true);
+		utl::serialize_from("fog", json, type.fog, true);
 		utl::serialize_from("tonemap", json, type.tonemap, true);
 	}
 
@@ -267,6 +285,8 @@ namespace engine
 		utl::parse_to("bloom", json, type.bloom);
 		utl::parse_to("chromatic_aberration", json, type.aberration);
 		utl::parse_to("vignette", json, type.vignette);
+		utl::parse_to("filmgrain", json, type.filmgrain);
+		utl::parse_to("fog", json, type.fog);
 		utl::parse_to("tonemap", json, type.tonemap);
 	}
 }

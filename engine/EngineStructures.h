@@ -164,6 +164,16 @@ namespace engine
 	void to_json(nlohmann::json& json, const FPostProcessFilmGrain& type);
 	void from_json(const nlohmann::json& json, FPostProcessFilmGrain& type);
 
+	struct FPostProcessFog
+	{
+		bool enable{ false };
+		glm::vec3 color{ 1.f };
+		float density{ 1.f };
+	};
+
+	void to_json(nlohmann::json& json, const FPostProcessFog& type);
+	void from_json(const nlohmann::json& json, FPostProcessFog& type);
+
 	struct FPostProcess
 	{
 		// fxaa
@@ -178,6 +188,8 @@ namespace engine
 		FPostProcessVignette vignette;
 		// Film grain
 		FPostProcessFilmGrain filmgrain;
+		// Fog 
+		FPostProcessFog fog;
 		// Tonemapping
 		FPostProcessTonemap tonemap;
 	};

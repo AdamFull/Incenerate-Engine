@@ -6,14 +6,14 @@ namespace engine
 {
 	namespace ecs
 	{
-		class CFilmGrainEffect
+		class CFogEffect
 		{
 		public:
 			void create();
-			size_t render(FCameraComponent* camera, float time, size_t in_source, size_t out_source);
+			size_t render(FCameraComponent* camera, size_t depth_source, size_t in_source, size_t out_source);
 		private:
 			graphics::CAPIHandle* graphics{ nullptr };
-			size_t shader_grain{ invalid_index };
+			size_t shader_fog{ invalid_index };
 		};
 	}
 }

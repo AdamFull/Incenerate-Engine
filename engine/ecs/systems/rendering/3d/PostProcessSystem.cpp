@@ -23,6 +23,7 @@ void CPostProcessSystem::__create()
 	chromatic_aberration.create();
 	vignette.create();
 	filmgrain.create();
+	fog.create();
 	tonemap.create();
 
 	final_image = effectshared::createImage("postprocess_tex", vk::Format::eR32G32B32A32Sfloat);
@@ -64,6 +65,7 @@ void CPostProcessSystem::__update(float fDt)
 	current_image = chromatic_aberration.render(camera, current_image, final_image);
 	current_image = vignette.render(camera, current_image, final_image);
 	current_image = filmgrain.render(camera, fDt, current_image, final_image);
+	current_image = fog.render(camera, getSubresource("depth_tex"), current_image, final_image);
 
 	if (current_image != final_image)
 	{

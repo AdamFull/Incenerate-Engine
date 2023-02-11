@@ -401,6 +401,17 @@ void CEditorInspector::cameraEdit(FCameraComponent* object)
 		ImGui::Separator();
 
 		{
+			ImGui::PushID("fog");
+			ImGui::Text("Fog");
+			ImGui::GCheckbox("enable", &object->effects.fog.enable);
+			ImGui::GColorEdit3("color", object->effects.fog.color);
+			ImGui::GDragFloat("density", &object->effects.fog.density, 0.01f, 0.01f, 50.f);
+			ImGui::PopID();
+		}
+
+		ImGui::Separator();
+
+		{
 			ImGui::PushID("tonemap");
 			ImGui::Text("Tonemapping");
 			ImGui::GCheckbox("enable", &object->effects.tonemap.enable);

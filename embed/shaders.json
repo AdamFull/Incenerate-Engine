@@ -223,6 +223,13 @@
     ],
     "defines": {}
   },
+  "fog": {
+    "bind_point": "Compute",
+    "stages": [
+      "shaders/postprocess/fog.comp"
+    ],
+    "defines": {}
+  },
   "ssr_pass": {
     "bind_point": "Compute",
     "stages": [

@@ -36,7 +36,7 @@ ${ENGINE_SCRIPTING_SOURCE}
 ${ENGINE_SYSTEM_SOURCE}
 ${ENGINE_GAME_SOURCE}
 ${ENGINE_SOURCE}
-)
+ "ecs/systems/rendering/3d/postprocess/FogEffect.h")
 
 target_link_libraries(${PROJECT_NAME} 
     PUBLIC external_lib

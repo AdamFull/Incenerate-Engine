@@ -6,6 +6,7 @@
 #include "postprocess/ChromaticAberrationEffect.h"
 #include "postprocess/VignetteEffect.h"
 #include "postprocess/FilmGrainEffect.h"
+#include "postprocess/FogEffect.h"
 #include "postprocess/TonemapEffect.h"
 
 #include "ecs/systems/rendering/BaseGraphicsSystem.h"
@@ -29,6 +30,7 @@ namespace engine
 			CChromaticAberrationEffect chromatic_aberration;
 			CVignetteEffect vignette;
 			CFilmGrainEffect filmgrain;
+			CFogEffect fog;
 			CTonemapEffect tonemap;
 
 			size_t final_image{ invalid_index };
