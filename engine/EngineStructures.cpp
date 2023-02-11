@@ -237,6 +237,18 @@ namespace engine
 		utl::parse_to("exposure", json, type.exposure);
 	}
 
+	void to_json(nlohmann::json& json, const FPostProcessFilmGrain& type)
+	{
+		utl::serialize_from("enable", json, type.enable, type.enable != false);
+		utl::serialize_from("amount", json, type.amount, type.amount != 0.01f);
+	}
+
+	void from_json(const nlohmann::json& json, FPostProcessFilmGrain& type)
+	{
+		utl::parse_to("enable", json, type.enable);
+		utl::parse_to("amount", json, type.amount);
+	}
+
 
 	void to_json(nlohmann::json& json, const FPostProcess& type)
 	{

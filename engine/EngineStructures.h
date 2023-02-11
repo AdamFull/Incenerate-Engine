@@ -155,6 +155,15 @@ namespace engine
 	void to_json(nlohmann::json& json, const FPostProcessTonemap& type);
 	void from_json(const nlohmann::json& json, FPostProcessTonemap& type);
 
+	struct FPostProcessFilmGrain
+	{
+		bool enable{ true };
+		float amount{ 0.01f };
+	};
+
+	void to_json(nlohmann::json& json, const FPostProcessFilmGrain& type);
+	void from_json(const nlohmann::json& json, FPostProcessFilmGrain& type);
+
 	struct FPostProcess
 	{
 		// fxaa
@@ -167,6 +176,8 @@ namespace engine
 		FPostProcessCA aberration;
 		// Vignette
 		FPostProcessVignette vignette;
+		// Film grain
+		FPostProcessFilmGrain filmgrain;
 		// Tonemapping
 		FPostProcessTonemap tonemap;
 	};

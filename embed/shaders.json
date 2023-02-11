@@ -216,6 +216,13 @@
     ],
     "defines": {}
   },
+  "filmgrain": {
+    "bind_point": "Compute",
+    "stages": [
+      "shaders/postprocess/filmgrain.comp"
+    ],
+    "defines": {}
+  },
   "ssr_pass": {
     "bind_point": "Compute",
     "stages": [
