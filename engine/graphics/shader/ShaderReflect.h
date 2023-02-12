@@ -103,7 +103,7 @@ namespace engine
 			std::optional<CUniformBlock> getUniformBlock(const std::string& name) const;
 			std::optional<CPushConstBlock> getPushBlock(const std::string& name) const;
 
-			const std::array<std::optional<uint32_t>, 3>& getLocalSizes() const { return localSizes; }
+			const std::array<std::optional<uint32_t>, 3>& getLocalSizes(uint32_t index = 0) const { return localSizes[index]; }
 			const std::unordered_map<std::string, CUniform>& getUniforms() const { return mUniforms; }
 			const std::unordered_map<std::string, CUniformBlock>& getUniformBlocks() const { return mUniformBlocks; }
 			const std::unordered_map<std::string, CPushConstBlock>& getPushBlocks() const { return mPushBlocks; }
@@ -117,7 +117,7 @@ namespace engine
 		protected:
 			uint32_t descriptorMultiplier{ 1 };
 
-			std::array<std::optional<uint32_t>, 3> localSizes;
+			std::vector<std::array<std::optional<uint32_t>, 3>> localSizes;
 			uint32_t executionModeInvocations{ 0 };
 			uint32_t executionModeOutputVertices{ 0 };
 

@@ -41,7 +41,7 @@ void CPostProcessSystem::__update(float fDt)
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
+	std::vector<glm::vec3> sizes{ glm::vec3(extent.width, extent.height, 1.f) };
 
 	auto* camera = EGEngine->getActiveCamera();
 
@@ -58,14 +58,14 @@ void CPostProcessSystem::__update(float fDt)
 	VkHelper::BarrierFromGraphicsToCompute(getSubresource("depth_tex"));
 
 	size_t current_image = getSubresource("composition_tex");
-	current_image = bloom.render(camera, current_image);
-	current_image = tonemap.render(camera, current_image, final_image);
+	current_image = tonemap.render(camera, fDt, current_image, final_image);
 	current_image = fxaa.render(camera, current_image, final_image);
 	current_image = dof.render(camera, getSubresource("depth_tex"), current_image, final_image);
 	current_image = chromatic_aberration.render(camera, current_image, final_image);
 	current_image = vignette.render(camera, current_image, final_image);
 	current_image = filmgrain.render(camera, fDt, current_image, final_image);
 	current_image = fog.render(camera, getSubresource("depth_tex"), current_image, final_image);
+	current_image = bloom.render(camera, current_image);
 
 	if (current_image != final_image)
 	{
@@ -74,7 +74,7 @@ void CPostProcessSystem::__update(float fDt)
 		graphics->bindTexture("writeColor", final_image);
 		graphics->bindTexture("samplerColor", current_image);
 
-		graphics->dispatch(resolution);
+		graphics->dispatch(sizes);
 
 		graphics->bindShader(invalid_index);
 	}

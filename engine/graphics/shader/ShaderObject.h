@@ -28,9 +28,10 @@ namespace engine
 			~CShaderObject();
 
 			void create(uint32_t subpass = 0, size_t usages = 1);
+			void bindDescriptor(vk::CommandBuffer& commandBuffer);
 			void predraw(vk::CommandBuffer& commandBuffer);
-			void dispatch(glm::vec2 size);
-			void dispatch(vk::CommandBuffer& commandBuffer, glm::vec2 size);
+			void dispatch(const std::vector<glm::vec3>& sizes);
+			void dispatch(vk::CommandBuffer& commandBuffer, const std::vector<glm::vec3>& sizes);
 
 			void addTexture(const std::string& attachment, size_t id, uint32_t mip_level = 0);
 			void addTexture(const std::string& attachment, vk::DescriptorImageInfo descriptor);

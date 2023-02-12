@@ -16,7 +16,7 @@ CPipeline::~CPipeline()
         pDevice->destroy(&descriptorSetLayout);
     if (descriptorPool)
         pDevice->destroy(&descriptorPool);
-    if (pipeline)
+    for(auto& pipeline : vPipelines)
         pDevice->destroy(&pipeline);
     if (pipelineLayout)
         pDevice->destroy(&pipelineLayout);
@@ -45,9 +45,9 @@ void CPipeline::reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, uin
     createPipeline(pShader);
 }
 
-void CPipeline::bind(vk::CommandBuffer& commandBuffer)
+void CPipeline::bind(vk::CommandBuffer& commandBuffer, uint32_t index)
 {
-    commandBuffer.bindPipeline(getBindPoint(), pipeline);
+    commandBuffer.bindPipeline(getBindPoint(), vPipelines[index]);
 }
 
 void CPipeline::createDescriptorSetLayout(CShaderObject* pShader)

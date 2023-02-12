@@ -148,8 +148,12 @@ namespace engine
 	struct FPostProcessTonemap
 	{
 		bool enable{ true };
+		bool adaptive{ true };
 		float gamma{ 2.2f };
 		float exposure{ 4.5f };
+		float whitePoint{ 4.f };
+		float lumMin{ -5.f };
+		float lumRange{ 50.f };
 	};
 
 	void to_json(nlohmann::json& json, const FPostProcessTonemap& type);

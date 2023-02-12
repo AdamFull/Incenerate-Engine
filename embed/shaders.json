@@ -263,6 +263,8 @@
   "tonemap": {
     "bind_point": "Compute",
     "stages": [
+      "shaders/postprocess/comp_histogram.comp",
+      "shaders/postprocess/comp_average_brightness.comp",
       "shaders/postprocess/tonemap.comp"
     ],
     "defines": {}

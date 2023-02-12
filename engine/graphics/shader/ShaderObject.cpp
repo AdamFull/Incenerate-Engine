@@ -8,6 +8,7 @@
 #include "handlers/StorageHandler.h"
 #include "handlers/UniformHandler.h"
 #include "Engine.h"
+#include "Helpers.h"
 
 using namespace engine;
 using namespace engine::graphics;
@@ -82,7 +83,7 @@ void CShaderObject::create(uint32_t subpass, size_t usages)
 	}
 }
 
-void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
+void CShaderObject::bindDescriptor(vk::CommandBuffer& commandBuffer)
 {
 	auto& pInstance = vInstances.at(currentUsage);
 
@@ -104,29 +105,68 @@ void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
 	mTextures.clear();
 
 	pInstance->pDescriptorSet->bind(commandBuffer);
-	pPipeline->bind(commandBuffer);
 
 	currentUsage = (currentUsage + 1) % usageCount;
 }
 
-void CShaderObject::dispatch(glm::vec2 size)
+void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
+{
+	bindDescriptor(commandBuffer);
+	pPipeline->bind(commandBuffer);
+}
+
+void CShaderObject::dispatch(const const std::vector<glm::vec3>& sizes)
 {
 	auto cmdBuf = CCommandBuffer(pDevice);
 	cmdBuf.create(true, vk::QueueFlagBits::eCompute);
 	auto& commandBuffer = cmdBuf.getCommandBuffer();
 
-	dispatch(commandBuffer, size);
+	dispatch(commandBuffer, sizes);
 	
 	cmdBuf.submitIdle();
 }
 
-void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, glm::vec2 size)
+void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector<glm::vec3>& sizes)
 {
-	predraw(commandBuffer);
+	auto& pInstance = vInstances.at(currentUsage);
 
-	auto groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(size.x) / static_cast<float>(*pShader->getLocalSizes()[0])));
-	auto groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(size.y) / static_cast<float>(*pShader->getLocalSizes()[1])));
-	commandBuffer.dispatch(groupCountX, groupCountY, 1);
+	bindDescriptor(commandBuffer);
+
+	auto pipelines = pPipeline->count();
+
+	// Dispatch all compute shaders with same descriptor
+	for (size_t idx = 0; idx < pipelines; ++idx)
+	{
+		// Synchronize dispatches
+		if (idx > 0)
+			VkHelper::BarrierFromComputeToCompute(commandBuffer);
+
+		auto& localSizes = pShader->getLocalSizes(idx);
+		auto& size = sizes[idx];
+
+		pPipeline->bind(commandBuffer, idx);
+
+		
+		uint32_t groupCountX{ 0 }, groupCountY{ 0 }, groupCountZ{ 0 };
+		if (size.x == 0.f || size.y == 0.f || size.z == 0.f)
+		{
+			groupCountX = *localSizes[0];
+			groupCountY = *localSizes[1];
+			groupCountZ = *localSizes[2];
+		}
+		else
+		{
+			groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(size.x) / static_cast<float>(*localSizes[0])));
+			groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(size.y) / static_cast<float>(*localSizes[1])));
+			groupCountZ = static_cast<uint32_t>(std::ceil(static_cast<float>(size.z) / static_cast<float>(*localSizes[2])));
+		}
+
+		groupCountX = glm::max(groupCountX, 1u);
+		groupCountY = glm::max(groupCountY, 1u);
+		groupCountZ = glm::max(groupCountZ, 1u);
+
+		commandBuffer.dispatch(groupCountX, groupCountY, groupCountZ);
+	}
 }
 
 void CShaderObject::addTexture(const std::string& attachment, size_t id, uint32_t mip_level)

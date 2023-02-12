@@ -43,7 +43,7 @@ size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
+	std::vector<glm::vec3> sizes{ glm::vec3(extent.width, extent.height, 1.f) };
 
 	if (camera->effects.dof.enable)
 	{
@@ -58,7 +58,7 @@ size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 			graphics->bindTexture("writeColor", blur_image);
 			graphics->bindTexture("samplerColor", in_source);
 		
-			graphics->dispatch(resolution);
+			graphics->dispatch(sizes);
 
 			graphics->bindShader(invalid_index);
 		}
@@ -84,7 +84,7 @@ size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 			graphics->bindTexture("samplerColor", in_source);
 			graphics->bindTexture("samplerBlured", blur_image);
 
-			graphics->dispatch(resolution);
+			graphics->dispatch(sizes);
 
 			graphics->bindShader(invalid_index);
 

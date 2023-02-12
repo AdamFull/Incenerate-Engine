@@ -17,7 +17,7 @@ size_t CFogEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
+	std::vector<glm::vec3> sizes{ glm::vec3(extent.width, extent.height, 1.f) };
 
 	if (camera->effects.fog.enable)
 	{
@@ -34,7 +34,7 @@ size_t CFogEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 		pPush->set("fogDensity", camera->effects.fog.density);
 		pPush->set("fogMax", camera->farPlane);
 
-		graphics->dispatch(resolution);
+		graphics->dispatch(sizes);
 
 		graphics->bindShader(invalid_index);
 

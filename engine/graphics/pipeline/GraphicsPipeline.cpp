@@ -157,7 +157,9 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     if (enableTesselation)
         pipelineInfo.pTessellationState = &tessellationState;
 
-
+    vk::Pipeline pipeline{ nullptr };
     auto result = pDevice->create(pipelineInfo, &pipeline);
     log_cerror(pipeline, "Failed creating pipeline.");
+
+    vPipelines.emplace_back(pipeline);
 }

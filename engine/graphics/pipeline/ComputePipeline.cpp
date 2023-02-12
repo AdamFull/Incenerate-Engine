@@ -21,12 +21,19 @@ void CComputePipeline::createPipeline(CShaderObject* pShader)
     auto& shader = pShader->getShader();
     auto shaderStages = shader->getStageCreateInfo();
 
-    vk::ComputePipelineCreateInfo pipelineInfo{};
-    pipelineInfo.stage = shaderStages.front();
-    pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.basePipelineHandle = nullptr;
-    pipelineInfo.basePipelineIndex = -1;
+    // Maybe set base pipeline here? If exists exactly.
+    for (uint32_t i = 0; i < shaderStages.size(); ++i)
+    {
+        vk::Pipeline pipeline{ nullptr };
 
-    vk::Result res = pDevice->create(pipelineInfo, &pipeline);
-    log_cerror(VkHelper::check(res), "Failed creating pipeline.");
+        vk::ComputePipelineCreateInfo pipelineInfo{};
+        pipelineInfo.stage = shaderStages[i];
+        pipelineInfo.layout = pipelineLayout;
+        pipelineInfo.basePipelineHandle = nullptr;
+        pipelineInfo.basePipelineIndex = -1;
+
+        vk::Result res = pDevice->create(pipelineInfo, &pipeline);
+        log_cerror(VkHelper::check(res), "Failed creating compute pipeline.");
+        vPipelines.emplace_back(pipeline);
+    }
 }

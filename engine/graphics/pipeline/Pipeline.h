@@ -17,9 +17,10 @@ namespace engine
 			virtual void create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass);
 			virtual void reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t _subpass);
 
-			void bind(vk::CommandBuffer& commandBuffer);
+			void bind(vk::CommandBuffer& commandBuffer, uint32_t index = 0);
+			const size_t count() const { return vPipelines.size(); }
 
-			vk::Pipeline& getPSO() { return pipeline; }
+			vk::Pipeline& getPSO(uint32_t index) { return vPipelines[index]; }
 			vk::DescriptorSetLayout& getDescriptorSetLayout() { return descriptorSetLayout; }
 			vk::DescriptorPool& getDescriptorPool() { return descriptorPool; }
 			vk::PipelineLayout& getPipelineLayout() { return pipelineLayout; }
@@ -36,7 +37,7 @@ namespace engine
 		protected:
 			CDevice* pDevice{ nullptr };
 
-			vk::Pipeline pipeline{ nullptr };
+			std::vector<vk::Pipeline> vPipelines;
 			vk::DescriptorSetLayout descriptorSetLayout{ nullptr };
 			vk::DescriptorPool descriptorPool{ nullptr };
 			vk::PipelineLayout pipelineLayout{ nullptr };

@@ -415,8 +415,20 @@ void CEditorInspector::cameraEdit(FCameraComponent* object)
 			ImGui::PushID("tonemap");
 			ImGui::Text("Tonemapping");
 			ImGui::GCheckbox("enable", &object->effects.tonemap.enable);
+			ImGui::GCheckbox("adaptive", &object->effects.tonemap.adaptive);
 			ImGui::GDragFloat("gamma", &object->effects.tonemap.gamma, 0.01f, 0.01f, 4.f);
-			ImGui::GDragFloat("exposure", &object->effects.tonemap.exposure, 0.01f, 0.01f, 11.f);
+
+			if(!object->effects.tonemap.adaptive)
+				ImGui::GDragFloat("exposure", &object->effects.tonemap.exposure, 0.01f, 0.01f, 11.f);
+			else
+			{
+				ImGui::GDragFloat("Lum min", &object->effects.tonemap.lumMin, 0.01f, -object->effects.tonemap.lumRange, 0);
+				ImGui::GDragFloat("Lum range", &object->effects.tonemap.lumRange, 0.01f, 0.01f, 100.f);
+			}
+				
+
+			ImGui::GDragFloat("white point", &object->effects.tonemap.whitePoint, 0.01f, 0.01f, 11.f);
+			
 			ImGui::PopID();
 		}
 	}

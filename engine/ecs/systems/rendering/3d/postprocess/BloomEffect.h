@@ -17,7 +17,7 @@ namespace engine
 			size_t render(FCameraComponent* camera, size_t source);
 		private:
 			void init();
-			std::vector<glm::vec2> vMips;
+			std::vector<glm::vec3> vMips;
 			const uint32_t mipLevels{ 5 };
 
 			graphics::CAPIHandle* graphics{ nullptr };

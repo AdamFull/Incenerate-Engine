@@ -57,7 +57,7 @@ void CBloomEffect::init()
 
 	vMips.clear();
 
-	glm::vec2 mipLevel{ extent.width, extent.height };
+	glm::vec3 mipLevel{ extent.width, extent.height, 1.f };
 
 	for (uint32_t i = 0; i < mipLevels; i++)
 	{
@@ -70,7 +70,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	auto resolution = glm::vec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
+	std::vector<glm::vec3> sizes{ glm::vec3(extent.width, extent.height, 1.f) };
 
 	if (camera->effects.bloom.enable)
 	{
@@ -84,7 +84,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 			graphics->bindTexture("writeColor", final_image);
 			graphics->bindTexture("samplerColor", source);
 
-			graphics->dispatch(resolution);
+			graphics->dispatch(sizes);
 
 			graphics->bindShader(invalid_index);
 		}
@@ -101,12 +101,13 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 			for (uint32_t i = 0; i < mipLevels; i++)
 			{
 				auto& mip = vMips.at(i);
+				std::vector<glm::vec3> mip_sizes{ mip };
 
 				pPush->set("resolution", mip);
 				pPush->set("mipLevel", i);
 
 				graphics->bindTexture("writeColor", bloom_image, i);
-				graphics->dispatch(mip);
+				graphics->dispatch(mip_sizes);
 
 				VkHelper::BarrierFromComputeToCompute();
 
@@ -132,7 +133,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 				graphics->bindTexture("samplerColor", bloom_image, i);
 				graphics->bindTexture("writeColor", bloom_image, i - 1);
 
-				graphics->dispatch(nextMip);
+				graphics->dispatch(sizes);
 
 				VkHelper::BarrierFromComputeToCompute();
 			}
@@ -150,7 +151,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 			graphics->bindTexture("samplerColor", source);
 			graphics->bindTexture("bloomColor", bloom_image);
 
-			graphics->dispatch(resolution);
+			graphics->dispatch(sizes);
 
 			graphics->bindShader(invalid_index);
 

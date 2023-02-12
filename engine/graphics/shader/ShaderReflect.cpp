@@ -45,9 +45,12 @@ void CShaderReflect::processReflection(const std::vector<uint32_t>& spirv, vk::S
             {
                 executionModeInvocations = compiler.get_execution_mode_argument(mode, 0);
             } break;
-            case spv::ExecutionMode::ExecutionModeLocalSize: {
+            case spv::ExecutionMode::ExecutionModeLocalSize: 
+            {
+                std::array<std::optional<uint32_t>, 3> sizes;
                 for (uint32_t dim = 0; dim < 3; ++dim)
-                    localSizes[dim] = compiler.get_execution_mode_argument(mode, dim);
+                    sizes[dim] = compiler.get_execution_mode_argument(mode, dim);
+                localSizes.emplace_back(sizes);
             } break;
             case spv::ExecutionMode::ExecutionModeOutputVertices: {
                 executionModeOutputVertices = compiler.get_execution_mode_argument(mode, 0);
