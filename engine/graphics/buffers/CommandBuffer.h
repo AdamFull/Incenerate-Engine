@@ -13,7 +13,7 @@ namespace engine
             CCommandBuffer(CDevice* device);
             ~CCommandBuffer();
 
-            void create(bool _begin = true, vk::QueueFlagBits queueType = vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel bufferLevel = vk::CommandBufferLevel::ePrimary, uint32_t count = 1);
+            void create(bool _begin, vk::QueueFlags queueFlags, vk::CommandBufferLevel bufferLevel = vk::CommandBufferLevel::ePrimary, uint32_t count = 1);
             void begin(vk::CommandBufferUsageFlags usage = vk::CommandBufferUsageFlagBits::eOneTimeSubmit, uint32_t index = 0);
             void end();
 
@@ -34,7 +34,7 @@ namespace engine
 
             std::shared_ptr<CCommandPool> commandPool;
 
-            vk::QueueFlagBits queueType;
+            vk::QueueFlags queueFlags;
             std::vector<vk::CommandBuffer, std::allocator<vk::CommandBuffer>> vCommandBuffers;
             bool running = false;
         };

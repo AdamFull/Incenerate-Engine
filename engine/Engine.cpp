@@ -36,6 +36,8 @@ void CEngine::create()
 	FEngineCreateInfo createInfo;
 	fs::read_json("config.json", createInfo, true);
 
+	pLoaderThread = std::make_unique<utl::threadworker>();
+
 	pEventManager = std::make_unique<CEventManager>();
 
 	pSceneManager = std::make_unique<CSceneManager>();
@@ -156,6 +158,11 @@ const physicscore_t& CEngine::getPhysics() const
 const particlescore_t& CEngine::getParticles() const
 {
 	return pParticles;
+}
+
+const std::unique_ptr<utl::threadworker>& CEngine::getLoaderThread()
+{
+	return pLoaderThread;
 }
 
 const bool CEngine::isEditorMode() const

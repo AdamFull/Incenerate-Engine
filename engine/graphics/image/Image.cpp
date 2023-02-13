@@ -177,7 +177,20 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
     imageInfo.initialLayout = _imageLayout;
     imageInfo.usage = flags;
     imageInfo.samples = _samples;
-    imageInfo.sharingMode = vk::SharingMode::eExclusive;
+
+    auto indices = pDevice->findQueueFamilies();
+    std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.computeFamily.value(), indices.transferFamily.value(), indices.presentFamily.value() };
+    std::vector<uint32_t>  queueFamilyIndices(uniqueQueueFamilies.begin(), uniqueQueueFamilies.end());
+
+    if (indices.graphicsFamily != indices.presentFamily)
+    {
+        imageInfo.sharingMode = vk::SharingMode::eConcurrent;
+        imageInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size());
+        imageInfo.pQueueFamilyIndices = queueFamilyIndices.data();
+    }
+    else
+        imageInfo.sharingMode = vk::SharingMode::eExclusive;
+    
 
     if (info->isCubemap)
         imageInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
@@ -294,12 +307,18 @@ void CImage::loadFromMemory(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
     initializeTexture(info, format, flags, aspect, addressMode, filter, vk::SampleCountFlagBits::e1);
     writeImageData(info, format, aspect);
     updateDescriptor();
+    loaded = true;
 }
 
 void CImage::transitionImageLayout(vk::ImageLayout newLayout, vk::ImageAspectFlags aspectFlags, bool use_mips)
 {
+    vk::QueueFlagBits queueType{ vk::QueueFlagBits::eTransfer };
+
+    if (_imageLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+        queueType = vk::QueueFlagBits::eGraphics;
+
     auto cmdBuf = CCommandBuffer(pDevice);
-    cmdBuf.create(true, vk::QueueFlagBits::eTransfer);
+    cmdBuf.create(true, queueType);
     auto commandBuffer = cmdBuf.getCommandBuffer();
     transitionImageLayout(commandBuffer, _imageLayout, newLayout, aspectFlags, use_mips);
     cmdBuf.submitIdle();
@@ -312,8 +331,8 @@ void CImage::transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLa
 
 void CImage::transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags aspectFlags, bool use_mips, uint32_t base_mip)
 {
-    std::vector<vk::ImageMemoryBarrier> vBarriers;
-    vk::ImageMemoryBarrier barrier{};
+    std::vector<vk::ImageMemoryBarrier2> vBarriers;
+    vk::ImageMemoryBarrier2 barrier{};
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.subresourceRange.aspectMask = aspectFlags;
@@ -331,15 +350,13 @@ void CImage::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk:
 {
     auto queue_indices = pDevice->findQueueFamilies();
 
-    std::vector<vk::ImageMemoryBarrier> vBarriers;
-    vk::ImageMemoryBarrier barrier{};
-    barrier.srcQueueFamilyIndex = queue_indices.graphicsFamily.value_or(VK_QUEUE_FAMILY_IGNORED);
-    barrier.dstQueueFamilyIndex = queue_indices.graphicsFamily.value_or(VK_QUEUE_FAMILY_IGNORED);
+    std::vector<vk::ImageMemoryBarrier2> vBarriers;
+    vk::ImageMemoryBarrier2 barrier{};
     barrier.oldLayout = oldLayout;
     barrier.newLayout = newLayout;
     barrier.image = _image;
-    barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-    barrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+    barrier.srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
+    barrier.dstAccessMask = vk::AccessFlagBits2::eMemoryRead | vk::AccessFlagBits2::eMemoryWrite;
     barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = _mipLevels;

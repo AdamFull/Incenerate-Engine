@@ -929,6 +929,14 @@ size_t CGltfLoader::loadTexture(const std::pair<std::filesystem::path, bool>& te
     else
         pImage->create(texpair.first, oformat);
 
+    //loaderThread->push([this, image = pImage.get(), name, path = texpair.first, oformat, isktx = texpair.second]()
+    //    {
+    //        if (isktx)
+    //        image->create(path);
+    //        else
+    //            image->create(path, oformat);
+    //    });
+
     auto name = fs::get_filename(texpair.first);
     return graphics->addImage(name, std::move(pImage));
 }

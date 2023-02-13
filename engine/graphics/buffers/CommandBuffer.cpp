@@ -18,10 +18,10 @@ CCommandBuffer::~CCommandBuffer()
     pDevice = nullptr;
 }
 
-void CCommandBuffer::create(bool _begin, vk::QueueFlagBits queueType, vk::CommandBufferLevel bufferLevel, uint32_t count)
+void CCommandBuffer::create(bool _begin, vk::QueueFlags queueFlags, vk::CommandBufferLevel bufferLevel, uint32_t count)
 {
-    this->queueType = queueType;
-    commandPool = pDevice->getCommandPool();
+    this->queueFlags = queueFlags;
+    commandPool = pDevice->getCommandPool(queueFlags);
 
     vk::CommandBufferAllocateInfo allocInfo = {};
     allocInfo.commandPool = commandPool->getCommandPool();
@@ -80,7 +80,7 @@ vk::Result CCommandBuffer::submitIdle()
     res = vkDevice.resetFences(1, &fence);
     log_cerror(VkHelper::check(res), "Cannot reset fence.");
 
-    auto& queue = pDevice->getQueue(queueType);
+    auto& queue = pDevice->getQueue(queueFlags);
     queue.submit(submitInfo, fence);
     res = vkDevice.waitForFences(1, &fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
     log_cerror(VkHelper::check(res), "Wait for fences error.");
@@ -94,5 +94,5 @@ vk::Result CCommandBuffer::submit(uint32_t& imageIndex)
         end();
 
     auto commandBuffer = getCommandBuffer();
-    return pDevice->submitCommandBuffers(&commandBuffer, &imageIndex, queueType);
+    return pDevice->submitCommandBuffers(&commandBuffer, &imageIndex, queueFlags);
 }

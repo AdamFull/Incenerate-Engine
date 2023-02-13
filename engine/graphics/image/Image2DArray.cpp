@@ -33,4 +33,5 @@ void CImage2DArray::create(uint32_t layers, const vk::Extent2D& extent, vk::Form
     else
         setImageLayout(layout);
     updateDescriptor();
+    loaded = true;
 }

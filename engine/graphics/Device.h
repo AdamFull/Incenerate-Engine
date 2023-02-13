@@ -44,8 +44,8 @@ namespace engine
 
             void copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size, vk::DeviceSize srcOffset = 0, vk::DeviceSize dstOffset = 0);
             void createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation, vma::MemoryUsage usage = vma::MemoryUsage::eUnknown);
-            void transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
-            void transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
+            void transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier2>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
+            void transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image& image, std::vector<vk::ImageMemoryBarrier2>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
             void copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions);
             void createSampler(vk::Sampler& sampler, vk::Filter magFilter, vk::SamplerAddressMode eAddressMode, bool anisotropy, bool compareOp, uint32_t mipLevels);
 
@@ -60,7 +60,7 @@ namespace engine
             /**************************************************Getters********************************************/
             inline vk::Instance& getVkInstance() { return vkInstance; }
             inline vk::SurfaceKHR& getSurface() { return vkSurface; }
-            const std::shared_ptr<CCommandPool>& getCommandPool(const std::thread::id& threadId = std::this_thread::get_id());
+            const std::shared_ptr<CCommandPool>& getCommandPool(vk::QueueFlags queueFlags, const std::thread::id& threadId = std::this_thread::get_id());
 
             inline vk::PhysicalDevice& getPhysical() { return vkPhysical; }
             inline vk::Device& getLogical() { return vkDevice; }
@@ -68,7 +68,7 @@ namespace engine
             inline vk::Queue& getPresentQueue() { return qPresentQueue; }
             inline vk::Queue& getComputeQueue() { return qComputeQueue; }
             inline vk::Queue& getTransferQueue() { return qTransferQueue; }
-            vk::Queue& getQueue(vk::QueueFlagBits flag);
+            vk::Queue& getQueue(vk::QueueFlags flags);
 
             inline vk::SampleCountFlagBits getSamples() { return msaaSamples; }
             inline vk::AllocationCallbacks* getAllocator() { return pAllocator; }
@@ -79,7 +79,7 @@ namespace engine
 
             /**************************************************Swapchain********************************************/
             vk::Result acquireNextImage(uint32_t* imageIndex);
-            vk::Result submitCommandBuffers(const vk::CommandBuffer* commandBuffer, uint32_t* imageIndex, vk::QueueFlagBits queueBit);
+            vk::Result submitCommandBuffers(const vk::CommandBuffer* commandBuffer, uint32_t* imageIndex, vk::QueueFlags ququeFlags);
 
             inline std::vector<vk::ImageView>& getImageViews() { return vImageViews; }
             inline vk::Format getImageFormat() { return imageFormat; };
@@ -267,6 +267,7 @@ namespace engine
             void cleanupSwapchain();
 
             FQueueFamilyIndices findQueueFamilies(const vk::PhysicalDevice& device);
+            uint32_t getQueueFamilyIndex(vk::QueueFlags flags);
             FSwapChainSupportDetails querySwapChainSupport(const vk::PhysicalDevice& device);
             vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surfaceCapabilities);
 
@@ -280,7 +281,7 @@ namespace engine
             vk::Instance vkInstance{ VK_NULL_HANDLE }; // Main vulkan instance
             vk::DebugUtilsMessengerEXT vkDebugUtils{ VK_NULL_HANDLE };
             vk::SurfaceKHR vkSurface{ VK_NULL_HANDLE }; // Vulkan's drawing surface
-            std::map<std::thread::id, std::shared_ptr<CCommandPool>> commandPools;
+            std::map<vk::QueueFlags, std::map<std::thread::id, std::shared_ptr<CCommandPool>>> commandPools;
             vk::AllocationCallbacks* pAllocator{ nullptr };
             vma::Allocator vmaAlloc{ VK_NULL_HANDLE };
 

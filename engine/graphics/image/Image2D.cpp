@@ -38,4 +38,5 @@ void CImage2D::create(const vk::Extent2D& extent, vk::Format format, vk::ImageLa
     else
         setImageLayout(layout);
     updateDescriptor();
+    loaded = true;
 }

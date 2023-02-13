@@ -35,4 +35,6 @@ void CImageCubemap::create(const vk::Extent2D& extent, vk::Format format, vk::Im
     else
         setImageLayout(layout);
     updateDescriptor();
+
+    loaded = true;
 }

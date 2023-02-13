@@ -35,4 +35,6 @@ void CImageCubemapArray::create(uint32_t layers, const vk::Extent2D& extent, vk:
     else
         setImageLayout(layout);
     updateDescriptor();
+
+    loaded = true;
 }

@@ -224,7 +224,7 @@ void CDevice::createDevice()
     FQueueFamilyIndices indices = findQueueFamilies(vkPhysical);
 
     std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+    std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.computeFamily.value(), indices.transferFamily.value(), indices.presentFamily.value()};
 
     float queuePriority = 1.0f;
 
@@ -255,7 +255,6 @@ void CDevice::createDevice()
     vk12features.shaderOutputLayer = true;
     vk12features.shaderOutputViewportIndex = true;
     vk12features.pNext = &vk13features;
-    
 
     auto createInfo = vk::DeviceCreateInfo{};
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
@@ -328,13 +327,14 @@ void CDevice::createSwapchain()
         createInfo.imageUsage |= vk::ImageUsageFlagBits::eTransferDst;
 
     auto indices = findQueueFamilies();
-    uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+    std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.computeFamily.value(), indices.transferFamily.value(), indices.presentFamily.value() };
+    std::vector<uint32_t>  queueFamilyIndices(uniqueQueueFamilies.begin(), uniqueQueueFamilies.end());
 
     if (indices.graphicsFamily != indices.presentFamily)
     {
         createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
-        createInfo.queueFamilyIndexCount = 2;
-        createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size());
+        createInfo.pQueueFamilyIndices = queueFamilyIndices.data();
     }
     else
     {
@@ -431,14 +431,17 @@ void CDevice::cleanupSwapchain()
 
 void CDevice::updateCommandPools()
 {
-    for (auto it = commandPools.begin(); it != commandPools.end();)
+    for (auto& [queueType, pools] : commandPools)
     {
-        if ((*it).second.use_count() <= 1)
+        for (auto it = pools.begin(); it != pools.end();)
         {
-            it = commandPools.erase(it);
-            continue;
+            if ((*it).second.use_count() <= 1)
+            {
+                it = pools.erase(it);
+                continue;
+            }
+            ++it;
         }
-        ++it;
     }
 }
 
@@ -544,7 +547,7 @@ void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma:
     log_cerror(VkHelper::check(res), "Image was not created");
 }
 
-void CDevice::transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
+void CDevice::transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier2>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
 {
     auto cmdBuf = CCommandBuffer(this);
     cmdBuf.create(true, vk::QueueFlagBits::eTransfer);
@@ -555,128 +558,130 @@ void CDevice::transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemor
     cmdBuf.submitIdle();
 }
 
-void CDevice::transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image& image, std::vector<vk::ImageMemoryBarrier>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
+void CDevice::transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image& image, std::vector<vk::ImageMemoryBarrier2>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
 {
-    vk::PipelineStageFlags sourceStage;
-    vk::PipelineStageFlags destinationStage;
-
     for (auto& barrier : vBarriers)
     {
         barrier.oldLayout = oldLayout;
         barrier.newLayout = newLayout;
         barrier.image = image;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+        //barrier.srcQueueFamilyIndex = getQueueFamilyIndex(vk::QueueFlagBits::eGraphics);
+        //barrier.dstQueueFamilyIndex = getQueueFamilyIndex(vk::QueueFlagBits::eTransfer);
 
         if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal)
         {
-            barrier.srcAccessMask = (vk::AccessFlagBits)0;
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.srcAccessMask = (vk::AccessFlagBits2)0;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
 
-            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
         }
         else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eGeneral)
         {
-            barrier.srcAccessMask = (vk::AccessFlagBits)0;
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.srcAccessMask = (vk::AccessFlagBits2)0;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
 
-            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
         }
         else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eColorAttachmentOptimal)
         {
-            barrier.srcAccessMask = (vk::AccessFlagBits)0;
-            barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+            barrier.srcAccessMask = (vk::AccessFlagBits2)0;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
 
-            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-            destinationStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
         }
         else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
         {
-            barrier.srcAccessMask = (vk::AccessFlagBits)0;
-            barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+            barrier.srcAccessMask = (vk::AccessFlagBits2)0;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eDepthStencilAttachmentRead | vk::AccessFlagBits2::eDepthStencilAttachmentWrite;
 
-            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-            destinationStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eEarlyFragmentTests;
         }
         else if (oldLayout == vk::ImageLayout::eColorAttachmentOptimal && newLayout == vk::ImageLayout::eTransferSrcOptimal)
         {
-            barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
 
-            sourceStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
         }
         else if (oldLayout == vk::ImageLayout::eTransferSrcOptimal && newLayout == vk::ImageLayout::eColorAttachmentOptimal)
         {
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+            barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
 
-            sourceStage = vk::PipelineStageFlagBits::eTransfer;
-            destinationStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
         }
         else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eTransferSrcOptimal)
         {
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
+            barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eTransferRead;
 
-            sourceStage = vk::PipelineStageFlagBits::eTransfer;
-            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
         }
         else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
         {
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+            barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
 
-            sourceStage = vk::PipelineStageFlagBits::eTransfer;
-            destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
         }
         else if (oldLayout == vk::ImageLayout::eTransferSrcOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
         {
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+            barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
 
-            sourceStage = vk::PipelineStageFlagBits::eTransfer;
-            destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
         }
         else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
         {
-            barrier.srcAccessMask = (vk::AccessFlagBits)0;
-            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+            barrier.srcAccessMask = (vk::AccessFlagBits2)0;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
 
-            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-            destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
         }
         else if (oldLayout == vk::ImageLayout::eGeneral && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
         {
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+            barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
 
-            sourceStage = vk::PipelineStageFlagBits::eTransfer;
-            destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
         }
         else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eGeneral)
         {
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite | vk::AccessFlagBits::eTransferRead;
+            barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite | vk::AccessFlagBits2::eTransferRead;
 
-            sourceStage = vk::PipelineStageFlagBits::eTransfer;
-            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
         }
         else if (oldLayout == vk::ImageLayout::ePresentSrcKHR && newLayout == vk::ImageLayout::eTransferSrcOptimal)
         {
-            barrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
+            barrier.srcAccessMask = vk::AccessFlagBits2::eMemoryRead;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eTransferRead;
 
-            sourceStage = vk::PipelineStageFlagBits::eTransfer;
-            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
         }
         else if (oldLayout == vk::ImageLayout::eTransferSrcOptimal && newLayout == vk::ImageLayout::ePresentSrcKHR)
         {
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
-            barrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+            barrier.srcAccessMask = vk::AccessFlagBits2::eTransferRead;
+            barrier.dstAccessMask = vk::AccessFlagBits2::eMemoryRead;
 
-            sourceStage = vk::PipelineStageFlagBits::eTransfer;
-            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+            barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+            barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
         }
         else
         {
@@ -684,12 +689,14 @@ void CDevice::transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image
         }
     }
 
-    internalBuffer.pipelineBarrier(
-        sourceStage,
-        destinationStage,
-        vk::DependencyFlags(),
-        0, nullptr, 0, nullptr,
-        static_cast<uint32_t>(vBarriers.size()), vBarriers.data());
+    vk::DependencyInfo depInfo{};
+    depInfo.imageMemoryBarrierCount = static_cast<uint32_t>(vBarriers.size());
+    depInfo.pImageMemoryBarriers = vBarriers.data();
+    depInfo.memoryBarrierCount = 0;
+    depInfo.pBufferMemoryBarriers = nullptr;
+    depInfo.dependencyFlags = vk::DependencyFlagBits::eByRegion;
+
+    internalBuffer.pipelineBarrier2(depInfo);
 }
 
 void CDevice::copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions)
@@ -920,8 +927,8 @@ void CDevice::takeScreenshot(const std::filesystem::path& filepath)
     auto indices = findQueueFamilies();
 
     // Transfering dst image to transfer dst
-    std::vector<vk::ImageMemoryBarrier> vBarriers;
-    vk::ImageMemoryBarrier barrier{};
+    std::vector<vk::ImageMemoryBarrier2> vBarriers;
+    vk::ImageMemoryBarrier2 barrier{};
     barrier.srcQueueFamilyIndex = indices.transferFamily.value();
     barrier.dstQueueFamilyIndex = indices.transferFamily.value();
     barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -1075,7 +1082,7 @@ vk::Result CDevice::acquireNextImage(uint32_t* imageIndex)
     return res;
 }
 
-vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer, uint32_t* imageIndex, vk::QueueFlagBits queueBit)
+vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer, uint32_t* imageIndex, vk::QueueFlags ququeFlags)
 {
     vk::Result res;
     vk::SubmitInfo submitInfo = {};
@@ -1097,7 +1104,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
 
     try
     {
-        auto& queue = getQueue(queueBit);
+        auto& queue = getQueue(ququeFlags);
         queue.submit(submitInfo, vInFlightFences[currentFrame]);
     }
     catch (vk::SystemError err)
@@ -1152,31 +1159,30 @@ CAPIHandle* CDevice::getAPI()
     return pAPI;
 }
 
-const std::shared_ptr<CCommandPool>& CDevice::getCommandPool(const std::thread::id& threadId)
+const std::shared_ptr<CCommandPool>& CDevice::getCommandPool(vk::QueueFlags queueFlags, const std::thread::id& threadId)
 {
-    auto it = commandPools.find(threadId);
-    if (it != commandPools.end())
-        return it->second;
+    auto it_queue = commandPools.find(queueFlags);
+    if (it_queue != commandPools.end())
+    {
+        auto it_thread = it_queue->second.find(threadId);
+        if(it_thread != it_queue->second.end())
+            return it_thread->second;
+    }
 
-    commandPools.emplace(threadId, std::make_shared<CCommandPool>(this));
-    commandPools[threadId]->create(threadId);
-    return commandPools[threadId];
+    auto& queue = commandPools[queueFlags];
+    queue.emplace(threadId, std::make_shared<CCommandPool>(this));
+    queue[threadId]->create(queueFlags, threadId);
+    return queue[threadId];
 }
 
-vk::Queue& CDevice::getQueue(vk::QueueFlagBits flag)
+vk::Queue& CDevice::getQueue(vk::QueueFlags flags)
 {
-    switch (flag)
-    {
-    case vk::QueueFlagBits::eGraphics: {
+    if(flags & vk::QueueFlagBits::eGraphics)
         return qGraphicsQueue;
-    } break;
-    case vk::QueueFlagBits::eCompute: {
+    else if(flags & vk::QueueFlagBits::eCompute)
         return qComputeQueue;
-    } break;
-    case vk::QueueFlagBits::eTransfer: {
+    else if(flags & vk::QueueFlagBits::eTransfer)
         return qTransferQueue;
-    } break;
-    }
 }
 
 FQueueFamilyIndices CDevice::findQueueFamilies(const vk::PhysicalDevice& device)
@@ -1185,38 +1191,66 @@ FQueueFamilyIndices CDevice::findQueueFamilies(const vk::PhysicalDevice& device)
 
     auto queueFamilies = device.getQueueFamilyProperties();
 
+    auto family_count = queueFamilies.size();
+
     int i = 0;
-    for (const auto& queueFamily : queueFamilies)
+    //if (family_count > 1)
+    //{
+    //    for (const auto& queueFamily : queueFamilies)
+    //    {
+    //        if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) && !indices.graphicsFamily.has_value())
+    //            indices.graphicsFamily = i;
+    //
+    //        if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eCompute) && !(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) && !indices.computeFamily.has_value())
+    //            indices.computeFamily = i;
+    //
+    //        if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer) && (queueFamily.queueFlags & vk::QueueFlagBits::eSparseBinding) && !(queueFamily.queueFlags & vk::QueueFlagBits::eCompute) && !(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) && !indices.transferFamily.has_value() && (i != indices.graphicsFamily.value()))
+    //            indices.transferFamily = i;
+    //
+    //        if (queueFamily.queueCount > 0 && device.getSurfaceSupportKHR(i, vkSurface) && !indices.presentFamily.has_value())
+    //            indices.presentFamily = i;
+    //
+    //        i++;
+    //    }
+    //}
+    //else
     {
-        if (queueFamily.queueCount > 0 && queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
+        for (const auto& queueFamily : queueFamilies)
         {
-            indices.graphicsFamily = i;
-        }
+            if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics))
+                indices.graphicsFamily = i;
 
-        if (queueFamily.queueCount > 0 && queueFamily.queueFlags & vk::QueueFlagBits::eCompute)
-        {
-            indices.computeFamily = i;
-        }
+            if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eCompute))
+                indices.computeFamily = i;
 
-        if (queueFamily.queueCount > 0 && queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
-        {
-            indices.transferFamily = i;
-        }
+            if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer))
+                indices.transferFamily = i;
 
-        if (queueFamily.queueCount > 0 && device.getSurfaceSupportKHR(i, vkSurface))
-        {
-            indices.presentFamily = i;
-        }
+            if (queueFamily.queueCount > 0 && device.getSurfaceSupportKHR(i, vkSurface))
+                indices.presentFamily = i;
 
-        if (indices.isComplete())
-        {
-            break;
-        }
+            if (indices.isComplete())
+                break;
 
-        i++;
+            i++;
+        }
     }
 
     return indices;
+}
+
+uint32_t CDevice::getQueueFamilyIndex(vk::QueueFlags flags)
+{
+    auto indices = findQueueFamilies();
+
+    if (flags & vk::QueueFlagBits::eGraphics)
+        return indices.graphicsFamily.value_or(0);
+    else if (flags & vk::QueueFlagBits::eCompute)
+        return indices.computeFamily.value_or(0);
+    else if (flags & vk::QueueFlagBits::eTransfer)
+        return indices.transferFamily.value_or(0);
+
+    return indices.presentFamily.value_or(0);
 }
 
 FSwapChainSupportDetails CDevice::querySwapChainSupport(const vk::PhysicalDevice& device)

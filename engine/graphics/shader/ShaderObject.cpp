@@ -185,7 +185,17 @@ void CShaderObject::addTexture(const std::string& attachment, size_t id, uint32_
 {
 	auto graphics = pDevice->getAPI();
 	auto& texture = graphics->getImage(id);
-	addTexture(attachment, texture->getDescriptor(mip_level));
+
+	vk::DescriptorImageInfo descriptor;
+	if (texture->isLoaded())
+		descriptor = texture->getDescriptor(mip_level);
+	else
+	{
+		auto& empty = graphics->getImage("empty_image_2d");
+		descriptor = empty->getDescriptor();
+	}
+
+	addTexture(attachment, descriptor);
 }
 
 void CShaderObject::addTexture(const std::string& attachment, vk::DescriptorImageInfo descriptor)

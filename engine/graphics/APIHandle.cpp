@@ -45,6 +45,10 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
     pDebugDraw = std::make_unique<CDebugDraw>(this);
 
+    auto empty_image_2d = std::make_unique<CImage2D>(pDevice.get());
+    empty_image_2d->create(vk::Extent2D{ 1u, 1u }, vk::Format::eR8G8B8A8Srgb);
+    addImage("empty_image_2d", std::move(empty_image_2d));
+
     auto depth_format = pDevice->getDepthFormat();
     
     {
@@ -427,16 +431,35 @@ size_t CAPIHandle::addImage(const std::string& name, std::unique_ptr<CImage>&& i
 size_t CAPIHandle::addImage(const std::string& name, const std::filesystem::path& path)
 {
     std::unique_ptr<CImage> image = std::make_unique<CImage>(pDevice.get());
+
+    if (pImageManager->get_id(name) == invalid_index)
+    {
+        if (fs::is_ktx_format(path))
+            image->create(path);
+        else
+            image->create(path, vk::Format::eR8G8B8A8Unorm);
+    }
     
-     if (pImageManager->get_id(name) == invalid_index)
-     {
-         if (fs::is_ktx_format(path))
-             image->create(path);
-         else
-             image->create(path, vk::Format::eR8G8B8A8Unorm);
-     }
-    
-    
+    return addImage(name, std::move(image));
+}
+
+size_t CAPIHandle::addImageAsync(const std::string& name, const std::filesystem::path& path)
+{
+    auto& loaderThread = EGEngine->getLoaderThread();
+
+    std::unique_ptr<CImage> image = std::make_unique<CImage>(pDevice.get());
+
+    loaderThread->push([this, image = image.get(), name, path]()
+        {
+            if (pImageManager->get_id(name) == invalid_index)
+            {
+                if (fs::is_ktx_format(path))
+                    image->create(path);
+                else
+                    image->create(path, vk::Format::eR8G8B8A8Unorm);
+            }
+        });
+
     return addImage(name, std::move(image));
 }
 

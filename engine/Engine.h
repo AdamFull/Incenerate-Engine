@@ -14,6 +14,8 @@
 #include "ecs/systems/BaseSystem.h"
 #include "ecs/components/fwd.h"
 
+#include <utility/threading.hpp>
+
 #define EGEngine CEngine::getInstance()
 #define EGScripting CEngine::getInstance()->getScripting()
 #define EGEditor CEngine::getInstance()->getEditor()
@@ -62,6 +64,8 @@ namespace engine
 		const physicscore_t& getPhysics() const;
 		const particlescore_t& getParticles() const;
 
+		const std::unique_ptr<utl::threadworker>& getLoaderThread();
+
 		const bool isEditorMode() const;
 		const bool isEditorEditing() const;
 		const bool isDebugDrawNormals() const;
@@ -104,6 +108,8 @@ namespace engine
 		scriptcore_t pScripting;
 		physicscore_t pPhysics;
 		particlescore_t pParticles;
+
+		std::unique_ptr<utl::threadworker> pLoaderThread;
 
 		bool bEditorMode{ true };
 		bool bDebugDrawNormals{ false };

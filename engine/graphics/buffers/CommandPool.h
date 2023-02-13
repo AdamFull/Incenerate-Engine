@@ -12,7 +12,7 @@ namespace engine
             CCommandPool(CDevice* device);
             ~CCommandPool();
 
-            void create(const std::thread::id& threadId = std::this_thread::get_id());
+            void create(vk::QueueFlags queueFlags, const std::thread::id& threadId = std::this_thread::get_id());
 
             operator const vk::CommandPool& () const { return commandPool; }
 

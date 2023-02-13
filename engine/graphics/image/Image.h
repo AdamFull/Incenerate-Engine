@@ -66,6 +66,7 @@ namespace engine
 			const vk::Extent3D& getExtent() const { return _extent; }
 			const vk::ImageLayout getLayout() const { return _imageLayout; }
 			const vk::ImageAspectFlags& getAspectMask() const { return _aspectMask; }
+			const bool isLoaded() const { return loaded; }
 
 		protected:
 			CDevice* pDevice{ nullptr };
@@ -87,6 +88,7 @@ namespace engine
 			uint32_t _layerCount;
 			vk::Format _format;
 			bool enableAnisotropy{ false };
+			bool loaded{ false };
 
 			vk::Filter _filter{ vk::Filter::eLinear };
 			vk::SamplerAddressMode _addressMode;

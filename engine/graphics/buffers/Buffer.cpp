@@ -82,22 +82,21 @@ void CBuffer::create(vk::DeviceSize instanceSize, vk::DeviceSize instanceCount, 
     this->instanceCount = instanceCount;
     bufferSize = alignmentSize * instanceCount;
 
-    auto queueFamilies = pDevice->findQueueFamilies();
-
-    std::set<uint32_t> queueFamilySet = { *queueFamilies.graphicsFamily, *queueFamilies.presentFamily, *queueFamilies.computeFamily };
-    std::vector<uint32_t> queueFamily(queueFamilySet.begin(), queueFamilySet.end());
+    auto indices = pDevice->findQueueFamilies();
+    std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.computeFamily.value(), indices.transferFamily.value(), indices.presentFamily.value() };
+    std::vector<uint32_t>  queueFamilyIndices(uniqueQueueFamilies.begin(), uniqueQueueFamilies.end());
 
     vk::BufferCreateInfo bufferInfo = {};
     bufferInfo.size = bufferSize;
     bufferInfo.usage = usageFlags;
 
-    if(queueFamily.size() <= 1)
+    if(queueFamilyIndices.size() <= 1)
         bufferInfo.sharingMode = vk::SharingMode::eExclusive;
     else
     {
         bufferInfo.sharingMode = vk::SharingMode::eConcurrent;
-        bufferInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamily.size());
-        bufferInfo.pQueueFamilyIndices = queueFamily.data();
+        bufferInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size());
+        bufferInfo.pQueueFamilyIndices = queueFamilyIndices.data();
     }
 
     vma::AllocationCreateInfo alloc_create_info = {};
