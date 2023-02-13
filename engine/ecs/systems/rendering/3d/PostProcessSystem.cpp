@@ -68,7 +68,7 @@ void CPostProcessSystem::__update(float fDt)
 	current_image = filmgrain.render(camera, fDt, current_image, final_image);
 	current_image = fog.render(camera, getSubresource("depth_tex"), current_image, final_image);
 	current_image = bloom.render(camera, current_image);
-
+	
 	if (current_image != final_image)
 	{
 		graphics->bindShader(shader_id);

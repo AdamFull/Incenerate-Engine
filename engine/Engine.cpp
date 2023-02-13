@@ -36,7 +36,7 @@ void CEngine::create()
 	FEngineCreateInfo createInfo;
 	fs::read_json("config.json", createInfo, true);
 
-	pLoaderThread = std::make_unique<utl::threadworker>();
+	//pLoaderThread = std::make_unique<utl::threadworker>();
 
 	pEventManager = std::make_unique<CEventManager>();
 

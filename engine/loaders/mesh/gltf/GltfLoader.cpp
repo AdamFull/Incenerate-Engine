@@ -157,12 +157,21 @@ void CGltfLoader::load(const const std::filesystem::path& source, const entt::en
         loadSkins(gltfModel, component);
 
         auto& loaderThread = EGEngine->getLoaderThread();
-        loaderThread->push([vbo_id = vbo_id, graphics = graphics.get(), vertexBuffer = std::move(vVertexBuffer), indexBuffer = std::move(vIndexBuffer)]()
-            {
-                auto& vbo = graphics->getVertexBuffer(vbo_id);
-                vbo->addMeshData(vertexBuffer, indexBuffer);
-                vbo->setLoaded();
-            });
+        if (loaderThread)
+        {
+            loaderThread->push([vbo_id = vbo_id, graphics = graphics.get(), vertexBuffer = std::move(vVertexBuffer), indexBuffer = std::move(vIndexBuffer)]()
+                {
+                    auto& vbo = graphics->getVertexBuffer(vbo_id);
+            vbo->addMeshData(vertexBuffer, indexBuffer);
+            vbo->setLoaded();
+                });
+        }
+        else
+        {
+            auto& vbo = graphics->getVertexBuffer(vbo_id);
+            vbo->addMeshData(vVertexBuffer, vIndexBuffer);
+            vbo->setLoaded();
+        }
     }
 }
 
@@ -942,26 +951,29 @@ size_t CGltfLoader::loadTexture(const std::pair<std::filesystem::path, bool>& te
         return image_id;
     }
 
-    auto pImage = std::make_unique<CImage>(device.get());
+    auto index = graphics->addImage(name, std::make_unique<CImage>(device.get()));
 
-    //if (texpair.second)
-    //    pImage->create(texpair.first); 
-    //else
-    //    pImage->create(texpair.first, oformat);
+    if (loaderThread)
+    {
+        loaderThread->push([this, index, name, path = texpair.first, oformat, isktx = texpair.second]()
+            {
+                auto& graphics = EGEngine->getGraphics();
+                auto& image = graphics->getImage(index);
 
-    auto index = graphics->addImage(name, std::move(pImage));
-
-    loaderThread->push([this, index, name, path = texpair.first, oformat, isktx = texpair.second]()
-        {
-            auto& graphics = EGEngine->getGraphics();
-            auto& image = graphics->getImage(index);
-    
-            if (isktx)
-                image->create(path);
-            else
-                image->create(path, oformat);
-        });
-
+                if (isktx)
+                    image->create(path);
+                else
+                    image->create(path, oformat);
+            });
+    }
+    else
+    {
+        auto& image = graphics->getImage(index);
+        if (texpair.second)
+            image->create(texpair.first);
+        else
+            image->create(texpair.first, oformat);
+    }
     
     return index;
 }

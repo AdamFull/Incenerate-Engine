@@ -19,6 +19,8 @@ void main()
 	vec2 uv = (iUV + 0.5f) / vec2(imageSize(writeColor).xy);
 
 	vec3 fragcolor = mix(texture(samplerColor, uv).xyz,  texture(bloomColor, uv).xyz, ubo.bloom_strength);
+	//vec3 fragcolor = texture(samplerColor, uv).xyz + texture(bloomColor, uv).xyz;
+	//float str = ubo.bloom_strength;
 
 	imageStore(writeColor, iUV, vec4(fragcolor, 1.0));
 }

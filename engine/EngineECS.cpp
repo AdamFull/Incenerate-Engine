@@ -101,20 +101,37 @@ void construct_skybox(entt::registry& reg, entt::entity entity)
 
 	if (!skybox.loaded && !skybox.source.empty())
 	{
-		loaderThread->push([&skybox, graphics = graphics.get(), &reg, entity]() 
-			{
-				skybox.origin = graphics->addImage(fs::get_filename(skybox.source), skybox.source);
-				skybox.irradiance = graphics->computeIrradiance(skybox.origin, 64);
-				skybox.prefiltred = graphics->computePrefiltered(skybox.origin, 512);
-				skybox.vbo_id = graphics->addVertexBuffer(skybox.source);
-				skybox.shader_id = graphics->addShader(skybox.source, "skybox");
-				skybox.loaded = true;
+		if (loaderThread)
+		{
+			loaderThread->push([&skybox, graphics = graphics.get(), &reg, entity]()
+				{
+					skybox.origin = graphics->addImage(fs::get_filename(skybox.source), skybox.source);
+			skybox.irradiance = graphics->computeIrradiance(skybox.origin, 64);
+			skybox.prefiltred = graphics->computePrefiltered(skybox.origin, 512);
+			skybox.vbo_id = graphics->addVertexBuffer(skybox.source);
+			skybox.shader_id = graphics->addShader(skybox.source, "skybox");
+			skybox.loaded = true;
 
-				auto& pVBO = graphics->getVertexBuffer(skybox.vbo_id);
-				pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
-				pVBO->setLoaded();
-				set_active_skybox(reg, entity);
-			});
+			auto& pVBO = graphics->getVertexBuffer(skybox.vbo_id);
+			pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
+			pVBO->setLoaded();
+			set_active_skybox(reg, entity);
+				});
+		}
+		else
+		{
+			skybox.origin = graphics->addImage(fs::get_filename(skybox.source), skybox.source);
+			skybox.irradiance = graphics->computeIrradiance(skybox.origin, 64);
+			skybox.prefiltred = graphics->computePrefiltered(skybox.origin, 512);
+			skybox.vbo_id = graphics->addVertexBuffer(skybox.source);
+			skybox.shader_id = graphics->addShader(skybox.source, "skybox");
+			skybox.loaded = true;
+
+			auto& pVBO = graphics->getVertexBuffer(skybox.vbo_id);
+			pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
+			pVBO->setLoaded();
+			set_active_skybox(reg, entity);
+		}
 	}
 }
 

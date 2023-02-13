@@ -449,16 +449,29 @@ size_t CAPIHandle::addImageAsync(const std::string& name, const std::filesystem:
 
     std::unique_ptr<CImage> image = std::make_unique<CImage>(pDevice.get());
 
-    loaderThread->push([this, image = image.get(), name, path]()
-        {
-            if (pImageManager->get_id(name) == invalid_index)
+    if (loaderThread)
+    {
+        loaderThread->push([this, image = image.get(), name, path]()
             {
-                if (fs::is_ktx_format(path))
-                    image->create(path);
-                else
-                    image->create(path, vk::Format::eR8G8B8A8Unorm);
-            }
-        });
+                if (pImageManager->get_id(name) == invalid_index)
+                {
+                    if (fs::is_ktx_format(path))
+                        image->create(path);
+                    else
+                        image->create(path, vk::Format::eR8G8B8A8Unorm);
+                }
+            });
+    }
+    else
+    {
+        if (pImageManager->get_id(name) == invalid_index)
+        {
+            if (fs::is_ktx_format(path))
+                image->create(path);
+            else
+                image->create(path, vk::Format::eR8G8B8A8Unorm);
+        }
+    }
 
     return addImage(name, std::move(image));
 }
