@@ -18,7 +18,9 @@ size_t CFilmGrainEffect::render(FCameraComponent* camera, float time, size_t in_
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	std::vector<glm::vec3> sizes{ glm::vec3(extent.width, extent.height, 1.f) };
+	
+	FDispatchParam param;
+	param.size = { extent.width, extent.height, 1.f };
 
 	if (camera->effects.filmgrain.enable)
 	{
@@ -31,7 +33,7 @@ size_t CFilmGrainEffect::render(FCameraComponent* camera, float time, size_t in_
 		pPush->set("amount", camera->effects.filmgrain.amount);
 		pPush->set("time", time);
 
-		graphics->dispatch(sizes);
+		graphics->dispatch(param);
 
 		graphics->bindShader(invalid_index);
 

@@ -17,7 +17,9 @@ size_t CVignetteEffect::render(FCameraComponent* camera, size_t in_source, size_
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	std::vector<glm::vec3> sizes{ glm::vec3(extent.width, extent.height, 1.f) };
+	
+	FDispatchParam param;
+	param.size = { extent.width, extent.height, 1.f };
 
 	if (camera->effects.vignette.enable)
 	{
@@ -31,7 +33,7 @@ size_t CVignetteEffect::render(FCameraComponent* camera, size_t in_source, size_
 		pPush->set("outer_radius", camera->effects.vignette.outer);
 		pPush->set("opacity", camera->effects.vignette.opacity);
 
-		graphics->dispatch(sizes);
+		graphics->dispatch(param);
 
 		graphics->bindShader(invalid_index);
 

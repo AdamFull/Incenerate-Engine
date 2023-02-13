@@ -107,7 +107,8 @@ namespace engine
 			const std::unique_ptr<CPushHandler>& getPushBlockHandle(const std::string& name);
 
 			void draw(size_t begin_vertex = 0, size_t vertex_count = 0, size_t begin_index = 0, size_t index_count = 0, size_t instance_count = 1);
-			void dispatch(const std::vector<glm::vec3>& sizes);
+			void dispatch(const std::vector<FDispatchParam>& params);
+			void dispatch(const FDispatchParam& param);
 
 		private:
 			vk::CommandBuffer beginFrame();

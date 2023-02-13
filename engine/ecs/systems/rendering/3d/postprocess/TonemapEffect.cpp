@@ -19,7 +19,17 @@ size_t CTonemapEffect::render(FCameraComponent* camera, float time, size_t in_so
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	std::vector<glm::vec3> sizes{ glm::vec3(0.f), glm::vec3(0.f), glm::vec3(extent.width, extent.height, 1u) };
+
+	std::vector<FDispatchParam> params;
+	params.resize(3);
+
+	// Histogram
+	params[0].size = { extent.width, extent.height, 1.f };
+	// Average
+	params[1].size = { 1.f, 1.f, 1.f };
+	params[1].divideByLocalSizes = false;
+	// Tonemap
+	params[2].size = params[0].size;
 
 	if (camera->effects.tonemap.enable)
 	{
@@ -32,14 +42,21 @@ size_t CTonemapEffect::render(FCameraComponent* camera, float time, size_t in_so
 		pBlock->set("whitePoint", camera->effects.tonemap.whitePoint);
 		pBlock->set("adaptive", static_cast<int32_t>(camera->effects.tonemap.adaptive));
 
+		float logLumRange = camera->effects.tonemap.lumMax - camera->effects.tonemap.lumMin;
+		float timeCoeff = glm::clamp<float>(1.0f - glm::exp(-time * camera->effects.tonemap.tau), 0.0, 1.0);
+
 		auto& pParams = graphics->getUniformHandle("UBOParams");
-		pParams->set("u_params", glm::vec4(camera->effects.tonemap.lumMin, camera->effects.tonemap.lumRange, time, sizes[2].x * sizes[2].y));
+		pParams->set("minLogLum", camera->effects.tonemap.lumMin);
+		pParams->set("logLumRange", logLumRange);
+		pParams->set("timeCoeff", timeCoeff);
+		pParams->set("numPixelsX", static_cast<float>(extent.width));
+		pParams->set("numPixelsY", static_cast<float>(extent.height));
 
 		graphics->bindTexture("writeColor", out_source);
 		graphics->bindTexture("samplerColor", in_source);
 		graphics->bindTexture("target", brightness_image);
 
-		graphics->dispatch(sizes);
+		graphics->dispatch(params);
 
 		graphics->bindShader(invalid_index);
 

@@ -153,7 +153,8 @@ namespace engine
 		float exposure{ 4.5f };
 		float whitePoint{ 4.f };
 		float lumMin{ -5.f };
-		float lumRange{ 50.f };
+		float lumMax{ 3.f };
+		float tau{ 1.1f };
 	};
 
 	void to_json(nlohmann::json& json, const FPostProcessTonemap& type);

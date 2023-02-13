@@ -70,7 +70,9 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	std::vector<glm::vec3> sizes{ glm::vec3(extent.width, extent.height, 1.f) };
+	
+	FDispatchParam param;
+	param.size = { extent.width, extent.height, 1.f };
 
 	if (camera->effects.bloom.enable)
 	{
@@ -84,7 +86,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 			graphics->bindTexture("writeColor", final_image);
 			graphics->bindTexture("samplerColor", source);
 
-			graphics->dispatch(sizes);
+			graphics->dispatch(param);
 
 			graphics->bindShader(invalid_index);
 		}
@@ -101,13 +103,14 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 			for (uint32_t i = 0; i < mipLevels; i++)
 			{
 				auto& mip = vMips.at(i);
-				std::vector<glm::vec3> mip_sizes{ mip };
+				FDispatchParam mip_param;
+				mip_param.size = mip;
 
 				pPush->set("resolution", mip);
 				pPush->set("mipLevel", i);
 
 				graphics->bindTexture("writeColor", bloom_image, i);
-				graphics->dispatch(mip_sizes);
+				graphics->dispatch(mip_param);
 
 				VkHelper::BarrierFromComputeToCompute();
 
@@ -133,7 +136,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 				graphics->bindTexture("samplerColor", bloom_image, i);
 				graphics->bindTexture("writeColor", bloom_image, i - 1);
 
-				graphics->dispatch(sizes);
+				graphics->dispatch(param);
 
 				VkHelper::BarrierFromComputeToCompute();
 			}
@@ -151,7 +154,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 			graphics->bindTexture("samplerColor", source);
 			graphics->bindTexture("bloomColor", bloom_image);
 
-			graphics->dispatch(sizes);
+			graphics->dispatch(param);
 
 			graphics->bindShader(invalid_index);
 

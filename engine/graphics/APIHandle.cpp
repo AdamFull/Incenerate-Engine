@@ -637,7 +637,9 @@ const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::strin
 
 size_t CAPIHandle::computeBRDFLUT(uint32_t size)
 {
-    std::vector<glm::vec3> sizes{ { size, size, 1u } };
+    FDispatchParam param;
+    param.size = { size, size, 1u };
+
     auto brdfImage = std::make_unique<CImage2D>(pDevice.get());
     brdfImage->create(
         vk::Extent2D{ size, size },
@@ -654,7 +656,7 @@ size_t CAPIHandle::computeBRDFLUT(uint32_t size)
 
     pShader->addTexture("outColour", output_id);
 
-    pShader->dispatch(sizes);
+    pShader->dispatch(param);
 
     removeShader(shader_id);
 
@@ -663,6 +665,9 @@ size_t CAPIHandle::computeBRDFLUT(uint32_t size)
 
 size_t CAPIHandle::computeIrradiance(size_t origin, uint32_t size)
 {
+    FDispatchParam param;
+    param.size = { size, size, 1u };
+
     std::vector<glm::vec3> sizes{ { size, size, 1u } };
     auto irradianceCubemap = std::make_unique<CImageCubemap>(pDevice.get());
     irradianceCubemap->create(
@@ -680,7 +685,7 @@ size_t CAPIHandle::computeIrradiance(size_t origin, uint32_t size)
     pShader->addTexture("outColour", output_id);
     pShader->addTexture("samplerColor", origin);
 
-    pShader->dispatch(sizes);
+    pShader->dispatch(param);
 
     removeShader(shader_id);
 
@@ -689,6 +694,9 @@ size_t CAPIHandle::computeIrradiance(size_t origin, uint32_t size)
 
 size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
 {
+    FDispatchParam param;
+    param.size = { size, size, 1u };
+
     std::vector<glm::vec3> sizes{ { size, size, 1u } };
     auto prefilteredCubemap = std::make_unique<CImageCubemap>(pDevice.get());
     prefilteredCubemap->create(
@@ -741,7 +749,7 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
         pShader->addTexture("outColour", imageInfo);
         pShader->addTexture("samplerColor", origin);
 
-        pShader->dispatch(commandBuffer, sizes);
+        pShader->dispatch(commandBuffer, param);
         cmdBuf.submitIdle();
 
         pDevice->destroy(&levelView);
@@ -948,14 +956,20 @@ void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_ind
         commandBuffer.draw(vertex_count, instance_count, begin_vertex, 0);
 }
 
-void CAPIHandle::dispatch(const std::vector<glm::vec3>& sizes)
+void CAPIHandle::dispatch(const std::vector<FDispatchParam>& params)
 {
     auto& commandBuffer = commandBuffers->getCommandBuffer();
 
     if (pBindedShader)
-        pBindedShader->dispatch(commandBuffer, sizes);
+        pBindedShader->dispatch(commandBuffer, params);
     else
         log_error("Cannot dispatch, cause shader was not binded.")
+}
+
+void CAPIHandle::dispatch(const FDispatchParam& param)
+{
+    std::vector<FDispatchParam> params{ param };
+    dispatch(params);
 }
 
 vk::CommandBuffer CAPIHandle::beginFrame()

@@ -12,6 +12,12 @@ namespace engine
 {
 	namespace graphics
 	{
+		struct FDispatchParam
+		{
+			glm::vec3 size;
+			bool divideByLocalSizes{ true };
+		};
+
 		// Bad solution
 		struct FShaderInstance
 		{
@@ -30,8 +36,10 @@ namespace engine
 			void create(uint32_t subpass = 0, size_t usages = 1);
 			void bindDescriptor(vk::CommandBuffer& commandBuffer);
 			void predraw(vk::CommandBuffer& commandBuffer);
-			void dispatch(const std::vector<glm::vec3>& sizes);
-			void dispatch(vk::CommandBuffer& commandBuffer, const std::vector<glm::vec3>& sizes);
+			void dispatch(const std::vector<FDispatchParam>& params);
+			void dispatch(vk::CommandBuffer& commandBuffer, const std::vector<FDispatchParam>& params);
+			void dispatch(const FDispatchParam& param);
+			void dispatch(vk::CommandBuffer& commandBuffer, const FDispatchParam& param);
 
 			void addTexture(const std::string& attachment, size_t id, uint32_t mip_level = 0);
 			void addTexture(const std::string& attachment, vk::DescriptorImageInfo descriptor);

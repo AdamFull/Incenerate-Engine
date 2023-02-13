@@ -41,7 +41,9 @@ void CPostProcessSystem::__update(float fDt)
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	std::vector<glm::vec3> sizes{ glm::vec3(extent.width, extent.height, 1.f) };
+
+	FDispatchParam param;
+	param.size = { extent.width, extent.height, 1.f };
 
 	auto* camera = EGEngine->getActiveCamera();
 
@@ -74,7 +76,7 @@ void CPostProcessSystem::__update(float fDt)
 		graphics->bindTexture("writeColor", final_image);
 		graphics->bindTexture("samplerColor", current_image);
 
-		graphics->dispatch(sizes);
+		graphics->dispatch(param);
 
 		graphics->bindShader(invalid_index);
 	}

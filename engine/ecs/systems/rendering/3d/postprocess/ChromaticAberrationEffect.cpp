@@ -17,7 +17,9 @@ size_t CChromaticAberrationEffect::render(FCameraComponent* camera, size_t in_so
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	std::vector<glm::vec3> sizes{ glm::vec3(extent.width, extent.height, 1.f) };
+	
+	FDispatchParam param;
+	param.size = { extent.width, extent.height, 1.f };
 
 	if (camera->effects.aberration.enable)
 	{
@@ -30,7 +32,7 @@ size_t CChromaticAberrationEffect::render(FCameraComponent* camera, size_t in_so
 		pPush->set("distortion", camera->effects.aberration.distortion);
 		pPush->set("iterations", camera->effects.aberration.iterations);
 
-		graphics->dispatch(sizes);
+		graphics->dispatch(param);
 
 		graphics->bindShader(invalid_index);
 

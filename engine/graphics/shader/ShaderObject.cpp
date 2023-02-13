@@ -115,18 +115,18 @@ void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
 	pPipeline->bind(commandBuffer);
 }
 
-void CShaderObject::dispatch(const const std::vector<glm::vec3>& sizes)
+void CShaderObject::dispatch(const std::vector<FDispatchParam>& params)
 {
 	auto cmdBuf = CCommandBuffer(pDevice);
 	cmdBuf.create(true, vk::QueueFlagBits::eCompute);
 	auto& commandBuffer = cmdBuf.getCommandBuffer();
 
-	dispatch(commandBuffer, sizes);
+	dispatch(commandBuffer, params);
 	
 	cmdBuf.submitIdle();
 }
 
-void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector<glm::vec3>& sizes)
+void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector<FDispatchParam>& params)
 {
 	auto& pInstance = vInstances.at(currentUsage);
 
@@ -142,23 +142,23 @@ void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector
 			VkHelper::BarrierFromComputeToCompute(commandBuffer);
 
 		auto& localSizes = pShader->getLocalSizes(idx);
-		auto& size = sizes[idx];
+		auto& param = params[idx];
 
 		pPipeline->bind(commandBuffer, idx);
 
 		
 		uint32_t groupCountX{ 0 }, groupCountY{ 0 }, groupCountZ{ 0 };
-		if (size.x == 0.f || size.y == 0.f || size.z == 0.f)
+		if (param.divideByLocalSizes)
 		{
-			groupCountX = *localSizes[0];
-			groupCountY = *localSizes[1];
-			groupCountZ = *localSizes[2];
+			groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(param.size.x) / static_cast<float>(*localSizes[0])));
+			groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(param.size.y) / static_cast<float>(*localSizes[1])));
+			groupCountZ = static_cast<uint32_t>(std::ceil(static_cast<float>(param.size.z) / static_cast<float>(*localSizes[2])));
 		}
 		else
 		{
-			groupCountX = static_cast<uint32_t>(std::ceil(static_cast<float>(size.x) / static_cast<float>(*localSizes[0])));
-			groupCountY = static_cast<uint32_t>(std::ceil(static_cast<float>(size.y) / static_cast<float>(*localSizes[1])));
-			groupCountZ = static_cast<uint32_t>(std::ceil(static_cast<float>(size.z) / static_cast<float>(*localSizes[2])));
+			groupCountX = static_cast<uint32_t>(param.size.x);
+			groupCountY = static_cast<uint32_t>(param.size.y);
+			groupCountZ = static_cast<uint32_t>(param.size.z);
 		}
 
 		groupCountX = glm::max(groupCountX, 1u);
@@ -167,6 +167,18 @@ void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector
 
 		commandBuffer.dispatch(groupCountX, groupCountY, groupCountZ);
 	}
+}
+
+void CShaderObject::dispatch(const FDispatchParam& param)
+{
+	std::vector<FDispatchParam> params{ param };
+	dispatch(params);
+}
+
+void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const FDispatchParam& param)
+{
+	std::vector<FDispatchParam> params{ param };
+	dispatch(commandBuffer, params);
 }
 
 void CShaderObject::addTexture(const std::string& attachment, size_t id, uint32_t mip_level)

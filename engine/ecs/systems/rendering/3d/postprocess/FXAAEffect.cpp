@@ -17,7 +17,9 @@ size_t CFXAAEffect::render(FCameraComponent* camera, size_t in_source, size_t ou
 {
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
-	std::vector<glm::vec3> sizes{ glm::vec3(extent.width, extent.height, 1.f) };
+	
+	FDispatchParam param;
+	param.size = { extent.width, extent.height, 1.f };
 
 	if (camera->effects.fxaa.enable)
 	{
@@ -31,7 +33,7 @@ size_t CFXAAEffect::render(FCameraComponent* camera, size_t in_source, size_t ou
 		pPush->set("threshold", atof(fxaa_threshold_variant[camera->effects.fxaa.threshold]));
 		pPush->set("threshold_min", atof(fxaa_threshold_min_variant[camera->effects.fxaa.threshold_min]));
 
-		graphics->dispatch(sizes);
+		graphics->dispatch(param);
 
 		graphics->bindShader(invalid_index);
 

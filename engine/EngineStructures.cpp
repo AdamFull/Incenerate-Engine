@@ -232,8 +232,9 @@ namespace engine
 		utl::serialize_from("gamma", json, type.gamma, type.gamma != 2.2f);
 		utl::serialize_from("exposure", json, type.exposure, type.exposure != 4.5f);
 		utl::serialize_from("whitePoint", json, type.whitePoint, type.whitePoint != 4.f);
-		utl::serialize_from("lumMin", json, type.lumMin, type.lumMin != -5.f);
-		utl::serialize_from("lumRange", json, type.lumRange, type.lumRange != 50.f);
+		utl::serialize_from("lumMin", json, type.lumMin, type.lumMin != -8.f);
+		utl::serialize_from("lumMax", json, type.lumMax, type.lumMax != 3.f);
+		utl::serialize_from("tau", json, type.tau, type.tau != 1.1f);
 	}
 
 	void from_json(const nlohmann::json& json, FPostProcessTonemap& type)
@@ -244,7 +245,8 @@ namespace engine
 		utl::parse_to("exposure", json, type.exposure);
 		utl::parse_to("whitePoint", json, type.whitePoint);
 		utl::parse_to("lumMin", json, type.lumMin);
-		utl::parse_to("lumRange", json, type.lumRange);
+		utl::parse_to("lumMax", json, type.lumMax);
+		utl::parse_to("tau", json, type.tau);
 	}
 
 	void to_json(nlohmann::json& json, const FPostProcessFilmGrain& type)

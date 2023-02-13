@@ -422,8 +422,9 @@ void CEditorInspector::cameraEdit(FCameraComponent* object)
 				ImGui::GDragFloat("exposure", &object->effects.tonemap.exposure, 0.01f, 0.01f, 11.f);
 			else
 			{
-				ImGui::GDragFloat("Lum min", &object->effects.tonemap.lumMin, 0.01f, -object->effects.tonemap.lumRange, 0);
-				ImGui::GDragFloat("Lum range", &object->effects.tonemap.lumRange, 0.01f, 0.01f, 100.f);
+				ImGui::GDragFloat("Lum min", &object->effects.tonemap.lumMin, 0.01f, -50.f, object->effects.tonemap.lumMax);
+				ImGui::GDragFloat("Lum max", &object->effects.tonemap.lumMax, 0.01f, 0.01f, 100.f);
+				ImGui::GDragFloat("Tau", &object->effects.tonemap.tau, 0.01f, 0.01f, 10.f);
 			}
 				
 
