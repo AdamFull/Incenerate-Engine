@@ -33,34 +33,43 @@ void CDebugDraw::draw()
 	if (!camera)
 		return;
 
-	//if (!vDrawData.empty())
-	//{
-	//	loaderThread->wait();
-	//	loaderThread->push([vbo = pVBO.get(), drawData = std::move(vDrawData)]()
-	//		{
-	//			vbo->clear();
-	//			vbo->addVertices(drawData); 
-	//			vbo->setLoaded();
-	//		});
-	//
-	//	graphics->bindShader(shader_id);
-	//	if (!graphics->bindVertexBuffer(vbo_id))
-	//	{
-	//		graphics->bindShader(invalid_index);
-	//		return;
-	//	}
-	//
-	//	auto& pUniform = graphics->getUniformHandle("UBODebugDraw");
-	//	pUniform->set("projection", camera->projection);
-	//	pUniform->set("view", camera->view);
-	//
-	//	graphics->draw(0, pVBO->getLastVertex(), 0, 0, 1);
-	//
-	//	graphics->bindVertexBuffer(invalid_index);
-	//	graphics->bindShader(invalid_index);
-	//
-	//	vDrawData.clear();
-	//}
+	if (!vDrawData.empty())
+	{
+		if (loaderThread)
+		{
+			loaderThread->wait();
+			loaderThread->push([vbo = pVBO.get(), drawData = std::move(vDrawData)]()
+				{
+					vbo->clear();
+					vbo->addVertices(drawData);
+					vbo->setLoaded();
+				});
+		}
+		else
+		{
+			pVBO->clear();
+			pVBO->addVertices(vDrawData);
+			pVBO->setLoaded();
+		}
+	
+		graphics->bindShader(shader_id);
+		if (!graphics->bindVertexBuffer(vbo_id))
+		{
+			graphics->bindShader(invalid_index);
+			return;
+		}
+	
+		auto& pUniform = graphics->getUniformHandle("UBODebugDraw");
+		pUniform->set("projection", camera->projection);
+		pUniform->set("view", camera->view);
+	
+		graphics->draw(0, pVBO->getLastVertex(), 0, 0, 1);
+	
+		graphics->bindVertexBuffer(invalid_index);
+		graphics->bindShader(invalid_index);
+	
+		vDrawData.clear();
+	}
 }
 
 void CDebugDraw::drawDebugPoint(const glm::vec3& pos, const float size, const glm::vec3& color)
