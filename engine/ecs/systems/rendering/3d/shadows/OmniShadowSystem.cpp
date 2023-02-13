@@ -60,7 +60,8 @@ void COmniShadowSystem::__update(float fDt)
 				auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 				for (auto [entity, mtransform, mesh] : meshes.each())
 				{
-					graphics->bindVertexBuffer(mesh.vbo_id);
+					if (!graphics->bindVertexBuffer(mesh.vbo_id))
+						continue;
 
 					auto& head = registry->get<FSceneComponent>(mesh.head);
 

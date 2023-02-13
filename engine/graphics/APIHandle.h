@@ -49,6 +49,8 @@ namespace engine
 			size_t addImage(const std::string& name, std::unique_ptr<CImage>&& image);
 			size_t addImage(const std::string& name, const std::filesystem::path& path);
 			size_t addImageAsync(const std::string& name, const std::filesystem::path& path);
+			void incrementImageUsage(const std::string& name);
+			void incrementImageUsage(size_t id);
 			void removeImage(const std::string& name);
 			void removeImage(size_t id);
 			const std::unique_ptr<CImage>& getImage(const std::string& name);
@@ -94,7 +96,7 @@ namespace engine
 			// Drawing methods
 			void bindShader(size_t id);
 			void bindMaterial(size_t id);
-			void bindVertexBuffer(size_t id);
+			bool bindVertexBuffer(size_t id);
 			void bindRenderer(size_t id);
 			void bindTexture(const std::string& name, size_t id, uint32_t mip_level = 0);
 

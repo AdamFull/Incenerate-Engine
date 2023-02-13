@@ -128,7 +128,8 @@ void CCascadeShadowSystem::__update(float fDt)
 			{
 				auto& head = registry->get<FSceneComponent>(mesh.head);
 
-				graphics->bindVertexBuffer(mesh.vbo_id);
+				if (!graphics->bindVertexBuffer(mesh.vbo_id))
+					continue;
 
 				for (auto& meshlet : mesh.vMeshlets)
 				{

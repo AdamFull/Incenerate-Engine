@@ -55,7 +55,12 @@ void CBillboardSystem::__update(float fDt)
 
 	graphics->bindShader(shader_id);
 	graphics->setManualShaderControlFlag(true);
-	graphics->bindVertexBuffer(vbo_id);
+	if (!graphics->bindVertexBuffer(vbo_id))
+	{
+		graphics->bindShader(invalid_index);
+		graphics->setManualShaderControlFlag(false);
+		return;
+	}
 
 	auto& pPush = graphics->getPushBlockHandle("billboard");
 	pPush->set("projection", camera->projection);

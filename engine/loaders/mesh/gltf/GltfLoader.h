@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
+#include "graphics/APIStructures.h"
 
 #include <utility/tiny_gltf.h>
 
@@ -93,6 +93,9 @@ namespace engine
 			std::vector<size_t> vMaterials;
 			std::map<uint32_t, entt::entity> mIndexToEntity;
 			entt::entity head{ entt::null };
+
+			std::vector<uint32_t> vIndexBuffer;
+			std::vector<graphics::FVertex> vVertexBuffer;
 
 			size_t vbo_id{ invalid_index };
 			uint32_t current_primitive{ 0 };

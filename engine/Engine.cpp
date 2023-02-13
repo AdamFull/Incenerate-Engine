@@ -80,6 +80,7 @@ void CEngine::beginEngineLoop()
 	utl::stopwatch sw;
 	float dt{ 0.f };
 
+	//pLoaderThread->wait();
 	while (pWindow->begin())
 	{
 		auto commandBuffer = pGraphics->begin();

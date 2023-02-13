@@ -26,6 +26,7 @@ void CDebugDraw::create()
 
 void CDebugDraw::draw()
 {
+	auto& loaderThread = EGEngine->getLoaderThread();
 	auto* camera = EGEngine->getActiveCamera();
 
 	if (!camera)
@@ -33,18 +34,28 @@ void CDebugDraw::draw()
 
 	if (!vDrawData.empty())
 	{
-		auto& vbo = graphics->getVertexBuffer(vbo_id);
-		vbo->clear();
-		vbo->addVertices(vDrawData);
+		auto& pVBO = graphics->getVertexBuffer(vbo_id);
+		pVBO->clear();
+
+		loaderThread->push([vbo = pVBO.get(), drawData = std::move(vDrawData)]() 
+			{ 
+				vbo->addVertices(drawData); 
+				vbo->setLoaded();
+			});
+		//loaderThread->wait();
 
 		graphics->bindShader(shader_id);
-		graphics->bindVertexBuffer(vbo_id);
+		if (!graphics->bindVertexBuffer(vbo_id))
+		{
+			graphics->bindShader(invalid_index);
+			return;
+		}
 
 		auto& pUniform = graphics->getUniformHandle("UBODebugDraw");
 		pUniform->set("projection", camera->projection);
 		pUniform->set("view", camera->view);
 
-		graphics->draw(0, vDrawData.size(), 0, 0, 1);
+		graphics->draw(0, pVBO->getLastVertex(), 0, 0, 1);
 
 		graphics->bindVertexBuffer(invalid_index);
 		graphics->bindShader(invalid_index);

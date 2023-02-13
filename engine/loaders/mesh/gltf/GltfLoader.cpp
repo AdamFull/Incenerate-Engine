@@ -155,6 +155,14 @@ void CGltfLoader::load(const const std::filesystem::path& source, const entt::en
         if (gltfModel.animations.size() > 0)
             loadAnimations(gltfModel, component);
         loadSkins(gltfModel, component);
+
+        auto& loaderThread = EGEngine->getLoaderThread();
+        loaderThread->push([vbo_id = vbo_id, graphics = graphics.get(), vertexBuffer = std::move(vVertexBuffer), indexBuffer = std::move(vIndexBuffer)]()
+            {
+                auto& vbo = graphics->getVertexBuffer(vbo_id);
+                vbo->addMeshData(vertexBuffer, indexBuffer);
+                vbo->setLoaded();
+            });
     }
 }
 
@@ -231,7 +239,6 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
 
     auto& registry = EGEngine->getRegistry();
     const tinygltf::Mesh mesh = model.meshes[node.mesh];
-    auto& pVBO = graphics->getVertexBuffer(vbo_id);
 
     registry.emplace<FMeshComponent>(parent, FMeshComponent{});
     auto& meshComponent = registry.get<FMeshComponent>(parent);
@@ -247,8 +254,8 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         //if (primitive.indices < 0)
         //    continue;
 
-        uint32_t indexStart = pVBO->getLastIndex();
-        uint32_t vertexStart = pVBO->getLastVertex();
+        uint32_t indexStart = static_cast<uint32_t>(vIndexBuffer.size());
+        uint32_t vertexStart = static_cast<uint32_t>(vVertexBuffer.size());
         uint32_t indexCount = 0;
         uint32_t vertexCount = 0;
         glm::vec3 posMin{};
@@ -432,7 +439,9 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         }
 
         meshComponent.vMeshlets.emplace_back(meshlet);
-        pVBO->addMeshData(std::move(vertexBuffer), std::move(indexBuffer));
+
+        vVertexBuffer.insert(vVertexBuffer.end(), vertexBuffer.begin(), vertexBuffer.end());
+        vIndexBuffer.insert(vIndexBuffer.end(), indexBuffer.begin(), indexBuffer.end());
     }
 
     meshComponent.vbo_id = vbo_id;
@@ -920,23 +929,39 @@ void CGltfLoader::loadSkins(const tinygltf::Model& model, FSceneComponent* compo
 
 size_t CGltfLoader::loadTexture(const std::pair<std::filesystem::path, bool>& texpair, vk::Format oformat)
 {
+    auto& loaderThread = EGEngine->getLoaderThread();
     auto& graphics = EGEngine->getGraphics();
     auto& device = graphics->getDevice();
-    auto pImage = std::make_unique<CImage>(device.get());
-
-    if (texpair.second)
-        pImage->create(texpair.first); 
-    else
-        pImage->create(texpair.first, oformat);
-
-    //loaderThread->push([this, image = pImage.get(), name, path = texpair.first, oformat, isktx = texpair.second]()
-    //    {
-    //        if (isktx)
-    //        image->create(path);
-    //        else
-    //            image->create(path, oformat);
-    //    });
 
     auto name = fs::get_filename(texpair.first);
-    return graphics->addImage(name, std::move(pImage));
+
+    if (graphics->getImage(name))
+    {
+        auto image_id = graphics->getImageID(name);
+        graphics->incrementImageUsage(image_id);
+        return image_id;
+    }
+
+    auto pImage = std::make_unique<CImage>(device.get());
+
+    //if (texpair.second)
+    //    pImage->create(texpair.first); 
+    //else
+    //    pImage->create(texpair.first, oformat);
+
+    auto index = graphics->addImage(name, std::move(pImage));
+
+    loaderThread->push([this, index, name, path = texpair.first, oformat, isktx = texpair.second]()
+        {
+            auto& graphics = EGEngine->getGraphics();
+            auto& image = graphics->getImage(index);
+    
+            if (isktx)
+                image->create(path);
+            else
+                image->create(path, oformat);
+        });
+
+    
+    return index;
 }

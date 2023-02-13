@@ -463,6 +463,16 @@ size_t CAPIHandle::addImageAsync(const std::string& name, const std::filesystem:
     return addImage(name, std::move(image));
 }
 
+void CAPIHandle::incrementImageUsage(const std::string& name)
+{
+    pImageManager->increment(name);
+}
+
+void CAPIHandle::incrementImageUsage(size_t id)
+{
+    pImageManager->increment(id);
+}
+
 void CAPIHandle::removeImage(const std::string& name)
 {
     pImageManager->remove(name);
@@ -818,24 +828,24 @@ void CAPIHandle::bindMaterial(size_t id)
         log_error("Cannot bind material, because material with id {} is not exists!", id);
 }
 
-void CAPIHandle::bindVertexBuffer(size_t id)
+bool CAPIHandle::bindVertexBuffer(size_t id)
 {
     if (id == invalid_index)
     {
         pBindedVBO = nullptr;
-        return;
+        return false;
     }
     
     auto& vbo = getVertexBuffer(id);
-    if (vbo)
+    if (vbo && vbo->isLoaded())
     {
         auto& commandBuffer = commandBuffers->getCommandBuffer();
 
         pBindedVBO = vbo.get();
         pBindedVBO->bind(commandBuffer);
     }
-    else
-        log_error("Cannot bind vertex buffer, because vertex buffer with id {} is not exists!", id);
+
+    return vbo->isLoaded();
 }
 
 void CAPIHandle::bindRenderer(size_t id)

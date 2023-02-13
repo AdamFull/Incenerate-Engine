@@ -30,6 +30,17 @@ namespace engine
 			return mNameToId[name];
 		}
 
+		void increment(const std::string& name)
+		{
+			increment(get_id(name));
+		}
+
+		void increment(size_t id)
+		{
+			if (id != invalid_index)
+				mUsages[id].fetch_add(1, std::memory_order_relaxed);
+		}
+
 		void remove(const std::string& name)
 		{
 			auto nameit = mNameToId.find(name);

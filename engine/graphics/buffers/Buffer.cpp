@@ -82,22 +82,10 @@ void CBuffer::create(vk::DeviceSize instanceSize, vk::DeviceSize instanceCount, 
     this->instanceCount = instanceCount;
     bufferSize = alignmentSize * instanceCount;
 
-    auto indices = pDevice->findQueueFamilies();
-    std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.computeFamily.value(), indices.transferFamily.value(), indices.presentFamily.value() };
-    std::vector<uint32_t>  queueFamilyIndices(uniqueQueueFamilies.begin(), uniqueQueueFamilies.end());
-
     vk::BufferCreateInfo bufferInfo = {};
     bufferInfo.size = bufferSize;
     bufferInfo.usage = usageFlags;
-
-    if(queueFamilyIndices.size() <= 1)
-        bufferInfo.sharingMode = vk::SharingMode::eExclusive;
-    else
-    {
-        bufferInfo.sharingMode = vk::SharingMode::eConcurrent;
-        bufferInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size());
-        bufferInfo.pQueueFamilyIndices = queueFamilyIndices.data();
-    }
+    bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
     vma::AllocationCreateInfo alloc_create_info = {};
     alloc_create_info.usage = memory_usage;

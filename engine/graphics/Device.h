@@ -5,6 +5,8 @@
 #include "Helpers.h"
 #include "buffers/CommandPool.h"
 
+#include <mutex>
+
 namespace engine
 {
 	namespace graphics
@@ -284,6 +286,8 @@ namespace engine
             std::map<vk::QueueFlags, std::map<std::thread::id, std::shared_ptr<CCommandPool>>> commandPools;
             vk::AllocationCallbacks* pAllocator{ nullptr };
             vma::Allocator vmaAlloc{ VK_NULL_HANDLE };
+
+            std::mutex cplock;
 
             vk::PhysicalDevice vkPhysical;
             vk::Device vkDevice;

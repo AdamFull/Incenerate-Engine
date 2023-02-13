@@ -22,6 +22,7 @@ void CVertexBufferObject::clear()
 {
 	last_vertex = 0;
 	last_index = 0;
+	bLoaded = false;
 }
 
 void CVertexBufferObject::bind(vk::CommandBuffer commandBuffer)

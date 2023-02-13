@@ -37,7 +37,8 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 	auto view = registry->view<FTransformComponent, FMeshComponent>();
 	for (auto [entity, transform, mesh] : view.each())
 	{
-		graphics->bindVertexBuffer(mesh.vbo_id);
+		if (!graphics->bindVertexBuffer(mesh.vbo_id))
+			continue;
 
 		bool bHasSkin{ false };
 		entt::entity armature{ entt::null };

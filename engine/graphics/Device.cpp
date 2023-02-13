@@ -226,10 +226,10 @@ void CDevice::createDevice()
     std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.computeFamily.value(), indices.transferFamily.value(), indices.presentFamily.value()};
 
-    float queuePriority = 1.0f;
+    float queuePriority[4] = { 1.f, 1.f, 1.f, 1.f };
 
     for (uint32_t queueFamily : uniqueQueueFamilies)
-        queueCreateInfos.push_back({ vk::DeviceQueueCreateFlags(), queueFamily, 1, &queuePriority });
+        queueCreateInfos.push_back({ vk::DeviceQueueCreateFlags(), queueFamily, 4, queuePriority });
 
     // vk 1.0 features
     vk::PhysicalDeviceFeatures deviceFeatures{};
@@ -276,11 +276,11 @@ void CDevice::createDevice()
 
     qGraphicsQueue = vkDevice.getQueue(indices.graphicsFamily.value(), 0);
     log_cerror(qGraphicsQueue, "Failed while getting graphics queue.");
-    qPresentQueue = vkDevice.getQueue(indices.presentFamily.value(), 0);
+    qPresentQueue = vkDevice.getQueue(indices.presentFamily.value(), 1);
     log_cerror(qPresentQueue, "Failed while getting present queue.");
-    qComputeQueue = vkDevice.getQueue(indices.computeFamily.value(), 0);
+    qComputeQueue = vkDevice.getQueue(indices.computeFamily.value(), 2);
     log_cerror(qComputeQueue, "Failed while getting compute queue.");
-    qTransferQueue = vkDevice.getQueue(indices.transferFamily.value(), 0);
+    qTransferQueue = vkDevice.getQueue(indices.transferFamily.value(), 3);
     log_cerror(qTransferQueue, "Failed while getting transfer queue.");
 }
 
@@ -337,9 +337,7 @@ void CDevice::createSwapchain()
         createInfo.pQueueFamilyIndices = queueFamilyIndices.data();
     }
     else
-    {
         createInfo.imageSharingMode = vk::SharingMode::eExclusive;
-    }
 
     createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
     createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
@@ -1085,19 +1083,27 @@ vk::Result CDevice::acquireNextImage(uint32_t* imageIndex)
 vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer, uint32_t* imageIndex, vk::QueueFlags ququeFlags)
 {
     vk::Result res;
-    vk::SubmitInfo submitInfo = {};
-    vk::Semaphore waitSemaphores[] = { vImageAvailableSemaphores[currentFrame] };
-    vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
+    vk::SubmitInfo2 submitInfo = {}; 
 
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = commandBuffer;
+    vk::SemaphoreSubmitInfo waitSubmitInfo{};
+    waitSubmitInfo.semaphore = vImageAvailableSemaphores[currentFrame];
+    waitSubmitInfo.stageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
 
-    vk::Semaphore signalSemaphores[] = { vRenderFinishedSemaphores[currentFrame] };
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+    submitInfo.pWaitSemaphoreInfos = &waitSubmitInfo;
+    submitInfo.waitSemaphoreInfoCount = 1;
+
+    vk::SemaphoreSubmitInfo signalSubmitInfo{};
+    signalSubmitInfo.semaphore = vRenderFinishedSemaphores[currentFrame];
+    signalSubmitInfo.stageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
+
+    submitInfo.pSignalSemaphoreInfos = &signalSubmitInfo;
+    submitInfo.signalSemaphoreInfoCount = 1;
+
+    vk::CommandBufferSubmitInfo commandSubmitInfo{};
+    commandSubmitInfo.commandBuffer = *commandBuffer;
+
+    submitInfo.pCommandBufferInfos = &commandSubmitInfo;
+    submitInfo.commandBufferInfoCount = 1;
 
     res = vkDevice.resetFences(1, &vInFlightFences[currentFrame]);
     log_cerror(VkHelper::check(res), "Cannot reset fences.");
@@ -1105,7 +1111,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
     try
     {
         auto& queue = getQueue(ququeFlags);
-        queue.submit(submitInfo, vInFlightFences[currentFrame]);
+        queue.submit2(submitInfo, vInFlightFences[currentFrame]);
     }
     catch (vk::SystemError err)
     {
@@ -1114,7 +1120,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
 
     vk::PresentInfoKHR presentInfo = {};
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
+    presentInfo.pWaitSemaphores = &signalSubmitInfo.semaphore;
 
     vk::SwapchainKHR swapChains[] = { swapChain };
     presentInfo.swapchainCount = 1;
@@ -1161,6 +1167,8 @@ CAPIHandle* CDevice::getAPI()
 
 const std::shared_ptr<CCommandPool>& CDevice::getCommandPool(vk::QueueFlags queueFlags, const std::thread::id& threadId)
 {
+    const std::lock_guard<std::mutex> lock(cplock);
+
     auto it_queue = commandPools.find(queueFlags);
     if (it_queue != commandPools.end())
     {

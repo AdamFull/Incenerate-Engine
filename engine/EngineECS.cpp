@@ -95,21 +95,26 @@ void destroy_scene(entt::registry& reg, entt::entity entity)
 
 void construct_skybox(entt::registry& reg, entt::entity entity)
 {
+	auto& loaderThread = EGEngine->getLoaderThread();
 	auto& graphics = EGEngine->getGraphics();
 	auto& skybox = reg.get<FEnvironmentComponent>(entity);
 
 	if (!skybox.loaded && !skybox.source.empty())
 	{
-		skybox.origin = graphics->addImage(fs::get_filename(skybox.source), skybox.source);
-		skybox.irradiance = graphics->computeIrradiance(skybox.origin, 64);
-		skybox.prefiltred = graphics->computePrefiltered(skybox.origin, 512);
-		skybox.vbo_id = graphics->addVertexBuffer(skybox.source);
-		skybox.shader_id = graphics->addShader(skybox.source, "skybox");
-		skybox.loaded = true;
+		loaderThread->push([&skybox, graphics = graphics.get(), &reg, entity]() 
+			{
+				skybox.origin = graphics->addImage(fs::get_filename(skybox.source), skybox.source);
+				skybox.irradiance = graphics->computeIrradiance(skybox.origin, 64);
+				skybox.prefiltred = graphics->computePrefiltered(skybox.origin, 512);
+				skybox.vbo_id = graphics->addVertexBuffer(skybox.source);
+				skybox.shader_id = graphics->addShader(skybox.source, "skybox");
+				skybox.loaded = true;
 
-		auto& pVBO = graphics->getVertexBuffer(skybox.vbo_id);
-		pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
-		set_active_skybox(reg, entity);
+				auto& pVBO = graphics->getVertexBuffer(skybox.vbo_id);
+				pVBO->addPrimitive(std::make_unique<FCubePrimitive>());
+				pVBO->setLoaded();
+				set_active_skybox(reg, entity);
+			});
 	}
 }
 

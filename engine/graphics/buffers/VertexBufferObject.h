@@ -121,6 +121,9 @@ namespace engine
 			const size_t getLastIndex() const { return last_index; }
 			const size_t getLastVertex() const { return last_vertex; }
 
+			void setLoaded() { bLoaded = true; }
+			const bool isLoaded() const { return bLoaded; }
+
 		private:
 			void copy_buffer_to_buffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, size_t size, size_t srcOffset, size_t dstOffset);
 			std::unique_ptr<CBuffer> allocate_buffer(size_t instance_size, size_t instances, uint32_t buffer_type);
@@ -130,6 +133,7 @@ namespace engine
 		private:
 			CDevice* pDevice{ nullptr };
 			bool bBuffersCreated{ false };
+			bool bLoaded{ false };
 
 			std::unique_ptr<CBuffer> vertexBuffer;
 			size_t last_vertex{ 0 };
