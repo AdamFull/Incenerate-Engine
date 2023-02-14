@@ -330,8 +330,6 @@ void CImage::transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLa
 
 void CImage::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
 {
-    auto queue_indices = pDevice->findQueueFamilies();
-
     std::vector<vk::ImageMemoryBarrier2> vBarriers;
     vk::ImageMemoryBarrier2 barrier{};
     barrier.oldLayout = oldLayout;

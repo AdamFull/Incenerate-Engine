@@ -221,15 +221,8 @@ void CDevice::createDevice()
     if (!isSupportedSampleCount(msaaSamples))
         msaaSamples = vk::SampleCountFlagBits::e1;
 
-    FQueueFamilyIndices indices = findQueueFamilies(vkPhysical);
-
-    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.computeFamily.value(), indices.transferFamily.value(), indices.presentFamily.value()};
-
-    float queuePriority[4] = { 1.f, 1.f, 1.f, 1.f };
-
-    for (uint32_t queueFamily : uniqueQueueFamilies)
-        queueCreateInfos.push_back({ vk::DeviceQueueCreateFlags(), queueFamily, 4, queuePriority });
+    queueFamilies.initialize(vkPhysical, vkSurface);
+    auto queueCreateInfos = queueFamilies.getCreateInfos();
 
     // vk 1.0 features
     vk::PhysicalDeviceFeatures deviceFeatures{};
@@ -274,13 +267,15 @@ void CDevice::createDevice()
     log_cerror(VkHelper::check(res), "Failed to create logical device.");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkDevice);
 
-    qGraphicsQueue = vkDevice.getQueue(indices.graphicsFamily.value(), 0);
+    queueFamilies.clearCreateInfo();
+
+    qGraphicsQueue = queueFamilies.createQueue(family::graphics, vkDevice);
     log_cerror(qGraphicsQueue, "Failed while getting graphics queue.");
-    qPresentQueue = vkDevice.getQueue(indices.presentFamily.value(), 1);
+    qPresentQueue = queueFamilies.createQueue(family::present, vkDevice);
     log_cerror(qPresentQueue, "Failed while getting present queue.");
-    qComputeQueue = vkDevice.getQueue(indices.computeFamily.value(), 2);
+    qComputeQueue = queueFamilies.createQueue(family::compute, vkDevice);
     log_cerror(qComputeQueue, "Failed while getting compute queue.");
-    qTransferQueue = vkDevice.getQueue(indices.transferFamily.value(), 3);
+    qTransferQueue = queueFamilies.createQueue(family::transfer, vkDevice);
     log_cerror(qTransferQueue, "Failed while getting transfer queue.");
 }
 
@@ -326,12 +321,9 @@ void CDevice::createSwapchain()
     if (surfaceCaps.supportedUsageFlags & vk::ImageUsageFlagBits::eTransferDst)
         createInfo.imageUsage |= vk::ImageUsageFlagBits::eTransferDst;
 
-    auto indices = findQueueFamilies();
-    std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.computeFamily.value(), indices.transferFamily.value(), indices.presentFamily.value() };
-    std::vector<uint32_t>  queueFamilyIndices(uniqueQueueFamilies.begin(), uniqueQueueFamilies.end());
-
-    if (indices.graphicsFamily != indices.presentFamily)
+    if (queueFamilies.getFamilyIndex(family::graphics) != queueFamilies.getFamilyIndex(family::present))
     {
+        auto& queueFamilyIndices = queueFamilies.getUniqueFamilies();
         createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
         createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size());
         createInfo.pQueueFamilyIndices = queueFamilyIndices.data();
@@ -473,11 +465,6 @@ uint32_t CDevice::getVulkanVersion(ERenderApi eAPI)
     }
 
     return 0;
-}
-
-FQueueFamilyIndices CDevice::findQueueFamilies()
-{
-    return findQueueFamilies(vkPhysical);
 }
 
 FSwapChainSupportDetails CDevice::querySwapChainSupport()
@@ -922,25 +909,19 @@ void CDevice::takeScreenshot(const std::filesystem::path& filepath)
     cmdbuf.create(true, vk::QueueFlagBits::eTransfer);
     auto commandBuffer = cmdbuf.getCommandBuffer();
 
-    auto indices = findQueueFamilies();
-
     // Transfering dst image to transfer dst
     std::vector<vk::ImageMemoryBarrier2> vBarriers;
     vk::ImageMemoryBarrier2 barrier{};
-    barrier.srcQueueFamilyIndex = indices.transferFamily.value();
-    barrier.dstQueueFamilyIndex = indices.transferFamily.value();
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = 1;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
     vBarriers.emplace_back(barrier);
-    transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 
-    vBarriers.clear();
-    barrier.srcQueueFamilyIndex = indices.presentFamily.value();
-    barrier.dstQueueFamilyIndex = indices.transferFamily.value();
-    vBarriers.emplace_back(barrier);
+    transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
     transitionImageLayout(commandBuffer, srcImage, vBarriers, vk::ImageLayout::ePresentSrcKHR, vk::ImageLayout::eTransferSrcOptimal);
 
     if (blitSupport)
@@ -991,18 +972,7 @@ void CDevice::takeScreenshot(const std::filesystem::path& filepath)
         commandBuffer.copyImage2(copyImageInfo);
     }
 
-    vBarriers.clear();
-    barrier.srcQueueFamilyIndex = indices.transferFamily.value();
-    barrier.dstQueueFamilyIndex = indices.transferFamily.value();
-    vBarriers.emplace_back(barrier);
-
     transitionImageLayout(commandBuffer, dstImage, vBarriers, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral);
-
-    vBarriers.clear();
-    barrier.srcQueueFamilyIndex = indices.transferFamily.value();
-    barrier.dstQueueFamilyIndex = indices.presentFamily.value();
-    vBarriers.emplace_back(barrier);
-
     transitionImageLayout(commandBuffer, srcImage, vBarriers, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::ePresentSrcKHR);
 
     cmdbuf.submitIdle();
@@ -1193,72 +1163,9 @@ vk::Queue& CDevice::getQueue(vk::QueueFlags flags)
         return qTransferQueue;
 }
 
-FQueueFamilyIndices CDevice::findQueueFamilies(const vk::PhysicalDevice& device)
+uint32_t CDevice::getQueueFamilyIndex(uint32_t type)
 {
-    FQueueFamilyIndices indices;
-
-    auto queueFamilies = device.getQueueFamilyProperties();
-
-    auto family_count = queueFamilies.size();
-
-    int i = 0;
-    //if (family_count > 1)
-    //{
-    //    for (const auto& queueFamily : queueFamilies)
-    //    {
-    //        if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) && !indices.graphicsFamily.has_value())
-    //            indices.graphicsFamily = i;
-    //
-    //        if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eCompute) && !(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) && !indices.computeFamily.has_value())
-    //            indices.computeFamily = i;
-    //
-    //        if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer) && (queueFamily.queueFlags & vk::QueueFlagBits::eSparseBinding) && !(queueFamily.queueFlags & vk::QueueFlagBits::eCompute) && !(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) && !indices.transferFamily.has_value() && (i != indices.graphicsFamily.value()))
-    //            indices.transferFamily = i;
-    //
-    //        if (queueFamily.queueCount > 0 && device.getSurfaceSupportKHR(i, vkSurface) && !indices.presentFamily.has_value())
-    //            indices.presentFamily = i;
-    //
-    //        i++;
-    //    }
-    //}
-    //else
-    {
-        for (const auto& queueFamily : queueFamilies)
-        {
-            if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics))
-                indices.graphicsFamily = i;
-
-            if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eCompute))
-                indices.computeFamily = i;
-
-            if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer))
-                indices.transferFamily = i;
-
-            if (queueFamily.queueCount > 0 && device.getSurfaceSupportKHR(i, vkSurface))
-                indices.presentFamily = i;
-
-            if (indices.isComplete())
-                break;
-
-            i++;
-        }
-    }
-
-    return indices;
-}
-
-uint32_t CDevice::getQueueFamilyIndex(vk::QueueFlags flags)
-{
-    auto indices = findQueueFamilies();
-
-    if (flags & vk::QueueFlagBits::eGraphics)
-        return indices.graphicsFamily.value_or(0);
-    else if (flags & vk::QueueFlagBits::eCompute)
-        return indices.computeFamily.value_or(0);
-    else if (flags & vk::QueueFlagBits::eTransfer)
-        return indices.transferFamily.value_or(0);
-
-    return indices.presentFamily.value_or(0);
+    return queueFamilies.getFamilyIndex(type);
 }
 
 FSwapChainSupportDetails CDevice::querySwapChainSupport(const vk::PhysicalDevice& device)
@@ -1355,7 +1262,7 @@ std::vector<vk::PhysicalDevice> CDevice::getAvaliablePhysicalDevices(const std::
 
 bool CDevice::isDeviceSuitable(const vk::PhysicalDevice& device, const std::vector<const char*>& deviceExtensions)
 {
-    FQueueFamilyIndices indices = findQueueFamilies(device);
+    queueFamilies.initialize(device, vkSurface);
 
     bool extensionsSupported = VkHelper::checkDeviceExtensionSupport(device, deviceExtensions);
 
@@ -1368,5 +1275,5 @@ bool CDevice::isDeviceSuitable(const vk::PhysicalDevice& device, const std::vect
 
     vk::PhysicalDeviceFeatures supportedFeatures = device.getFeatures();
 
-    return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy && supportedFeatures.sampleRateShading;
+    return queueFamilies.isValid() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy && supportedFeatures.sampleRateShading;
 }

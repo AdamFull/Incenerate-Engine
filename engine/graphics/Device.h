@@ -4,6 +4,7 @@
 
 #include "Helpers.h"
 #include "buffers/CommandPool.h"
+#include "QueueFamily.h"
 
 #include <mutex>
 
@@ -30,7 +31,6 @@ namespace engine
 
             uint32_t getVulkanVersion(ERenderApi pAPI);
             /***************************************************Helpers***************************************************/
-            FQueueFamilyIndices findQueueFamilies();
             FSwapChainSupportDetails querySwapChainSupport();
             std::vector<vk::SampleCountFlagBits> getAvaliableSampleCount();
             bool isSupportedSampleCount(vk::SampleCountFlagBits samples);
@@ -78,6 +78,8 @@ namespace engine
             inline vma::Allocator& getVMAAllocator() { return vmaAlloc; }
 
             const vk::PipelineCache& getPipelineCache() const { return pipelineCache; }
+
+            uint32_t getQueueFamilyIndex(uint32_t type);
 
             /**************************************************Swapchain********************************************/
             vk::Result acquireNextImage(uint32_t* imageIndex);
@@ -268,8 +270,6 @@ namespace engine
 
             void cleanupSwapchain();
 
-            FQueueFamilyIndices findQueueFamilies(const vk::PhysicalDevice& device);
-            uint32_t getQueueFamilyIndex(vk::QueueFlags flags);
             FSwapChainSupportDetails querySwapChainSupport(const vk::PhysicalDevice& device);
             vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surfaceCapabilities);
 
@@ -288,6 +288,8 @@ namespace engine
             vma::Allocator vmaAlloc{ VK_NULL_HANDLE };
 
             std::mutex cplock;
+
+            CQueueFamilies queueFamilies;
 
             vk::PhysicalDevice vkPhysical;
             vk::Device vkDevice;

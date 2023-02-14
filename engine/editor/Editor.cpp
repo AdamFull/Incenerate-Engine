@@ -115,7 +115,7 @@ void CEditor::create()
     init_info.Instance = device->getVkInstance();
     init_info.PhysicalDevice = device->getPhysical();
     init_info.Device = device->getLogical();
-    init_info.QueueFamily = device->findQueueFamilies().graphicsFamily.value();
+    init_info.QueueFamily = device->getQueueFamilyIndex(family::graphics);
     init_info.Queue = device->getGraphicsQueue();
 
     // pipeline cache is a potential future optimization, ignoring for now
