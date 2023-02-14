@@ -46,8 +46,14 @@ namespace engine
 
             void copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size, vk::DeviceSize srcOffset = 0, vk::DeviceSize dstOffset = 0);
             void createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation, vma::MemoryUsage usage = vma::MemoryUsage::eUnknown);
-            void transitionImageLayout(vk::Image& image, std::vector<vk::ImageMemoryBarrier2>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
-            void transitionImageLayout(vk::CommandBuffer& internalBuffer, vk::Image& image, std::vector<vk::ImageMemoryBarrier2>& vBarriers, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
+
+            bool prepareTransferImageLayoutBarrier(vk::ImageMemoryBarrier2& barrier);
+            bool prepareGraphicsImageLayoutBarrier(vk::ImageMemoryBarrier2& barrier);
+            void transitionImageLayoutTransfer(vk::ImageMemoryBarrier2& barrier);
+            void transitionImageLayoutGraphics(vk::ImageMemoryBarrier2& barrier);
+            void transitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier);
+            void transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier);
+
             void copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions);
             void createSampler(vk::Sampler& sampler, vk::Filter magFilter, vk::SamplerAddressMode eAddressMode, bool anisotropy, bool compareOp, uint32_t mipLevels);
 

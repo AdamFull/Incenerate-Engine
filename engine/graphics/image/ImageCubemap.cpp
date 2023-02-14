@@ -31,7 +31,22 @@ void CImageCubemap::create(const vk::Extent2D& extent, vk::Format format, vk::Im
     initializeTexture(texture, format, usage, aspect, addressMode, filter, samples);
 
     if (instantLayoutTransition)
-        transitionImageLayout(layout, aspect, mipmaps);
+    {
+        vk::ImageMemoryBarrier2 barrier{};
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.oldLayout = _imageLayout;
+        barrier.newLayout = layout;
+        barrier.subresourceRange.aspectMask = aspect;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = mipmaps ? _mipLevels : 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = _instCount;
+        barrier.image = _image;
+        _imageLayout = layout;
+
+        pDevice->transitionImageLayoutGraphics(barrier);
+    }
     else
         setImageLayout(layout);
     updateDescriptor();

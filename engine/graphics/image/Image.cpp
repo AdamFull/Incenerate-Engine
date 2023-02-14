@@ -87,17 +87,33 @@ void CImage::generateMipmaps(vk::Image& image, uint32_t mipLevels, vk::Format fo
         log_error("Texture image format does not support linear blitting!");
 
     auto cmdBuf = CCommandBuffer(pDevice);
-    cmdBuf.create(true, vk::QueueFlagBits::eTransfer);
+    cmdBuf.create(true, vk::QueueFlagBits::eGraphics);
     auto commandBuffer = cmdBuf.getCommandBuffer();
+
+    vk::ImageMemoryBarrier2 barrier{};
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = _image;
+    barrier.subresourceRange.aspectMask = aspectFlags;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = _instCount;
 
     int32_t mipWidth = width;
     int32_t mipHeight = height;
 
     for (uint32_t i = 1; i < mipLevels; i++)
     {
-        transitionImageLayout(commandBuffer, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eTransferSrcOptimal, aspectFlags, false, i - 1);
+        barrier.subresourceRange.levelCount = i - 1;
+        barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+        barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
+        pDevice->transitionImageLayoutTransfer(commandBuffer, barrier);
+
         blitImage(commandBuffer, vk::ImageLayout::eTransferDstOptimal, aspectFlags, i, mipWidth, mipHeight);
-        transitionImageLayout(commandBuffer, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, aspectFlags, false, i - 1);
+
+        barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
+        barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        pDevice->transitionImageLayoutGraphics(commandBuffer, barrier);
 
         if (mipWidth > 1)
             mipWidth /= 2;
@@ -105,7 +121,12 @@ void CImage::generateMipmaps(vk::Image& image, uint32_t mipLevels, vk::Format fo
             mipHeight /= 2;
     }
 
-    transitionImageLayout(commandBuffer, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, aspectFlags, false, mipLevels - 1);
+    barrier.subresourceRange.levelCount = mipLevels - 1;
+    barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+    barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    pDevice->transitionImageLayoutGraphics(commandBuffer, barrier);
+
+    _imageLayout = barrier.newLayout;
 
     cmdBuf.submitIdle();
 }
@@ -240,7 +261,20 @@ void CImage::writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
     stagingBuffer->map();
     stagingBuffer->write((void*)info->pData.get());
 
-    transitionImageLayout(vk::ImageLayout::eTransferDstOptimal, aspect);
+    vk::ImageMemoryBarrier2 barrier{};
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.oldLayout = _imageLayout;
+    barrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
+    barrier.image = _image;
+    barrier.subresourceRange.aspectMask = aspect;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = _mipLevels;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = _instCount;
+    _imageLayout = barrier.newLayout;
+
+    pDevice->transitionImageLayoutTransfer(barrier);
 
     std::vector<vk::BufferImageCopy> vRegions;
 
@@ -282,10 +316,16 @@ void CImage::writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
     auto buffer = stagingBuffer->getBuffer();
     pDevice->copyBufferToImage(buffer, _image, vRegions);
 
-    if (info->generateMipmaps)
+    if (info->generateMipmaps && _mipLevels > 1)
         generateMipmaps(_image, _mipLevels, format, _extent.width, _extent.height, aspect);
     else
-        transitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal, aspect);
+    {
+        barrier.oldLayout = barrier.newLayout;
+        barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        _imageLayout = barrier.newLayout;
+        pDevice->transitionImageLayoutGraphics(barrier);
+    }
+        
 }
 
 void CImage::loadFromMemory(std::unique_ptr<FImageCreateInfo>& info, vk::Format format, vk::ImageUsageFlags flags,
@@ -295,57 +335,6 @@ void CImage::loadFromMemory(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
     writeImageData(info, format, aspect);
     updateDescriptor();
     loaded = true;
-}
-
-void CImage::transitionImageLayout(vk::ImageLayout newLayout, vk::ImageAspectFlags aspectFlags, bool use_mips)
-{
-    auto cmdBuf = CCommandBuffer(pDevice);
-    cmdBuf.create(true, vk::QueueFlagBits::eTransfer);
-    auto commandBuffer = cmdBuf.getCommandBuffer();
-    transitionImageLayout(commandBuffer, _imageLayout, newLayout, aspectFlags, use_mips);
-    cmdBuf.submitIdle();
-}
-
-void CImage::transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLayout newLayout, vk::ImageAspectFlags aspectFlags, bool use_mips , uint32_t base_mip)
-{
-    transitionImageLayout(commandBuffer, _imageLayout, newLayout, aspectFlags, use_mips, base_mip);
-}
-
-void CImage::transitionImageLayout(vk::CommandBuffer& commandBuffer, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags aspectFlags, bool use_mips, uint32_t base_mip)
-{
-    std::vector<vk::ImageMemoryBarrier2> vBarriers;
-    vk::ImageMemoryBarrier2 barrier{};
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.subresourceRange.aspectMask = aspectFlags;
-    barrier.subresourceRange.baseMipLevel = base_mip;
-    barrier.subresourceRange.levelCount = use_mips ? _mipLevels : 1;
-    barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = _instCount;
-    vBarriers.push_back(barrier);
-
-    pDevice->transitionImageLayout(commandBuffer, _image, vBarriers, oldLayout, newLayout);
-    _imageLayout = newLayout;
-}
-
-void CImage::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
-{
-    std::vector<vk::ImageMemoryBarrier2> vBarriers;
-    vk::ImageMemoryBarrier2 barrier{};
-    barrier.oldLayout = oldLayout;
-    barrier.newLayout = newLayout;
-    barrier.image = _image;
-    barrier.srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
-    barrier.dstAccessMask = vk::AccessFlagBits2::eMemoryRead | vk::AccessFlagBits2::eMemoryWrite;
-    barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-    barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = _mipLevels;
-    barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = _instCount;
-    vBarriers.push_back(barrier);
-
-    pDevice->transitionImageLayout(commandBuffer, _image, vBarriers, oldLayout, newLayout);
-    _imageLayout = newLayout;
 }
 
 bool CImage::isSupportedDimension(std::unique_ptr<FImageCreateInfo>& info)
