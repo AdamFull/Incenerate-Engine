@@ -226,6 +226,11 @@ namespace engine
             {
                 return vkDevice.createDescriptorPool(&info, pAllocator, ref);
             }
+            template <>
+            inline vk::Result create(vk::QueryPoolCreateInfo& info, vk::QueryPool* ref)
+            {
+                return vkDevice.createQueryPool(&info, pAllocator, ref);
+            }
 
             template <class _Ty>
             inline void destroy(_Ty* ref) { log_error("Unknown object type."); }
@@ -265,6 +270,8 @@ namespace engine
             inline void destroy(vk::Semaphore* ref) { vkDevice.destroySemaphore(*ref, pAllocator); }
             template <>
             inline void destroy(vk::Fence* ref) { vkDevice.destroyFence(*ref, pAllocator); }
+            template <>
+            inline void destroy(vk::QueryPool* ref) { vkDevice.destroyQueryPool(*ref, pAllocator); }
 
         private:
             void createMemoryAllocator(const FEngineCreateInfo& createInfo);

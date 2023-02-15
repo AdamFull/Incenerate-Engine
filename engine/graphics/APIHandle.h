@@ -2,6 +2,7 @@
 
 #include "Device.h"
 #include "buffers/CommandBuffer.h"
+#include "rendering/QueryPool.h"
 #include "EngineStructures.h"
 
 #include "shader/ShaderLoader.h"
@@ -36,6 +37,7 @@ namespace engine
 			void shutdown();
 
 			const std::unique_ptr<CDebugDraw>& getDebugDraw() const;
+			const std::unique_ptr<CQueryPool>& getQueryPool() const;
 
 			vk::CommandBuffer begin();
 			void end(float fDT);
@@ -100,6 +102,12 @@ namespace engine
 			void bindRenderer(size_t id);
 			void bindTexture(const std::string& name, size_t id, uint32_t mip_level = 0);
 
+			void clearQuery();
+			void beginQuery(uint32_t index);
+			void endQuery(uint32_t index);
+			void getQueryResult();
+			bool occlusionTest(uint32_t index);
+
 			bool compareAlphaMode(EAlphaMode mode);
 
 			void setManualShaderControlFlag(bool value) { bManualShaderControl = value; }
@@ -124,6 +132,7 @@ namespace engine
 			std::unique_ptr<CDevice> pDevice;
 			std::unique_ptr<CShaderLoader> pLoader;
 			std::unique_ptr<CDebugDraw> pDebugDraw;
+			std::unique_ptr<CQueryPool> pQueryPool;
 
 			std::map<std::string, FCIStage> mStageInfos;
 			std::unique_ptr<CObjectManager<CImage>> pImageManager;

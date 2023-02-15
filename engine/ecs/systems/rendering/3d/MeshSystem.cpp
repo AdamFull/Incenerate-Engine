@@ -31,7 +31,7 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 {
 	auto& device = graphics->getDevice();
 	auto& debug_draw = graphics->getDebugDraw();
-	
+
 	static std::array<glm::mat4, 128> joints{glm::mat4(1.f)};
 
 	auto view = registry->view<FTransformComponent, FMeshComponent>();
@@ -71,6 +71,7 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 			if (needToRender)
 			{
 				//debug_draw->drawDebugAABB(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
+				auto index = static_cast<uint32_t>(entity);
 
 				auto& pUBO = graphics->getUniformHandle("FUniformData");
 				pUBO->set("model", transform.model);
@@ -80,14 +81,15 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 				pUBO->set("viewDir", camera->viewPos);
 				pUBO->set("viewportDim", device->getExtent(true));
 				pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
-				pUBO->set("object_id", encodeIdToColor(static_cast<uint32_t>(entity)));
+				pUBO->set("object_id", encodeIdToColor(index));
 
 				auto& pJoints = graphics->getUniformHandle("FSkinning");
 				if (pJoints && bHasSkin)
 					pJoints->set("jointMatrices", joints);
 					
-
+				//graphics->beginQuery(index);
 				graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
+				//graphics->endQuery(index);
 			}
 
 			graphics->bindMaterial(invalid_index);

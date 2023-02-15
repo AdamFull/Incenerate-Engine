@@ -44,6 +44,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
 
     pDebugDraw = std::make_unique<CDebugDraw>(this);
+    pQueryPool = std::make_unique<CQueryPool>(pDevice.get());
 
     auto empty_image_2d = std::make_unique<CImage2D>(pDevice.get());
     empty_image_2d->create(vk::Extent2D{ 1u, 1u }, vk::Format::eR8G8B8A8Srgb);
@@ -305,6 +306,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
 
     pDebugDraw->create();
+    pQueryPool->create();
 
     log_info("Graphics core initialized.");
 }
@@ -374,6 +376,7 @@ void CAPIHandle::shutdown()
 {
     pDevice->GPUWait();
     pDebugDraw = nullptr;
+    pQueryPool = nullptr;
     pRenderStageManager = nullptr;
     pMaterialManager = nullptr;
     pVertexBufferManager = nullptr;
@@ -386,12 +389,21 @@ const std::unique_ptr<CDebugDraw>& CAPIHandle::getDebugDraw() const
     return pDebugDraw;
 }
 
+const std::unique_ptr<CQueryPool>& CAPIHandle::getQueryPool() const
+{
+    return pQueryPool;
+}
+
 vk::CommandBuffer CAPIHandle::begin()
 {
     vk::CommandBuffer commandBuffer{};
     try { commandBuffer = beginFrame(); }
     catch (vk::OutOfDateKHRError err) { reCreate(true, true); }
     catch (vk::SystemError err) { log_error("Failed to acquire swap chain image!"); }
+
+    //if(commandBuffer)
+    //    pQueryPool->clear(commandBuffer);
+
     return commandBuffer;
 }
 
@@ -405,6 +417,7 @@ void CAPIHandle::end(float fDT)
     if (resultPresent == vk::Result::eSuboptimalKHR || resultPresent == vk::Result::eErrorOutOfDateKHR || CWindowHandle::bWasResized)
         reCreate(true, true);
 
+    //pQueryPool->takeResult();
     pDevice->updateCommandPools();
 }
 
@@ -895,6 +908,34 @@ void CAPIHandle::bindTexture(const std::string& name, size_t id, uint32_t mip_le
         pBindedShader->addTexture(name, id, mip_level);
     else
         log_error("Cannot bind texture, cause shader was not binded.");
+}
+
+void CAPIHandle::clearQuery()
+{
+    auto& commandBuffer = commandBuffers->getCommandBuffer();
+    pQueryPool->clear(commandBuffer);
+}
+
+void CAPIHandle::beginQuery(uint32_t index)
+{
+    auto& commandBuffer = commandBuffers->getCommandBuffer();
+    pQueryPool->begin(commandBuffer, index);
+}
+
+void CAPIHandle::endQuery(uint32_t index)
+{
+    auto& commandBuffer = commandBuffers->getCommandBuffer();
+    pQueryPool->end(commandBuffer, index);
+}
+
+void CAPIHandle::getQueryResult()
+{
+    pQueryPool->takeResult();
+}
+
+bool CAPIHandle::occlusionTest(uint32_t index)
+{
+    return pQueryPool->wasDrawn(index);
 }
 
 bool CAPIHandle::compareAlphaMode(EAlphaMode mode)
