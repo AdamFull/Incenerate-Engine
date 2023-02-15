@@ -558,6 +558,14 @@ bool CDevice::prepareTransferImageLayoutBarrier(vk::ImageMemoryBarrier2& barrier
         barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
         barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
     }
+    else if (barrier.oldLayout == vk::ImageLayout::eTransferDstOptimal && barrier.newLayout == vk::ImageLayout::eTransferDstOptimal)
+    {
+        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
+        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
+
+        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
+        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
+    }
     else if (barrier.oldLayout == vk::ImageLayout::eTransferSrcOptimal && barrier.newLayout == vk::ImageLayout::eTransferDstOptimal)
     {
         barrier.srcAccessMask = vk::AccessFlagBits2::eTransferRead;
@@ -749,8 +757,13 @@ void CDevice::copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vecto
     auto cmdBuf = CCommandBuffer(this);
     cmdBuf.create(true, vk::QueueFlagBits::eTransfer);
     auto commandBuffer = cmdBuf.getCommandBuffer();
-    commandBuffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, static_cast<uint32_t>(vRegions.size()), vRegions.data());
+    copyBufferToImage(commandBuffer, buffer, image, vRegions);
     cmdBuf.submitIdle();
+}
+
+void CDevice::copyBufferToImage(vk::CommandBuffer& commandBuffer, vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions)
+{
+    commandBuffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, static_cast<uint32_t>(vRegions.size()), vRegions.data());
 }
 
 void CDevice::createSampler(vk::Sampler& sampler, vk::Filter magFilter, vk::SamplerAddressMode eAddressMode, bool anisotropy, bool compareOp, uint32_t mipLevels)
@@ -966,7 +979,7 @@ void CDevice::takeScreenshot(const std::filesystem::path& filepath)
     createImage(dstImage, imageInfo, allocation, vma::MemoryUsage::eGpuToCpu);
 
     CCommandBuffer cmdbuf(this);
-    cmdbuf.create(true, vk::QueueFlagBits::eGraphics);
+    cmdbuf.create(true, vk::QueueFlagBits::eTransfer);
     auto commandBuffer = cmdbuf.getCommandBuffer();
 
     // Transfering dst image to transfer dst
@@ -1042,6 +1055,8 @@ void CDevice::takeScreenshot(const std::filesystem::path& filepath)
     barrier.image = dstImage;
     transitionImageLayoutTransfer(commandBuffer, barrier);
 
+    barrier.srcQueueFamilyIndex = getQueueFamilyIndex(family::transfer);
+    barrier.dstQueueFamilyIndex = getQueueFamilyIndex(family::present);
     barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
     barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
     barrier.image = srcImage;

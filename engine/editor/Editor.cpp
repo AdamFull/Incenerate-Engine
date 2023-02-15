@@ -131,7 +131,7 @@ void CEditor::create()
     ImGui_ImplVulkan_Init(&init_info, fb->getRenderPass());
 
     auto cmdBuf = CCommandBuffer(device.get());
-    cmdBuf.create(true, vk::QueueFlagBits::eTransfer);
+    cmdBuf.create(true, vk::QueueFlagBits::eGraphics);
     auto commandBuffer = cmdBuf.getCommandBuffer();
     ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
     cmdBuf.submitIdle();

@@ -5,7 +5,7 @@ using namespace engine::graphics;
 void CQueueFamilies::initialize(const vk::PhysicalDevice& vkPhysical, vk::SurfaceKHR& vkSurface)
 {
 	// Temporary
-	bool ignore{ true };
+	bool ignore{ false };
 
 	mFamilyUsages.clear();
 	vUniqueFamilies.clear();

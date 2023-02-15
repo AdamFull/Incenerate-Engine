@@ -274,7 +274,11 @@ void CImage::writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
     barrier.subresourceRange.layerCount = _instCount;
     _imageLayout = barrier.newLayout;
 
-    pDevice->transitionImageLayoutTransfer(barrier);
+    auto tcmdBuf = CCommandBuffer(pDevice);
+    tcmdBuf.create(true, vk::QueueFlagBits::eTransfer);
+    auto transferBuffer = tcmdBuf.getCommandBuffer();
+
+    pDevice->transitionImageLayoutTransfer(transferBuffer, barrier);
 
     std::vector<vk::BufferImageCopy> vRegions;
 
@@ -314,13 +318,23 @@ void CImage::writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
     }
 
     auto buffer = stagingBuffer->getBuffer();
-    pDevice->copyBufferToImage(buffer, _image, vRegions);
+    pDevice->copyBufferToImage(transferBuffer, buffer, _image, vRegions);
+
+    barrier.srcQueueFamilyIndex = pDevice->getQueueFamilyIndex(family::transfer);
+    barrier.dstQueueFamilyIndex = pDevice->getQueueFamilyIndex(family::graphics);
+    barrier.oldLayout = barrier.newLayout;
+
+    // Transfer family ownership
+    pDevice->transitionImageLayoutTransfer(transferBuffer, barrier);
+
+    tcmdBuf.submitIdle();
 
     if (info->generateMipmaps && _mipLevels > 1)
         generateMipmaps(_image, _mipLevels, format, _extent.width, _extent.height, aspect);
     else
     {
-        barrier.oldLayout = barrier.newLayout;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
         _imageLayout = barrier.newLayout;
         pDevice->transitionImageLayoutGraphics(barrier);
