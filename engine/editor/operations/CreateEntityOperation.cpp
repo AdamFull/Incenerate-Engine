@@ -46,6 +46,7 @@ void CCreateEntityOperation::redo()
 	case component::rigidbody: { registry.emplace<FRigidBodyComponent>(entity, FRigidBodyComponent{}); } break;
 	case component::collider: { registry.emplace<FColliderComponent>(entity, FColliderComponent{}); } break;
 	case component::particle: { registry.emplace<FParticleComponent>(entity, FParticleComponent{}); } break;
+	case component::terrain: { registry.emplace<FTerrainComponent>(entity, FTerrainComponent{}); } break;
 	default:
 		break;
 	}

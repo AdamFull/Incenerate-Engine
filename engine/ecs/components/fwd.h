@@ -19,5 +19,6 @@ namespace engine
 		struct FPhysicsShapeComponent;
 		struct FColliderComponent;
 		struct FParticleComponent;
+		struct FTerrainComponent;
 	}
 }

@@ -78,6 +78,8 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 			if (remit != stages.end())
 				stages.erase(remit, stages.end());
 		}
+		else
+			defineBlock << "#define USE_TESSELLATION" << '\n';
 
 		auto* graphics = pDevice->getAPI();
 		auto api = graphics->getAPI();

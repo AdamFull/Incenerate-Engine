@@ -100,6 +100,12 @@ void CRemoveComponentOperation::undo()
 		registry.emplace<FParticleComponent>(target, pComp);
 	} break;
 
+	case component::terrain:
+	{
+		auto pComp = std::any_cast<FTerrainComponent>(component);
+		registry.emplace<FTerrainComponent>(target, pComp);
+	} break;
+
 	default:
 		break;
 	}
@@ -180,6 +186,11 @@ void CRemoveComponentOperation::redo()
 	{
 		component = registry.get<FParticleComponent>(target);
 		registry.remove<FParticleComponent>(target);
+	} break;
+	case component::terrain:
+	{
+		component = registry.get<FTerrainComponent>(target);
+		registry.remove<FTerrainComponent>(target);
 	} break;
 	default:
 		break;

@@ -179,6 +179,7 @@ void CEditor::create()
     mEditorIcons[get_class_id<FEnvironmentComponent>()] = ICON_MDI_EARTH;
     mEditorIcons[get_class_id<FSpriteComponent>()] = ICON_MDI_IMAGE;
     mEditorIcons[get_class_id<FParticleComponent>()] = ICON_MDI_CREATION;
+    mEditorIcons[get_class_id<FTerrainComponent>()] = ICON_MDI_CREATION;
 
     load_editor();
 

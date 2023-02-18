@@ -36,6 +36,22 @@
     ],
     "defines": {}
   },
+  "terrain": {
+    "stage": "deferred",
+    "bind_point": "Graphics",
+    "cull_mode": "Back",
+    "front_face": "ccw",
+    "depth_test": true,
+    "tesselation": true,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "shaders/main/default/terrain.vert",
+      "shaders/main/default/terrain.frag",
+      "shaders/main/default/terrain.tesc",
+      "shaders/main/default/terrain.tese"
+    ],
+    "defines": {}
+  },
   "billboard": {
     "stage": "deferred",
     "bind_point": "Graphics",

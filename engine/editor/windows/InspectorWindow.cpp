@@ -107,6 +107,7 @@ void CEditorInspector::__draw(float fDt)
 			try_add_menu_item_i<FSceneComponent>("Scene", selected);
 			try_add_menu_item_i<FRigidBodyComponent>("RigidBody", selected);
 			try_add_menu_item_i<FParticleComponent>("Particle system", selected);
+			try_add_menu_item_i<FTerrainComponent>("Terrain", selected);
 			ImGui::EndPopup();
 		}
 
@@ -133,6 +134,8 @@ void CEditorInspector::__draw(float fDt)
 			[this, &transform](auto* object) { rigidbodyEdit(&transform, object); });
 		try_show_edit<FParticleComponent>("Particle system", selected,
 			[this, &transform](auto* object) { particleSystemEdit(&transform, object); });
+		try_show_edit<FTerrainComponent>("Terrain", selected,
+			[this, &transform](auto* object) { terrainEdit(object); });
 
 		try_show_edit<FDirectionalLightComponent>("Directional light", selected,
 			[&](auto* object)
@@ -651,4 +654,42 @@ void CEditorInspector::particleSystemEdit(FTransformComponent* transform, FParti
 		ImGui::EndDragDropTarget();
 	}
 	ImGui::Text("");
+}
+
+void CEditorInspector::terrainEdit(FTerrainComponent* object)
+{
+	ImGui::GAssetHolder("Source", fs::get_filename(object->source));
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		{
+			const wchar_t* path = (const wchar_t*)payload->Data;
+			auto source = std::filesystem::path(path);
+
+			//if (fs::is_particle_format(source))
+			//{
+			//	if (object->source != source)
+			//	{
+			//		object->source = fs::from_unicode(source);
+			//		if (object->loaded)
+			//		{
+			//			// Delete old
+			//			// Add new
+			//		}
+			//		else
+			//		{
+			//			auto& registry = EGEngine->getRegistry();
+			//
+			//			FParticleComponent nparticle{};
+			//			nparticle.source = fs::from_unicode(source);
+			//
+			//			registry.remove<FParticleComponent>(self);
+			//			registry.emplace<FParticleComponent>(self, std::move(nparticle));
+			//		}
+			//	}
+			//}
+		}
+		ImGui::EndDragDropTarget();
+	}
+	ImGui::GDragFloat("UV scale", &object->uv_scale, 0.1f, 0.1f, 5.f);
 }

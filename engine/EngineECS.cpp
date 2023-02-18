@@ -12,6 +12,7 @@
 
 #include "loaders/MeshLoader.h"
 #include "game/SceneGraph.hpp"
+#include "game/TerrainGenerator.h"
 
 using namespace engine;
 using namespace engine::system;
@@ -216,6 +217,31 @@ void destroy_particle(entt::registry& reg, entt::entity entity)
 	}
 }
 
+void construct_terrain(entt::registry& reg, entt::entity entity)
+{
+	auto& terrain = reg.get<FTerrainComponent>(entity);
+
+	if (!terrain.loaded /*&& !terrain.source.empty()*/)
+	{
+		auto loader = std::make_unique<CTerrainLoader>();
+		loader->load(&terrain);
+		terrain.loaded = true;
+	}
+}
+
+void destroy_terrain(entt::registry& reg, entt::entity entity)
+{
+	auto& terrain = reg.get<FTerrainComponent>(entity);
+
+	if (terrain.loaded)
+	{
+		auto& graphics = EGEngine->getGraphics();
+		graphics->removeImage(terrain.heightmap_id);
+		graphics->removeMaterial(terrain.material_id);
+		graphics->removeVertexBuffer(terrain.vbo_id);
+	}
+}
+
 FCameraComponent* CEngine::getActiveCamera()
 {
 	if (isEditorEditing())
@@ -261,6 +287,9 @@ void CEngine::initEntityComponentSystem()
 
 	registry.on_construct<FParticleComponent>().connect<&construct_particle>();
 	registry.on_destroy<FParticleComponent>().connect<&destroy_particle>();
+
+	registry.on_construct<FTerrainComponent>().connect<&construct_terrain>();
+	registry.on_destroy<FTerrainComponent>().connect<&destroy_terrain>();
 
 	vSystems.emplace_back(std::make_unique<CAnimationSystem>());
 	vSystems.emplace_back(std::make_unique<CHierarchySystem>());

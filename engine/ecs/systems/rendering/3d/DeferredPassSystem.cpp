@@ -3,6 +3,7 @@
 #include "Engine.h"
 
 #include "EnvironmentSystem.h"
+#include "TerrainSystem.h"
 #include "MeshSystem.h"
 #include "BillboardSystem.h"
 #include "DebugDrawSystem.h"
@@ -14,6 +15,7 @@ using namespace engine::ecs;
 void CDeferredPassSystem::__create()
 {
 	vSubSystems.emplace_back(std::make_unique<CEnvironmentSystem>());
+	vSubSystems.emplace_back(std::make_unique<CTerrainSystem>());
 	vSubSystems.emplace_back(std::make_unique<CMeshSystem>());
 	vSubSystems.emplace_back(std::make_unique<CBillboardSystem>());
 	vSubSystems.emplace_back(std::make_unique<CParticlesSystem>());

@@ -74,6 +74,9 @@ entt::entity CSceneLoader::loadNode(FSceneObjectRaw& object)
 
 		if (name == "rigidbody")
 			registry.emplace<FRigidBodyComponent>(node, component.get<FRigidBodyComponent>());
+
+		if (name == "terrain")
+			registry.emplace<FTerrainComponent>(node, component.get<FTerrainComponent>());
 	}
 
 	for(auto& child : object.vChildren)
@@ -115,8 +118,10 @@ FSceneObjectRaw CSceneLoader::saveNode(const entt::entity& node)
 		object.mComponents.emplace("spotlight", nlohmann::json(*spotlight));
 	if (auto script = registry.try_get<FScriptComponent>(node))
 		object.mComponents.emplace("script", nlohmann::json(*script));
-	if (auto script = registry.try_get<FRigidBodyComponent>(node))
-		object.mComponents.emplace("rigidbody", nlohmann::json(*script));
+	if (auto rigidbody = registry.try_get<FRigidBodyComponent>(node))
+		object.mComponents.emplace("rigidbody", nlohmann::json(*rigidbody));
+	if (auto terrain = registry.try_get<FTerrainComponent>(node))
+		object.mComponents.emplace("terrain", nlohmann::json(*terrain));
 
 	if (bIgnoreChildren)
 		return object;

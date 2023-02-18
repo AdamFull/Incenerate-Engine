@@ -1,18 +1,4 @@
-#include "AudioComponent.h"
-#include "CameraComponent.h"
-#include "MeshComponent.h"
-#include "SpriteComponent.h"
-#include "TransformComponent.h"
-#include "DirectionalLightComponent.h"
-#include "PointLightComponent.h"
-#include "SpotLightComponent.h"
-#include "EnvironmentComponent.h"
-#include "ScriptComponent.h"
-#include "SceneComponent.h"
-#include "HierarchyComponent.h"
-#include "RigidBodyComponent.h"
-#include "ColliderComponent.h"
-#include "ParticleComponent.h"
+#include "components.h"
 
 #include "Engine.h"
 #include "game/SceneGraph.hpp"
@@ -236,6 +222,21 @@ namespace engine
 		void from_json(const nlohmann::json& json, FParticleComponent& type)
 		{
 			utl::parse_to("source", json, type.source);
+		}
+
+
+		void to_json(nlohmann::json& json, const FTerrainComponent& type)
+		{
+			utl::serialize_from("source", json, type.source, !type.source.empty());
+			utl::serialize_from("size", json, type.size, type.size != 64u);
+			utl::serialize_from("uv_scale", json, type.uv_scale, type.uv_scale != 1.f);
+		}
+
+		void from_json(const nlohmann::json& json, FTerrainComponent& type)
+		{
+			utl::parse_to("source", json, type.source);
+			utl::parse_to("size", json, type.size);
+			utl::parse_to("uv_scale", json, type.uv_scale);
 		}
 	}
 }
