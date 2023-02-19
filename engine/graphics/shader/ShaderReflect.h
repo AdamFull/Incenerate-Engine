@@ -104,6 +104,7 @@ namespace engine
 			std::optional<CPushConstBlock> getPushBlock(const std::string& name) const;
 
 			const std::array<std::optional<uint32_t>, 3>& getLocalSizes(uint32_t index = 0) const { return localSizes[index]; }
+			const uint32_t getControlPoints() const { return executionModeOutputVertices; }
 			const std::unordered_map<std::string, CUniform>& getUniforms() const { return mUniforms; }
 			const std::unordered_map<std::string, CUniformBlock>& getUniformBlocks() const { return mUniformBlocks; }
 			const std::unordered_map<std::string, CPushConstBlock>& getPushBlocks() const { return mPushBlocks; }

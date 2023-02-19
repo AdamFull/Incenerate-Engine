@@ -35,8 +35,6 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     auto alphaMode = pShader->alphaMode();
     auto doubleSided = pShader->isDoubleSided();
 
-    
-
     vk::PipelineVertexInputStateCreateInfo vertexInputCI{};
     vertexInputCI.vertexBindingDescriptionCount = 0;
     vertexInputCI.vertexAttributeDescriptionCount = 0;
@@ -134,7 +132,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     viewportState.scissorCount = 1;
 
     vk::PipelineTessellationStateCreateInfo tessellationState{};
-    tessellationState.patchControlPoints = 3;
+    tessellationState.patchControlPoints = enableTesselation ? shader->getControlPoints() : 0;
 
     auto shaderStages = shader->getStageCreateInfo();
 

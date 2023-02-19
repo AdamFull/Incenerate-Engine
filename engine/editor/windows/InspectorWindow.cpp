@@ -692,4 +692,24 @@ void CEditorInspector::terrainEdit(FTerrainComponent* object)
 		ImGui::EndDragDropTarget();
 	}
 	ImGui::GDragFloat("UV scale", &object->uv_scale, 0.1f, 0.1f, 5.f);
+
+	ImGui::Separator();
+	ImGui::Text("Material");
+	ImGui::Separator();
+
+	auto& graphics = EGEngine->getGraphics();
+	auto& material = graphics->getMaterial(object->material_id);
+	auto& params = material->getParameters();
+
+	ImGui::GDragFloat("Alpha cutoff", &params.alphaCutoff, 0.01f, 0.f, 1.f);
+	ImGui::GColorEdit3("Emissive factor", params.emissiveFactor);
+	ImGui::GDragFloat("Normal scale", &params.normalScale, 0.01f, 1.f, 10.f);
+	ImGui::GDragFloat("Occlusion strength", &params.occlusionStrenth, 0.01f, 0.f, 10.f);
+	ImGui::GColorEdit4("Base color factor", params.baseColorFactor);
+	ImGui::GDragFloat("Metallic factor", &params.metallicFactor, 0.01f, 0.f, 1.f);
+	ImGui::GDragFloat("Roughness factor", &params.roughnessFactor, 0.01f, 0.f, 1.f);
+	ImGui::GCheckbox("Double sided", &params.doubleSided);
+
+	ImGui::GDragFloat("Tessellation factor", &params.tessellationFactor, 0.01f, 0.f, 10.f);
+	ImGui::GDragFloat("Tessellation strength", &params.tessStrength, 0.01f, 0.f, 10.f);
 }

@@ -13,8 +13,7 @@ layout (location = 6) in vec4 inWeight0;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outColor;
-layout(location = 2) out vec4 outPosition;
-layout(location = 3) out vec3 outNormal;
+layout(location = 2) out vec3 outNormal;
 
 #include "../../shader_util.glsl"
 
@@ -32,18 +31,14 @@ layout(std140, binding = 0) uniform FUniformData
 
 void main() 
 {
-	vec4 localPos = data.model * vec4(inPosition, 1.0);
-
 	outUV = inTexCoord;
   	outColor = inColor;
 
 	outNormal = mat3(data.normal) * inNormal;
 
 #ifdef USE_TESSELLATION
-	outPosition = vec4(localPos.xyz / localPos.w, 1.0);
-	gl_Position = vec4(inPosition, 1.0);
+	gl_Position = data.model * vec4(inPosition, 1.0);
 #else
- 	outPosition = vec4(localPos.xyz / localPos.w, 1.0);
-	gl_Position = data.projection * data.view * outPosition;
+	gl_Position = data.projection * data.view * data.model * vec4(inPosition, 1.0);
 #endif
 }

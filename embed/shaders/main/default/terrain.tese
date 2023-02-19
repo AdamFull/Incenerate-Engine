@@ -17,6 +17,8 @@ layout(std140, binding = 19) uniform UBOMaterial
 {
 	vec4 baseColorFactor;
 	vec3 emissiveFactor;
+	float emissiveStrength;
+	int alphaMode;
 	float alphaCutoff;
 	float normalScale;
 	float occlusionStrenth;
@@ -30,12 +32,11 @@ layout(std140, binding = 19) uniform UBOMaterial
 layout(binding = 7) uniform sampler2D height_tex;
 #endif
 
-layout(quads, equal_spacing , ccw) in;
+layout(quads, equal_spacing , cw) in;
 
 layout (location = 0) in vec2 inUV[];
 layout (location = 1) in vec3 inColor[];
-layout (location = 2) in vec4 inPosition[];
-layout (location = 3) in vec3 inNormal[];
+layout (location = 2) in vec3 inNormal[];
 
  
 layout (location = 0) out vec2 outUV;
@@ -55,13 +56,18 @@ void main()
 	outNormal = mix(n1, n2, gl_TessCoord.y);
 
 	// Interpolate positions
-	vec4 pos1 = mix(inPosition[0], inPosition[1], gl_TessCoord.x);
-	vec4 pos2 = mix(inPosition[3], inPosition[2], gl_TessCoord.x);
+	vec4 pos1 = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);
+	vec4 pos2 = mix(gl_in[3].gl_Position, gl_in[2].gl_Position, gl_TessCoord.x);
 	outPosition = mix(pos1, pos2, gl_TessCoord.y);
+
+	// Interpolate color
+	vec3 color1 = mix(inColor[0], inColor[1], gl_TessCoord.x);
+	vec3 color2 = mix(inColor[3], inColor[2], gl_TessCoord.x);
+	outColor = mix(color1, color2, gl_TessCoord.y);
 
 	// Displace
 #ifdef HAS_HEIGHTMAP
-	outPosition.y -= textureLod(displacementMap, outUV, 0.0).r * material.tessellationFactor;
+	outPosition.y += textureLod(height_tex, outUV, 0.0).r * material.tessellationStrength;
 #endif
 
 	// Perspective projection

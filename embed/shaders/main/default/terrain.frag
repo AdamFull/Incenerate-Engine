@@ -73,7 +73,7 @@ void main()
 //BASECOLOR
 	vec4 albedo_map = vec4(0.0);
 #ifdef HAS_BASECOLORMAP
-	albedo_map = texture(color_tex, texCoord) * material.baseColorFactor;
+	albedo_map = texture(color_tex, inUV) * material.baseColorFactor;
 #else
 	albedo_map = material.baseColorFactor;
 #endif
@@ -105,13 +105,26 @@ void main()
 	pbr_map = vec4(roughness, metallic, 0.0, 0.0);
 
 //NORMALS
+	// Calculate tangent
+	vec3 pos_dx = dFdx(inPosition.xyz);
+    vec3 pos_dy = dFdy(inPosition.xyz);
+    vec3 tex_dx = dFdx(vec3(inUV, 0.0));
+    vec3 tex_dy = dFdy(vec3(inUV, 0.0));
+    vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
 
-	vec3 normal_map = inNormal;
-//#ifdef HAS_NORMALMAP
-//	normal_map = getTangentSpaceNormalMap(normal_tex, inTBN, texCoord, material.normalScale);
-//#else
-//	normal_map = inTBN[2].xyz;
-//#endif
+	vec3 ng = normalize(inNormal);
+
+	t = normalize(t - ng * dot(ng, t));
+
+	vec3 b = normalize(cross(ng, t));
+    mat3 tbn = mat3(t, b, ng);
+
+	vec3 normal_map = vec3(0.0);
+#ifdef HAS_NORMALMAP
+	normal_map = getTangentSpaceNormalMap(normal_tex, tbn, texCoord, material.normalScale);
+#else
+	normal_map = tbn[2].xyz;
+#endif
 
 //AMBIENT OCCLUSION
 #ifdef HAS_OCCLUSIONMAP

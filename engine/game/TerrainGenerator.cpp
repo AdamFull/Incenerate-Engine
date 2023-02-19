@@ -14,6 +14,7 @@ using namespace engine::game;
 // Based on https://github.com/SaschaWillems/Vulkan/blob/master/examples/terraintessellation/terraintessellation.cpp
 void CTerrainLoader::load(FTerrainComponent* terrain)
 {
+	terrain->source = "textures\\terrain\\terrain_height.ktx2";
 	loadHeightmap(terrain);
 
 	std::vector<FVertex> vertices;
@@ -67,6 +68,7 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 				vertex.normal.x = heights[0][0] - heights[2][0] + 2.0f * heights[0][1] - 2.0f * heights[2][1] + heights[0][2] - heights[2][2];
 				vertex.normal.z = heights[0][0] + 2.0f * heights[1][0] + heights[2][0] - heights[0][2] - 2.0f * heights[1][2] - heights[2][2];
 				vertex.normal.y = 0.25f * glm::sqrt(1.0f - vertex.normal.x * vertex.normal.x - vertex.normal.z * vertex.normal.z);
+				vertex.normal = glm::normalize(vertex.normal * glm::vec3(2.0f, 1.0f, 2.0f));
 			}
 			else
 				vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f); // Setting normal by default
@@ -126,8 +128,14 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 	params.tessStrength = 1.f;
 	//params.vCompileDefinitions.emplace_back("USE_TESSELLATION");
 
-	if(terrain->heightmap_id != invalid_index)
+	if (terrain->heightmap_id != invalid_index)
+	{
 		params.vCompileDefinitions.emplace_back("HAS_HEIGHTMAP");
+		material->addTexture("height_tex", terrain->heightmap_id);
+	}
+
+	params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP"); //color_tex
+	material->addTexture("height_tex", graphics->addImage("terrain_texture", "textures\\terrain\\terrain_diffuse.ktx2"));
 
 	material->setParameters(std::move(params));
 	material->incrementUsageCount();
