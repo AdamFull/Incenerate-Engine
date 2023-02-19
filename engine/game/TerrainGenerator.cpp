@@ -135,7 +135,7 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 	}
 
 	params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP"); //color_tex
-	material->addTexture("height_tex", graphics->addImage("terrain_texture", "textures\\terrain\\terrain_diffuse.ktx2"));
+	material->addTexture("color_tex", graphics->addImage("terrain_texture", "textures\\terrain\\terrain_diffuse.ktx2"));
 
 	material->setParameters(std::move(params));
 	material->incrementUsageCount();
