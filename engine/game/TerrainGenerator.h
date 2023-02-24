@@ -17,6 +17,7 @@ namespace engine
 			float getHeight(uint32_t x, uint32_t y);
 		private:
 			std::vector<uint16_t> heightdata;
+			glm::vec2 height_size{ 0.f };
 			uint32_t dim;
 			uint32_t scale;
 		};

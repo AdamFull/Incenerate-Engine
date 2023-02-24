@@ -67,7 +67,9 @@ void main()
 
 	// Displace
 #ifdef HAS_HEIGHTMAP
-	outPosition.y += textureLod(height_tex, outUV, 0.0).r * material.tessellationStrength;
+	float height = textureLod(height_tex, outUV, 0.0).r * material.tessellationStrength;
+	outPosition.y += height;
+	//outNormal *= height;
 #endif
 
 	// Perspective projection

@@ -54,17 +54,17 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 			// Load normals from heightmap
 			if (terrain->heightmap_id != invalid_index)
 			{
-				std::array<std::array<float, 3>, 3> heights;
+				float heights[3][3];
 				for (auto hx = -1; hx <= 1; hx++)
 				{
 					for (auto hz = -1; hz <= 1; hz++)
 						heights[hx + 1][hz + 1] = getHeight(x + hx, z + hz);
 				}
-
+				
 				auto loc_height = getHeight(x, z);
 				terrain->min.y = glm::min(terrain->min.y, loc_height);
 				terrain->max.y = glm::max(terrain->max.y, loc_height);
-
+				
 				vertex.normal.x = heights[0][0] - heights[2][0] + 2.0f * heights[0][1] - 2.0f * heights[2][1] + heights[0][2] - heights[2][2];
 				vertex.normal.z = heights[0][0] + 2.0f * heights[1][0] + heights[2][0] - heights[0][2] - 2.0f * heights[1][2] - heights[2][2];
 				vertex.normal.y = 0.25f * glm::sqrt(1.0f - vertex.normal.x * vertex.normal.x - vertex.normal.z * vertex.normal.z);
@@ -126,7 +126,6 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 	FMaterial params{};
 	params.tessellationFactor = 1.f;
 	params.tessStrength = 1.f;
-	//params.vCompileDefinitions.emplace_back("USE_TESSELLATION");
 
 	if (terrain->heightmap_id != invalid_index)
 	{
@@ -168,6 +167,8 @@ void CTerrainLoader::loadHeightmap(FTerrainComponent* terrain)
 
 		auto height_image = std::make_unique<CImage>(device.get());
 		height_image->create(imageCI);
+
+		height_size = glm::vec2(imageCI->baseWidth, imageCI->baseHeight);
 
 		terrain->heightmap_id = graphics->addImage(terrain->source, std::move(height_image));
 	}
