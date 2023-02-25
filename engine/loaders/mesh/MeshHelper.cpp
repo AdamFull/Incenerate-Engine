@@ -4,31 +4,34 @@ namespace engine
 {
 	namespace loaders
 	{
-        void calculate_normals(std::vector<graphics::FVertex>& vertices, const std::vector<uint32_t>& indices, uint64_t startIndex)
+        void calculate_normals(std::vector<graphics::FVertex>& vertices, const std::vector<uint32_t>& indices, uint64_t startVertex)
         {
             for (auto idx = 0; idx < indices.size(); idx += 3)
             {
-                auto& v0 = vertices.at(indices.at(idx) - startIndex);
-                auto& v1 = vertices.at(indices.at(idx + 1) - startIndex);
-                auto& v2 = vertices.at(indices.at(idx + 2) - startIndex);
+                auto& v0 = vertices.at(indices.at(idx) - startVertex);
+                auto& v1 = vertices.at(indices.at(idx + 1) - startVertex);
+                auto& v2 = vertices.at(indices.at(idx + 2) - startVertex);
 
                 glm::vec3 deltaPos1 = v1.pos - v0.pos;
                 glm::vec3 deltaPos2 = v2.pos - v0.pos;
 
-                v0.normal = v1.normal = v2.normal = glm::normalize(glm::cross(deltaPos1, deltaPos2));
+                auto normal = glm::normalize(glm::cross(deltaPos1, deltaPos2));
+                v0.normal += normal;
+                v1.normal += normal;
+                v2.normal += normal;
             }
 
             for (auto& vertex : vertices)
                 vertex.normal = glm::normalize(vertex.normal);
         }
 
-        void calculate_tangents(std::vector<graphics::FVertex>& vertices, const std::vector<uint32_t>& indices, uint64_t startIndex)
+        void calculate_tangents(std::vector<graphics::FVertex>& vertices, const std::vector<uint32_t>& indices, uint64_t startVertex)
         {
             for (auto idx = 0; idx < indices.size(); idx += 3)
             {
-                auto& v0 = vertices.at(indices.at(idx) - startIndex);
-                auto& v1 = vertices.at(indices.at(idx + 1) - startIndex);
-                auto& v2 = vertices.at(indices.at(idx + 2) - startIndex);
+                auto& v0 = vertices.at(indices.at(idx) - startVertex);
+                auto& v1 = vertices.at(indices.at(idx + 1) - startVertex);
+                auto& v2 = vertices.at(indices.at(idx + 2) - startVertex);
 
                 glm::vec3 deltaPos1 = v1.pos - v0.pos;
                 glm::vec3 deltaPos2 = v2.pos - v0.pos;

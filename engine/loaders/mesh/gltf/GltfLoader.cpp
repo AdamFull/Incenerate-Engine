@@ -569,7 +569,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 params.tessellationFactor = factor->second;
             const auto strength = texture.json_double_value.find("strength");
             if (strength != std::end(texture.json_double_value))
-                params.tessStrength = strength->second;
+                params.displacementStrength = strength->second;
 
             pMaterial->addTexture("height_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
             params.vCompileDefinitions.emplace_back("HAS_HEIGHTMAP");

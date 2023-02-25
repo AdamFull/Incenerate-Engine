@@ -711,5 +711,5 @@ void CEditorInspector::terrainEdit(FTerrainComponent* object)
 	ImGui::GCheckbox("Double sided", &params.doubleSided);
 
 	ImGui::GDragFloat("Tessellation factor", &params.tessellationFactor, 0.01f, 0.f, 10.f);
-	ImGui::GDragFloat("Tessellation strength", &params.tessStrength, 0.01f, 0.f, 10.f);
+	ImGui::GDragFloat("Displacement strength", &params.displacementStrength, 0.01f, 0.f, 10.f);
 }

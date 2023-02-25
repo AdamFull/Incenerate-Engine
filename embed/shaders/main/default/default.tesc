@@ -23,7 +23,7 @@ layout(std140, binding = 19) uniform UBOMaterial
 	float metallicFactor;
 	float roughnessFactor;
 	float tessellationFactor;
-	float tessellationStrength;
+	float displacementStrength;
 } material;
 
 #ifdef HAS_HEIGHTMAP
@@ -92,7 +92,7 @@ bool frustumCheck()
 	const float radius = 20.0f;
 	vec4 pos = gl_in[gl_InvocationID].gl_Position;
 #ifdef HAS_HEIGHTMAP
-	pos.y -= texture(height_tex, inUV[0]).r * material.tessellationStrength;
+	pos.y -= texture(height_tex, inUV[0]).r * material.displacementStrength;
 #endif
 
 	// Check sphere against frustum planes

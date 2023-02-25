@@ -1004,7 +1004,7 @@ void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_ind
             pSurface->set("metallicFactor", params.metallicFactor);
             pSurface->set("roughnessFactor", params.roughnessFactor);
             pSurface->set("tessellationFactor", params.tessellationFactor);
-            pSurface->set("tessellationStrength", params.tessStrength);
+            pSurface->set("displacementStrength", params.displacementStrength);
         }
 
         auto& textures = pBindedMaterial->getTextures();

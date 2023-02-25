@@ -7,8 +7,9 @@ namespace engine
 		struct FTerrainComponent
 		{
 			std::string source{};
-			uint32_t size{ 64u };
+			uint32_t size{ 256u };
 			float uv_scale{ 1.f };
+			bool useTesselation{ true };
 
 			glm::vec3 min{};
 			glm::vec3 max{};

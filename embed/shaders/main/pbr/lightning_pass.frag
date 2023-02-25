@@ -143,7 +143,7 @@ void main()
 
 	normal = normalize(normal);
 
-	albedo = pow(albedo, vec3(2.2));
+	//albedo = pow(albedo, vec3(2.2));
 	vec3 emission = texture(emission_tex, inUV).rgb;
 
 	float roughness = mrah.r;
@@ -163,8 +163,6 @@ void main()
 		vec3 F0 = vec3(0.04f);
 		// Reflectance at normal incidence angle
 		F0 = mix(F0, albedo, metallic);
-
-		//F0 = vec3(pow(( 1.5 - 1.0) /  (1.5 + 1.0), 2.0));
 
 		// Light contribution
 		vec3 Lo = vec3(0.0f);
@@ -204,7 +202,7 @@ void main()
 
 		// Ambient part
 		vec3 kD = 1.0 - F;
-		kD *= 1.0 - metallic;	  
+		kD *= 1.0 - metallic;
 		vec3 ambient = (kD * diffuse + specular);
 
 		ambient = mix(ambient, ambient * occlusion, occlusionStrength);

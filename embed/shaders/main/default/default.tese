@@ -23,7 +23,7 @@ layout(std140, binding = 19) uniform UBOMaterial
 	float metallicFactor;
 	float roughnessFactor;
 	float tessellationFactor;
-	float tessellationStrength;
+	float displacementStrength;
 } material;
 
 #ifdef HAS_HEIGHTMAP
@@ -69,7 +69,7 @@ void main()
 #endif
 
 #ifdef HAS_HEIGHTMAP
-	vec3 displace = normalize(outNormal) * (max(texture(height_tex, outUV.st).r - 0.5f, 0.0) * material.tessellationStrength);
+	vec3 displace = normalize(outNormal) * (max(texture(height_tex, outUV.st).r - 0.5f, 0.0) * material.displacementStrength);
     outPosition += vec4(displace, 0.0);
 #endif
 

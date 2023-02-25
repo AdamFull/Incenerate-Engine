@@ -23,6 +23,10 @@ layout(binding = 5) uniform sampler2D occlusion_tex;
 layout(binding = 6) uniform sampler2D emissive_tex;
 #endif
 
+#ifdef HAS_HEIGHTMAP
+layout(binding = 7) uniform sampler2D height_tex;
+#endif
+
 layout(std140, binding = 0) uniform FUniformData 
 {
   	mat4 model;
@@ -47,7 +51,7 @@ layout(std140, binding = 19) uniform UBOMaterial
 	float metallicFactor;
 	float roughnessFactor;
 	float tessellationFactor;
-	float tessellationStrength;
+	float displacementStrength;
 } material;
 
 layout(location = 0) in vec2 inUV;
@@ -65,13 +69,15 @@ layout(location = 4) out vec4 outObjectID;
 
 #include "../../shader_util.glsl"
 
+#define HAS_NORMALS
+
 const float minRoughness = 0.04;
 
 //https://github.com/bwasty/gltf-viewer/blob/master/src/shaders/pbr-frag.glsl
 void main() 
 {
 //BASECOLOR
-	vec4 albedo_map = vec4(0.0);
+	vec4 albedo_map = vec4(1.0);
 #ifdef HAS_BASECOLORMAP
 	albedo_map = texture(color_tex, inUV) * material.baseColorFactor;
 #else
@@ -104,27 +110,34 @@ void main()
     metallic = clamp(metallic, 0.01, 1.0);
 	pbr_map = vec4(roughness, metallic, 0.0, 0.0);
 
-//NORMALS
-	// Calculate tangent
-	vec3 pos_dx = dFdx(inPosition.xyz);
+	//NORMALS
+	vec3 normal_map = vec3(0.0);
+#ifndef HAS_TANGENTS
+    vec3 pos_dx = dFdx(inPosition.xyz);
     vec3 pos_dy = dFdy(inPosition.xyz);
     vec3 tex_dx = dFdx(vec3(inUV, 0.0));
     vec3 tex_dy = dFdy(vec3(inUV, 0.0));
     vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
 
-	vec3 ng = normalize(inNormal);
-
-	t = normalize(t - ng * dot(ng, t));
-
-	vec3 b = normalize(cross(ng, t));
-    mat3 tbn = mat3(t, b, ng);
-
-	vec3 normal_map = vec3(0.0);
-#ifdef HAS_NORMALMAP
-	normal_map = getTangentSpaceNormalMap(normal_tex, tbn, texCoord, material.normalScale);
+#ifdef HAS_NORMALS
+    vec3 ng = normalize(inNormal);
 #else
-	normal_map = tbn[2].xyz;
+    vec3 ng = cross(pos_dx, pos_dy);
 #endif
+
+    t = normalize(t - ng * dot(ng, t));
+    vec3 b = normalize(cross(ng, t));
+    mat3 tbn = mat3(t, b, ng);
+#endif
+
+#ifdef HAS_NORMALMAP
+    normal_map = getTangentSpaceNormalMap(normal_tex, tbn, texCoord, material.normalScale);
+#else
+    // The tbn matrix is linearly interpolated, so we need to re-normalize
+    normal_map = normalize(tbn[2].xyz);
+#endif	
+
+	normal_map *= (2.0 * float(gl_FrontFacing) - 1.0);
 
 //AMBIENT OCCLUSION
 #ifdef HAS_OCCLUSIONMAP

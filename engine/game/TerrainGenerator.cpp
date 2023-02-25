@@ -5,79 +5,40 @@
 #include "loaders/ImageLoader.h"
 
 #include "ecs/components/TerrainComponent.h"
+#include "loaders/mesh/MeshHelper.h"
 
+using namespace engine;
 using namespace engine::loaders;
 using namespace engine::graphics;
 using namespace engine::ecs;
 using namespace engine::game;
 
-// Based on https://github.com/SaschaWillems/Vulkan/blob/master/examples/terraintessellation/terraintessellation.cpp
-void CTerrainLoader::load(FTerrainComponent* terrain)
+void calculate_normals_1(std::vector<graphics::FVertex>& vertices, const std::vector<uint32_t>& indices, uint64_t startIndex)
 {
-	terrain->source = "textures\\terrain\\terrain_height.ktx2";
-	loadHeightmap(terrain);
-
-	std::vector<FVertex> vertices;
-	std::vector<uint32_t> indices;
-
-	uint32_t size = terrain->size;
-
-	const uint32_t w = (size - 1u);
-	const float wx = 2.0f;
-	const float wz = 2.0f;
-
-	auto sizel = static_cast<size_t>(size);
-	vertices.resize(sizel * sizel);
-
-	const auto fsize = static_cast<float>(size);
-
-	// Calculate bounding box
-	terrain->min = glm::vec3(-fsize, std::numeric_limits<float>::max(), -fsize);
-	terrain->max = glm::vec3(fsize, std::numeric_limits<float>::min(), fsize);
-
-	// Calculate vertices
-	for (uint32_t x = 0; x < size; x++)
+	for (auto idx = 0; idx < indices.size(); idx += 3)
 	{
-		for (uint32_t z = 0; z < size; z++)
-		{
-			uint32_t index = (x + z * size);
-			auto& vertex = vertices[index];
+		auto& v0 = vertices.at(indices.at(idx) - startIndex);
+		auto& v1 = vertices.at(indices.at(idx + 1) - startIndex);
+		auto& v2 = vertices.at(indices.at(idx + 2) - startIndex);
 
-			float xPos = static_cast<float>(x) * wx + wx / 2.0f - fsize * wx / 2.0f;
-			float zPos = static_cast<float>(z) * wz + wz / 2.0f - fsize * wz / 2.0f;
+		glm::vec3 deltaPos1 = v1.pos - v0.pos;
+		glm::vec3 deltaPos2 = v2.pos - v0.pos;
 
-			// Calculating vertex
-			vertex.pos = glm::vec3(xPos, 0.0f, zPos);
-			vertex.texcoord = glm::vec2(static_cast<float>(x) / fsize, static_cast<float>(z) / fsize) * terrain->uv_scale;
-			vertex.color = glm::vec3(1.f);
-
-			// Load normals from heightmap
-			if (terrain->heightmap_id != invalid_index)
-			{
-				float heights[3][3];
-				for (auto hx = -1; hx <= 1; hx++)
-				{
-					for (auto hz = -1; hz <= 1; hz++)
-						heights[hx + 1][hz + 1] = getHeight(x + hx, z + hz);
-				}
-				
-				auto loc_height = getHeight(x, z);
-				terrain->min.y = glm::min(terrain->min.y, loc_height);
-				terrain->max.y = glm::max(terrain->max.y, loc_height);
-				
-				vertex.normal.x = heights[0][0] - heights[2][0] + 2.0f * heights[0][1] - 2.0f * heights[2][1] + heights[0][2] - heights[2][2];
-				vertex.normal.z = heights[0][0] + 2.0f * heights[1][0] + heights[2][0] - heights[0][2] - 2.0f * heights[1][2] - heights[2][2];
-				vertex.normal.y = 0.25f * glm::sqrt(1.0f - vertex.normal.x * vertex.normal.x - vertex.normal.z * vertex.normal.z);
-				vertex.normal = glm::normalize(vertex.normal * glm::vec3(2.0f, 1.0f, 2.0f));
-			}
-			else
-				vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f); // Setting normal by default
-		}
+		glm::vec3 faceNormal = glm::cross(deltaPos1, deltaPos2);
+		v0.normal += faceNormal;
+		v1.normal += faceNormal;
+		v2.normal += faceNormal;
 	}
 
-	// Calculating indices
-	bool quads{ true };
-	if (quads)
+	for (auto& vertex : vertices)
+		vertex.normal = glm::normalize(vertex.normal);
+}
+
+void generateIndices(std::vector<uint32_t>& indices, uint32_t size, bool useQuads)
+{
+	const uint32_t w = (size - 1u);
+
+	if (useQuads)
 		indices.resize(w * w * 4u);
 	else
 		indices.resize(w * w * 6u);
@@ -91,7 +52,7 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 			uint32_t index2 = index0 + size;
 			uint32_t index3 = index2 + 1u;
 
-			if (quads)
+			if (useQuads)
 			{
 				auto index = (x + z * w) * 4ull;
 				indices[index] = index0;
@@ -111,9 +72,55 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 			}
 		}
 	}
+}
 
-	// Create vertex buffer
+// Based on https://github.com/SaschaWillems/Vulkan/blob/master/examples/terraintessellation/terraintessellation.cpp
+void CTerrainLoader::load(FTerrainComponent* terrain)
+{
 	auto& graphics = EGEngine->getGraphics();
+
+	terrain->source = "textures\\terrain\\test_height.ktx2";
+	loadHeightmap(terrain);
+
+	std::vector<FVertex> vertices;
+	std::vector<uint32_t> indices;
+
+	uint32_t size = terrain->size;
+
+	const uint32_t w = (size - 1u);
+	const float wx = 2.0f;
+	const float wz = 2.0f;
+
+	const auto fsize = static_cast<float>(size);
+
+	// Calculate bounding box
+	terrain->min = glm::vec3(-fsize, std::numeric_limits<float>::max(), -fsize);
+	terrain->max = glm::vec3(fsize, std::numeric_limits<float>::min(), fsize);
+	
+	vertices.resize(terrain->size * terrain->size);
+
+	for (uint32_t x = 0; x < size; x++)
+	{
+		for (uint32_t z = 0; z < size; z++)
+		{
+			uint32_t index = (x + z * size);
+			auto& vertex = vertices[index];
+
+			float xPos = static_cast<float>(x) * wx + wx / 2.0f - fsize * wx / 2.0f;
+			float zPos = static_cast<float>(z) * wz + wz / 2.0f - fsize * wz / 2.0f;
+			float yPos = 0.f;
+
+			yPos = getHeight(x, z) * 50.f;
+
+			// Calculating vertex
+			vertex.pos = glm::vec3(xPos, yPos, zPos);
+			vertex.texcoord = glm::vec2(static_cast<float>(x) / fsize, static_cast<float>(z) / fsize) * terrain->uv_scale;
+			vertex.color = glm::vec3(1.f);
+		}
+	}
+
+	generateIndices(indices, size, terrain->useTesselation);
+	calculate_normals(vertices, indices, 0);
 
 	terrain->vbo_id = graphics->addVertexBuffer("terrain:" + terrain->source);
 	auto& vbo = graphics->getVertexBuffer(terrain->vbo_id);
@@ -124,8 +131,9 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 	// Load material
 	auto material = std::make_unique<CMaterial>();
 	FMaterial params{};
-	params.tessellationFactor = 1.f;
-	params.tessStrength = 1.f;
+	params.tessellationFactor = 0.75f;
+	params.displacementStrength = 20.f;
+	params.emissiveStrength = 0.f;
 
 	if (terrain->heightmap_id != invalid_index)
 	{
@@ -133,8 +141,8 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 		material->addTexture("height_tex", terrain->heightmap_id);
 	}
 
-	params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP"); //color_tex
-	material->addTexture("color_tex", graphics->addImage("terrain_texture", "textures\\terrain\\terrain_diffuse.ktx2"));
+	//params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP"); //color_tex
+	//material->addTexture("color_tex", graphics->addImage("terrain_texture", "textures\\terrain\\terrain_diffuse.ktx2"));
 
 	material->setParameters(std::move(params));
 	material->incrementUsageCount();
@@ -176,9 +184,11 @@ void CTerrainLoader::loadHeightmap(FTerrainComponent* terrain)
 
 float CTerrainLoader::getHeight(uint32_t x, uint32_t y)
 {
-	glm::ivec2 rpos = glm::ivec2(x, y) * glm::ivec2(scale);
+	glm::ivec2 rpos = glm::ivec2(x, y);
+	rpos *= glm::ivec2(scale);
 	rpos.x = std::max(0, std::min(rpos.x, (int)dim - 1));
 	rpos.y = std::max(0, std::min(rpos.y, (int)dim - 1));
 	rpos /= glm::ivec2(scale);
-	return *(heightdata.data() + (rpos.x + rpos.y * dim) * scale) / 65535.0f;
+	size_t index = (rpos.x + rpos.y * dim) * scale;
+	return *(heightdata.data() + index) / 65535.0f;
 }

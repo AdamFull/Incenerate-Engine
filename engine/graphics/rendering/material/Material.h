@@ -21,7 +21,7 @@ namespace engine
 
 			// Custom extension
 			float tessellationFactor{ 0.f };
-			float tessStrength{ 0.f };
+			float displacementStrength{ 1.f };
 
 
 			// KHR_materials_clearcoat
