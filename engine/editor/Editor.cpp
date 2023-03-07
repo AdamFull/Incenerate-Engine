@@ -385,7 +385,7 @@ void CEditor::selectObject(const entt::entity& object)
 	    selected = object;
 }
 
-void CEditor::deselectObject(const entt::entity& object)
+void CEditor::deselectObject()
 {
 	selected = entt::null;
 }
@@ -497,7 +497,7 @@ void CEditor::baseInitialize()
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-    io.DisplaySize = ImVec2(CWindowHandle::iWidth, CWindowHandle::iHeight);
+    io.DisplaySize = ImVec2(static_cast<float>(CWindowHandle::iWidth), static_cast<float>(CWindowHandle::iHeight));
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
     Themes::cinder();

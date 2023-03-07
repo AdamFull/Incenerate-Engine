@@ -35,10 +35,10 @@ namespace engine
 			bool isFamilySelected(uint32_t type);
 		private:
 			std::vector<uint32_t> vUniqueFamilies;
-			std::map<uint32_t, uint32_t> mFamilyUsages;
-			std::map<uint32_t, uint32_t> mSelectedFamilies;
-			std::map<uint32_t, vk::QueueFamilyProperties> mQueueFamilies;
-			std::map<uint32_t, std::vector<float>> mPriorities;
+			std::unordered_map<uint32_t, uint32_t> mFamilyUsages;
+			std::unordered_map<uint32_t, uint32_t> mSelectedFamilies;
+			std::unordered_map<uint32_t, vk::QueueFamilyProperties> mQueueFamilies;
+			std::unordered_map<uint32_t, std::vector<float>> mPriorities;
 		};
 	}
 }

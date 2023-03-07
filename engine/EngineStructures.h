@@ -69,7 +69,7 @@ namespace engine
 	struct FSceneObjectRaw
 	{
 		std::string srName;
-		std::map<std::string, nlohmann::json> mComponents;
+		std::unordered_map<std::string, nlohmann::json> mComponents;
 		std::vector<FSceneObjectRaw> vChildren;
 	};
 

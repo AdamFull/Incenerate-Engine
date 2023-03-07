@@ -11,12 +11,12 @@ namespace engine
 	public:
 		~CObjectManager()
 		{
-			perform_deletion();
+			performDeletion();
 		}
 
 		size_t add(const std::string& name, std::unique_ptr<_Ty>&& object)
 		{
-			auto id = get_id(name);
+			auto id = getId(name);
 			if (id != invalid_index)
 			{
 				mUsages[id].fetch_add(1, std::memory_order_relaxed);
@@ -26,13 +26,13 @@ namespace engine
 			mNameToId.emplace(name, next_id);
 			mIdToObject.emplace(next_id, std::move(object));
 			mUsages[next_id].fetch_add(1, std::memory_order_relaxed);
-			nextid();
+			nextId();
 			return mNameToId[name];
 		}
 
 		void increment(const std::string& name)
 		{
-			increment(get_id(name));
+			increment(getId(name));
 		}
 
 		void increment(size_t id)
@@ -69,7 +69,7 @@ namespace engine
 			}
 		}
 
-		size_t get_id(const std::string& name)
+		size_t getId(const std::string& name)
 		{
 			auto nameit = mNameToId.find(name);
 			if (nameit != mNameToId.end())
@@ -79,7 +79,7 @@ namespace engine
 
 		const std::unique_ptr<_Ty>& get(const std::string& name)
 		{
-			auto id = get_id(name);
+			auto id = getId(name);
 			if (id != invalid_index)
 				return get(id);
 			return nullptr;
@@ -93,16 +93,16 @@ namespace engine
 			return nullptr;
 		}
 
-		void perform_deletion()
+		void performDeletion()
 		{
 			while (!qDelete.empty())
 				qDelete.pop();
 		}
 
-		const std::map<size_t, std::unique_ptr<_Ty>>& getWhole() const { return mIdToObject; }
+		const std::unordered_map<size_t, std::unique_ptr<_Ty>>& getAll() const { return mIdToObject; }
 
 	private:
-		void nextid()
+		void nextId()
 		{
 			static std::atomic<size_t> uid{ 0 };
 
@@ -126,8 +126,8 @@ namespace engine
 		size_t next_id{ 0 };
 		std::queue<std::unique_ptr<_Ty>> qDelete;
 		std::queue<size_t> qFreedIds;
-		std::map<size_t, std::atomic<size_t>> mUsages;
-		std::map<std::string, size_t> mNameToId;
-		std::map<size_t, std::unique_ptr<_Ty>> mIdToObject;
+		std::unordered_map<size_t, std::atomic<size_t>> mUsages;
+		std::unordered_map<std::string, size_t> mNameToId;
+		std::unordered_map<size_t, std::unique_ptr<_Ty>> mIdToObject;
 	};
 }

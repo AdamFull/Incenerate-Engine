@@ -26,7 +26,7 @@ namespace engine
 		private:
 			void updateSubresources();
 			std::vector<std::string> vSubresourceNames;
-			std::map<std::string, std::vector<size_t>> mSubresourceMap;
+			std::unordered_map<std::string, std::vector<size_t>> mSubresourceMap;
 
 		};
 	}

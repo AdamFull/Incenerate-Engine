@@ -13,6 +13,7 @@ namespace engine
 			void load(ecs::FTerrainComponent* terrain);
 
 		private:
+			void loadMaterial(ecs::FTerrainComponent* terrain);
 			void loadHeightmap(ecs::FTerrainComponent* terrain);
 			float getHeight(uint32_t x, uint32_t y);
 		private:

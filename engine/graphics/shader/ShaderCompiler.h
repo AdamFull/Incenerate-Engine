@@ -26,7 +26,7 @@ namespace engine
 			void save_cache();
 
 		private:
-			std::map<std::string, FCachedShader> cache;
+			std::unordered_map<std::string, FCachedShader> cache;
 		};
 	}
 }

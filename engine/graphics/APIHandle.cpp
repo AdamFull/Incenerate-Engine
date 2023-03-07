@@ -315,11 +315,11 @@ void CAPIHandle::update()
 {
     if (imageIndex == pDevice->getFramesInFlight() - 1)
     {
-        pImageManager->perform_deletion();
-        pShaderManager->perform_deletion();
-        pMaterialManager->perform_deletion();
-        pVertexBufferManager->perform_deletion();
-        pRenderStageManager->perform_deletion();
+        pImageManager->performDeletion();
+        pShaderManager->performDeletion();
+        pMaterialManager->performDeletion();
+        pVertexBufferManager->performDeletion();
+        pRenderStageManager->performDeletion();
     }
 }
 
@@ -445,7 +445,7 @@ size_t CAPIHandle::addImage(const std::string& name, const std::filesystem::path
 {
     std::unique_ptr<CImage> image = std::make_unique<CImage>(pDevice.get());
 
-    if (pImageManager->get_id(name) == invalid_index)
+    if (pImageManager->getId(name) == invalid_index)
     {
         if (fs::is_ktx_format(path))
             image->create(path);
@@ -466,7 +466,7 @@ size_t CAPIHandle::addImageAsync(const std::string& name, const std::filesystem:
     {
         loaderThread->push([this, image = image.get(), name, path]()
             {
-                if (pImageManager->get_id(name) == invalid_index)
+                if (pImageManager->getId(name) == invalid_index)
                 {
                     if (fs::is_ktx_format(path))
                         image->create(path);
@@ -477,7 +477,7 @@ size_t CAPIHandle::addImageAsync(const std::string& name, const std::filesystem:
     }
     else
     {
-        if (pImageManager->get_id(name) == invalid_index)
+        if (pImageManager->getId(name) == invalid_index)
         {
             if (fs::is_ktx_format(path))
                 image->create(path);
@@ -516,7 +516,7 @@ const std::unique_ptr<CImage>& CAPIHandle::getImage(const std::string& name)
 
 size_t CAPIHandle::getImageID(const std::string& name)
 {
-    return pImageManager->get_id(name);
+    return pImageManager->getId(name);
 }
 
 const std::unique_ptr<CImage>& CAPIHandle::getImage(size_t id)
@@ -686,7 +686,7 @@ const std::unique_ptr<CRenderStage>& CAPIHandle::getRenderStage(size_t id)
 
 size_t CAPIHandle::getRenderStageID(const std::string& name)
 {
-    return pRenderStageManager->get_id(name);
+    return pRenderStageManager->getId(name);
 }
 
 const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::string& srName)

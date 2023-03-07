@@ -9,7 +9,7 @@ namespace engine
 	{
 		struct FShaderSpecials
 		{
-			std::map<std::string, std::string> defines;
+			std::unordered_map<std::string, std::string> defines;
 			uint32_t subpass{ 0 };
 			size_t usages{ 1 };
 			bool doubleSided{ false };

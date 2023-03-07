@@ -13,27 +13,6 @@ using namespace engine::graphics;
 using namespace engine::ecs;
 using namespace engine::game;
 
-void calculate_normals_1(std::vector<graphics::FVertex>& vertices, const std::vector<uint32_t>& indices, uint64_t startIndex)
-{
-	for (auto idx = 0; idx < indices.size(); idx += 3)
-	{
-		auto& v0 = vertices.at(indices.at(idx) - startIndex);
-		auto& v1 = vertices.at(indices.at(idx + 1) - startIndex);
-		auto& v2 = vertices.at(indices.at(idx + 2) - startIndex);
-
-		glm::vec3 deltaPos1 = v1.pos - v0.pos;
-		glm::vec3 deltaPos2 = v2.pos - v0.pos;
-
-		glm::vec3 faceNormal = glm::cross(deltaPos1, deltaPos2);
-		v0.normal += faceNormal;
-		v1.normal += faceNormal;
-		v2.normal += faceNormal;
-	}
-
-	for (auto& vertex : vertices)
-		vertex.normal = glm::normalize(vertex.normal);
-}
-
 void generateIndices(std::vector<uint32_t>& indices, uint32_t size, bool useQuads)
 {
 	const uint32_t w = (size - 1u);
@@ -79,8 +58,13 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 {
 	auto& graphics = EGEngine->getGraphics();
 
-	terrain->source = "textures\\terrain\\test_height.ktx2";
+	terrain->source = "textures\\terrain\\terrain_height.ktx2";
 	loadHeightmap(terrain);
+	loadMaterial(terrain);
+
+	auto& material = graphics->getMaterial(terrain->material_id);
+	auto& params = material->getParameters();
+	auto& shader = graphics->getShader(material->getShader());
 
 	std::vector<FVertex> vertices;
 	std::vector<uint32_t> indices;
@@ -88,8 +72,6 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 	uint32_t size = terrain->size;
 
 	const uint32_t w = (size - 1u);
-	const float wx = 2.0f;
-	const float wz = 2.0f;
 
 	const auto fsize = static_cast<float>(size);
 
@@ -106,11 +88,10 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 			uint32_t index = (x + z * size);
 			auto& vertex = vertices[index];
 
-			float xPos = static_cast<float>(x) * wx + wx / 2.0f - fsize * wx / 2.0f;
-			float zPos = static_cast<float>(z) * wz + wz / 2.0f - fsize * wz / 2.0f;
-			float yPos = 0.f;
-
-			yPos = getHeight(x, z) * 50.f;
+			float xPos = static_cast<float>(x) * terrain->grid_scale + terrain->grid_scale / 2.0f - fsize * terrain->grid_scale / 2.0f;
+			float zPos = static_cast<float>(z) * terrain->grid_scale + terrain->grid_scale / 2.0f - fsize * terrain->grid_scale / 2.0f;
+			float yPos = getHeight(x, z) * params.displacementStrength;
+			//float yPos = 0.f;
 
 			// Calculating vertex
 			vertex.pos = glm::vec3(xPos, yPos, zPos);
@@ -119,20 +100,34 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 		}
 	}
 
-	generateIndices(indices, size, terrain->useTesselation);
-	calculate_normals(vertices, indices, 0);
+	auto use_tess = shader->getTesselationFlag();
+
+	generateIndices(indices, size, use_tess);
+
+	if (use_tess)
+		calculate_normals_quads(vertices, indices, 0);
+	else
+		calculate_normals(vertices, indices, 0);
+
+	for (auto& vertex : vertices)
+		vertex.pos.y = 0.f;
 
 	terrain->vbo_id = graphics->addVertexBuffer("terrain:" + terrain->source);
 	auto& vbo = graphics->getVertexBuffer(terrain->vbo_id);
 	vbo->addVertices(vertices);
 	vbo->addIndices(indices);
 	vbo->setLoaded();
+}
+
+void CTerrainLoader::loadMaterial(ecs::FTerrainComponent* terrain)
+{
+	auto& graphics = EGEngine->getGraphics();
 
 	// Load material
 	auto material = std::make_unique<CMaterial>();
 	FMaterial params{};
 	params.tessellationFactor = 0.75f;
-	params.displacementStrength = 20.f;
+	params.displacementStrength = 100.f;
 	params.emissiveStrength = 0.f;
 
 	if (terrain->heightmap_id != invalid_index)
@@ -141,14 +136,14 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 		material->addTexture("height_tex", terrain->heightmap_id);
 	}
 
-	//params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP"); //color_tex
+	//params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP");
 	//material->addTexture("color_tex", graphics->addImage("terrain_texture", "textures\\terrain\\terrain_diffuse.ktx2"));
 
 	material->setParameters(std::move(params));
 	material->incrementUsageCount();
 	terrain->material_id = graphics->addMaterial("terrain:" + terrain->source, std::move(material));
 
-	graphics->addShader("terrain", "terrain", terrain->material_id);
+	graphics->addShader("terrain_geometry", "terrain_geometry", terrain->material_id);
 }
 
 void CTerrainLoader::loadHeightmap(FTerrainComponent* terrain)

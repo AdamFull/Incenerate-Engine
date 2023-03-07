@@ -253,7 +253,7 @@ namespace ImGui
         return bValueChanged;
     }
 
-    bool GDragInt(const char* label, int* value, int step, int min, int max)
+    bool GDragInt(const char* label, int* value, float step, int min, int max)
     {
         static int oldValue{ 0 };
 
@@ -312,7 +312,6 @@ namespace ImGui
 
     bool GAssetHolder(const char* label, const std::string& source)
     {
-        auto avaliable_width = GetContentRegionAvail().x;
         bool result{ false };
 
         PushID(label);
@@ -439,7 +438,6 @@ namespace ImGui
 
     bool FileOpen(char* buf, size_t buf_size, const char* title, int filter_num, const char* const* filter_patterns)
     {
-        
         const char* filename = tinyfd_openFileDialog(title, "", filter_num, filter_patterns, nullptr, false);
         if (filename)
             strcpy(buf, filename);

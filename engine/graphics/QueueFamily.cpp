@@ -135,7 +135,7 @@ void CQueueFamilies::clearCreateInfo()
 vk::Queue CQueueFamilies::createQueue(uint32_t type, vk::Device& vkDevice)
 {
 	// Count queue usages
-	static std::map<uint32_t, uint32_t> queueUsages;
+	static std::unordered_map<uint32_t, uint32_t> queueUsages;
 	
 	auto familyIndex = getFamilyIndex(type);
 	return vkDevice.getQueue(familyIndex, queueUsages[familyIndex]++);

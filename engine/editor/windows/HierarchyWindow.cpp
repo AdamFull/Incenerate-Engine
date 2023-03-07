@@ -38,6 +38,8 @@ void CEditorHierarchy::create()
 
 void CEditorHierarchy::__draw(float fDt)
 {
+    fDt;
+
     auto& actionBuffer = EGEditor->getActionBuffer();
     auto& registry = EGEngine->getRegistry();
     auto root = EGSceneManager->getRoot();
@@ -100,8 +102,8 @@ void CEditorHierarchy::__draw(float fDt)
         ImGui::EndPopup();
     }
 
-    int size_x = current_size.x;
-    int size_y = current_size.y - ImGui::GetCursorPosY() - 10;
+    float size_x = static_cast<float>(current_size.x);
+    float size_y = static_cast<float>(current_size.y) - ImGui::GetCursorPosY() - 10.f;
     ImGui::SetCursorPosX(0);
     if (ImGui::InvisibleButton("###unselect_all_btn", ImVec2(size_x, size_y)))
     {
@@ -151,7 +153,7 @@ void CEditorHierarchy::buildHierarchy(const entt::entity& entity)
             if (ImGui::IsKeyPressed(ImGuiKey_LeftCtrl) && ImGui::IsItemClicked(0))
             {
                 if (isSelected)
-                    EGEditor->deselectObject(entity);
+                    EGEditor->deselectObject();
                 else
                     EGEditor->selectObject(entity);
             }

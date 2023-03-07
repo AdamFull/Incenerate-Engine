@@ -33,7 +33,7 @@ namespace engine
 			bool tesselation{ false };
 
 			std::vector<std::string> stages;
-			std::map<std::string, std::string> defines;
+			std::unordered_map<std::string, std::string> defines;
 		};
 
 		void to_json(nlohmann::json& json, const FProgramCreateInfo& type);

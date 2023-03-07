@@ -29,7 +29,7 @@ void CAudioCore::create()
 
 void CAudioCore::update()
 {
-    pAudioSourceManager->perform_deletion();
+    pAudioSourceManager->performDeletion();
 }
 
 void CAudioCore::shutdown()

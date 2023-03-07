@@ -12,7 +12,7 @@ namespace engine
 		public:
 			friend class CScriptingCore;
 
-			void load(const const std::filesystem::path& filepath, sol::state& lua);
+			void load(const std::filesystem::path& filepath, sol::state& lua);
 
 			void callOnCreate();
 			void callOnUpdate(float fDT);

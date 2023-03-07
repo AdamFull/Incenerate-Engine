@@ -22,7 +22,7 @@ namespace engine
 		struct FShaderInstance
 		{
 			std::unique_ptr<CDescriptorHandler> pDescriptorSet;
-			std::map<std::string, std::unique_ptr<CHandler>> mBuffers;
+			std::unordered_map<std::string, std::unique_ptr<CHandler>> mBuffers;
 		};
 
 		class CShaderObject
@@ -72,10 +72,10 @@ namespace engine
 
 			std::unique_ptr<CShader> pShader;
 			std::unique_ptr<CPipeline> pPipeline;
-			std::map<std::string, vk::DescriptorImageInfo> mTextures;
+			std::unordered_map<std::string, vk::DescriptorImageInfo> mTextures;
 			std::vector<std::unique_ptr<FShaderInstance>> vInstances;
 			
-			std::map<std::string, std::unique_ptr<CPushHandler>> mPushBlocks;
+			std::unordered_map<std::string, std::unique_ptr<CPushHandler>> mPushBlocks;
 
 			FProgramCreateInfo programCI;
 			EAlphaMode _alphaMode;

@@ -13,12 +13,7 @@ layout (location = 6) in vec4 inWeight0;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outColor;
-#ifdef USE_TESSELLATION
 layout(location = 2) out vec3 outNormal;
-#else
-layout(location = 2) out vec4 outPosition;
-layout(location = 3) out vec3 outNormal;
-#endif
 
 #include "../../shader_util.glsl"
 
@@ -39,12 +34,11 @@ void main()
 	outUV = inTexCoord;
   	outColor = inColor;
 
-	outNormal = normalize(data.normal * vec4(inNormal, 1.0)).xyz;
+	outNormal = mat3(data.normal) * inNormal;
 
 #ifdef USE_TESSELLATION
 	gl_Position = data.model * vec4(inPosition, 1.0);
 #else
-	outPosition = data.model * vec4(inPosition, 1.0);
-	gl_Position = data.projection * data.view * outPosition;
+	gl_Position = data.model * vec4(inPosition, 1.0);
 #endif
 }

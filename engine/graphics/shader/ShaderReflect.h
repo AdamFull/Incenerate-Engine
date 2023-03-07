@@ -41,7 +41,7 @@ namespace engine
 			std::size_t getSize() const { return size; }
 			vk::ShaderStageFlags getStageFlags() const { return stageFlags; }
 			vk::DescriptorType getDescriptorType() const { return descriptorType; }
-			const std::map<std::string, CUniform>& GetUniforms() const { return mUniforms; }
+			const std::unordered_map<std::string, CUniform>& GetUniforms() const { return mUniforms; }
 
 			std::optional<CUniform> getUniform(const std::string& name) const
 			{
@@ -59,7 +59,7 @@ namespace engine
 			std::size_t size{ 0 };
 			vk::ShaderStageFlags stageFlags{ vk::ShaderStageFlagBits::eAll };
 			vk::DescriptorType descriptorType;
-			std::map<std::string, CUniform> mUniforms{};
+			std::unordered_map<std::string, CUniform> mUniforms{};
 		};
 
 		class CPushConstBlock
@@ -70,7 +70,7 @@ namespace engine
 
 			std::size_t getSize() const { return size; }
 			vk::ShaderStageFlags getStageFlags() const { return stageFlags; }
-			const std::map<std::string, CUniform>& GetUniforms() const { return mUniforms; }
+			const std::unordered_map<std::string, CUniform>& GetUniforms() const { return mUniforms; }
 			std::optional<CUniform> getUniform(const std::string& name) const
 			{
 				auto it = mUniforms.find(name);
@@ -84,7 +84,7 @@ namespace engine
 		private:
 			std::size_t size{ 0 };
 			vk::ShaderStageFlags stageFlags{ vk::ShaderStageFlagBits::eAll };
-			std::map<std::string, CUniform> mUniforms{};
+			std::unordered_map<std::string, CUniform> mUniforms{};
 		};
 
 		class CShaderReflect

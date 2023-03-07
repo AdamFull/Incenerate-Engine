@@ -53,7 +53,6 @@ void CEditorViewport::create()
 
 void CEditorViewport::__draw(float fDt)
 {
-	auto& registry = EGEngine->getRegistry();
 	auto& graphics = EGEngine->getGraphics();
 	auto& debug_draw = graphics->getDebugDraw();
 
@@ -84,7 +83,6 @@ void CEditorViewport::__draw(float fDt)
 void CEditorViewport::drawViewport()
 {
 	auto& device = graphics->getDevice();
-	auto frame = device->getCurrentFrame();
 	auto& image = graphics->getImage("postprocess_tex");
 	
 	vk::WriteDescriptorSet write{};
@@ -132,8 +130,6 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 	static glm::vec3 oldRotation{ 0.f };
 	static glm::vec3 oldScale{ 1.f };
 
-	bool snap{ false };
-
 	if (ImGui::IsWindowHovered() && ImGui::IsWindowFocused())
 	{
 		if (ImGui::IsKeyPressed(ImGuiKey_T))
@@ -174,7 +170,6 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 			decompose(delta, translation, rotation, scale);
 
 			auto rel = glm::abs(translation - transform.position);
-			auto moved = rel.x > 0.05f || rel.y > 0.05f || rel.z > 0.05f;
 
 			if (!isManipulating)
 			{

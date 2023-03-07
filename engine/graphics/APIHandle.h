@@ -134,7 +134,7 @@ namespace engine
 			std::unique_ptr<CDebugDraw> pDebugDraw;
 			std::unique_ptr<CQueryPool> pQueryPool;
 
-			std::map<std::string, FCIStage> mStageInfos;
+			std::unordered_map<std::string, FCIStage> mStageInfos;
 			std::unique_ptr<CObjectManager<CImage>> pImageManager;
 			std::unique_ptr<CObjectManager<CShaderObject>> pShaderManager;
 			std::unique_ptr<CObjectManager<CMaterial>> pMaterialManager;

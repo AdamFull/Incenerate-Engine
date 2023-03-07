@@ -8,7 +8,7 @@ namespace engine
 		{
 			glm::vec3 color{ 1.f };
 			float intencity{ 1.f };
-			bool castShadows{ 0 };
+			bool castShadows{ false };
 
 			std::array<float, SHADOW_MAP_CASCADE_COUNT> cascadeSplits;
 			std::array<float, SHADOW_MAP_CASCADE_COUNT> splitDepths;

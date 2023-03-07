@@ -6,8 +6,8 @@ namespace engine
 	{
 		struct FSpriteComponent
 		{
-			std::string source;
-			size_t image;
+			std::string source{ "" };
+			size_t image{ invalid_index };
 		};
 
 		void to_json(nlohmann::json& json, const FSpriteComponent& type);

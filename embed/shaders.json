@@ -36,7 +36,7 @@
     ],
     "defines": {}
   },
-  "terrain": {
+  "terrain_tessellation": {
     "stage": "deferred",
     "bind_point": "Graphics",
     "cull_mode": "Back",
@@ -49,6 +49,21 @@
       "shaders/main/default/terrain.frag",
       "shaders/main/default/terrain.tesc",
       "shaders/main/default/terrain.tese"
+    ],
+    "defines": {}
+  },
+  "terrain_geometry": {
+    "stage": "deferred",
+    "bind_point": "Graphics",
+    "cull_mode": "Back",
+    "front_face": "ccw",
+    "depth_test": true,
+    "tesselation": false,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "shaders/main/default/terrain.vert",
+      "shaders/main/default/terrain.geom",
+      "shaders/main/default/terrain.frag"
     ],
     "defines": {}
   },

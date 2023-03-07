@@ -17,7 +17,7 @@ void CParticlesCore::update(float fDT)
 {
 	fTime += fDT;
 
-	pParticleObjectManager->perform_deletion();
+	pParticleObjectManager->performDeletion();
 
 	//Effekseer::Manager::UpdateParameter updateParameter;
 	//efkManager->Update(updateParameter);

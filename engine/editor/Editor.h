@@ -60,7 +60,7 @@ namespace engine
 			void newFrame(float fDt);
 
 			void selectObject(const entt::entity& object);
-			void deselectObject(const entt::entity& object);
+			void deselectObject();
 			void deselectAll();
 
 
@@ -102,9 +102,9 @@ namespace engine
 
 			entt::entity camera{ entt::null };
 			entt::entity selected{ entt::null };
-			std::map<uint32_t, std::string> mEditorIcons;
+			std::unordered_map<uint32_t, std::string> mEditorIcons;
 
-			std::map<entt::entity, std::map<std::string, std::any>> mCaptureStates;
+			std::unordered_map<entt::entity, std::map<std::string, std::any>> mCaptureStates;
 
 			bool bNeedNewProject{ false };
 			bool bNeedOpenProject{ false };

@@ -24,7 +24,7 @@ namespace engine
 		private:
 			CDevice* pDevice{ nullptr };
 			vk::QueryPool queryPool;
-			std::map<uint32_t, uint32_t> mAssociation;
+			std::unordered_map<uint32_t, uint32_t> mAssociation;
 			std::vector<uint64_t> vPixelDrawn;
 		};
 	}

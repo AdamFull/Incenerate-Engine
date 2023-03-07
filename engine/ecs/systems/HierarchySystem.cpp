@@ -13,6 +13,7 @@ void CHierarchySystem::__create()
 
 void CHierarchySystem::__update(float fDt)
 {
+	fDt;
 	auto root = EGSceneManager->getRoot();
 
 	// Preparing transformation
@@ -32,12 +33,12 @@ void CHierarchySystem::initialize_matrix(FTransformComponent* transform)
 	transform->model = glm::mat4(1.f);
 
 	transform->model = glm::translate(transform->model, transform->position);
-	if (transform->rotation.x != 0)
-		transform->model = glm::rotate(transform->model, transform->rotation.x, glm::vec3(1.0, 0.0, 0.0));
-	if (transform->rotation.y != 0)
-		transform->model = glm::rotate(transform->model, transform->rotation.y, glm::vec3(0.0, 1.0, 0.0));
-	if (transform->rotation.z != 0)
-		transform->model = glm::rotate(transform->model, transform->rotation.z, glm::vec3(0.0, 0.0, 1.0));
+	if (transform->rotation.x != 0.f)
+		transform->model = glm::rotate(transform->model, transform->rotation.x, glm::vec3(1.f, 0.f, 0.f));
+	if (transform->rotation.y != 0.f)
+		transform->model = glm::rotate(transform->model, transform->rotation.y, glm::vec3(0.f, 1.f, 0.f));
+	if (transform->rotation.z != 0.f)
+		transform->model = glm::rotate(transform->model, transform->rotation.z, glm::vec3(0.f, 0.f, 1.f));
 	transform->model = glm::scale(transform->model, transform->scale);
 	transform->update();
 }

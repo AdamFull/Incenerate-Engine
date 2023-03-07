@@ -12,13 +12,33 @@ namespace engine
                 auto& v1 = vertices.at(indices.at(idx + 1) - startVertex);
                 auto& v2 = vertices.at(indices.at(idx + 2) - startVertex);
 
-                glm::vec3 deltaPos1 = v1.pos - v0.pos;
-                glm::vec3 deltaPos2 = v2.pos - v0.pos;
+                v0.normal += glm::normalize(glm::cross(v1.pos - v0.pos, v2.pos - v0.pos));
+                v1.normal += glm::normalize(glm::cross(v2.pos - v1.pos, v0.pos - v1.pos));
+                v2.normal += glm::normalize(glm::cross(v0.pos - v2.pos, v1.pos - v2.pos));
+            }
 
-                auto normal = glm::normalize(glm::cross(deltaPos1, deltaPos2));
-                v0.normal += normal;
-                v1.normal += normal;
-                v2.normal += normal;
+            for (auto& vertex : vertices)
+                vertex.normal = glm::normalize(vertex.normal);
+        }
+
+        void calculate_normals_quads(std::vector<graphics::FVertex>& vertices, const std::vector<uint32_t>& indices, uint64_t startVertex)
+        {
+            for (auto idx = 0; idx < indices.size(); idx += 4)
+            {
+                auto& v0 = vertices.at(indices.at(idx) - startVertex);
+                auto& v1 = vertices.at(indices.at(idx + 1) - startVertex);
+                auto& v2 = vertices.at(indices.at(idx + 2) - startVertex);
+                auto& v3 = vertices.at(indices.at(idx + 3) - startVertex);
+
+                auto n0 = glm::normalize(glm::cross(v1.pos - v0.pos, v3.pos - v0.pos));
+                auto n1 = glm::normalize(glm::cross(v2.pos - v1.pos, v0.pos - v1.pos));
+                auto n2 = glm::normalize(glm::cross(v3.pos - v2.pos, v1.pos - v2.pos));
+                auto n3 = glm::normalize(glm::cross(v0.pos - v3.pos, v2.pos - v3.pos));
+
+                v0.normal += n0 + n3;
+                v1.normal += n0 + n1;
+                v2.normal += n1 + n2;
+                v3.normal += n2 + n3;
             }
 
             for (auto& vertex : vertices)

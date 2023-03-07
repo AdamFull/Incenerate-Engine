@@ -91,7 +91,7 @@ namespace engine
 		private:
 			std::vector<std::pair<std::filesystem::path, bool>> vTextures;
 			std::vector<size_t> vMaterials;
-			std::map<uint32_t, entt::entity> mIndexToEntity;
+			std::unordered_map<uint32_t, entt::entity> mIndexToEntity;
 			entt::entity head{ entt::null };
 
 			std::vector<uint32_t> vIndexBuffer;

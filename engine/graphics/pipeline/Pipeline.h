@@ -32,7 +32,7 @@ namespace engine
 			void createDescriptorPool(CShaderObject* pShader);
 			void createPipelineLayout(CShaderObject* pShader);
 
-			virtual void createPipeline(CShaderObject* pShader) {}
+			virtual void createPipeline(CShaderObject* pShader) { pShader; }
 
 		protected:
 			CDevice* pDevice{ nullptr };

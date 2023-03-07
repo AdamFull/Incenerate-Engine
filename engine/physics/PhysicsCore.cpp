@@ -71,7 +71,7 @@ void CPhysicsCore::create()
 
 void CPhysicsCore::simulate(float fDT)
 {
-	pPhysicsObjectManager->perform_deletion();
+	pPhysicsObjectManager->performDeletion();
 
 	if (dynamicsWorld->getDebugDrawer() && EGEngine->isDebugDrawPhysics())
 		dynamicsWorld->debugDrawWorld();
@@ -106,7 +106,7 @@ void CPhysicsCore::reset()
 {
 	dynamicsWorld->clearForces();
 
-	auto& objects = pPhysicsObjectManager->getWhole();
+	auto& objects = pPhysicsObjectManager->getAll();
 	for (auto& [id, object] : objects)
 		object->clear();
 }

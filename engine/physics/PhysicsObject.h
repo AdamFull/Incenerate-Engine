@@ -16,11 +16,11 @@ namespace engine
 		public:
 			virtual ~CPhysicsObject();
 
-			virtual void initialize(void* comp) {}
-			virtual void update(void* comp) {}
+			virtual void initialize(void* comp) { comp; }
+			virtual void update(void* comp) { comp; }
 			virtual void clear() {}
 
-			virtual void setWorldTranslation(const glm::mat4& translation) {}
+			virtual void setWorldTranslation(const glm::mat4& translation) { translation; }
 			virtual glm::mat4 getWorldTranslation() { return glm::mat4(); }
 
 			CPhysicsShape* getCollisionShape() const;

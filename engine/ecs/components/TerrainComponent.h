@@ -8,8 +8,8 @@ namespace engine
 		{
 			std::string source{};
 			uint32_t size{ 256u };
+			float grid_scale{ 0.25f };
 			float uv_scale{ 1.f };
-			bool useTesselation{ true };
 
 			glm::vec3 min{};
 			glm::vec3 max{};

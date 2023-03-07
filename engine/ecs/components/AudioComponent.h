@@ -6,12 +6,12 @@ namespace engine
 	{
 		struct FAudioComponent
 		{
-			std::string source;
+			std::string source{ "" };
 			size_t asource{ invalid_index };
 
 			float gain{ 1.f };
 			float pitch{ 1.f };
-			glm::vec3 velocity;
+			glm::vec3 velocity{ 0.f };
 			bool loop{ false };
 			bool playing{ false };
 			bool stop{ false };

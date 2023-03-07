@@ -56,7 +56,7 @@ namespace engine
 			bool castShadows{ true };
 			std::vector<FMeshAnimation> animations;
 			std::vector<FMeshSkin> skins;
-			std::map<uint32_t, float> timers;
+			std::unordered_map<uint32_t, float> timers;
 		};
 
 		void to_json(nlohmann::json& json, const FSceneComponent& type);

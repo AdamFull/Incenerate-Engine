@@ -25,7 +25,7 @@ void CShader::addStage(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBi
 
 void CShader::buildReflection()
 {
-    std::map<vk::DescriptorType, uint32_t> mDescriptorCounter;
+    std::unordered_map<vk::DescriptorType, uint32_t> mDescriptorCounter;
     //Preparing descriptors for uniform/storage buffers
     for (const auto& [uniformBlockName, uniformBlock] : mUniformBlocks)
     {

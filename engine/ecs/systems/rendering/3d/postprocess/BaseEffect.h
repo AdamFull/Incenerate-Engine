@@ -14,7 +14,7 @@ namespace engine
 		private:
 			graphics::CAPIHandle* graphics{ nullptr };
 
-			std::map<std::string, size_t> images;
+			std::unordered_map<std::string, size_t> images;
 		};
 	}
 }
