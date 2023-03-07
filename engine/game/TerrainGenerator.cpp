@@ -90,8 +90,7 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 
 			float xPos = static_cast<float>(x) * terrain->grid_scale + terrain->grid_scale / 2.0f - fsize * terrain->grid_scale / 2.0f;
 			float zPos = static_cast<float>(z) * terrain->grid_scale + terrain->grid_scale / 2.0f - fsize * terrain->grid_scale / 2.0f;
-			float yPos = getHeight(x, z) * params.displacementStrength;
-			//float yPos = 0.f;
+			float yPos = 0.f;
 
 			// Calculating vertex
 			vertex.pos = glm::vec3(xPos, yPos, zPos);
@@ -103,14 +102,6 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 	auto use_tess = shader->getTesselationFlag();
 
 	generateIndices(indices, size, use_tess);
-
-	if (use_tess)
-		calculate_normals_quads(vertices, indices, 0);
-	else
-		calculate_normals(vertices, indices, 0);
-
-	for (auto& vertex : vertices)
-		vertex.pos.y = 0.f;
 
 	terrain->vbo_id = graphics->addVertexBuffer("terrain:" + terrain->source);
 	auto& vbo = graphics->getVertexBuffer(terrain->vbo_id);
@@ -136,14 +127,14 @@ void CTerrainLoader::loadMaterial(ecs::FTerrainComponent* terrain)
 		material->addTexture("height_tex", terrain->heightmap_id);
 	}
 
-	//params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP");
-	//material->addTexture("color_tex", graphics->addImage("terrain_texture", "textures\\terrain\\terrain_diffuse.ktx2"));
+	params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP");
+	material->addTexture("color_tex", graphics->addImage("terrain_texture", "textures\\terrain\\terrain_diffuse.ktx2"));
 
 	material->setParameters(std::move(params));
 	material->incrementUsageCount();
 	terrain->material_id = graphics->addMaterial("terrain:" + terrain->source, std::move(material));
 
-	graphics->addShader("terrain_geometry", "terrain_geometry", terrain->material_id);
+	graphics->addShader("terrain_tessellation", "terrain_tessellation", terrain->material_id);
 }
 
 void CTerrainLoader::loadHeightmap(FTerrainComponent* terrain)
