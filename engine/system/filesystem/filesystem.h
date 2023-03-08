@@ -31,9 +31,8 @@ namespace engine
             constexpr inline size_t script_ts = 1;
 
             // scenes
-            constexpr inline uint32_t is = ".is"_utl_hash; // incenerate scene
-            constexpr inline uint32_t isb = ".isb"_utl_hash; // incenerate scene binary
-            constexpr inline size_t scene_ts = 2;
+            constexpr inline uint32_t iescene = ".iescene"_utl_hash; // incenerate scene
+            constexpr inline size_t scene_ts = 1;
 
             // audio
             constexpr inline uint32_t wav = ".wav"_utl_hash;
@@ -62,6 +61,9 @@ namespace engine
 
             static std::string get_filename(const std::string& path);
             static std::string get_filename(const std::filesystem::path& path);
+
+            static bool is_scene_format(const std::string& path);
+            static bool is_scene_format(const std::filesystem::path& path);
 
             static bool is_image_format(const std::string& path);
             static bool is_image_format(const std::filesystem::path& path);
@@ -164,6 +166,7 @@ namespace engine
 
         private:
             static std::filesystem::path _workdir;
+            static bool is_scene_format(uint32_t format);
             static bool is_image_format(uint32_t format);
             static bool is_ktx_format(uint32_t format);
             static bool is_mesh_format(uint32_t format);

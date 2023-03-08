@@ -61,10 +61,20 @@ namespace engine
 
 			void onAllFramesDone(CEvent& event);
 
+			void makeNewProject(const std::filesystem::path& project_path);
+			void openExistingProject(const std::filesystem::path& project_path);
+			void makeNewScene(const std::filesystem::path& project_path);
+			void openExistingScene(const std::filesystem::path& project_path);
+
+			template<class _Lambda>
+			void pushAction(_Lambda&& lfunc)
+			{
+				vEditorActions.emplace_back(utl::function<void()>(std::forward<_Lambda>(lfunc)));
+			}
+
 			void selectObject(const entt::entity& object);
 			void deselectObject();
 			void deselectAll();
-
 
 			bool isSelected(const entt::entity& object) const;
 

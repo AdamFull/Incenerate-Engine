@@ -104,7 +104,9 @@ void CEditorContentBrowser::__draw(float fDt)
 
 			auto& script = EGEditor->getIcon(icons::script_file);
 			if (ImGui::MenuItem((script + " lua file").c_str()));
-			if (ImGui::MenuItem("scene"));
+			if (ImGui::MenuItem("scene"))
+				open_popup_name = "Create scene";
+
 			ImGui::EndMenu();
 		}
 
@@ -120,6 +122,16 @@ void CEditorContentBrowser::__draw(float fDt)
 
 		ImGui::EndPopup();
 	}
+
+	CreateFileModal("Create scene",
+		[this](const std::string& filename)
+		{
+			EGEditor->pushAction([this, filename]()
+				{
+					EGEditor->openExistingScene(currentPath / (filename + ".iescene"));
+				});
+			update_path(workdir);
+		});
 
 	CreateFileModal("Create directory",
 		[this](const std::string& filename)
@@ -196,6 +208,8 @@ void CEditorContentBrowser::__draw(float fDt)
 					eevent.setParam(Events::Editor::OpenImageViewer, path);
 					EGEngine->sendEvent(eevent);
 				}
+				else if (fs::is_scene_format(path))
+					EGEditor->pushAction([path]() { EGEditor->openExistingScene(path); });
 			}
 
 			if (!isDirectory && ImGui::BeginDragDropSource())
@@ -232,7 +246,13 @@ void CEditorContentBrowser::update_path(const std::filesystem::path& npath)
 		for (auto& entry : std::filesystem::directory_iterator(currentPath))
 		{
 			auto path = entry.path();
-			if (entry.is_directory() || fs::is_image_format(path) || fs::is_audio_format(path) || fs::is_script_format(path) || fs::is_mesh_format(path))
+			if (
+				entry.is_directory() || 
+				fs::is_image_format(path) || 
+				fs::is_audio_format(path) || 
+				fs::is_script_format(path) || 
+				fs::is_mesh_format(path) ||
+				fs::is_scene_format(path))
 				vCurrentDirData.emplace_back(path);
 		}
 	}

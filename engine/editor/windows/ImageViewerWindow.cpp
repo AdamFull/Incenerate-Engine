@@ -3,7 +3,9 @@
 #include "Engine.h"
 #include "system/filesystem/filesystem.h"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 #include <editor/imgui_impl_vulkan.h>
 
 using namespace engine::graphics;
@@ -40,7 +42,30 @@ void CEditorImageViewer::__draw(float fDt)
 		write.descriptorCount = 1;
 		pDescriptorSet->update(write);
 
-		ImGui::Image(pDescriptorSet->get(), ImVec2{ static_cast<float>(extent.width), static_cast<float>(extent.height)});
+		static float zoom{ 1.0f };
+
+
+		auto image_size = ImVec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
+		auto screen_size = ImGui::GetContentRegionAvail();
+
+		float scale_factor = std::min(screen_size.x / image_size.x, screen_size.y / image_size.y);
+
+		image_size *= scale_factor;
+
+		//auto availmin = ImGui::GetWindowContentRegionMin();
+		//auto avail = ImGui::GetWindowContentRegionMax() - availmin;
+		//ImGui::SetCursorPos((avail - image_size) / 2.f + availmin);
+
+		if (ImGui::GetIO().MouseWheel != 0.0f)
+		{
+			zoom += ImGui::GetIO().MouseWheel * 0.1f;
+			zoom = std::max(zoom, 0.1f);
+			zoom = std::min(zoom, 10.0f);
+		}
+
+		image_size *= zoom;
+
+		ImGui::Image(pDescriptorSet->get(), image_size);
 	}
 }
 

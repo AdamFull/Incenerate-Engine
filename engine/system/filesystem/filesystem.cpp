@@ -87,6 +87,18 @@ std::string fs::get_filename(const std::filesystem::path& path)
     return from_unicode(path);
 }
 
+bool fs::is_scene_format(const std::string& path)
+{
+    auto ext = get_ext(path);
+    return is_scene_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
+bool fs::is_scene_format(const std::filesystem::path& path)
+{
+    auto ext = get_ext(path);
+    return is_scene_format(utl::const_hash(ext.c_str(), ext.size()));
+}
+
 bool fs::is_image_format(const std::string& path)
 {
     auto ext = get_ext(path);
@@ -218,6 +230,11 @@ std::filesystem::path fs::get_workdir(bool local)
         return "";
     else
         return _workdir;
+}
+
+bool fs::is_scene_format(uint32_t format)
+{
+    return format == format::iescene;
 }
 
 // TODO: refactor this

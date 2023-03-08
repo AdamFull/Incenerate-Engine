@@ -4,6 +4,7 @@
 #include "imgui_impl_vulkan.h"
 
 #include <imgui/imgui.h>
+#include <imgui/imgui_notify.h>
 #include <imgui/ImGuizmo.h>
 #include <imgui/font/IconsMaterialDesignIcons.h>
 
@@ -193,6 +194,7 @@ void CEditor::create()
     for (auto& overlay : vEditorWindows)
         overlay->create();
 
+    ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Engine loading success!" });
 }
 
 void CEditor::newFrame(float fDt)
@@ -273,16 +275,7 @@ void CEditor::newFrame(float fDt)
     {
         static char name_buf[512];
         if (ImGui::FileSave(name_buf, 512, "New incenerate project", 1, project_filter))
-        {
-            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]()
-                {
-                    selected = entt::null;
-                    recproj.recent = fs::from_unicode(path);
-                    save_editor();
-                    ImGui::CloseCurrentPopup();
-                    EGEngine->sendEvent(Events::Editor::ProjectUpdated);
-                }));
-        }
+            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]() { makeNewProject(path); }));
         bNeedNewProject = false;
     }
 
@@ -290,20 +283,7 @@ void CEditor::newFrame(float fDt)
     {
         static char name_buf[512];
         if (ImGui::FileOpen(name_buf, 512, "Open project", 1, project_filter))
-        {
-            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]()
-                {
-                    if (pEditorProject->open(path))
-                    {
-                        selected = entt::null;
-                        recproj.recent = fs::from_unicode(path);
-                        save_editor();
-                        ImGui::CloseCurrentPopup();
-                        EGEngine->sendEvent(Events::Editor::ProjectUpdated);
-                    }
-                }));
-        }
-            
+            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]() { openExistingProject(path); }));           
         bNeedOpenProject = false;
     }
 
@@ -312,18 +292,7 @@ void CEditor::newFrame(float fDt)
     {
         static char name_buf[512];
         if (ImGui::FileSave(name_buf, 512, "New scene", 1, scene_filter))
-        {
-            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]()
-                {
-                    if (EGSceneManager->make_new(path))
-                    {
-                        selected = entt::null;
-                        pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
-                        ImGui::CloseCurrentPopup();
-                    }
-                }));
-        }
-            
+            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]() { makeNewScene(path); }));
         bNeedNewScene = false;
     }
 
@@ -331,32 +300,30 @@ void CEditor::newFrame(float fDt)
     {
         static char name_buf[512];
         if (ImGui::FileOpen(name_buf, 512, "Open scene", 1, scene_filter))
-        {
-            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]()
-                {
-                    if (EGSceneManager->load(path))
-                    {
-                        selected = entt::null;
-                        pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
-                        ImGui::CloseCurrentPopup();
-                    }
-                }));
-        }
+            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]() { openExistingScene(path); }));
             
         bNeedOpenScene = false;
     }
 
     if (bNeedUndo)
     {
-        if(pActionBuffer->canUndo())
+        if (pActionBuffer->canUndo())
+        {
+            ImGui::InsertNotification({ ImGuiToastType_Info, 3000, "Undo action." });
             pActionBuffer->undo();
+        }
+            
         bNeedUndo = false;
     }
 
     if (bNeedRedo)
     {
-        if(pActionBuffer->canRedo())
+        if (pActionBuffer->canRedo())
+        {
+            ImGui::InsertNotification({ ImGuiToastType_Info, 3000, "Redo action." });
             pActionBuffer->redo();
+        }
+            
         bNeedRedo = false;
     }
 
@@ -364,16 +331,24 @@ void CEditor::newFrame(float fDt)
     {
         EGSceneManager->save();
         save_editor();
+        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Scene saved!" });
         bNeedSave = false;
     }
 
     if (bNeedSaveAll)
     {
         pEditorProject->save();
+        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Project saved!" });
         bNeedSaveAll = false;
     }
 
     ImGui::DockSpaceOverViewport();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f); // Round borders
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(43.f / 255.f, 43.f / 255.f, 43.f / 255.f, 100.f / 255.f)); // Background color
+    ImGui::RenderNotifications(); // <-- Here we render all notifications
+    ImGui::PopStyleVar(1); // Don't forget to Pop()
+    ImGui::PopStyleColor(1);
 
     //ImGui::ShowDemoWindow();
     for (auto& overlay : vEditorWindows)
@@ -396,6 +371,64 @@ void CEditor::onAllFramesDone(CEvent& event)
     for (auto& action : vEditorActions)
         action();
     vEditorActions.clear();
+}
+
+void CEditor::makeNewProject(const std::filesystem::path& project_path)
+{
+    if (pEditorProject->make_new(project_path))
+    {
+        selected = entt::null;
+        recproj.recent = fs::from_unicode(project_path);
+        save_editor();
+        ImGui::CloseCurrentPopup();
+        EGEngine->sendEvent(Events::Editor::ProjectUpdated);
+        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Created new project: %s", recproj.recent.c_str()});
+        return;
+    }
+    ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Failed to create project!" });
+}
+
+void CEditor::openExistingProject(const std::filesystem::path& project_path)
+{
+    if (pEditorProject->open(project_path))
+    {
+        selected = entt::null;
+        recproj.recent = fs::from_unicode(project_path);
+        save_editor();
+        ImGui::CloseCurrentPopup();
+        EGEngine->sendEvent(Events::Editor::ProjectUpdated);
+        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded project: %s.", recproj.recent.c_str()});
+        return;
+    }
+    ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Failed to load project!" });
+}
+
+void CEditor::makeNewScene(const std::filesystem::path& project_path)
+{
+    if (EGSceneManager->make_new(project_path))
+    {
+        selected = entt::null;
+        auto scenepath = std::filesystem::relative(project_path, fs::get_workdir());
+        pEditorProject->setScenePath(scenepath);
+        ImGui::CloseCurrentPopup();
+        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Created new scene: %s.", scenepath.string().c_str() });
+        return;
+    }
+    ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Failed to create new scene!" });
+}
+
+void CEditor::openExistingScene(const std::filesystem::path& project_path)
+{
+    if (EGSceneManager->load(project_path))
+    {
+        selected = entt::null;
+        auto scenepath = std::filesystem::relative(project_path, fs::get_workdir());
+        pEditorProject->setScenePath(scenepath);
+        ImGui::CloseCurrentPopup();
+        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded scene: %s.", scenepath.string().c_str() });
+        return;
+    }
+    ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Failed to load scene!" });
 }
 
 void CEditor::selectObject(const entt::entity& object)
@@ -524,6 +557,7 @@ void CEditor::baseInitialize()
     auto fontfile = fs::from_unicode(fs::get_workdir(true) / "font" / FONT_ICON_FILE_NAME_MDI);
 
     static const ImWchar icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };
+
     ImFontConfig icons_config;
     icons_config.MergeMode = true;
     icons_config.PixelSnapH = true;
