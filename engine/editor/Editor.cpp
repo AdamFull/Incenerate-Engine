@@ -37,7 +37,7 @@ namespace engine
     {
         void to_json(nlohmann::json& json, const FRecentProjects& type)
         {
-            utl::serialize_from("last", json, type.recent, !type.last .empty());
+            utl::serialize_from("last", json, type.last, !type.last.empty());
             utl::serialize_from("recent", json, type.recent, !type.recent.empty());
         }
 
@@ -394,6 +394,7 @@ void CEditor::makeNewProject(const std::filesystem::path& project_path)
         selected = entt::null;
         recproj.last = fs::from_unicode(project_path);
         recproj.recent.emplace(recproj.last);
+
         save_editor();
         ImGui::CloseCurrentPopup();
         EGEngine->sendEvent(Events::Editor::ProjectUpdated);
@@ -410,6 +411,7 @@ void CEditor::openExistingProject(const std::filesystem::path& project_path)
         selected = entt::null;
         recproj.last = fs::from_unicode(project_path);
         recproj.recent.emplace(recproj.last);
+
         save_editor();
         ImGui::CloseCurrentPopup();
         EGEngine->sendEvent(Events::Editor::ProjectUpdated);
