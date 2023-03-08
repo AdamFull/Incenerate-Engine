@@ -73,8 +73,6 @@ void CEditorViewport::__draw(float fDt)
 	{
 		viewportPicking();
 		drawManipulator(viewportPanelPos.x, viewportPanelPos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
-		debug_draw->drawDebugGrid(-100.f, 100.f, 0.f, 1.f);
-		debug_draw->drawDebugCross(glm::vec3(0.f), 3.f);
 	}
 
 	drawOverlay(textDrawPos.x, textDrawPos.y, fDt);

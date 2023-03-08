@@ -46,7 +46,8 @@ namespace engine
 
 		struct FRecentProjects
 		{
-			std::string recent;
+			std::string last;
+			std::set<std::string> recent;
 		};
 
 		void to_json(nlohmann::json& json, const FRecentProjects& type);

@@ -37,12 +37,13 @@ namespace engine
     {
         void to_json(nlohmann::json& json, const FRecentProjects& type)
         {
-            json = nlohmann::json();
+            utl::serialize_from("last", json, type.recent, !type.last .empty());
             utl::serialize_from("recent", json, type.recent, !type.recent.empty());
         }
 
         void from_json(const nlohmann::json& json, FRecentProjects& type)
         {
+            utl::parse_to("last", json, type.last);
             utl::parse_to("recent", json, type.recent);
         }
     }
@@ -187,7 +188,7 @@ void CEditor::create()
 
     if (!recproj.recent.empty())
     {
-        auto path = std::filesystem::path(recproj.recent);
+        auto path = std::filesystem::path(recproj.last);
         pEditorProject->open(path);
     }
 
@@ -216,6 +217,19 @@ void CEditor::newFrame(float fDt)
         {
             if (ImGui::MenuItem("New project", "Ctrl-N")) { bNeedNewProject = true; }
             if (ImGui::MenuItem("Open project", "Ctrl+O")) { bNeedOpenProject = true; }
+            if (ImGui::BeginMenu("Recent projects", !recproj.recent.empty()))
+            {
+                for (auto& proj : recproj.recent)
+                {
+                    if (proj != recproj.last)
+                    {
+                        auto proj_name = fs::get_filename(proj);
+                        if (ImGui::MenuItem(proj_name.c_str()))
+                            openExistingProject(proj);
+                    }
+                }
+                ImGui::EndMenu();
+            }
             ImGui::Separator();
             if (ImGui::MenuItem("New scene", "Ctrl-Shift-N", false, pEditorProject->isProjectOpen())) { bNeedNewScene = true; }
             if (ImGui::MenuItem("Open scene", "Ctrl-Shift-O", false, pEditorProject->isProjectOpen())) { bNeedOpenScene = true; }
@@ -378,11 +392,12 @@ void CEditor::makeNewProject(const std::filesystem::path& project_path)
     if (pEditorProject->make_new(project_path))
     {
         selected = entt::null;
-        recproj.recent = fs::from_unicode(project_path);
+        recproj.last = fs::from_unicode(project_path);
+        recproj.recent.emplace(recproj.last);
         save_editor();
         ImGui::CloseCurrentPopup();
         EGEngine->sendEvent(Events::Editor::ProjectUpdated);
-        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Created new project: %s", recproj.recent.c_str()});
+        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Created new project: %s", recproj.last.c_str()});
         return;
     }
     ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Failed to create project!" });
@@ -393,11 +408,12 @@ void CEditor::openExistingProject(const std::filesystem::path& project_path)
     if (pEditorProject->open(project_path))
     {
         selected = entt::null;
-        recproj.recent = fs::from_unicode(project_path);
+        recproj.last = fs::from_unicode(project_path);
+        recproj.recent.emplace(recproj.last);
         save_editor();
         ImGui::CloseCurrentPopup();
         EGEngine->sendEvent(Events::Editor::ProjectUpdated);
-        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded project: %s.", recproj.recent.c_str()});
+        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded project: %s.", recproj.last.c_str()});
         return;
     }
     ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Failed to load project!" });

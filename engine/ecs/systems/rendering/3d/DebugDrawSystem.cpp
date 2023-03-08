@@ -53,5 +53,8 @@ void CDebugDrawSystem::__update(float fDt)
 		graphics->bindShader(invalid_index);
 	}
 
+	debug_draw->drawDebugGrid(-100.f, 100.f, 0.f, 1.f);
+	debug_draw->drawDebugCross(glm::vec3(0.f), 3.f);
+
 	debug_draw->draw();
 }
