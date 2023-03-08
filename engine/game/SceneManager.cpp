@@ -1,5 +1,9 @@
 #include "SceneManager.h"
 
+#include "Engine.h"
+
+#include "ecs/components/TransformComponent.h"
+
 #include "SceneGraph.hpp"
 #include "SceneSerializer.h"
 
@@ -13,8 +17,7 @@ CSceneManager::~CSceneManager()
 
 bool CSceneManager::make_new(const std::filesystem::path& path)
 {
-	if (root != entt::null)
-		scenegraph::destroy_node(root);
+	release();
 
 	root = scenegraph::create_node("root");
 
@@ -26,8 +29,7 @@ bool CSceneManager::make_new(const std::filesystem::path& path)
 
 bool CSceneManager::load(const std::filesystem::path& path)
 {
-	if (root != entt::null)
-		scenegraph::destroy_node(root);
+	release();
 
 	root = CSceneLoader::load(path);
 	scenepath = path;
@@ -39,6 +41,16 @@ void CSceneManager::save()
 {
 	if (root != entt::null)
 		CSceneLoader::save(root, scenepath);
+}
+
+void CSceneManager::release()
+{
+	auto& graphics = EGEngine->getGraphics();
+
+	if (root != entt::null)
+		scenegraph::destroy_node(root);
+
+	graphics->forceReleaseResources();
 }
 
 const entt::entity& CSceneManager::getRoot()

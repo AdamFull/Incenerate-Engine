@@ -313,14 +313,24 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
 void CAPIHandle::update()
 {
-    if (imageIndex == pDevice->getFramesInFlight() - 1)
+    static size_t count_delete{ 0 };
+    count_delete++;
+
+    if (count_delete > pDevice->getFramesInFlight() + 1)
     {
-        pImageManager->performDeletion();
-        pShaderManager->performDeletion();
-        pMaterialManager->performDeletion();
-        pVertexBufferManager->performDeletion();
-        pRenderStageManager->performDeletion();
+        EGEngine->sendEvent(Events::Graphics::AllFramesDone);
+        forceReleaseResources();
+        count_delete = 0;
     }
+}
+
+void CAPIHandle::forceReleaseResources()
+{
+    pImageManager->performDeletion();
+    pShaderManager->performDeletion();
+    pMaterialManager->performDeletion();
+    pVertexBufferManager->performDeletion();
+    pRenderStageManager->performDeletion();
 }
 
 void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)

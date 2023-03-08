@@ -22,6 +22,18 @@ using namespace engine::loaders;
 using namespace engine::game;
 using namespace engine::ecs;
 
+void destroy_hierarchy(entt::registry& reg, entt::entity entity)
+{
+	if (reg.try_get<FHierarchyComponent>(entity))
+	{
+		while (!reg.try_get<FHierarchyComponent>(entity)->children.empty())
+		{
+			auto child = reg.try_get<FHierarchyComponent>(entity)->children.front();
+			scenegraph::destroy_node(child);
+		}
+	}
+}
+
 void destroy_mesh(entt::registry& reg, entt::entity entity)
 {
 	auto& mesh = reg.get<FMeshComponent>(entity);
@@ -70,9 +82,6 @@ void construct_scene(entt::registry& reg, entt::entity entity)
 	{
 		CMeshLoader::load(scene.source, entity, &scene);
 		scene.loaded = true;
-
-		auto& hierarchy = reg.get<FHierarchyComponent>(entity);
-		int iii = 0;
 	}
 }
 
@@ -82,12 +91,12 @@ void destroy_scene(entt::registry& reg, entt::entity entity)
 
 	if (scene.loaded)
 	{
-		if (auto* hierarchy = reg.try_get<FHierarchyComponent>(entity))
+		if (reg.try_get<FHierarchyComponent>(entity))
 		{
-			while (!hierarchy->children.empty())
+			while (!reg.try_get<FHierarchyComponent>(entity)->children.empty())
 			{
-				auto entity = hierarchy->children.front();
-				scenegraph::destroy_node(entity);
+				auto child = reg.try_get<FHierarchyComponent>(entity)->children.front();
+				scenegraph::destroy_node(child);
 			}
 		}
 	}
@@ -268,6 +277,8 @@ FCameraComponent* CEngine::getActiveCamera()
 
 void CEngine::initEntityComponentSystem()
 {
+	registry.on_destroy<FHierarchyComponent>().connect<&destroy_hierarchy>();
+
 	registry.on_destroy<FMeshComponent>().connect<&destroy_mesh>();
 
 	registry.on_construct<FRigidBodyComponent>().connect<&construct_rigidbody>();

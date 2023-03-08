@@ -59,6 +59,8 @@ namespace engine
 			void create();
 			void newFrame(float fDt);
 
+			void onAllFramesDone(CEvent& event);
+
 			void selectObject(const entt::entity& object);
 			void deselectObject();
 			void deselectAll();
@@ -114,6 +116,8 @@ namespace engine
 			bool bNeedRedo{ false };
 			bool bNeedSave{ false };
 			bool bNeedSaveAll{ false };
+
+			std::vector<utl::function<void()>> vEditorActions;
 
 			ImFont* pSmallIcons{ nullptr };
 			ImFont* pLargeIcons{ nullptr };

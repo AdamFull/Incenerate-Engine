@@ -12,6 +12,7 @@ namespace engine
 			bool make_new(const std::filesystem::path& path);
 			bool load(const std::filesystem::path& path);
 			void save();
+			void release();
 
 			const entt::entity& getRoot();
 			const std::filesystem::path& getScenePath() const;

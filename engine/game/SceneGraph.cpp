@@ -21,18 +21,8 @@ entt::entity scenegraph::create_node(const std::string& name)
 void scenegraph::destroy_node(entt::entity node)
 {
 	auto& registry = EGEngine->getRegistry();
-	
-	auto& hierarchy = registry.get<FHierarchyComponent>(node);
-
-	while (!hierarchy.children.empty())
-	{
-		auto child = hierarchy.children.front();
-		destroy_node(child);
-	}
 
 	detach_child(node);
-	hierarchy.children.clear();
-
 	registry.destroy(node);
 
 	log_debug("Entity with id {} was destroyed", static_cast<uint32_t>(node));
@@ -63,7 +53,7 @@ void scenegraph::detach_child(entt::entity parent, entt::entity child)
 	auto& registry = EGEngine->getRegistry();
 
 	auto& phierarchy = registry.get<FHierarchyComponent>(parent);
-	auto cit = std::find(phierarchy.children.begin(), phierarchy.children.end(), child);
+	auto cit = std::remove(phierarchy.children.begin(), phierarchy.children.end(), child);
 
 	if (cit != phierarchy.children.end())
 		phierarchy.children.erase(cit);

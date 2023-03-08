@@ -28,7 +28,7 @@ namespace engine
 		using namespace utl;
 		constexpr const inline ParamId ReCreate = "Events::Graphics::ReCreate"_utl_hash;
 		constexpr const inline ParamId ViewportReCreate = "Events::Graphics::ViewportReCreate"_utl_hash;
-		constexpr const inline ParamId PerformDelete = "Events::Graphics::PerformDelete"_utl_hash;
+		constexpr const inline ParamId AllFramesDone = "Events::Graphics::AllFramesDone"_utl_hash;
 	}
 
 	namespace Events::Input

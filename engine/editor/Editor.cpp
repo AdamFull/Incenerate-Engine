@@ -70,6 +70,7 @@ void CEditor::create()
     auto& device = graphics->getDevice();
     auto& fb = graphics->getFramebuffer("present");
 
+    EGEngine->addEventListener(Events::Graphics::AllFramesDone, this, &CEditor::onAllFramesDone);
     EGEngine->addEventListener(Events::Input::Key, this, &CEditor::onKeyDown);
 
     pEditorProject = std::make_unique<CEditorProject>(camera);
@@ -273,14 +274,14 @@ void CEditor::newFrame(float fDt)
         static char name_buf[512];
         if (ImGui::FileSave(name_buf, 512, "New incenerate project", 1, project_filter))
         {
-            auto path = std::filesystem::path(name_buf);
-            if (pEditorProject->make_new(path))
-            {
-                recproj.recent = fs::from_unicode(path);
-                save_editor();
-                ImGui::CloseCurrentPopup();
-                EGEngine->sendEvent(Events::Editor::ProjectUpdated);
-            }
+            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]()
+                {
+                    selected = entt::null;
+                    recproj.recent = fs::from_unicode(path);
+                    save_editor();
+                    ImGui::CloseCurrentPopup();
+                    EGEngine->sendEvent(Events::Editor::ProjectUpdated);
+                }));
         }
         bNeedNewProject = false;
     }
@@ -290,15 +291,19 @@ void CEditor::newFrame(float fDt)
         static char name_buf[512];
         if (ImGui::FileOpen(name_buf, 512, "Open project", 1, project_filter))
         {
-            auto path = std::filesystem::path(name_buf);
-            if (pEditorProject->open(path))
-            {
-                recproj.recent = fs::from_unicode(path);
-                save_editor();
-                ImGui::CloseCurrentPopup();
-                EGEngine->sendEvent(Events::Editor::ProjectUpdated);
-            }
+            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]()
+                {
+                    if (pEditorProject->open(path))
+                    {
+                        selected = entt::null;
+                        recproj.recent = fs::from_unicode(path);
+                        save_editor();
+                        ImGui::CloseCurrentPopup();
+                        EGEngine->sendEvent(Events::Editor::ProjectUpdated);
+                    }
+                }));
         }
+            
         bNeedOpenProject = false;
     }
 
@@ -308,13 +313,17 @@ void CEditor::newFrame(float fDt)
         static char name_buf[512];
         if (ImGui::FileSave(name_buf, 512, "New scene", 1, scene_filter))
         {
-            auto path = std::filesystem::path(name_buf);
-            if (EGSceneManager->make_new(path))
-            {
-                pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
-                ImGui::CloseCurrentPopup();
-            }
+            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]()
+                {
+                    if (EGSceneManager->make_new(path))
+                    {
+                        selected = entt::null;
+                        pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
+                        ImGui::CloseCurrentPopup();
+                    }
+                }));
         }
+            
         bNeedNewScene = false;
     }
 
@@ -323,13 +332,17 @@ void CEditor::newFrame(float fDt)
         static char name_buf[512];
         if (ImGui::FileOpen(name_buf, 512, "Open scene", 1, scene_filter))
         {
-            auto path = std::filesystem::path(name_buf);
-            if (EGSceneManager->load(path))
-            {
-                pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
-                ImGui::CloseCurrentPopup();
-            }
+            vEditorActions.emplace_back(utl::function<void()>([this, path = std::filesystem::path(name_buf)]()
+                {
+                    if (EGSceneManager->load(path))
+                    {
+                        selected = entt::null;
+                        pEditorProject->setScenePath(std::filesystem::relative(path, fs::get_workdir()));
+                        ImGui::CloseCurrentPopup();
+                    }
+                }));
         }
+            
         bNeedOpenScene = false;
     }
 
@@ -376,6 +389,13 @@ void CEditor::newFrame(float fDt)
     }
     ImDrawData* drawdata = ImGui::GetDrawData();
     ImGui_ImplVulkan_RenderDrawData(drawdata, commandBuffer);
+}
+
+void CEditor::onAllFramesDone(CEvent& event)
+{
+    for (auto& action : vEditorActions)
+        action();
+    vEditorActions.clear();
 }
 
 void CEditor::selectObject(const entt::entity& object)

@@ -33,6 +33,7 @@ namespace engine
 
 			void create(const FEngineCreateInfo& createInfo);
 			void update();
+			void forceReleaseResources();
 			void reCreate(bool bSwapchain, bool bViewport);
 			void shutdown();
 
