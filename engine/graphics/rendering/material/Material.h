@@ -6,7 +6,7 @@ namespace engine
 {
 	namespace graphics
 	{
-		struct FMaterial
+		struct FMaterialParameters
 		{
 			EAlphaMode alphaMode{ EAlphaMode::EOPAQUE };
 			float alphaCutoff{ 0.5f };
@@ -61,13 +61,26 @@ namespace engine
 
 		};
 
+		void to_json(nlohmann::json& json, const FMaterialParameters& type);
+		void from_json(const nlohmann::json& json, FMaterialParameters& type);
+
+		struct FMaterialCreateInfo
+		{
+			FMaterialParameters parameters;
+			std::map<std::string, std::string> textures;
+			std::string shader;
+		};
+
+		void to_json(nlohmann::json& json, const FMaterialCreateInfo& type);
+		void from_json(const nlohmann::json& json, FMaterialCreateInfo& type);
+
 		class CMaterial
 		{
 		public:
 			~CMaterial();
 
-			void setParameters(FMaterial&& mat);
-			FMaterial& getParameters() { return parameters; }
+			void setParameters(FMaterialParameters&& mat);
+			FMaterialParameters& getParameters() { return parameters; }
 
 			void addTexture(const std::string& srTexture, size_t index = invalid_index);
 			const std::unordered_map<std::string, size_t> getTextures() const { return mTextures; }
@@ -79,7 +92,7 @@ namespace engine
 			void incrementUsageCount();
 			const size_t getUsageCount() const;
 		private:
-			FMaterial parameters;
+			FMaterialParameters parameters;
 			std::unordered_map<std::string, size_t> mTextures;
 			size_t usageCount{ 0 };
 			size_t shader_id{ invalid_index };

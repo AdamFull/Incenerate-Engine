@@ -190,7 +190,7 @@ void CObjLoader::load(const std::filesystem::path& source, const entt::entity& p
 		uint32_t matIndex{ 0 };
 		for (auto& material : materials)
 		{
-			FMaterial params;
+			FMaterialParameters params;
 			auto pMaterial = std::make_unique<CMaterial>();
 
 			if (!material.diffuse_texname.empty())

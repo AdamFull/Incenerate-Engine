@@ -12,6 +12,7 @@
 #include "editor/operations/RemoveEntityOperation.h"
 #include "editor/operations/CopyEntityOperation.h"
 #include "editor/operations/DuplicateEntityOperation.h"
+#include "editor/operations/ExchangeEntityOperation.h"
 
 using namespace engine::editor;
 using namespace engine::game;
@@ -172,23 +173,24 @@ void CEditorHierarchy::buildHierarchy(const entt::entity& entity)
             ImGui::EndDragDropSource();
         }
 
+        if (isOpen && !hierarchy.children.empty())
+        {
+            for (auto& child : hierarchy.children)
+                buildHierarchy(child);
+            ImGui::TreePop();
+        }
+
         if (ImGui::BeginDragDropTarget())
         {
             auto payload = ImGui::AcceptDragDropPayload("scene_node");
             if (payload)
             {
                 auto node = *static_cast<entt::entity*>(payload->Data);
-                scenegraph::parent_exchange(entity, node);
+                auto& actionBuffer = EGEditor->getActionBuffer();
+                actionBuffer->addOperation(std::make_unique<CExchangeEntityOperation>(node, entity));
             }
-            
-            ImGui::EndDragDropTarget();
-        }
 
-        if (isOpen && !hierarchy.children.empty())
-        {
-            for (auto& child : hierarchy.children)
-                buildHierarchy(child);
-            ImGui::TreePop();
+            ImGui::EndDragDropTarget();
         }
     }
 }

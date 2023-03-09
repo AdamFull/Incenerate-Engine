@@ -116,7 +116,7 @@ void CTerrainLoader::loadMaterial(ecs::FTerrainComponent* terrain)
 
 	// Load material
 	auto material = std::make_unique<CMaterial>();
-	FMaterial params{};
+	FMaterialParameters params{};
 	params.tessellationFactor = 0.75f;
 	params.displacementStrength = 100.f;
 	params.emissiveStrength = 0.f;

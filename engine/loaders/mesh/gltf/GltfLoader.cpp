@@ -527,7 +527,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
     uint32_t matIndex{ 0 };
     for (auto& mat : model.materials)
     {
-        FMaterial params;
+        FMaterialParameters params;
         auto pMaterial = std::make_unique<CMaterial>();
 
         if (mat.values.find("baseColorTexture") != mat.values.end())
