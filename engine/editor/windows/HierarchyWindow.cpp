@@ -166,18 +166,18 @@ void CEditorHierarchy::buildHierarchy(const entt::entity& entity)
             }
         }
 
-        if (ImGui::BeginDragDropSource())
-        {
-            ImGui::SetDragDropPayload("scene_node", &entity, sizeof(entity));
-            ImGui::Text(hierarchy.name.c_str());
-            ImGui::EndDragDropSource();
-        }
-
         if (isOpen && !hierarchy.children.empty())
         {
             for (auto& child : hierarchy.children)
                 buildHierarchy(child);
             ImGui::TreePop();
+        }
+
+        if (ImGui::BeginDragDropSource())
+        {
+            ImGui::SetDragDropPayload("scene_node", &entity, sizeof(entity));
+            ImGui::Text(hierarchy.name.c_str());
+            ImGui::EndDragDropSource();
         }
 
         if (ImGui::BeginDragDropTarget())
