@@ -20,6 +20,7 @@ namespace engine
 	{
 		using namespace utl;
 		constexpr const inline ParamId OpenImageViewer = "Events::Editor::OpenImageViewer"_utl_hash;
+		constexpr const inline ParamId SelectMaterial = "Events::Editor::SelectMaterial"_utl_hash;
 		constexpr const inline ParamId ProjectUpdated = "Events::Editor::ProjectUpdated"_utl_hash;
 	}
 

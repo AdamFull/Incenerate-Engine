@@ -21,6 +21,7 @@
 #include "windows/ImageViewerWindow.h"
 #include "windows/SystemPerfomanceViewWindow.h"
 #include "windows/RenderDebugWindow.h"
+#include "windows/MaterialEditorWindow.h"
 
 #include "operations/RemoveEntityOperation.h"
 
@@ -111,7 +112,8 @@ void CEditor::create()
     vEditorWindows.emplace_back(std::make_unique<CEditorContentBrowser>("Content browser"));
     vEditorWindows.emplace_back(std::make_unique<CEditorImageViewer>("Image viewer"));
     vEditorWindows.emplace_back(std::make_unique<CEditorPerfomanceView>("System perfomance view"));
-    vEditorWindows.emplace_back(std::make_unique<CRenderDebugWindow>("RenderDebugWindow"));
+    vEditorWindows.emplace_back(std::make_unique<CRenderDebugWindow>("Render Debug Window"));
+    vEditorWindows.emplace_back(std::make_unique<CMaterialEditorWindow>("Material editor"));
 
     ImGui_ImplSDL2_InitForVulkan(EGWindow->getWindowPointer());
     ImGui_ImplVulkan_InitInfo init_info = {};

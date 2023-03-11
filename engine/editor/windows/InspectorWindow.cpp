@@ -123,7 +123,7 @@ void CEditorInspector::__draw(float fDt)
 		try_show_edit<FCameraComponent>("Camera", selected,
 			[this](auto* object) { cameraEdit(object); });
 		try_show_edit<FMeshComponent>("Mesh", selected,
-			[](auto*) {});
+			[this](auto* object) { meshEdit(object); });
 		try_show_edit<FScriptComponent>("Script", selected,
 			[this](auto* object) { scriptEdit(object); });
 		try_show_edit<FEnvironmentComponent>("Environment", selected,
@@ -693,23 +693,23 @@ void CEditorInspector::terrainEdit(FTerrainComponent* object)
 	}
 	ImGui::GDragFloat("UV scale", &object->uv_scale, 0.1f, 0.1f, 5.f);
 
-	ImGui::Separator();
-	ImGui::Text("Material");
-	ImGui::Separator();
+	if (ImGui::Button("Open material editor"))
+	{
+		CEvent eevent(Events::Editor::SelectMaterial);
+		eevent.setParam(Events::Editor::SelectMaterial, object->material_id);
+		EGEngine->sendEvent(eevent);
+	}
+}
 
-	auto& graphics = EGEngine->getGraphics();
-	auto& material = graphics->getMaterial(object->material_id);
-	auto& params = material->getParameters();
-
-	ImGui::GDragFloat("Alpha cutoff", &params.alphaCutoff, 0.01f, 0.f, 1.f);
-	ImGui::GColorEdit3("Emissive factor", params.emissiveFactor);
-	ImGui::GDragFloat("Normal scale", &params.normalScale, 0.01f, 1.f, 10.f);
-	ImGui::GDragFloat("Occlusion strength", &params.occlusionStrenth, 0.01f, 0.f, 10.f);
-	ImGui::GColorEdit4("Base color factor", params.baseColorFactor);
-	ImGui::GDragFloat("Metallic factor", &params.metallicFactor, 0.01f, 0.f, 1.f);
-	ImGui::GDragFloat("Roughness factor", &params.roughnessFactor, 0.01f, 0.f, 1.f);
-	ImGui::GCheckbox("Double sided", &params.doubleSided);
-
-	ImGui::GDragFloat("Tessellation factor", &params.tessellationFactor, 0.01f, 0.f, 10.f);
-	ImGui::GDragFloat("Displacement strength", &params.displacementStrength, 0.01f, 0.01f, 100.f);
+void CEditorInspector::meshEdit(FMeshComponent* object)
+{
+	for (auto& meshlet : object->vMeshlets)
+	{
+		if (ImGui::Button("Open material editor"))
+		{
+			CEvent eevent(Events::Editor::SelectMaterial);
+			eevent.setParam(Events::Editor::SelectMaterial, meshlet.material);
+			EGEngine->sendEvent(eevent);
+		}
+	}
 }

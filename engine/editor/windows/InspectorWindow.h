@@ -25,6 +25,7 @@ namespace engine
 			void rigidbodyEdit(ecs::FTransformComponent* transform, ecs::FRigidBodyComponent* object);
 			void particleSystemEdit(ecs::FTransformComponent* transform, ecs::FParticleComponent* object);
 			void terrainEdit(ecs::FTerrainComponent* object);
+			void meshEdit(ecs::FMeshComponent* object);
 		};
 	}
 }
