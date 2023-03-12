@@ -127,10 +127,6 @@ const float minRoughness = 0.04;
 void main() 
 {
 	vec2 texCoord = inUV;
-#ifdef HAS_HEIGHTMAP 
-	vec3 viewDir = normalize(data.viewDir - inPosition.xyz);;
-	//texCoord = ParallaxMapping(height_tex, inUV, viewDir, 0.01, 8.0, 32.0);
-#endif
 
 //BASECOLOR
 	vec4 albedo_map = vec4(0.0);

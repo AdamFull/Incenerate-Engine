@@ -1,0 +1,1118 @@
+[
+  {
+    "name": "Variables",
+    "subgroups": [
+      {
+        "name": "Constant",
+        "nodes": [
+          {
+            "name": "int",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "int" ]
+              }
+            ]
+          },
+          {
+            "name": "float",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "float" ]
+              }
+            ]
+          },
+          {
+            "name": "vec2",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "vec2" ]
+              }
+            ]
+          },
+          {
+            "name": "vec3",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "vec3" ]
+              }
+            ]
+          },
+          {
+            "name": "vec4",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "vec4" ]
+              }
+            ]
+          },
+          {
+            "name": "ivec2",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "ivec2" ]
+              }
+            ]
+          },
+          {
+            "name": "ivec3",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "ivec3" ]
+              }
+            ]
+          },
+          {
+            "name": "ivec4",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "ivec4" ]
+              }
+            ]
+          },
+          {
+            "name": "mat2",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "mat2" ]
+              }
+            ]
+          },
+          {
+            "name": "mat3",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "mat3" ]
+              }
+            ]
+          },
+          {
+            "name": "mat4",
+            "type": "const_value",
+            "output_attributes": [
+              {
+                "name": "value",
+                "types": [ "mat4" ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Make value",
+        "nodes": [
+          {
+            "name": "make vec2",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "x",
+                "types": [ "float" ]
+              },
+              {
+                "name": "y",
+                "types": [ "float" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "vec2" ]
+              }
+            ]
+          },
+          {
+            "name": "make vec3",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "x",
+                "types": [ "float" ]
+              },
+              {
+                "name": "y",
+                "types": [ "float" ]
+              },
+              {
+                "name": "z",
+                "types": [ "float" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "vec3" ]
+              }
+            ]
+          },
+          {
+            "name": "make vec4",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "x",
+                "types": [ "float" ]
+              },
+              {
+                "name": "y",
+                "types": [ "float" ]
+              },
+              {
+                "name": "z",
+                "types": [ "float" ]
+              },
+              {
+                "name": "w",
+                "types": [ "float" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "vec4" ]
+              }
+            ]
+          },
+          {
+            "name": "make ivec2",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "x",
+                "types": [ "int" ]
+              },
+              {
+                "name": "y",
+                "types": [ "int" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "ivec2" ]
+              }
+            ]
+          },
+          {
+            "name": "make ivec3",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "x",
+                "types": [ "int" ]
+              },
+              {
+                "name": "y",
+                "types": [ "int" ]
+              },
+              {
+                "name": "z",
+                "types": [ "int" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "ivec3" ]
+              }
+            ]
+          },
+          {
+            "name": "make ivec4",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "x",
+                "types": [ "int" ]
+              },
+              {
+                "name": "y",
+                "types": [ "int" ]
+              },
+              {
+                "name": "z",
+                "types": [ "int" ]
+              },
+              {
+                "name": "w",
+                "types": [ "int" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "ivec4" ]
+              }
+            ]
+          },
+          {
+            "name": "make mat2",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "r1",
+                "types": [ "vec2" ]
+              },
+              {
+                "name": "r2",
+                "types": [ "vec2" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "mat2" ]
+              }
+            ]
+          },
+          {
+            "name": "make mat3",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "r1",
+                "types": [ "vec3" ]
+              },
+              {
+                "name": "r2",
+                "types": [ "vec3" ]
+              },
+              {
+                "name": "r3",
+                "types": [ "vec3" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "mat3" ]
+              }
+            ]
+          },
+          {
+            "name": "make mat4",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "r1",
+                "types": [ "vec4" ]
+              },
+              {
+                "name": "r2",
+                "types": [ "vec4" ]
+              },
+              {
+                "name": "r3",
+                "types": [ "vec4" ]
+              },
+              {
+                "name": "r4",
+                "types": [ "vec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "mat4" ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Break value",
+        "nodes": [
+          {
+            "name": "break vec2",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "vec2" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "x",
+                "types": [ "float" ]
+              },
+              {
+                "name": "y",
+                "types": [ "float" ]
+              }
+            ]
+          },
+          {
+            "name": "break vec3",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "vec3" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "x",
+                "types": [ "float" ]
+              },
+              {
+                "name": "y",
+                "types": [ "float" ]
+              },
+              {
+                "name": "z",
+                "types": [ "float" ]
+              }
+            ]
+          },
+          {
+            "name": "break vec4",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "vec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "x",
+                "types": [ "float" ]
+              },
+              {
+                "name": "y",
+                "types": [ "float" ]
+              },
+              {
+                "name": "z",
+                "types": [ "float" ]
+              },
+              {
+                "name": "w",
+                "types": [ "float" ]
+              }
+            ]
+          },
+          {
+            "name": "break ivec2",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "ivec2" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "x",
+                "types": [ "int" ]
+              },
+              {
+                "name": "y",
+                "types": [ "int" ]
+              }
+            ]
+          },
+          {
+            "name": "break ivec3",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "ivec3" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "x",
+                "types": [ "int" ]
+              },
+              {
+                "name": "y",
+                "types": [ "int" ]
+              },
+              {
+                "name": "z",
+                "types": [ "int" ]
+              }
+            ]
+          },
+          {
+            "name": "break ivec4",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "ivec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "x",
+                "types": [ "int" ]
+              },
+              {
+                "name": "y",
+                "types": [ "int" ]
+              },
+              {
+                "name": "z",
+                "types": [ "int" ]
+              },
+              {
+                "name": "w",
+                "types": [ "int" ]
+              }
+            ]
+          },
+          {
+            "name": "break mat2",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "mat2" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "r1",
+                "types": [ "vec2" ]
+              },
+              {
+                "name": "r2",
+                "types": [ "vec2" ]
+              }
+            ]
+          },
+          {
+            "name": "break mat3",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "mat3" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "r1",
+                "types": [ "vec3" ]
+              },
+              {
+                "name": "r2",
+                "types": [ "vec3" ]
+              },
+              {
+                "name": "r3",
+                "types": [ "vec3" ]
+              }
+            ]
+          },
+          {
+            "name": "break mat4",
+            "type": "value_maker",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "mat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "r1",
+                "types": [ "vec4" ]
+              },
+              {
+                "name": "r2",
+                "types": [ "vec4" ]
+              },
+              {
+                "name": "r3",
+                "types": [ "vec4" ]
+              },
+              {
+                "name": "r4",
+                "types": [ "vec4" ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Texture",
+    "nodes": [
+      {
+        "name": "texture",
+        "type": "sampler",
+        "input_attributes": [
+          {
+            "name": "uv",
+            "types": [ "vec2" ]
+          }
+        ],
+        "output_attributes": [
+          {
+            "name": "color",
+            "types": [ "vec4" ]
+          },
+          {
+            "name": "r",
+            "types": [ "float" ]
+          },
+          {
+            "name": "g",
+            "types": [ "float" ]
+          },
+          {
+            "name": "b",
+            "types": [ "float" ]
+          },
+          {
+            "name": "a",
+            "types": [ "float" ]
+          }
+        ]
+      },
+      {
+        "name": "textureLod",
+        "type": "sampler",
+        "input_attributes": [
+          {
+            "name": "uv",
+            "types": [ "vec2" ]
+          },
+          {
+            "name": "lod",
+            "types": [ "int" ]
+          }
+        ],
+        "output_attributes": [
+          {
+            "name": "color",
+            "types": [ "vec4" ]
+          },
+          {
+            "name": "r",
+            "types": [ "float" ]
+          },
+          {
+            "name": "g",
+            "types": [ "float" ]
+          },
+          {
+            "name": "b",
+            "types": [ "float" ]
+          },
+          {
+            "name": "a",
+            "types": [ "float" ]
+          }
+        ]
+      },
+      {
+        "name": "textureOffset",
+        "type": "sampler",
+        "input_attributes": [
+          {
+            "name": "uv",
+            "types": [ "vec2" ]
+          },
+          {
+            "name": "offset",
+            "types": [ "ivec2" ]
+          }
+        ],
+        "output_attributes": [
+          {
+            "name": "color",
+            "types": [ "vec4" ]
+          },
+          {
+            "name": "r",
+            "types": [ "float" ]
+          },
+          {
+            "name": "g",
+            "types": [ "float" ]
+          },
+          {
+            "name": "b",
+            "types": [ "float" ]
+          },
+          {
+            "name": "a",
+            "types": [ "float" ]
+          }
+        ]
+      },
+      {
+        "name": "textureLodOffset",
+        "type": "sampler",
+        "input_attributes": [
+          {
+            "name": "uv",
+            "types": [ "vec2" ]
+          },
+          {
+            "name": "lod",
+            "types": [ "int" ]
+          },
+          {
+            "name": "offset",
+            "types": [ "ivec2" ]
+          }
+        ],
+        "output_attributes": [
+          {
+            "name": "color",
+            "types": [ "vec4" ]
+          },
+          {
+            "name": "r",
+            "types": [ "float" ]
+          },
+          {
+            "name": "g",
+            "types": [ "float" ]
+          },
+          {
+            "name": "b",
+            "types": [ "float" ]
+          },
+          {
+            "name": "a",
+            "types": [ "float" ]
+          }
+        ]
+      },
+      {
+        "name": "texelFetch"
+      },
+      {
+        "name": "texelFetchOffset"
+      },
+      {
+        "name": "textureProj"
+      },
+      {
+        "name": "textureLodProj"
+      },
+      {
+        "name": "textureProjOffset"
+      },
+      {
+        "name": "textureLodProjOffset"
+      },
+      {
+        "name": "textureGrad"
+      },
+      {
+        "name": "textureGradOffset"
+      },
+      {
+        "name": "textureProjGrad"
+      },
+      {
+        "name": "textureProjGradOffset"
+      }
+    ]
+  },
+  {
+    "name": "Atomic",
+    "subgroups": [
+      {
+        "name": "Common",
+        "nodes": [
+          {
+            "name": "atomicCounterIncrement"
+          },
+          {
+            "name": "atomicCounterDecrement"
+          },
+          {
+            "name": "atomicCounter"
+          },
+          {
+            "name": "atomicAdd"
+          },
+          {
+            "name": "atomicMin"
+          },
+          {
+            "name": "atomicMax"
+          },
+          {
+            "name": "atomicAnd"
+          },
+          {
+            "name": "atomicOr"
+          },
+          {
+            "name": "atomicXor"
+          },
+          {
+            "name": "atomicExchange"
+          },
+          {
+            "name": "atomicCompSwap"
+          }
+        ]
+      },
+      {
+        "name": "Image",
+        "nodes": [
+          {
+            "name": "imageAtomicAdd"
+          },
+          {
+            "name": "imageAtomicMin"
+          },
+          {
+            "name": "imageAtomicMax"
+          },
+          {
+            "name": "imageAtomicAnd"
+          },
+          {
+            "name": "imageAtomicXor"
+          },
+          {
+            "name": "imageAtomicExchange"
+          },
+          {
+            "name": "imageAtomicCompSwap"
+          }
+        ]
+      },
+      {
+        "name": "Invocation control",
+        "nodes": [
+          {
+            "name": "Barrier"
+          },
+          {
+            "name": "MemoryBarrier"
+          },
+          {
+            "name": "MemoryBarrierAtomicCounter"
+          },
+          {
+            "name": "MemoryBarrierBuffer"
+          },
+          {
+            "name": "MemoryBarrierImage"
+          },
+          {
+            "name": "MemoryBarrierShared"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Math",
+    "subgroups": [
+      {
+        "name": "Trigonometry",
+        "nodes": [
+          {
+            "name": "radians",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "type": ["float", "vec2", "vec3", "vec4"]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "type": [ "float", "vec2", "vec3", "vec4" ]
+              }
+            ]
+          },
+          {
+            "name": "degrees"
+          },
+          {
+            "name": "sin"
+          },
+          {
+            "name": "cos"
+          },
+          {
+            "name": "tan"
+          },
+          {
+            "name": "asin"
+          },
+          {
+            "name": "acos"
+          },
+          {
+            "name": "atan"
+          },
+          {
+            "name": "atan2"
+          },
+          {
+            "name": "sinh"
+          },
+          {
+            "name": "cosh"
+          },
+          {
+            "name": "tanh"
+          },
+          {
+            "name": "asinh"
+          },
+          {
+            "name": "acosh"
+          },
+          {
+            "name": "atanh"
+          }
+        ]
+      },
+      {
+        "name": "Exponentional",
+        "nodes": [
+          {
+            "name": "pow"
+          },
+          {
+            "name": "exp"
+          },
+          {
+            "name": "log"
+          },
+          {
+            "name": "exp2"
+          },
+          {
+            "name": "log2"
+          },
+          {
+            "name": "sqrt"
+          },
+          {
+            "name": "inversesqrt"
+          }
+        ]
+      },
+      {
+        "name": "Common",
+        "nodes": [
+          {
+            "name": "abs"
+          },
+          {
+            "name": "sign"
+          },
+          {
+            "name": "floor"
+          },
+          {
+            "name": "ceil"
+          },
+          {
+            "name": "trunc"
+          },
+          {
+            "name": "round"
+          },
+          {
+            "name": "roundEven"
+          },
+          {
+            "name": "fract"
+          },
+          {
+            "name": "mod"
+          },
+          {
+            "name": "min"
+          },
+          {
+            "name": "max"
+          },
+          {
+            "name": "clamp"
+          },
+          {
+            "name": "mix"
+          },
+          {
+            "name": "step"
+          },
+          {
+            "name": "smoothstep"
+          },
+          {
+            "name": "isnan"
+          },
+          {
+            "name": "isinf"
+          },
+          {
+            "name": "fma"
+          }
+        ]
+      },
+      {
+        "name": "Geometric",
+        "nodes": [
+          {
+            "name": "length"
+          },
+          {
+            "name": "distance"
+          },
+          {
+            "name": "dot"
+          },
+          {
+            "name": "cross"
+          },
+          {
+            "name": "normalize"
+          },
+          {
+            "name": "faceforward"
+          },
+          {
+            "name": "reflect"
+          },
+          {
+            "name": "refract"
+          }
+        ]
+      },
+      {
+        "name": "Matrix",
+        "nodes": [
+          {
+            "name": "transpose"
+          },
+          {
+            "name": "determinant"
+          },
+          {
+            "name": "inverse"
+          }
+        ]
+      },
+      {
+        "name": "Derivative",
+        "nodes": [
+          {
+            "name": "dFdx"
+          },
+          {
+            "name": "dFdy"
+          },
+          {
+            "name": "fwidth"
+          },
+          {
+            "name": "dFdxFine"
+          },
+          {
+            "name": "dFdyFine"
+          },
+          {
+            "name": "fwidthFine"
+          },
+          {
+            "name": "dFdxCoarse"
+          },
+          {
+            "name": "dFdyCoarse"
+          },
+          {
+            "name": "fwidthCoarse"
+          }
+        ]
+      },
+      {
+        "name": "Operation",
+        "nodes": [
+          {
+            "name": "add"
+          },
+          {
+            "name": "sub"
+          },
+          {
+            "name": "multiply"
+          },
+          {
+            "name": "divide"
+          },
+          {
+            "name": "less"
+          },
+          {
+            "name": "greater"
+          },
+          {
+            "name": "lessEqual"
+          },
+          {
+            "name": "greaterEqual"
+          },
+          {
+            "name": "equal"
+          },
+          {
+            "name": "notEqual"
+          },
+          {
+            "name": "not"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Statements",
+    "nodes": [
+      {
+        "name": "for"
+      },
+      {
+        "name": "while"
+      },
+      {
+        "name": "switch"
+      },
+      {
+        "name": "if/else"
+      }
+    ]
+  }
+]
