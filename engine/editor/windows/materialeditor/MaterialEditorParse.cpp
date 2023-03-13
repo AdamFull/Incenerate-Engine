@@ -9,17 +9,28 @@ namespace engine
 			EMaterialEditorValueType,
 			{
 				{EMaterialEditorValueType::eBool, "bool"},
-				{EMaterialEditorValueType::eInt, "int"},
 				{EMaterialEditorValueType::eFloat, "float"},
 				{EMaterialEditorValueType::eVec2, "vec2"},
 				{EMaterialEditorValueType::eVec3, "vec3"},
 				{EMaterialEditorValueType::eVec4, "vec4"},
+				{EMaterialEditorValueType::eMat2, "mat2"},
+				{EMaterialEditorValueType::eMat3, "mat3"},
+				{EMaterialEditorValueType::eMat4, "mat4"},
+				{EMaterialEditorValueType::eDouble, "double"},
+				{EMaterialEditorValueType::eDvec2, "dvec2"},
+				{EMaterialEditorValueType::eDvec3, "dvec3"},
+				{EMaterialEditorValueType::eDvec4, "dvec4"},
+				{EMaterialEditorValueType::eDmat2, "dmat2"},
+				{EMaterialEditorValueType::eDmat3, "dmat3"},
+				{EMaterialEditorValueType::eDmat4, "dmat4"},
+				{EMaterialEditorValueType::eInt, "int"},
 				{EMaterialEditorValueType::eIvec2, "ivec2"},
 				{EMaterialEditorValueType::eIvec3, "ivec3"},
 				{EMaterialEditorValueType::eIvec4, "ivec4"},
-				{EMaterialEditorValueType::eMat2, "mat2"},
-				{EMaterialEditorValueType::eMat3, "mat3"},
-				{EMaterialEditorValueType::eMat4, "mat4"}
+				{EMaterialEditorValueType::eUInt, "uint"},
+				{EMaterialEditorValueType::eUvec2, "uvec2"},
+				{EMaterialEditorValueType::eUvec3, "uvec3"},
+				{EMaterialEditorValueType::eUvec4, "uvec4"}
 			}
 		);
 
@@ -27,8 +38,14 @@ namespace engine
 		(
 			EMaterialEditorNodeType,
 			{
+				{EMaterialEditorNodeType::eConstValue, "const_value"},
+				{EMaterialEditorNodeType::eUniformValue, "uniform_value"},
 				{EMaterialEditorNodeType::eSampler, "sampler"},
-				{EMaterialEditorNodeType::eConstValue, "const_value"}
+				{EMaterialEditorNodeType::eMath, "math"},
+				{EMaterialEditorNodeType::eGeometric, "geometric"},
+				{EMaterialEditorNodeType::eMatrix, "matrix"},
+				{EMaterialEditorNodeType::eDerivative, "derivative"},
+				{EMaterialEditorNodeType::eOperation, "operation"}
 			}
 		);
 

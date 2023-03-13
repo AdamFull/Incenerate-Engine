@@ -8,23 +8,40 @@ namespace engine
 		{
 			eNone,
 			eBool,
-			eInt,
 			eFloat,
 			eVec2,
 			eVec3,
 			eVec4,
+			eMat2,
+			eMat3,
+			eMat4,
+			eDouble,
+			eDvec2,
+			eDvec3,
+			eDvec4,
+			eDmat2,
+			eDmat3,
+			eDmat4,
+			eInt,
 			eIvec2,
 			eIvec3,
 			eIvec4,
-			eMat2,
-			eMat3,
-			eMat4
+			eUInt,
+			eUvec2,
+			eUvec3,
+			eUvec4
 		};
 
 		enum class EMaterialEditorNodeType
 		{
+			eConstValue,
+			eUniformValue,
 			eSampler,
-			eConstValue
+			eMath,
+			eGeometric,
+			eMatrix,
+			eDerivative,
+			eOperation
 		};
 
 		struct FMaterialEditorAttributeCreateInfo

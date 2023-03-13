@@ -4,114 +4,489 @@
     "subgroups": [
       {
         "name": "Constant",
-        "nodes": [
+        "subgroups": [
           {
-            "name": "int",
-            "type": "const_value",
-            "output_attributes": [
+            "name": "Float",
+            "nodes": [
               {
-                "name": "value",
-                "types": [ "int" ]
+                "name": "Float",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "float" ]
+                  }
+                ]
+              },
+              {
+                "name": "Vec2",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "vec2" ]
+                  }
+                ]
+              },
+              {
+                "name": "Vec3",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "vec3" ]
+                  }
+                ]
+              },
+              {
+                "name": "Vec4",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "vec4" ]
+                  }
+                ]
+              },
+              {
+                "name": "Mat2",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "mat2" ]
+                  }
+                ]
+              },
+              {
+                "name": "Mat3",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "mat3" ]
+                  }
+                ]
+              },
+              {
+                "name": "Mat4",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "mat4" ]
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "float",
-            "type": "const_value",
-            "output_attributes": [
+            "name": "Double",
+            "nodes": [
               {
-                "name": "value",
-                "types": [ "float" ]
+                "name": "Double",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "double" ]
+                  }
+                ]
+              },
+              {
+                "name": "DVec2",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dvec2" ]
+                  }
+                ]
+              },
+              {
+                "name": "DVec3",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dvec3" ]
+                  }
+                ]
+              },
+              {
+                "name": "DVec4",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dvec4" ]
+                  }
+                ]
+              },
+              {
+                "name": "DMat2",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dmat2" ]
+                  }
+                ]
+              },
+              {
+                "name": "DMat3",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dmat3" ]
+                  }
+                ]
+              },
+              {
+                "name": "DMat4",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dmat4" ]
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "vec2",
-            "type": "const_value",
-            "output_attributes": [
+            "name": "Integer",
+            "nodes": [
               {
-                "name": "value",
-                "types": [ "vec2" ]
+                "name": "Int",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "int" ]
+                  }
+                ]
+              },
+              {
+                "name": "IVec2",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "ivec2" ]
+                  }
+                ]
+              },
+              {
+                "name": "IVec3",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "ivec3" ]
+                  }
+                ]
+              },
+              {
+                "name": "IVec4",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "ivec4" ]
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "vec3",
-            "type": "const_value",
-            "output_attributes": [
+            "name": "Unsigned integer",
+            "nodes": [
               {
-                "name": "value",
-                "types": [ "vec3" ]
+                "name": "UInt",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uint" ]
+                  }
+                ]
+              },
+              {
+                "name": "UVec2",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uvec2" ]
+                  }
+                ]
+              },
+              {
+                "name": "UVec3",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uvec3" ]
+                  }
+                ]
+              },
+              {
+                "name": "UVec4",
+                "type": "const_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uvec4" ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Uniform",
+        "subgroups": [
+          {
+            "name": "Float",
+            "nodes": [
+              {
+                "name": "Float",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "float" ]
+                  }
+                ]
+              },
+              {
+                "name": "Vec2",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "vec2" ]
+                  }
+                ]
+              },
+              {
+                "name": "Vec3",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "vec3" ]
+                  }
+                ]
+              },
+              {
+                "name": "Vec4",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "vec4" ]
+                  }
+                ]
+              },
+              {
+                "name": "Mat2",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "mat2" ]
+                  }
+                ]
+              },
+              {
+                "name": "Mat3",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "mat3" ]
+                  }
+                ]
+              },
+              {
+                "name": "Mat4",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "mat4" ]
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "vec4",
-            "type": "const_value",
-            "output_attributes": [
+            "name": "Double",
+            "nodes": [
               {
-                "name": "value",
-                "types": [ "vec4" ]
+                "name": "Double",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "double" ]
+                  }
+                ]
+              },
+              {
+                "name": "DVec2",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dvec2" ]
+                  }
+                ]
+              },
+              {
+                "name": "DVec3",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dvec3" ]
+                  }
+                ]
+              },
+              {
+                "name": "DVec4",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dvec4" ]
+                  }
+                ]
+              },
+              {
+                "name": "DMat2",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dmat2" ]
+                  }
+                ]
+              },
+              {
+                "name": "DMat3",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dmat3" ]
+                  }
+                ]
+              },
+              {
+                "name": "DMat4",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dmat4" ]
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "ivec2",
-            "type": "const_value",
-            "output_attributes": [
+            "name": "Integer",
+            "nodes": [
               {
-                "name": "value",
-                "types": [ "ivec2" ]
+                "name": "Int",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "int" ]
+                  }
+                ]
+              },
+              {
+                "name": "IVec2",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "ivec2" ]
+                  }
+                ]
+              },
+              {
+                "name": "IVec3",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "ivec3" ]
+                  }
+                ]
+              },
+              {
+                "name": "IVec4",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "ivec4" ]
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "ivec3",
-            "type": "const_value",
-            "output_attributes": [
+            "name": "Unsigned integer",
+            "nodes": [
               {
-                "name": "value",
-                "types": [ "ivec3" ]
-              }
-            ]
-          },
-          {
-            "name": "ivec4",
-            "type": "const_value",
-            "output_attributes": [
+                "name": "UInt",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uint" ]
+                  }
+                ]
+              },
               {
-                "name": "value",
-                "types": [ "ivec4" ]
-              }
-            ]
-          },
-          {
-            "name": "mat2",
-            "type": "const_value",
-            "output_attributes": [
+                "name": "UVec2",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uvec2" ]
+                  }
+                ]
+              },
               {
-                "name": "value",
-                "types": [ "mat2" ]
-              }
-            ]
-          },
-          {
-            "name": "mat3",
-            "type": "const_value",
-            "output_attributes": [
+                "name": "UVec3",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uvec3" ]
+                  }
+                ]
+              },
               {
-                "name": "value",
-                "types": [ "mat3" ]
-              }
-            ]
-          },
-          {
-            "name": "mat4",
-            "type": "const_value",
-            "output_attributes": [
-              {
-                "name": "value",
-                "types": [ "mat4" ]
+                "name": "UVec4",
+                "type": "uniform_value",
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uvec4" ]
+                  }
+                ]
               }
             ]
           }
@@ -119,220 +494,456 @@
       },
       {
         "name": "Make value",
-        "nodes": [
+        "subgroups": [
           {
-            "name": "make vec2",
-            "type": "value_maker",
-            "input_attributes": [
+            "name": "Float",
+            "nodes": [
               {
-                "name": "x",
-                "types": [ "float" ]
+                "name": "Make vec2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "float" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "vec2" ]
+                  }
+                ]
               },
               {
-                "name": "y",
-                "types": [ "float" ]
-              }
-            ],
-            "output_attributes": [
+                "name": "Make vec3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "float" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "vec3" ]
+                  }
+                ]
+              },
               {
-                "name": "out",
-                "types": [ "vec2" ]
+                "name": "Make vec4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "w",
+                    "types": [ "float" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "vec4" ]
+                  }
+                ]
+              },
+              {
+                "name": "Make mat2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "vec2" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "vec2" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "mat2" ]
+                  }
+                ]
+              },
+              {
+                "name": "Make mat3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "vec3" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "vec3" ]
+                  },
+                  {
+                    "name": "r3",
+                    "types": [ "vec3" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "mat3" ]
+                  }
+                ]
+              },
+              {
+                "name": "Make mat4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "vec4" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "vec4" ]
+                  },
+                  {
+                    "name": "r3",
+                    "types": [ "vec4" ]
+                  },
+                  {
+                    "name": "r4",
+                    "types": [ "vec4" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "mat4" ]
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "make vec3",
-            "type": "value_maker",
-            "input_attributes": [
+            "name": "Double",
+            "nodes": [
               {
-                "name": "x",
-                "types": [ "float" ]
+                "name": "Make dvec2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "double" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dvec2" ]
+                  }
+                ]
               },
               {
-                "name": "y",
-                "types": [ "float" ]
+                "name": "Make dvec3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "double" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dvec3" ]
+                  }
+                ]
               },
               {
-                "name": "z",
-                "types": [ "float" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "out",
-                "types": [ "vec3" ]
-              }
-            ]
-          },
-          {
-            "name": "make vec4",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "x",
-                "types": [ "float" ]
+                "name": "Make dvec4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "w",
+                    "types": [ "double" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dvec4" ]
+                  }
+                ]
               },
               {
-                "name": "y",
-                "types": [ "float" ]
+                "name": "Make dmat2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "dvec2" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "dvec2" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dmat2" ]
+                  }
+                ]
               },
               {
-                "name": "z",
-                "types": [ "float" ]
+                "name": "Make dmat3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "dvec3" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "dvec3" ]
+                  },
+                  {
+                    "name": "r3",
+                    "types": [ "dvec3" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dmat3" ]
+                  }
+                ]
               },
               {
-                "name": "w",
-                "types": [ "float" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "out",
-                "types": [ "vec4" ]
-              }
-            ]
-          },
-          {
-            "name": "make ivec2",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "x",
-                "types": [ "int" ]
-              },
-              {
-                "name": "y",
-                "types": [ "int" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "out",
-                "types": [ "ivec2" ]
-              }
-            ]
-          },
-          {
-            "name": "make ivec3",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "x",
-                "types": [ "int" ]
-              },
-              {
-                "name": "y",
-                "types": [ "int" ]
-              },
-              {
-                "name": "z",
-                "types": [ "int" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "out",
-                "types": [ "ivec3" ]
-              }
-            ]
-          },
-          {
-            "name": "make ivec4",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "x",
-                "types": [ "int" ]
-              },
-              {
-                "name": "y",
-                "types": [ "int" ]
-              },
-              {
-                "name": "z",
-                "types": [ "int" ]
-              },
-              {
-                "name": "w",
-                "types": [ "int" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "out",
-                "types": [ "ivec4" ]
-              }
-            ]
-          },
-          {
-            "name": "make mat2",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "r1",
-                "types": [ "vec2" ]
-              },
-              {
-                "name": "r2",
-                "types": [ "vec2" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "out",
-                "types": [ "mat2" ]
-              }
-            ]
-          },
-          {
-            "name": "make mat3",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "r1",
-                "types": [ "vec3" ]
-              },
-              {
-                "name": "r2",
-                "types": [ "vec3" ]
-              },
-              {
-                "name": "r3",
-                "types": [ "vec3" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "out",
-                "types": [ "mat3" ]
+                "name": "Make dmat4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "dvec4" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "dvec4" ]
+                  },
+                  {
+                    "name": "r3",
+                    "types": [ "dvec4" ]
+                  },
+                  {
+                    "name": "r4",
+                    "types": [ "dvec4" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "dmat4" ]
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "make mat4",
-            "type": "value_maker",
-            "input_attributes": [
+            "name": "Integer",
+            "nodes": [
               {
-                "name": "r1",
-                "types": [ "vec4" ]
+                "name": "Make ivec2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "int" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "ivec2" ]
+                  }
+                ]
               },
               {
-                "name": "r2",
-                "types": [ "vec4" ]
+                "name": "Make ivec3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "int" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "ivec3" ]
+                  }
+                ]
               },
               {
-                "name": "r3",
-                "types": [ "vec4" ]
-              },
-              {
-                "name": "r4",
-                "types": [ "vec4" ]
+                "name": "Make ivec4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "w",
+                    "types": [ "int" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "ivec4" ]
+                  }
+                ]
               }
-            ],
-            "output_attributes": [
+            ]
+          },
+          {
+            "name": "Unsgned integer",
+            "nodes": [
               {
-                "name": "out",
-                "types": [ "mat4" ]
+                "name": "Make uvec2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "uint" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uvec2" ]
+                  }
+                ]
+              },
+              {
+                "name": "Make uvec3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "uint" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uvec3" ]
+                  }
+                ]
+              },
+              {
+                "name": "Make uvec4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "w",
+                    "types": [ "uint" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "out",
+                    "types": [ "uvec4" ]
+                  }
+                ]
               }
             ]
           }
@@ -340,220 +951,456 @@
       },
       {
         "name": "Break value",
-        "nodes": [
+        "subgroups": [
           {
-            "name": "break vec2",
-            "type": "value_maker",
-            "input_attributes": [
+            "name": "Float",
+            "nodes": [
               {
-                "name": "in",
-                "types": [ "vec2" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "x",
-                "types": [ "float" ]
+                "name": "Break vec2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "vec2" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "float" ]
+                  }
+                ]
               },
               {
-                "name": "y",
-                "types": [ "float" ]
+                "name": "Break vec3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "vec3" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "float" ]
+                  }
+                ]
+              },
+              {
+                "name": "Break vec4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "vec4" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "float" ]
+                  },
+                  {
+                    "name": "w",
+                    "types": [ "float" ]
+                  }
+                ]
+              },
+              {
+                "name": "Break mat2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "mat2" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "vec2" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "vec2" ]
+                  }
+                ]
+              },
+              {
+                "name": "Break mat3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "mat3" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "vec3" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "vec3" ]
+                  },
+                  {
+                    "name": "r3",
+                    "types": [ "vec3" ]
+                  }
+                ]
+              },
+              {
+                "name": "Break mat4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "mat4" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "vec4" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "vec4" ]
+                  },
+                  {
+                    "name": "r3",
+                    "types": [ "vec4" ]
+                  },
+                  {
+                    "name": "r4",
+                    "types": [ "vec4" ]
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "break vec3",
-            "type": "value_maker",
-            "input_attributes": [
+            "name": "Double",
+            "nodes": [
               {
-                "name": "in",
-                "types": [ "vec3" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "x",
-                "types": [ "float" ]
+                "name": "Break dvec2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "dvec2" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "double" ]
+                  }
+                ]
               },
               {
-                "name": "y",
-                "types": [ "float" ]
+                "name": "Break dvec3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "dvec3" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "double" ]
+                  }
+                ]
               },
               {
-                "name": "z",
-                "types": [ "float" ]
-              }
-            ]
-          },
-          {
-            "name": "break vec4",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "in",
-                "types": [ "vec4" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "x",
-                "types": [ "float" ]
+                "name": "Break dvec4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "dvec4" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "double" ]
+                  },
+                  {
+                    "name": "w",
+                    "types": [ "double" ]
+                  }
+                ]
               },
               {
-                "name": "y",
-                "types": [ "float" ]
+                "name": "Break dmat2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "dmat2" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "dvec2" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "dvec2" ]
+                  }
+                ]
               },
               {
-                "name": "z",
-                "types": [ "float" ]
+                "name": "Break dmat3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "dmat3" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "dvec3" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "dvec3" ]
+                  },
+                  {
+                    "name": "r3",
+                    "types": [ "dvec3" ]
+                  }
+                ]
               },
               {
-                "name": "w",
-                "types": [ "float" ]
-              }
-            ]
-          },
-          {
-            "name": "break ivec2",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "in",
-                "types": [ "ivec2" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "x",
-                "types": [ "int" ]
-              },
-              {
-                "name": "y",
-                "types": [ "int" ]
-              }
-            ]
-          },
-          {
-            "name": "break ivec3",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "in",
-                "types": [ "ivec3" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "x",
-                "types": [ "int" ]
-              },
-              {
-                "name": "y",
-                "types": [ "int" ]
-              },
-              {
-                "name": "z",
-                "types": [ "int" ]
-              }
-            ]
-          },
-          {
-            "name": "break ivec4",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "in",
-                "types": [ "ivec4" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "x",
-                "types": [ "int" ]
-              },
-              {
-                "name": "y",
-                "types": [ "int" ]
-              },
-              {
-                "name": "z",
-                "types": [ "int" ]
-              },
-              {
-                "name": "w",
-                "types": [ "int" ]
-              }
-            ]
-          },
-          {
-            "name": "break mat2",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "in",
-                "types": [ "mat2" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "r1",
-                "types": [ "vec2" ]
-              },
-              {
-                "name": "r2",
-                "types": [ "vec2" ]
-              }
-            ]
-          },
-          {
-            "name": "break mat3",
-            "type": "value_maker",
-            "input_attributes": [
-              {
-                "name": "in",
-                "types": [ "mat3" ]
-              }
-            ],
-            "output_attributes": [
-              {
-                "name": "r1",
-                "types": [ "vec3" ]
-              },
-              {
-                "name": "r2",
-                "types": [ "vec3" ]
-              },
-              {
-                "name": "r3",
-                "types": [ "vec3" ]
+                "name": "Break dmat4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "dmat4" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "r1",
+                    "types": [ "dvec4" ]
+                  },
+                  {
+                    "name": "r2",
+                    "types": [ "dvec4" ]
+                  },
+                  {
+                    "name": "r3",
+                    "types": [ "dvec4" ]
+                  },
+                  {
+                    "name": "r4",
+                    "types": [ "dvec4" ]
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "break mat4",
-            "type": "value_maker",
-            "input_attributes": [
+            "name": "Integer",
+            "nodes": [
               {
-                "name": "in",
-                "types": [ "mat4" ]
+                "name": "Break ivec2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "ivec2" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "int" ]
+                  }
+                ]
+              },
+              {
+                "name": "Break ivec3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "ivec3" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "int" ]
+                  }
+                ]
+              },
+              {
+                "name": "Break ivec4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "ivec4" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "int" ]
+                  },
+                  {
+                    "name": "w",
+                    "types": [ "int" ]
+                  }
+                ]
               }
-            ],
-            "output_attributes": [
+            ]
+          },
+          {
+            "name": "Unsigned integer",
+            "nodes": [
               {
-                "name": "r1",
-                "types": [ "vec4" ]
+                "name": "Break uvec2",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "uvec2" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "uint" ]
+                  }
+                ]
               },
               {
-                "name": "r2",
-                "types": [ "vec4" ]
+                "name": "Break uvec3",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "uvec3" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "uint" ]
+                  }
+                ]
               },
               {
-                "name": "r3",
-                "types": [ "vec4" ]
-              },
-              {
-                "name": "r4",
-                "types": [ "vec4" ]
+                "name": "Break uvec4",
+                "type": "value_maker",
+                "input_attributes": [
+                  {
+                    "name": "in",
+                    "types": [ "uvec4" ]
+                  }
+                ],
+                "output_attributes": [
+                  {
+                    "name": "x",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "y",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "z",
+                    "types": [ "uint" ]
+                  },
+                  {
+                    "name": "w",
+                    "types": [ "uint" ]
+                  }
+                ]
               }
             ]
           }
@@ -565,7 +1412,7 @@
     "name": "Texture",
     "nodes": [
       {
-        "name": "texture",
+        "name": "Texture",
         "type": "sampler",
         "input_attributes": [
           {
@@ -597,7 +1444,7 @@
         ]
       },
       {
-        "name": "textureLod",
+        "name": "TextureLod",
         "type": "sampler",
         "input_attributes": [
           {
@@ -633,7 +1480,7 @@
         ]
       },
       {
-        "name": "textureOffset",
+        "name": "TextureOffset",
         "type": "sampler",
         "input_attributes": [
           {
@@ -669,7 +1516,7 @@
         ]
       },
       {
-        "name": "textureLodOffset",
+        "name": "TextureLodOffset",
         "type": "sampler",
         "input_attributes": [
           {
@@ -709,34 +1556,34 @@
         ]
       },
       {
-        "name": "texelFetch"
+        "name": "TexelFetch"
       },
       {
-        "name": "texelFetchOffset"
+        "name": "TexelFetchOffset"
       },
       {
-        "name": "textureProj"
+        "name": "TextureProj"
       },
       {
-        "name": "textureLodProj"
+        "name": "TextureLodProj"
       },
       {
-        "name": "textureProjOffset"
+        "name": "TextureProjOffset"
       },
       {
-        "name": "textureLodProjOffset"
+        "name": "TextureLodProjOffset"
       },
       {
-        "name": "textureGrad"
+        "name": "TextureGrad"
       },
       {
-        "name": "textureGradOffset"
+        "name": "TextureGradOffset"
       },
       {
-        "name": "textureProjGrad"
+        "name": "TextureProjGrad"
       },
       {
-        "name": "textureProjGradOffset"
+        "name": "TextureProjGradOffset"
       }
     ]
   },
@@ -747,37 +1594,37 @@
         "name": "Common",
         "nodes": [
           {
-            "name": "atomicCounterIncrement"
+            "name": "AtomicCounterIncrement"
           },
           {
-            "name": "atomicCounterDecrement"
+            "name": "AtomicCounterDecrement"
           },
           {
-            "name": "atomicCounter"
+            "name": "AtomicCounter"
           },
           {
-            "name": "atomicAdd"
+            "name": "AtomicAdd"
           },
           {
-            "name": "atomicMin"
+            "name": "AtomicMin"
           },
           {
-            "name": "atomicMax"
+            "name": "AtomicMax"
           },
           {
-            "name": "atomicAnd"
+            "name": "AtomicAnd"
           },
           {
-            "name": "atomicOr"
+            "name": "AtomicOr"
           },
           {
-            "name": "atomicXor"
+            "name": "AtomicXor"
           },
           {
-            "name": "atomicExchange"
+            "name": "AtomicExchange"
           },
           {
-            "name": "atomicCompSwap"
+            "name": "AtomicCompSwap"
           }
         ]
       },
@@ -785,25 +1632,25 @@
         "name": "Image",
         "nodes": [
           {
-            "name": "imageAtomicAdd"
+            "name": "ImageAtomicAdd"
           },
           {
-            "name": "imageAtomicMin"
+            "name": "ImageAtomicMin"
           },
           {
-            "name": "imageAtomicMax"
+            "name": "ImageAtomicMax"
           },
           {
-            "name": "imageAtomicAnd"
+            "name": "ImageAtomicAnd"
           },
           {
-            "name": "imageAtomicXor"
+            "name": "ImageAtomicXor"
           },
           {
-            "name": "imageAtomicExchange"
+            "name": "ImageAtomicExchange"
           },
           {
-            "name": "imageAtomicCompSwap"
+            "name": "ImageAtomicCompSwap"
           }
         ]
       },
@@ -839,62 +1686,244 @@
         "name": "Trigonometry",
         "nodes": [
           {
-            "name": "radians",
+            "name": "Radians",
             "type": "math",
             "input_attributes": [
               {
                 "name": "in",
-                "type": ["float", "vec2", "vec3", "vec4"]
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
               }
             ],
             "output_attributes": [
               {
                 "name": "out",
-                "type": [ "float", "vec2", "vec3", "vec4" ]
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
               }
             ]
           },
           {
-            "name": "degrees"
+            "name": "Degrees",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "sin"
+            "name": "Sin",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "cos"
+            "name": "Cos",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "tan"
+            "name": "Tan",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "asin"
+            "name": "ASin",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "acos"
+            "name": "ACos",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "atan"
+            "name": "ATan",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "atan2"
+            "name": "ATan2",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "sinh"
+            "name": "SinH",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "cosh"
+            "name": "CosH",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "tanh"
+            "name": "TanH",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "asinh"
+            "name": "ASinH",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "acosh"
+            "name": "ACosH",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "atanh"
+            "name": "ATanH",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           }
         ]
       },
@@ -902,25 +1931,120 @@
         "name": "Exponentional",
         "nodes": [
           {
-            "name": "pow"
+            "name": "Pow",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              },
+              {
+                "name": "e",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "exp"
+            "name": "Exp",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "log"
+            "name": "Log",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "exp2"
+            "name": "Exp2",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "log2"
+            "name": "Log2",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "sqrt"
+            "name": "Sqrt",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "inversesqrt"
+            "name": "InverseSqrt",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           }
         ]
       },
@@ -928,58 +2052,340 @@
         "name": "Common",
         "nodes": [
           {
-            "name": "abs"
+            "name": "Abs",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4" ]
+              }
+            ]
           },
           {
-            "name": "sign"
+            "name": "Sign",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float" ]
+              }
+            ]
           },
           {
-            "name": "floor"
+            "name": "Floor",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "ceil"
+            "name": "Ceil",
+            "types": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "trunc"
+            "name": "Trunc",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "round"
+            "name": "Round",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "roundEven"
+            "name": "RoundEven",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "fract"
+            "name": "Fract",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "mod"
+            "name": "Mod",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "min"
+            "name": "Min",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "max"
+            "name": "Max",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "clamp"
+            "name": "Clamp",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "min",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "max",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "mix"
+            "name": "Mix",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "mix",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "step"
+            "name": "Step",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "step",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "smoothstep"
+            "name": "SmoothStep",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "step",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "factor",
+                "types": [ "float", "double" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "isnan"
+            "name": "IsNan",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "bool" ]
+              }
+            ]
           },
           {
-            "name": "isinf"
+            "name": "IsInf",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "bool" ]
+              }
+            ]
           },
           {
-            "name": "fma"
+            "name": "Fma",
+            "type": "math",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              },
+              {
+                "name": "in3",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           }
         ]
       },
@@ -987,28 +2393,164 @@
         "name": "Geometric",
         "nodes": [
           {
-            "name": "length"
+            "name": "Length",
+            "type": "geometric",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "double" ]
+              }
+            ]
           },
           {
-            "name": "distance"
+            "name": "Distance",
+            "type": "geometric",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "double" ]
+              }
+            ]
           },
           {
-            "name": "dot"
+            "name": "Dot",
+            "type": "geometric",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "double" ]
+              }
+            ]
           },
           {
-            "name": "cross"
+            "name": "Cross",
+            "type": "geometric",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "vec3", "dvec3" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "vec3", "dvec3" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "vec3", "dvec3" ]
+              }
+            ]
           },
           {
-            "name": "normalize"
+            "name": "Normalize",
+            "type": "geometric",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "faceforward"
+            "name": "FaceForward",
+            "type": "geometric",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              },
+              {
+                "name": "in3",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "reflect"
+            "name": "Reflect",
+            "type": "geometric",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           },
           {
-            "name": "refract"
+            "name": "Refract",
+            "type": "geometric",
+            "input_attributes": [
+              {
+                "name": "in1",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              },
+              {
+                "name": "in2",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              },
+              {
+                "name": "ior",
+                "types": [ "float", "double" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "vec2", "vec3", "vec4", "dvec2", "dvec3", "dvec4" ]
+              }
+            ]
           }
         ]
       },
@@ -1016,13 +2558,52 @@
         "name": "Matrix",
         "nodes": [
           {
-            "name": "transpose"
+            "name": "Transpose",
+            "type": "matrix",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "mat2", "mat3", "mat4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "mat2", "mat3", "mat4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "determinant"
+            "name": "Determinant",
+            "type": "matrix",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "mat2", "mat3", "mat4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "double" ]
+              }
+            ]
           },
           {
-            "name": "inverse"
+            "name": "Inverse",
+            "type": "matrix",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "mat2", "mat3", "mat4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "mat2", "mat3", "mat4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           }
         ]
       },
@@ -1030,31 +2611,148 @@
         "name": "Derivative",
         "nodes": [
           {
-            "name": "dFdx"
+            "name": "dFdx",
+            "type": "derivative",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "dFdy"
+            "name": "dFdy",
+            "type": "derivative",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "fwidth"
+            "name": "FWidth",
+            "type": "derivative",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4" ]
+              }
+            ]
           },
           {
-            "name": "dFdxFine"
+            "name": "dFdxFine",
+            "type": "derivative",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "dFdyFine"
+            "name": "dFdyFine",
+            "type": "derivative",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "fwidthFine"
+            "name": "FWidthFine",
+            "type": "derivative",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4" ]
+              }
+            ]
           },
           {
-            "name": "dFdxCoarse"
+            "name": "dFdxCoarse",
+            "type": "derivative",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "dFdyCoarse"
+            "name": "dFdyCoarse",
+            "type": "derivative",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4" ]
+              }
+            ]
           },
           {
-            "name": "fwidthCoarse"
+            "name": "FWidthCoarse",
+            "type": "derivative",
+            "input_attributes": [
+              {
+                "name": "in",
+                "types": [ "float", "vec2", "vec3", "vec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4" ]
+              }
+            ]
           }
         ]
       },
@@ -1062,37 +2760,224 @@
         "name": "Operation",
         "nodes": [
           {
-            "name": "add"
+            "name": "Add",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "sub"
+            "name": "Sub",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "multiply"
+            "name": "Multiply",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "divide"
+            "name": "Divide",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ]
           },
           {
-            "name": "less"
+            "name": "Less",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "bool" ]
+              }
+            ]
           },
           {
-            "name": "greater"
+            "name": "Greater",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "bool" ]
+              }
+            ]
           },
           {
-            "name": "lessEqual"
+            "name": "LessEqual",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "bool" ]
+              }
+            ]
           },
           {
-            "name": "greaterEqual"
+            "name": "GreaterEqual",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "bool" ]
+              }
+            ]
           },
           {
-            "name": "equal"
+            "name": "Equal",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "bool" ]
+              }
+            ]
           },
           {
-            "name": "notEqual"
+            "name": "NotEqual",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "bool" ]
+              }
+            ]
           },
           {
-            "name": "not"
+            "name": "Not",
+            "type": "operation",
+            "input_attributes": [
+              {
+                "name": "lhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              },
+              {
+                "name": "rhs",
+                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
+              }
+            ],
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "bool" ]
+              }
+            ]
           }
         ]
       }
@@ -1102,16 +2987,16 @@
     "name": "Statements",
     "nodes": [
       {
-        "name": "for"
+        "name": "For"
       },
       {
-        "name": "while"
+        "name": "While"
       },
       {
-        "name": "switch"
+        "name": "Switch"
       },
       {
-        "name": "if/else"
+        "name": "If/Else"
       }
     ]
   }

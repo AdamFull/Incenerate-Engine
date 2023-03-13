@@ -1,6 +1,7 @@
 #include "NodeAttribContainer.h"
 
 #include <imgui/imgui.h>
+#include <imgui/additional_widgets.h>
 #include <imgui/imnodes.h>
 #include "editor/CustomControls.h"
 
@@ -186,9 +187,40 @@ void CNodeAttribContainer::render()
 
 		ImNodes::BeginNode(node_id);
 
+		switch (node.type)
+		{
+		case EMaterialEditorNodeType::eConstValue:
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(255, 128, 0, 255));
+			break;
+		case EMaterialEditorNodeType::eUniformValue: 
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(255, 0, 0, 255));
+			break;
+		case EMaterialEditorNodeType::eSampler: 
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(255, 255, 0, 255));
+			break;
+		case EMaterialEditorNodeType::eMath: 
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(0, 255, 0, 255));
+			break;
+		case EMaterialEditorNodeType::eGeometric: 
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(128, 255, 0, 255));
+			break;
+		case EMaterialEditorNodeType::eMatrix:
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(128, 255, 128, 255));
+			break;
+		case EMaterialEditorNodeType::eDerivative: 
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(64, 255, 64, 255));
+			break;
+		case EMaterialEditorNodeType::eOperation: 
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(128, 255, 64, 255));
+			break;
+		}
+
 		ImNodes::BeginNodeTitleBar();
 		ImGui::TextUnformatted(node.name.c_str());
 		ImNodes::EndNodeTitleBar();
+
+		ImNodes::PopColorStyle();
+
 
 		for (auto& attr_id : node.vInputAttributes)
 			renderAttribute(attr_id, true, hasInputs);
@@ -219,9 +251,6 @@ void CNodeAttribContainer::renderAttribute(int32_t attr_id, bool isInput, bool h
 	case EMaterialEditorValueType::eBool: 
 		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(128, 0, 0, 255)); 
 		break;
-	case EMaterialEditorValueType::eInt:
-		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(0, 255, 0, 255)); 
-		break;
 	case EMaterialEditorValueType::eFloat:
 		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(255, 0, 255, 255)); 
 		break;
@@ -234,6 +263,39 @@ void CNodeAttribContainer::renderAttribute(int32_t attr_id, bool isInput, bool h
 	case EMaterialEditorValueType::eVec4:
 		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(192, 0, 192, 255));
 		break;
+	case EMaterialEditorValueType::eMat2:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(128, 128, 0, 255));
+		break;
+	case EMaterialEditorValueType::eMat3:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(192, 192, 0, 255));
+		break;
+	case EMaterialEditorValueType::eMat4:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(255, 255, 0, 255));
+		break;
+	case EMaterialEditorValueType::eDouble:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(255, 64, 255, 255));
+		break;
+	case EMaterialEditorValueType::eDvec2:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(128, 64, 128, 255));
+		break;
+	case EMaterialEditorValueType::eDvec3:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(160, 64, 160, 255));
+		break;
+	case EMaterialEditorValueType::eDvec4:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(192, 64, 192, 255));
+		break;
+	case EMaterialEditorValueType::eDmat2:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(128, 128, 64, 255));
+		break;
+	case EMaterialEditorValueType::eDmat3:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(192, 192, 64, 255));
+		break;
+	case EMaterialEditorValueType::eDmat4:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(255, 255, 64, 255));
+		break;
+	case EMaterialEditorValueType::eInt:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(0, 255, 0, 255));
+		break;
 	case EMaterialEditorValueType::eIvec2:
 		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(0, 128, 0, 255));
 		break;
@@ -243,14 +305,17 @@ void CNodeAttribContainer::renderAttribute(int32_t attr_id, bool isInput, bool h
 	case EMaterialEditorValueType::eIvec4:
 		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(0, 192, 0, 255));
 		break;
-	case EMaterialEditorValueType::eMat2:
-		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(128, 128, 0, 255));
+	case EMaterialEditorValueType::eUInt:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(0, 255, 64, 255));
 		break;
-	case EMaterialEditorValueType::eMat3:
-		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(192, 192, 0, 255));
+	case EMaterialEditorValueType::eUvec2:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(0, 128, 64, 255));
 		break;
-	case EMaterialEditorValueType::eMat4:
-		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(255, 255, 0, 255));
+	case EMaterialEditorValueType::eUvec3:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(0, 160, 64, 255));
+		break;
+	case EMaterialEditorValueType::eUvec4:
+		ImNodes::PushColorStyle(ImNodesCol_Pin, IM_COL32(0, 192, 64, 255));
 		break;
 	}
 
@@ -277,10 +342,6 @@ void CNodeAttribContainer::renderAttribute(int32_t attr_id, bool isInput, bool h
 			static bool value{ false };
 			ImGui::Checkbox(attribute.name.c_str(), &value);
 		} break;
-		case EMaterialEditorValueType::eInt: {
-			static int value{ 0 };
-			ImGui::DragInt(attribute.name.c_str(), &value);
-		} break;
 		case EMaterialEditorValueType::eFloat: {
 			static float value{ 0.f };
 			ImGui::DragFloat(attribute.name.c_str(), &value);
@@ -297,21 +358,8 @@ void CNodeAttribContainer::renderAttribute(int32_t attr_id, bool isInput, bool h
 			static glm::vec4 value{ 0.f };
 			ImGui::DragFloat4(attribute.name.c_str(), glm::value_ptr(value));
 		}break;
-		case EMaterialEditorValueType::eIvec2: {
-			static glm::ivec2 value{ 0 };
-			ImGui::DragInt2(attribute.name.c_str(), glm::value_ptr(value));
-		}break;
-		case EMaterialEditorValueType::eIvec3: {
-			static glm::ivec3 value{ 0 };
-			ImGui::DragInt3(attribute.name.c_str(), glm::value_ptr(value));
-		}break;
-		case EMaterialEditorValueType::eIvec4: {
-			static glm::ivec4 value{ 0 };
-			ImGui::DragInt4(attribute.name.c_str(), glm::value_ptr(value));
-		}break;
 		case EMaterialEditorValueType::eMat2: {
 			static glm::mat2 value{ 0.f };
-
 			ImGui::DragFloat2(attribute.name.c_str(), glm::value_ptr(value[0]));
 			ImGui::DragFloat2(attribute.name.c_str(), glm::value_ptr(value[1]));
 		}break;
@@ -327,6 +375,72 @@ void CNodeAttribContainer::renderAttribute(int32_t attr_id, bool isInput, bool h
 			ImGui::DragFloat4(attribute.name.c_str(), glm::value_ptr(value[1]));
 			ImGui::DragFloat4(attribute.name.c_str(), glm::value_ptr(value[2]));
 			ImGui::DragFloat4(attribute.name.c_str(), glm::value_ptr(value[3]));
+		}break;
+		case EMaterialEditorValueType::eDouble: {
+			static double value{ 0.0 };
+			ImGui::DragDouble(attribute.name.c_str(), &value);
+		}break;
+		case EMaterialEditorValueType::eDvec2: {
+			static glm::dvec2 value{ 0.0 };
+			ImGui::DragDouble2(attribute.name.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eDvec3: {
+			static glm::dvec3 value{ 0.0 };
+			ImGui::DragDouble3(attribute.name.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eDvec4: {
+			static glm::dvec4 value{ 0.0 };
+			ImGui::DragDouble4(attribute.name.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eDmat2: {
+			static glm::dmat2 value{ 0.0 };
+			ImGui::DragDouble2(attribute.name.c_str(), glm::value_ptr(value[0]));
+			ImGui::DragDouble2(attribute.name.c_str(), glm::value_ptr(value[1]));
+		}break;
+		case EMaterialEditorValueType::eDmat3: {
+			static glm::dmat3 value{ 0.0 };
+			ImGui::DragDouble3(attribute.name.c_str(), glm::value_ptr(value[0]));
+			ImGui::DragDouble3(attribute.name.c_str(), glm::value_ptr(value[1]));
+			ImGui::DragDouble3(attribute.name.c_str(), glm::value_ptr(value[2]));
+		}break;
+		case EMaterialEditorValueType::eDmat4: {
+			static glm::dmat4 value{ 0.0 };
+			ImGui::DragDouble4(attribute.name.c_str(), glm::value_ptr(value[0]));
+			ImGui::DragDouble4(attribute.name.c_str(), glm::value_ptr(value[1]));
+			ImGui::DragDouble4(attribute.name.c_str(), glm::value_ptr(value[2]));
+			ImGui::DragDouble4(attribute.name.c_str(), glm::value_ptr(value[3]));
+		}break;
+		case EMaterialEditorValueType::eInt: {
+			static int value{ 0 };
+			ImGui::DragInt(attribute.name.c_str(), &value);
+		} break;
+		case EMaterialEditorValueType::eIvec2: {
+			static glm::ivec2 value{ 0 };
+			ImGui::DragInt2(attribute.name.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eIvec3: {
+			static glm::ivec3 value{ 0 };
+			ImGui::DragInt3(attribute.name.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eIvec4: {
+			static glm::ivec4 value{ 0 };
+			ImGui::DragInt4(attribute.name.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eUInt: {
+			static unsigned int value{ 0 };
+			ImGui::DragUInt(attribute.name.c_str(), &value);
+		} break;
+		case EMaterialEditorValueType::eUvec2: {
+			static glm::uvec2 value{ 0 };
+			ImGui::DragUInt2(attribute.name.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eUvec3: {
+			static glm::uvec3 value{ 0 };
+			ImGui::DragUInt3(attribute.name.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eUvec4: {
+			static glm::uvec4 value{ 0 };
+			ImGui::DragUInt4(attribute.name.c_str(), glm::value_ptr(value));
 		}break;
 		}
 	}
