@@ -6,7 +6,6 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_notify.h>
 #include <imgui/ImGuizmo.h>
-#include <imgui/imnodes.h>
 #include <imgui/font/IconsMaterialDesignIcons.h>
 
 #include "CustomControls.h"
@@ -64,7 +63,6 @@ CEditor::~CEditor()
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     graphics->getDevice()->destroy(&descriptorPool);
-    ImNodes::DestroyContext();
     ImGui::DestroyContext();
 }
 
@@ -105,7 +103,6 @@ void CEditor::create()
     assert(res == vk::Result::eSuccess && "Cannot create descriptor pool.");
 
     ImGui::CreateContext();
-    ImNodes::CreateContext();
 
     baseInitialize();
 

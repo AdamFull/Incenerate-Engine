@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 #include "MaterialEditorParse.h"
 
 #include <queue>
@@ -48,4 +48,4 @@ namespace engine
 			std::map<int32_t, std::pair<int32_t, int32_t>> mLinks;
 		};
 	}
-}
+}*/

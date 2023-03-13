@@ -3,147 +3,367 @@
 #include "Engine.h"
 #include "system/filesystem/filesystem.h"
 
-#include <imgui/imgui.h>
-#include <imgui/imnodes.h>
+#include <imgui/imgui_node_editor_internal.h>
+#include "materialeditor/utilities/builders.h"
+#include "materialeditor/utilities/widgets.h"
+
+namespace ed = ax::NodeEditor;
+namespace util = ax::NodeEditor::Utilities;
 
 using namespace engine::system;
 using namespace engine::editor;
+using namespace engine::graphics;
+
+ImColor getAttributeColor(EMaterialEditorValueType type)
+{
+	uint32_t color{ 0xffffffff };
+
+	switch (type)
+	{
+	case engine::editor::EMaterialEditorValueType::eBool: color = IM_COL32(220, 48, 48, 255); break;
+	case engine::editor::EMaterialEditorValueType::eFloat: color = IM_COL32(147, 226, 74, 255); break;
+	case engine::editor::EMaterialEditorValueType::eVec2: color = IM_COL32(228, 228, 75, 255); break;
+	case engine::editor::EMaterialEditorValueType::eVec3: color = IM_COL32(228, 171, 75, 255); break;
+	case engine::editor::EMaterialEditorValueType::eVec4: color = IM_COL32(228, 105, 75, 255); break;
+	case engine::editor::EMaterialEditorValueType::eMat2: color = IM_COL32(228, 228, 128, 255); break;
+	case engine::editor::EMaterialEditorValueType::eMat3: color = IM_COL32(228, 171, 128, 255); break;
+	case engine::editor::EMaterialEditorValueType::eMat4: color = IM_COL32(228, 105, 128, 255); break;
+	case engine::editor::EMaterialEditorValueType::eDouble: color = IM_COL32(228, 75, 166, 255); break;
+	case engine::editor::EMaterialEditorValueType::eDvec2: color = IM_COL32(228, 75, 207, 255); break;
+	case engine::editor::EMaterialEditorValueType::eDvec3: color = IM_COL32(228, 75, 228, 255); break;
+	case engine::editor::EMaterialEditorValueType::eDvec4: color = IM_COL32(195, 75, 228, 255); break;
+	case engine::editor::EMaterialEditorValueType::eDmat2: color = IM_COL32(228, 128, 207, 255); break;
+	case engine::editor::EMaterialEditorValueType::eDmat3: color = IM_COL32(228, 128, 228, 255); break;
+	case engine::editor::EMaterialEditorValueType::eDmat4: color = IM_COL32(195, 128, 228, 255); break;
+	case engine::editor::EMaterialEditorValueType::eInt: color = IM_COL32(68, 201, 156, 255); break;
+	case engine::editor::EMaterialEditorValueType::eIvec2: color = IM_COL32(68, 202, 180, 255); break;
+	case engine::editor::EMaterialEditorValueType::eIvec3: color = IM_COL32(68, 198, 202, 255); break;
+	case engine::editor::EMaterialEditorValueType::eIvec4: color = IM_COL32(68, 175, 202, 255); break;
+	case engine::editor::EMaterialEditorValueType::eUInt: color = IM_COL32(128, 201, 156, 255); break;
+	case engine::editor::EMaterialEditorValueType::eUvec2: color = IM_COL32(128, 202, 180, 255); break;
+	case engine::editor::EMaterialEditorValueType::eUvec3: color = IM_COL32(128, 198, 202, 255); break;
+	case engine::editor::EMaterialEditorValueType::eUvec4: color = IM_COL32(128, 175, 202, 255); break;
+	}
+
+	return color;
+}
+
+ImColor getNodeHeaderColor(EMaterialEditorNodeType type)
+{
+	uint32_t color{ 0xffffffff };
+
+	switch (type)
+	{
+	case engine::editor::EMaterialEditorNodeType::eConstValue: color = IM_COL32(55, 137, 219, 255); break;
+	case engine::editor::EMaterialEditorNodeType::eUniformValue: color = IM_COL32(225, 57, 57, 255); break;
+	case engine::editor::EMaterialEditorNodeType::eSampler: color = IM_COL32(108, 108, 108, 255); break;
+
+	case engine::editor::EMaterialEditorNodeType::eMath: 
+	case engine::editor::EMaterialEditorNodeType::eGeometric:
+	case engine::editor::EMaterialEditorNodeType::eMatrix:
+	case engine::editor::EMaterialEditorNodeType::eDerivative:
+	case engine::editor::EMaterialEditorNodeType::eOperation: color = IM_COL32(66, 191, 78, 255); break;
+	}
+
+	return color;
+}
+
+CMaterialEditorWindow::~CMaterialEditorWindow()
+{
+	if (!pBuilder)
+	{
+		delete pBuilder;
+		pBuilder = nullptr;
+	}
+
+	if (!pEditor)
+	{
+		ax::NodeEditor::DestroyEditor(pEditor);
+		pEditor = nullptr;
+	}
+}
 
 void CMaterialEditorWindow::create()
 {
+	auto& graphics = EGEngine->getGraphics();
+	auto& device = graphics->getDevice();
+
+	auto bpBack = std::make_unique<CImage>(device.get());
+	bpBack->create("icon/editor/blueprint_back.png", vk::Format::eR8G8B8A8Unorm);
+	auto extent = bpBack->getExtent();
+
+	pBuilder = new util::BlueprintNodeBuilder(graphics->addImage("editor_blueprint_img_noise", std::move(bpBack)), extent.width, extent.height);
+
 	//bIsOpen = false;
 	EGEngine->addEventListener(Events::Editor::SelectMaterial, this, &CMaterialEditorWindow::onSetMaterial);
 
 	fs::read_json("materialeditor.json", vGroups, true);
 
-	pContainer = std::make_unique<CNodeAttribContainer>();
+	ed::Config config;
+	config.SettingsFile = "materialEditorSettings.json";
+	config.UserPointer = this;
+
+	//config.LoadNodeSettings = [](ed::NodeId nodeId, char* data, void* userPointer) -> size_t
+	//{
+	//    auto self = static_cast<Example*>(userPointer);
+	//
+	//    auto node = self->FindNode(nodeId);
+	//    if (!node)
+	//        return 0;
+	//
+	//    if (data != nullptr)
+	//        memcpy(data, node->State.data(), node->State.size());
+	//    return node->State.size();
+	//};
+	//
+	//config.SaveNodeSettings = [](ed::NodeId nodeId, const char* data, size_t size, ed::SaveReasonFlags reason, void* userPointer) -> bool
+	//{
+	//    auto self = static_cast<Example*>(userPointer);
+	//
+	//    auto node = self->FindNode(nodeId);
+	//    if (!node)
+	//        return false;
+	//
+	//    node->State.assign(data, size);
+	//
+	//    self->TouchNode(nodeId);
+	//
+	//    return true;
+	//};
+
+	pEditor = ed::CreateEditor(&config);
+	ed::SetCurrentEditor(pEditor);
+
+	ed::NavigateToContent();
 }
 
 void CMaterialEditorWindow::__draw(float fDt)
 {
-	const bool open_popup = 
+	const bool open_popup =
 		ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
-		//ImNodes::IsEditorHovered() &&
 		ImGui::IsMouseClicked(ImGuiMouseButton_Right);
 
-	int32_t hovered_node_id{ 0 }, hovered_link_id{ 0 }, hovered_pin_id{ 0 };
-	auto isNodeHovered = ImNodes::IsNodeHovered(&hovered_node_id);
-	auto isLinkHovered = ImNodes::IsLinkHovered(&hovered_link_id);
-	auto isPinHovered = ImNodes::IsPinHovered(&hovered_pin_id);
-
-	if (!ImGui::IsAnyItemHovered() && open_popup)
+	if (open_popup)
 	{
-		if (isNodeHovered)
+		ImGui::OpenPopup("add node");
+	}
+
+	for (auto& [id, time] : mNodeTouchTime)
+	{
+		if (time > 0.0f)
+			time -= fDt;
+	}
+
+	ed::SetCurrentEditor(pEditor);
+	ed::Begin("Material editor");
+
+	for (auto& node : vNodes)
+	{
+		if (node->eNodeType == EMaterialEditorNodeType::eConstValue ||
+			node->eNodeType == EMaterialEditorNodeType::eUniformValue ||
+			node->eNodeType == EMaterialEditorNodeType::eSampler ||
+			node->eNodeType == EMaterialEditorNodeType::eMath ||
+			node->eNodeType == EMaterialEditorNodeType::eGeometric ||
+			node->eNodeType == EMaterialEditorNodeType::eMatrix ||
+			node->eNodeType == EMaterialEditorNodeType::eDerivative)
 		{
-			hovered_id = hovered_node_id;
-			ImGui::OpenPopup("node actions");
+			pBuilder->Begin(node->id);
+
+			pBuilder->Header(getNodeHeaderColor(node->eNodeType));
+			ImGui::Spring(0);
+			ImGui::TextUnformatted(node->srName.c_str());
+			ImGui::Spring(1);
+			ImGui::Dummy(ImVec2(0, 28));
+			ImGui::Spring(0);
+			pBuilder->EndHeader();
+
+			for (auto& iid : node->vInputAttributes)
+			{
+				auto& attribute = findAttribute(iid);
+				auto alpha = ImGui::GetStyle().Alpha;
+				pBuilder->Input(iid);
+				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+				ax::Widgets::Icon(ImVec2(24.f, 24.f), ax::Drawing::IconType::Circle, attribute->linked, getAttributeColor(attribute->eSelectedType), ImColor(32, 32, 32, (int)(alpha * 255)));
+				ImGui::Spring(0);
+				ImGui::TextUnformatted(attribute->srName.c_str());
+				ImGui::Spring(0);
+				ImGui::PopStyleVar();
+				pBuilder->EndInput();
+			}
+
+			for (auto& oid : node->vOutputAttributes)
+			{
+				auto& attribute = findAttribute(oid);
+				auto alpha = ImGui::GetStyle().Alpha;
+				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+				pBuilder->Output(oid);
+				ImGui::Spring(0);
+				ImGui::TextUnformatted(attribute->srName.c_str());
+				ImGui::Spring(0);
+				ax::Widgets::Icon(ImVec2(24.f, 24.f), ax::Drawing::IconType::Circle, attribute->linked, getAttributeColor(attribute->eSelectedType), ImColor(32, 32, 32, (int)(alpha * 255)));
+				ImGui::PopStyleVar();
+				pBuilder->EndOutput();
+			}
 		}
-		else if (isLinkHovered)
+		else if (node->eNodeType == EMaterialEditorNodeType::eOperation)
 		{
-			hovered_id = hovered_link_id;
-			ImGui::OpenPopup("link actions");
+
 		}
-		else if (isPinHovered)
-		{
-			hovered_id = hovered_pin_id;
-			ImGui::OpenPopup("pin actions");
-		}
-		else
-			ImGui::OpenPopup("add node");
+
+		pBuilder->End();
 	}
 
-	if (ImGui::BeginPopup("node actions"))
-	{
-		if (ImGui::MenuItem("delete"))
-			pContainer->removeNode(hovered_id);
-		ImGui::EndPopup();
-	}
-
-	if (ImGui::BeginPopup("link actions"))
-	{
-		if (ImGui::MenuItem("break"))
-			pContainer->removeLink(hovered_id);
-		ImGui::EndPopup();
-	}
-
-	if (ImGui::BeginPopup("pin actions"))
-	{
-		ImGui::EndPopup();
-	}
+	ed::End();
 
 	if (ImGui::BeginPopup("add node"))
 	{
 		makePopupMenuContent(vGroups);
 		ImGui::EndPopup();
 	}
+}
 
-	ImNodes::BeginNodeEditor();
-	pContainer->render();
-	ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_TopRight);
-	ImNodes::EndNodeEditor();
+uint32_t CMaterialEditorWindow::nextId()
+{
+	static uint32_t out_id{ 1 };
+	static std::atomic<uint32_t> uid{ 1 };
 
-	int32_t link_from, link_to;
-	if (ImNodes::IsLinkCreated(&link_from, &link_to))
-		pContainer->createLink(link_from, link_to);
+	if (!qFreedIds.empty())
+	{
+		out_id = qFreedIds.front();
+		qFreedIds.pop();
+	}
+	else
+	{
+		out_id = uid;
 
-	int32_t link_id{ 0 };
-	if (ImNodes::IsLinkDestroyed(&link_id))
-		pContainer->removeLink(link_id);
+		uid.fetch_add(1, std::memory_order_relaxed);
 
-	//auto& graphics = EGEngine->getGraphics();
-	//if (selected_material != invalid_index)
-	//{
-	//	auto& material = graphics->getMaterial(selected_material);
-	//	auto& params = material->getParameters();
-	//
-	//	//EAlphaMode alphaMode{ EAlphaMode::EOPAQUE };
-	//	//ImGui::GDragFloat("Alpha cutoff", &params.alphaCutoff, 0.01f, 0.f, 1.f);
-	//	//ImGui::GColorEdit3("Emissive factor", params.emissiveFactor);
-	//	//ImGui::GDragFloat("Normal scale", &params.normalScale, 0.01f, 1.f, 10.f);
-	//	//ImGui::GDragFloat("Occlusion strength", &params.occlusionStrenth, 0.01f, 0.f, 10.f);
-	//	//ImGui::GColorEdit4("Base color factor", params.baseColorFactor);
-	//	//ImGui::GDragFloat("Metallic factor", &params.metallicFactor, 0.01f, 0.f, 1.f);
-	//	//ImGui::GDragFloat("Roughness factor", &params.roughnessFactor, 0.01f, 0.f, 1.f);
-	//	//ImGui::GCheckbox("Double sided", &params.doubleSided);
-	//	//
-	//	//// Custom extension
-	//	//ImGui::GDragFloat("Tessellation factor", &params.tessellationFactor, 0.01f, 0.f, 10.f);
-	//	//ImGui::GDragFloat("Displacement strength", &params.displacementStrength, 0.01f, 0.01f, 100.f);
-	//	//
-	//	//// KHR_materials_clearcoat
-	//	//ImGui::GDragFloat("Clearcoat Factor", &params.clearcoatFactor, 0.01f, 0.f, 1.f);
-	//	//ImGui::GDragFloat("Clearcoat Roughness Factor", &params.clearcoatRoughnessFactor, 0.01f, 0.01f, 1.f);
-	//	//
-	//	//// KHR_materials_emissive_strength
-	//	//ImGui::GDragFloat("Emissive Strength", &params.emissiveStrength, 0.01f, 1.f, 10.f);
-	//	//
-	//	//// KHR_materials_ior
-	//	//ImGui::GDragFloat("IOR", &params.ior, 0.01f, 0.f, 2.f);
-	//	//
-	//	//// KHR_materials_iridescence
-	//	//ImGui::GDragFloat("Iridescence Factor", &params.iridescenceFactor, 0.01f, 0.f, 1.f);
-	//	//ImGui::GDragFloat("Iridescence IOR", &params.iridescenceIor, 0.01f, 0.f, 2.f);
-	//	//ImGui::GDragFloat("Iridescence Thickness Minimum", &params.iridescenceThicknessMinimum, 1.f, 1.f, 1000.f);
-	//	//ImGui::GDragFloat("Iridescence Thickness Maximum", &params.iridescenceThicknessMaximum, 1.f, 1.f, 1000.f);
-	//	//
-	//	//// KHR_materials_sheen
-	//	//ImGui::GColorEdit3("Sheen Color Factor", params.sheenColorFactor);
-	//	//ImGui::GDragFloat("Sheen Roughness Factor", &params.sheenRoughnessFactor, 0.01f, 0.f, 1.f);
-	//	//
-	//	//// KHR_materials_specular
-	//	//ImGui::GDragFloat("Specular Factor", &params.specularFactor, 0.01f, 0.f, 1.f);
-	//	//ImGui::GColorEdit3("Specular Color Factor", params.specularColorFactor);
-	//	//
-	//	//// KHR_materials_transmission
-	//	//ImGui::GDragFloat("Transmission Factor", &params.transmissionFactor, 0.01f, 0.f, 1.f);
-	//	//
-	//	//// KHR_materials_unlit ?
-	//	//
-	//	//// KHR_materials_volume
-	//	//ImGui::GDragFloat("Thickness Factor", &params.thicknessFactor, 0.01f, 0.f, 1.f);
-	//	//ImGui::GDragFloat("Attenuation Distance", &params.attenuationDistance, 1.f, 0.f, INFINITY);
-	//	//ImGui::GColorEdit3("Attenuation Color", params.attenuationColor);
-	//}
+		if (uid == invalid_index)
+			uid.fetch_add(1, std::memory_order_relaxed);
+	}
+
+	return out_id;
+}
+
+std::unique_ptr<FMaterialEditorNode>& CMaterialEditorWindow::findNode(ax::NodeEditor::NodeId id)
+{
+	static std::unique_ptr<FMaterialEditorNode> pNotFound;
+
+	auto found = std::find_if(vNodes.begin(), vNodes.end(), [id = id](const std::unique_ptr<FMaterialEditorNode>& pNode) { return pNode->id == id; });
+	if (found != vNodes.end())
+		return *found;
+
+	return pNotFound;
+}
+
+std::unique_ptr<FMaterialEditorAttribute>& CMaterialEditorWindow::findAttribute(ax::NodeEditor::PinId id)
+{
+	static std::unique_ptr<FMaterialEditorAttribute> pNotFound;
+
+	auto found = std::find_if(vAttributes.begin(), vAttributes.end(), [id = id](const std::unique_ptr<FMaterialEditorAttribute>& pNode) { return pNode->id == id; });
+	if (found != vAttributes.end())
+		return *found;
+
+	return pNotFound;
+}
+
+std::unique_ptr<FMaterialEditorLink>& CMaterialEditorWindow::findLink(ax::NodeEditor::LinkId id)
+{
+	static std::unique_ptr<FMaterialEditorLink> pNotFound;
+
+	auto found = std::find_if(vLinks.begin(), vLinks.end(), [id = id](const std::unique_ptr<FMaterialEditorLink>& pNode) { return pNode->id == id; });
+	if (found != vLinks.end())
+		return *found;
+
+	return pNotFound;
+}
+
+ax::NodeEditor::NodeId CMaterialEditorWindow::createNode(const FMaterialEditorNodeCreateInfo& ci)
+{
+	auto id = nextId();
+	auto pNode = std::make_unique<FMaterialEditorNode>();
+	pNode->id = id;
+	pNode->srName = ci.name;
+	pNode->eNodeType = ci.type;
+
+	for (auto& attrib : ci.inputAttributes)
+	{
+		auto pAttribute = std::make_unique<FMaterialEditorAttribute>();
+		pAttribute->id = nextId();
+		pAttribute->parent = pNode->id;
+		pAttribute->srName = attrib.name;
+		pAttribute->ePinKind = EMaterialEditorPinKind::eInput;
+		pAttribute->vTypes = attrib.types;
+		pAttribute->defautlType = attrib.defaultType;
+		pAttribute->eSelectedType = pAttribute->vTypes[pAttribute->defautlType];
+
+		pNode->vInputAttributes.emplace_back(pAttribute->id);
+		vAttributes.emplace_back(std::move(pAttribute));
+	}
+
+	for (auto& attrib : ci.outputAttributes)
+	{
+		auto pAttribute = std::make_unique<FMaterialEditorAttribute>();
+		pAttribute->id = nextId();
+		pAttribute->parent = pNode->id;
+		pAttribute->srName = attrib.name;
+		pAttribute->ePinKind = EMaterialEditorPinKind::eOutput;
+		pAttribute->vTypes = attrib.types;
+		pAttribute->defautlType = attrib.defaultType;
+		pAttribute->eSelectedType = pAttribute->vTypes[pAttribute->defautlType];
+
+		pNode->vOutputAttributes.emplace_back(pAttribute->id);
+		vAttributes.emplace_back(std::move(pAttribute));
+	}
+
+	vNodes.emplace_back(std::move(pNode));
+	return id;
+}
+
+void CMaterialEditorWindow::destroyNode(ax::NodeEditor::NodeId id)
+{
+	auto& pNode = findNode(id);
+
+	if (!pNode)
+	{
+		log_error("Failed to find node with id {}.", id.Get());
+		return;
+	}
+
+	// Making single vector with all node attributes
+	std::vector<ed::PinId> nodeAttributes;
+	nodeAttributes.insert(nodeAttributes.end(), pNode->vInputAttributes.begin(), pNode->vInputAttributes.end());
+	nodeAttributes.insert(nodeAttributes.end(), pNode->vOutputAttributes.begin(), pNode->vOutputAttributes.end());
+
+	// Releasing attributes and saving id for reuse
+	for (auto& aid : nodeAttributes)
+	{
+		qFreedIds.push(aid.Get());
+		auto to_remove = std::remove_if(vAttributes.begin(), vAttributes.end(), [id = aid](const std::unique_ptr<FMaterialEditorAttribute>& attrib) { return attrib->id == id; });
+		vAttributes.erase(to_remove);
+	}
+
+	qFreedIds.push(id.Get());
+	auto to_remove = std::remove_if(vNodes.begin(), vNodes.end(), [id = id](const std::unique_ptr<FMaterialEditorNode>& node) { return node->id == id; });
+	vNodes.erase(to_remove);
+}
+
+void CMaterialEditorWindow::createLink(ax::NodeEditor::PinId startPin, ax::NodeEditor::PinId endPin)
+{
+	// TODO: set attributes linked
+	auto pLink = std::make_unique<FMaterialEditorLink>();
+	pLink->id = nextId();
+	pLink->startPin = startPin;
+	pLink->endPin = endPin;
+	vLinks.emplace_back(std::move(pLink));
+}
+
+void CMaterialEditorWindow::destroyLink(ax::NodeEditor::LinkId id)
+{
+	// TODO: remove attributes linked
+	qFreedIds.push(id.Get());
+	auto to_remove = std::remove_if(vLinks.begin(), vLinks.end(), [id = id](const std::unique_ptr<FMaterialEditorLink>& link) { return link->id == id; });
+	vLinks.erase(to_remove);
 }
 
 void CMaterialEditorWindow::onSetMaterial(CEvent& event)
@@ -172,7 +392,10 @@ void CMaterialEditorWindow::makePopupMenuContent(const std::vector<FMaterialEdit
 				for (auto& node : group.nodes)
 				{
 					if (ImGui::MenuItem(node.name.c_str()))
-						ImNodes::SetNodeScreenSpacePos(pContainer->createNode(node), click_pos);
+					{
+						auto id = createNode(node);
+						ed::SetNodePosition(id, click_pos);
+					}
 				}
 				ImGui::EndMenu();
 			}

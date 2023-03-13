@@ -44,6 +44,12 @@ namespace engine
 			eOperation
 		};
 
+		enum class EMaterialEditorPinKind
+		{
+			eInput,
+			eOutput
+		};
+
 		struct FMaterialEditorAttributeCreateInfo
 		{
 			std::string name;
