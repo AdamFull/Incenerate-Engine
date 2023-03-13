@@ -501,6 +501,7 @@
               {
                 "name": "Make vec2",
                 "type": "value_maker",
+                "code": "vec2({x}, {y})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -521,6 +522,7 @@
               {
                 "name": "Make vec3",
                 "type": "value_maker",
+                "code": "vec3({x}, {y}, {z})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -545,6 +547,7 @@
               {
                 "name": "Make vec4",
                 "type": "value_maker",
+                "code": "vec4({x}, {y}, {z}, {w})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -573,6 +576,7 @@
               {
                 "name": "Make mat2",
                 "type": "value_maker",
+                "code": "mat2({r1}, {r2})",
                 "input_attributes": [
                   {
                     "name": "r1",
@@ -593,6 +597,7 @@
               {
                 "name": "Make mat3",
                 "type": "value_maker",
+                "code": "mat3({r1}, {r2}, {r3})",
                 "input_attributes": [
                   {
                     "name": "r1",
@@ -617,6 +622,7 @@
               {
                 "name": "Make mat4",
                 "type": "value_maker",
+                "code": "mat4({r1}, {r2}, {r3}, {r4})",
                 "input_attributes": [
                   {
                     "name": "r1",
@@ -650,6 +656,7 @@
               {
                 "name": "Make dvec2",
                 "type": "value_maker",
+                "code": "dvec2({x}, {y})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -670,6 +677,7 @@
               {
                 "name": "Make dvec3",
                 "type": "value_maker",
+                "code": "dvec3({x}, {y}, {z})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -694,6 +702,7 @@
               {
                 "name": "Make dvec4",
                 "type": "value_maker",
+                "code": "dvec4({x}, {y}, {z}, {w})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -722,6 +731,7 @@
               {
                 "name": "Make dmat2",
                 "type": "value_maker",
+                "code": "dmat2({r1}, {r2})",
                 "input_attributes": [
                   {
                     "name": "r1",
@@ -742,6 +752,7 @@
               {
                 "name": "Make dmat3",
                 "type": "value_maker",
+                "code": "dmat3({r1}, {r2}, {r3})",
                 "input_attributes": [
                   {
                     "name": "r1",
@@ -766,6 +777,7 @@
               {
                 "name": "Make dmat4",
                 "type": "value_maker",
+                "code": "dmat4({r1}, {r2}, {r3}, {r4})",
                 "input_attributes": [
                   {
                     "name": "r1",
@@ -799,6 +811,7 @@
               {
                 "name": "Make ivec2",
                 "type": "value_maker",
+                "code": "ivec2({x}, {y})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -819,6 +832,7 @@
               {
                 "name": "Make ivec3",
                 "type": "value_maker",
+                "code": "ivec3({x}, {y}, {z})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -843,6 +857,7 @@
               {
                 "name": "Make ivec4",
                 "type": "value_maker",
+                "code": "ivec4({x}, {y}, {z}, {w})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -876,6 +891,7 @@
               {
                 "name": "Make uvec2",
                 "type": "value_maker",
+                "code": "uvec2({x}, {y})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -896,6 +912,7 @@
               {
                 "name": "Make uvec3",
                 "type": "value_maker",
+                "code": "uvec3({x}, {y}, {z})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -920,6 +937,7 @@
               {
                 "name": "Make uvec4",
                 "type": "value_maker",
+                "code": "uvec4({x}, {y}, {z}, {w})",
                 "input_attributes": [
                   {
                     "name": "x",
@@ -1414,6 +1432,7 @@
       {
         "name": "Texture",
         "type": "sampler",
+        "code": "texture({tex_sampler}, {uv})",
         "input_attributes": [
           {
             "name": "uv",
@@ -1446,6 +1465,7 @@
       {
         "name": "TextureLod",
         "type": "sampler",
+        "code": "textureLod({tex_sampler}, {uv}, {lod})",
         "input_attributes": [
           {
             "name": "uv",
@@ -1482,6 +1502,7 @@
       {
         "name": "TextureOffset",
         "type": "sampler",
+        "code": "textureOffset({tex_sampler}, {uv}, {offset})",
         "input_attributes": [
           {
             "name": "uv",
@@ -1518,6 +1539,7 @@
       {
         "name": "TextureLodOffset",
         "type": "sampler",
+        "code": "textureLodOffset({tex_sampler}, {uv}, {lod}, {offset})",
         "input_attributes": [
           {
             "name": "uv",
@@ -1688,6 +1710,7 @@
           {
             "name": "Radians",
             "type": "math",
+            "code": "radians({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1704,6 +1727,7 @@
           {
             "name": "Degrees",
             "type": "math",
+            "code": "degrees({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1720,6 +1744,7 @@
           {
             "name": "Sin",
             "type": "math",
+            "code": "sin({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1736,6 +1761,7 @@
           {
             "name": "Cos",
             "type": "math",
+            "code": "cos({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1752,6 +1778,7 @@
           {
             "name": "Tan",
             "type": "math",
+            "code": "tan({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1768,6 +1795,7 @@
           {
             "name": "ASin",
             "type": "math",
+            "code": "asin({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1784,6 +1812,7 @@
           {
             "name": "ACos",
             "type": "math",
+            "code": "acos({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1800,6 +1829,7 @@
           {
             "name": "ATan",
             "type": "math",
+            "code": "atan({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1816,6 +1846,7 @@
           {
             "name": "ATan2",
             "type": "math",
+            "code": "atan2({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1832,6 +1863,7 @@
           {
             "name": "SinH",
             "type": "math",
+            "code": "sinh({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1848,6 +1880,7 @@
           {
             "name": "CosH",
             "type": "math",
+            "code": "cosh({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1864,6 +1897,7 @@
           {
             "name": "TanH",
             "type": "math",
+            "code": "tanh({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1880,6 +1914,7 @@
           {
             "name": "ASinH",
             "type": "math",
+            "code": "asinh({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1896,6 +1931,7 @@
           {
             "name": "ACosH",
             "type": "math",
+            "code": "acosh({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1912,6 +1948,7 @@
           {
             "name": "ATanH",
             "type": "math",
+            "code": "atanh({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1933,6 +1970,7 @@
           {
             "name": "Pow",
             "type": "math",
+            "code": "pow({in}, {e})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1953,6 +1991,7 @@
           {
             "name": "Exp",
             "type": "math",
+            "code": "exp({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1969,6 +2008,7 @@
           {
             "name": "Log",
             "type": "math",
+            "code": "log({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -1985,6 +2025,7 @@
           {
             "name": "Exp2",
             "type": "math",
+            "code": "exp2({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2001,6 +2042,7 @@
           {
             "name": "Log2",
             "type": "math",
+            "code": "log2({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2017,6 +2059,7 @@
           {
             "name": "Sqrt",
             "type": "math",
+            "code": "sqrt({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2033,6 +2076,7 @@
           {
             "name": "InverseSqrt",
             "type": "math",
+            "code": "inversesqrt({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2054,6 +2098,7 @@
           {
             "name": "Abs",
             "type": "math",
+            "code": "abs({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2070,6 +2115,7 @@
           {
             "name": "Sign",
             "type": "math",
+            "code": "sign({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2086,6 +2132,7 @@
           {
             "name": "Floor",
             "type": "math",
+            "code": "floor({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2102,6 +2149,7 @@
           {
             "name": "Ceil",
             "types": "math",
+            "code": "ceil({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2118,6 +2166,7 @@
           {
             "name": "Trunc",
             "type": "math",
+            "code": "trunc({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2134,6 +2183,7 @@
           {
             "name": "Round",
             "type": "math",
+            "code": "round({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2150,6 +2200,7 @@
           {
             "name": "RoundEven",
             "type": "math",
+            "code": "roundEven({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2166,6 +2217,7 @@
           {
             "name": "Fract",
             "type": "math",
+            "code": "fract({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2182,6 +2234,7 @@
           {
             "name": "Mod",
             "type": "math",
+            "code": "mod({in1}, {in2})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2202,6 +2255,7 @@
           {
             "name": "Min",
             "type": "math",
+            "code": "min({in1}, {in2})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2222,6 +2276,7 @@
           {
             "name": "Max",
             "type": "math",
+            "code": "max({in1}, {in2})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2242,6 +2297,7 @@
           {
             "name": "Clamp",
             "type": "math",
+            "code": "clamp({in1}, {min}, {max})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2266,6 +2322,7 @@
           {
             "name": "Mix",
             "type": "math",
+            "code": "mix({in1}, {in2}, {mix})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2290,9 +2347,10 @@
           {
             "name": "Step",
             "type": "math",
+            "code": "step({in}, {step})",
             "input_attributes": [
               {
-                "name": "in1",
+                "name": "in",
                 "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
               },
               {
@@ -2310,9 +2368,10 @@
           {
             "name": "SmoothStep",
             "type": "math",
+            "code": "smoothstep({in}, {step}, {factor})",
             "input_attributes": [
               {
-                "name": "in1",
+                "name": "in",
                 "types": [ "float", "vec2", "vec3", "vec4", "double", "dvec2", "dvec3", "dvec4", "int", "ivec2", "ivec3", "ivec4", "uint", "uvec2", "uvec3", "uvec4" ]
               },
               {
@@ -2334,6 +2393,7 @@
           {
             "name": "IsNan",
             "type": "math",
+            "code": "isnan({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2350,6 +2410,7 @@
           {
             "name": "IsInf",
             "type": "math",
+            "code": "isinf({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2366,6 +2427,7 @@
           {
             "name": "Fma",
             "type": "math",
+            "code": "fma({in1}, {in2}, {in3})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2395,6 +2457,7 @@
           {
             "name": "Length",
             "type": "geometric",
+            "code": "length({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2411,6 +2474,7 @@
           {
             "name": "Distance",
             "type": "geometric",
+            "code": "distance({in1}, {in2})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2431,6 +2495,7 @@
           {
             "name": "Dot",
             "type": "geometric",
+            "code": "dot({in1}, {in2})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2451,6 +2516,7 @@
           {
             "name": "Cross",
             "type": "geometric",
+            "code": "cross({in1}, {in2})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2471,6 +2537,7 @@
           {
             "name": "Normalize",
             "type": "geometric",
+            "code": "normalize({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2487,6 +2554,7 @@
           {
             "name": "FaceForward",
             "type": "geometric",
+            "code": "faceforward({in1}, {in2}, {in3})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2511,6 +2579,7 @@
           {
             "name": "Reflect",
             "type": "geometric",
+            "code": "reflect({in1}, {in2})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2531,6 +2600,7 @@
           {
             "name": "Refract",
             "type": "geometric",
+            "code": "refract({in1}, {in2}, {ior})",
             "input_attributes": [
               {
                 "name": "in1",
@@ -2560,6 +2630,7 @@
           {
             "name": "Transpose",
             "type": "matrix",
+            "code": "transpose({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2576,6 +2647,7 @@
           {
             "name": "Determinant",
             "type": "matrix",
+            "code": "determinant({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2592,6 +2664,7 @@
           {
             "name": "Inverse",
             "type": "matrix",
+            "code": "inverse({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2613,6 +2686,7 @@
           {
             "name": "dFdx",
             "type": "derivative",
+            "code": "dFdx({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2629,6 +2703,7 @@
           {
             "name": "dFdy",
             "type": "derivative",
+            "code": "dFdy({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2645,6 +2720,7 @@
           {
             "name": "FWidth",
             "type": "derivative",
+            "code": "fwidth({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2661,6 +2737,7 @@
           {
             "name": "dFdxFine",
             "type": "derivative",
+            "code": "dFdxFine({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2677,6 +2754,7 @@
           {
             "name": "dFdyFine",
             "type": "derivative",
+            "code": "dFdyFine({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2693,6 +2771,7 @@
           {
             "name": "FWidthFine",
             "type": "derivative",
+            "code": "fwidthFine({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2709,6 +2788,7 @@
           {
             "name": "dFdxCoarse",
             "type": "derivative",
+            "code": "dFdxCoarse({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2725,6 +2805,7 @@
           {
             "name": "dFdyCoarse",
             "type": "derivative",
+            "code": "dFdyCoarse({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2741,6 +2822,7 @@
           {
             "name": "FWidthCoarse",
             "type": "derivative",
+            "code": "fwidthCoarse({in})",
             "input_attributes": [
               {
                 "name": "in",
@@ -2762,6 +2844,7 @@
           {
             "name": "Add",
             "type": "operation",
+            "code": "{lhs} + {rhs}",
             "input_attributes": [
               {
                 "name": "lhs",
@@ -2782,6 +2865,7 @@
           {
             "name": "Sub",
             "type": "operation",
+            "code": "{lhs} - {rhs}",
             "input_attributes": [
               {
                 "name": "lhs",
@@ -2802,6 +2886,7 @@
           {
             "name": "Multiply",
             "type": "operation",
+            "code": "{lhs} * {rhs}",
             "input_attributes": [
               {
                 "name": "lhs",
@@ -2822,6 +2907,7 @@
           {
             "name": "Divide",
             "type": "operation",
+            "code": "{lhs} / {rhs}",
             "input_attributes": [
               {
                 "name": "lhs",
@@ -2842,6 +2928,7 @@
           {
             "name": "Less",
             "type": "operation",
+            "code": "{lhs} < {rhs}",
             "input_attributes": [
               {
                 "name": "lhs",
@@ -2862,6 +2949,7 @@
           {
             "name": "Greater",
             "type": "operation",
+            "code": "{lhs} > {rhs}",
             "input_attributes": [
               {
                 "name": "lhs",
@@ -2882,6 +2970,7 @@
           {
             "name": "LessEqual",
             "type": "operation",
+            "code": "{lhs} <= {rhs}",
             "input_attributes": [
               {
                 "name": "lhs",
@@ -2902,6 +2991,7 @@
           {
             "name": "GreaterEqual",
             "type": "operation",
+            "code": "{lhs} >= {rhs}",
             "input_attributes": [
               {
                 "name": "lhs",
@@ -2922,6 +3012,7 @@
           {
             "name": "Equal",
             "type": "operation",
+            "code": "{lhs} == {rhs}",
             "input_attributes": [
               {
                 "name": "lhs",
@@ -2942,6 +3033,7 @@
           {
             "name": "NotEqual",
             "type": "operation",
+            "code": "{lhs} != {rhs}",
             "input_attributes": [
               {
                 "name": "lhs",
@@ -2962,13 +3054,10 @@
           {
             "name": "Not",
             "type": "operation",
+            "code": "!{lhs}",
             "input_attributes": [
               {
                 "name": "lhs",
-                "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
-              },
-              {
-                "name": "rhs",
                 "types": [ "float", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "double", "dvec2", "dvec3", "dvec4", "dmat2", "dmat3", "dmat4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4" ]
               }
             ],
