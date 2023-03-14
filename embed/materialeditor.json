@@ -1,5 +1,168 @@
 [
   {
+    "name": "Input",
+    "subgroups": [
+      {
+        "name": "Texture",
+        "nodes": [
+          {
+            "name": "sampler1D",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "sampler1D" ]
+              }
+            ]
+          },
+          {
+            "name": "isampler1D",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "isampler1D" ]
+              }
+            ]
+          },
+          {
+            "name": "usampler1D",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "usampler1D" ]
+              }
+            ]
+          },
+          {
+            "name": "sampler2D",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "sampler2D" ]
+              }
+            ]
+          },
+          {
+            "name": "isampler2D",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "isampler2D" ]
+              }
+            ]
+          },
+          {
+            "name": "usampler2D",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "usampler2D" ]
+              }
+            ]
+          },
+          {
+            "name": "sampler3D",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "sampler3D" ]
+              }
+            ]
+          },
+          {
+            "name": "isampler3D",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "isampler3D" ]
+              }
+            ]
+          },
+          {
+            "name": "usampler3D",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "usampler3D" ]
+              }
+            ]
+          },
+          {
+            "name": "samplerCube",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "samplerCube" ]
+              }
+            ]
+          },
+          {
+            "name": "isamplerCube",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "isamplerCube" ]
+              }
+            ]
+          },
+          {
+            "name": "usamplerCube",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "usamplerCube" ]
+              }
+            ]
+          },
+          {
+            "name": "sampler2DRect",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "sampler2DRect" ]
+              }
+            ]
+          },
+          {
+            "name": "sampler1DArray",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "sampler1DArray" ]
+              }
+            ]
+          },
+          {
+            "name": "sampler2DArray",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "sampler2DArray" ]
+              }
+            ]
+          },
+          {
+            "name": "samplerCubeArray",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "samplerCubeArray" ]
+              }
+            ]
+          },
+          {
+            "name": "samplerBuffer",
+            "output_attributes": [
+              {
+                "name": "out",
+                "types": [ "samplerBuffer" ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "name": "Variables",
     "subgroups": [
       {
@@ -1435,6 +1598,10 @@
         "code": "texture({tex_sampler}, {uv})",
         "input_attributes": [
           {
+            "name": "sampler",
+            "types": [ "sampler1D", "sampler2D", "sampler3D", "samplerCube", "sampler2DRect", "sampler1DArray", "sampler2DArray", "samplerCubeArray", "samplerBuffer" ]
+          },
+          {
             "name": "uv",
             "types": [ "vec2" ]
           }
@@ -1468,6 +1635,10 @@
         "code": "textureLod({tex_sampler}, {uv}, {lod})",
         "input_attributes": [
           {
+            "name": "sampler",
+            "types": [ "sampler1D", "sampler2D", "sampler3D", "samplerCube", "sampler2DRect", "sampler1DArray", "sampler2DArray", "samplerCubeArray", "samplerBuffer" ]
+          },
+          {
             "name": "uv",
             "types": [ "vec2" ]
           },
@@ -1477,6 +1648,10 @@
           }
         ],
         "output_attributes": [
+          {
+            "name": "sampler",
+            "types": [ "sampler1D", "sampler2D", "sampler3D", "samplerCube", "sampler2DRect", "sampler1DArray", "sampler2DArray", "samplerCubeArray", "samplerBuffer" ]
+          },
           {
             "name": "color",
             "types": [ "vec4" ]
@@ -1504,6 +1679,10 @@
         "type": "sampler",
         "code": "textureOffset({tex_sampler}, {uv}, {offset})",
         "input_attributes": [
+          {
+            "name": "sampler",
+            "types": [ "sampler1D", "sampler2D", "sampler3D", "samplerCube", "sampler2DRect", "sampler1DArray", "sampler2DArray", "samplerCubeArray", "samplerBuffer" ]
+          },
           {
             "name": "uv",
             "types": [ "vec2" ]
@@ -1541,6 +1720,10 @@
         "type": "sampler",
         "code": "textureLodOffset({tex_sampler}, {uv}, {lod}, {offset})",
         "input_attributes": [
+          {
+            "name": "sampler",
+            "types": [ "sampler1D", "sampler2D", "sampler3D", "samplerCube", "sampler2DRect", "sampler1DArray", "sampler2DArray", "samplerCubeArray", "samplerBuffer" ]
+          },
           {
             "name": "uv",
             "types": [ "vec2" ]
