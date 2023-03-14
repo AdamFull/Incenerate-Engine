@@ -86,11 +86,16 @@ namespace engine
 			void createLink(ax::NodeEditor::PinId startPin, ax::NodeEditor::PinId endPin);
 			void destroyLink(ax::NodeEditor::LinkId id);
 
+			bool canCreateLink(const std::unique_ptr<FMaterialEditorAttribute>& lhs, const std::unique_ptr<FMaterialEditorAttribute>& rhs);
+
 			void onSetMaterial(CEvent& event);
 			void makePopupMenuContent(const std::vector<FMaterialEditorGroupCreateInfo>& groups);
 		private:
 			size_t selected_material{ invalid_index };
 			int32_t hovered_id{ 0 };
+
+			const char* pNextPopup{ nullptr };
+			bool createNewNode{ false };
 
 			std::queue<int32_t> qFreedIds;
 

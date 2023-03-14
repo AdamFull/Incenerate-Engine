@@ -521,34 +521,34 @@ void CEditor::onKeyDown(CEvent& event)
     
     if (keys.test(EKeyCode::eKeyLCtrl))
     {
-        if (ImGui::IsKeyDown(ImGuiKey::ImGuiKey_LeftShift))
+        if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
         {
-            if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_N))
+            if (ImGui::IsKeyReleased(ImGuiKey_N))
                 bNeedNewScene = true;
-            else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_O))
+            else if (ImGui::IsKeyReleased(ImGuiKey_O))
                 bNeedOpenScene = true;
-            else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_S))
+            else if (ImGui::IsKeyReleased(ImGuiKey_S))
                 bNeedSaveAll = true;
         }
-        else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_Z))
+        else if (ImGui::IsKeyReleased(ImGuiKey_Z))
             bNeedUndo = true;
-        else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_Y))
+        else if (ImGui::IsKeyReleased(ImGuiKey_Y))
             bNeedRedo = true;
-        else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_N))
+        else if (ImGui::IsKeyReleased(ImGuiKey_N))
             bNeedNewProject = true;
-        else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_O))
+        else if (ImGui::IsKeyReleased(ImGuiKey_O))
             bNeedOpenProject = true;
-        else if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_S))
+        else if (ImGui::IsKeyReleased(ImGuiKey_S))
             bNeedSave = true;
     }
 
-    if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_Delete))
+    if (ImGui::IsKeyReleased(ImGuiKey_Delete))
     {
         if (selected != entt::null)
             pActionBuffer->addOperation(std::make_unique<CRemoveEntityOperation>(selected));
     }
 
-    if (ImGui::IsKeyReleased(ImGuiKey::ImGuiKey_PrintScreen))
+    if (ImGui::IsKeyReleased(ImGuiKey_PrintScreen))
     {
         auto& device = graphics->getDevice();
         device->takeScreenshot("screenshot.png");

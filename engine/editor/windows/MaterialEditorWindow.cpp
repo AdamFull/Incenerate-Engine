@@ -68,6 +68,24 @@ ImColor getNodeHeaderColor(EMaterialEditorNodeType type)
 	return color;
 }
 
+void showLabel(const char* label, ImColor color)
+{
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
+	auto size = ImGui::CalcTextSize(label);
+
+	auto padding = ImGui::GetStyle().FramePadding;
+	auto spacing = ImGui::GetStyle().ItemSpacing;
+
+	ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(spacing.x, -spacing.y));
+
+	auto rectMin = ImGui::GetCursorScreenPos() - padding;
+	auto rectMax = ImGui::GetCursorScreenPos() + size + padding;
+
+	auto drawList = ImGui::GetWindowDrawList();
+	drawList->AddRectFilled(rectMin, rectMax, color, size.y * 0.15f);
+	ImGui::TextUnformatted(label);
+}
+
 CMaterialEditorWindow::~CMaterialEditorWindow()
 {
 	if (!pBuilder)
@@ -139,14 +157,18 @@ void CMaterialEditorWindow::create()
 
 void CMaterialEditorWindow::__draw(float fDt)
 {
+	static ed::NodeId contextNodeId = 0;
+	static ed::LinkId contextLinkId = 0;
+	static ed::PinId  contextPinId = 0;
+	static ed::PinId newNodeLinkPin = 0;
+	static ed::PinId newLinkPin = 0;
+
 	const bool open_popup =
 		ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
 		ImGui::IsMouseClicked(ImGuiMouseButton_Right);
 
 	if (open_popup)
-	{
-		ImGui::OpenPopup("add node");
-	}
+		pNextPopup = "add node";
 
 	for (auto& [id, time] : mNodeTouchTime)
 	{
@@ -159,65 +181,152 @@ void CMaterialEditorWindow::__draw(float fDt)
 
 	for (auto& node : vNodes)
 	{
-		if (node->eNodeType == EMaterialEditorNodeType::eConstValue ||
-			node->eNodeType == EMaterialEditorNodeType::eUniformValue ||
-			node->eNodeType == EMaterialEditorNodeType::eSampler ||
-			node->eNodeType == EMaterialEditorNodeType::eMath ||
-			node->eNodeType == EMaterialEditorNodeType::eGeometric ||
-			node->eNodeType == EMaterialEditorNodeType::eMatrix ||
-			node->eNodeType == EMaterialEditorNodeType::eDerivative)
+		pBuilder->Begin(node->id);
+
+		pBuilder->Header(getNodeHeaderColor(node->eNodeType));
+		ImGui::Spring(0);
+		ImGui::TextUnformatted(node->srName.c_str());
+		ImGui::Spring(1);
+		ImGui::Dummy(ImVec2(0, 28));
+		ImGui::Spring(0);
+		pBuilder->EndHeader();
+
+		for (auto& iid : node->vInputAttributes)
 		{
-			pBuilder->Begin(node->id);
-
-			pBuilder->Header(getNodeHeaderColor(node->eNodeType));
+			auto& attribute = findAttribute(iid);
+			auto alpha = ImGui::GetStyle().Alpha;
+			pBuilder->Input(iid);
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+			ax::Widgets::Icon(ImVec2(24.f, 24.f), ax::Drawing::IconType::Circle, attribute->linked, getAttributeColor(attribute->eSelectedType), ImColor(32, 32, 32, (int)(alpha * 255)));
 			ImGui::Spring(0);
-			ImGui::TextUnformatted(node->srName.c_str());
-			ImGui::Spring(1);
-			ImGui::Dummy(ImVec2(0, 28));
+			ImGui::TextUnformatted(attribute->srName.c_str());
 			ImGui::Spring(0);
-			pBuilder->EndHeader();
-
-			for (auto& iid : node->vInputAttributes)
-			{
-				auto& attribute = findAttribute(iid);
-				auto alpha = ImGui::GetStyle().Alpha;
-				pBuilder->Input(iid);
-				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-				ax::Widgets::Icon(ImVec2(24.f, 24.f), ax::Drawing::IconType::Circle, attribute->linked, getAttributeColor(attribute->eSelectedType), ImColor(32, 32, 32, (int)(alpha * 255)));
-				ImGui::Spring(0);
-				ImGui::TextUnformatted(attribute->srName.c_str());
-				ImGui::Spring(0);
-				ImGui::PopStyleVar();
-				pBuilder->EndInput();
-			}
-
-			for (auto& oid : node->vOutputAttributes)
-			{
-				auto& attribute = findAttribute(oid);
-				auto alpha = ImGui::GetStyle().Alpha;
-				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-				pBuilder->Output(oid);
-				ImGui::Spring(0);
-				ImGui::TextUnformatted(attribute->srName.c_str());
-				ImGui::Spring(0);
-				ax::Widgets::Icon(ImVec2(24.f, 24.f), ax::Drawing::IconType::Circle, attribute->linked, getAttributeColor(attribute->eSelectedType), ImColor(32, 32, 32, (int)(alpha * 255)));
-				ImGui::PopStyleVar();
-				pBuilder->EndOutput();
-			}
+			ImGui::PopStyleVar();
+			pBuilder->EndInput();
 		}
-		else if (node->eNodeType == EMaterialEditorNodeType::eOperation)
-		{
 
+		for (auto& oid : node->vOutputAttributes)
+		{
+			auto& attribute = findAttribute(oid);
+			auto alpha = ImGui::GetStyle().Alpha;
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+			pBuilder->Output(oid);
+			ImGui::Spring(0);
+			ImGui::TextUnformatted(attribute->srName.c_str());
+			ImGui::Spring(0);
+			ax::Widgets::Icon(ImVec2(24.f, 24.f), ax::Drawing::IconType::Circle, attribute->linked, getAttributeColor(attribute->eSelectedType), ImColor(32, 32, 32, (int)(alpha * 255)));
+			ImGui::PopStyleVar();
+			pBuilder->EndOutput();
 		}
 
 		pBuilder->End();
 	}
 
+	// Process links
+	for (auto& link : vLinks)
+	{
+		auto& attribute = findAttribute(link->startPin);
+		ed::Link(link->id, link->startPin, link->endPin, getAttributeColor(attribute->eSelectedType), 2.0f);
+	}
+
+	if (!createNewNode)
+	{
+		if (ed::BeginCreate(ImColor(255, 255, 255), 2.0f))
+		{
+			// Creating new link
+			ed::PinId startPinId = 0, endPinId = 0;
+			if (ed::QueryNewLink(&startPinId, &endPinId))
+			{
+				auto& startPin = findAttribute(startPinId);
+				auto& endPin = findAttribute(endPinId);
+
+				newLinkPin = startPin ? startPin->id : endPin->id;
+
+				if (startPin->ePinKind == EMaterialEditorPinKind::eInput)
+				{
+					std::swap(startPin, endPin);
+					std::swap(startPinId, endPinId);
+				}
+
+				if (startPin && endPin)
+				{
+					if (endPin == startPin)
+					{
+						ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+					}
+					else if (endPin->ePinKind == startPin->ePinKind)
+					{
+						showLabel("x Incompatible Pin Kind", ImColor(45, 32, 32, 180));
+						ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+					}
+					else if (!canCreateLink(startPin, endPin))
+					{
+						showLabel("x Incompatible Pin Type", ImColor(45, 32, 32, 180));
+						ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
+					}
+					else
+					{
+						showLabel("+ Create Link", ImColor(32, 45, 32, 180));
+						if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
+							createLink(startPinId, endPinId);
+					}
+				}
+			}
+
+			ed::PinId pinId = 0;
+			if (ed::QueryNewNode(&pinId))
+			{
+				newLinkPin = findAttribute(pinId)->id;
+				if (newLinkPin)
+					showLabel("+ Create Node", ImColor(32, 45, 32, 180));
+
+				if (ed::AcceptNewItem())
+				{
+					createNewNode = true;
+					newNodeLinkPin = findAttribute(pinId)->id;
+					newLinkPin = 0;
+					ed::Suspend();
+					pNextPopup = "add node";
+					ed::Resume();
+				}
+			}
+		}
+		else
+			newLinkPin = 0;
+
+		ed::EndCreate();
+
+		if (ed::BeginDelete())
+		{
+			ed::LinkId linkId = 0;
+			while (ed::QueryDeletedLink(&linkId))
+			{
+				if (ed::AcceptDeletedItem())
+					destroyLink(linkId);
+			}
+
+			ed::NodeId nodeId = 0;
+			while (ed::QueryDeletedNode(&nodeId))
+			{
+				if (ed::AcceptDeletedItem())
+					destroyNode(nodeId);
+			}
+		}
+		ed::EndDelete();
+	}
+
 	ed::End();
+
+	if (pNextPopup)
+	{
+		ImGui::OpenPopup(pNextPopup);
+		pNextPopup = nullptr;
+	}
 
 	if (ImGui::BeginPopup("add node"))
 	{
 		makePopupMenuContent(vGroups);
+		createNewNode = false;
 		ImGui::EndPopup();
 	}
 }
@@ -350,20 +459,110 @@ void CMaterialEditorWindow::destroyNode(ax::NodeEditor::NodeId id)
 
 void CMaterialEditorWindow::createLink(ax::NodeEditor::PinId startPin, ax::NodeEditor::PinId endPin)
 {
-	// TODO: set attributes linked
-	auto pLink = std::make_unique<FMaterialEditorLink>();
-	pLink->id = nextId();
-	pLink->startPin = startPin;
-	pLink->endPin = endPin;
-	vLinks.emplace_back(std::move(pLink));
+	auto& lhs = findAttribute(startPin);
+	auto& rhs = findAttribute(endPin);
+
+	auto foundType = std::find(rhs->vTypes.begin(), rhs->vTypes.end(), lhs->eSelectedType);
+	if ((lhs->eSelectedType == rhs->eSelectedType || foundType != rhs->vTypes.end() || rhs->eSelectedType == EMaterialEditorValueType::eNone) && !rhs->linked)
+	{
+		auto& pNode = findNode(rhs->parent);
+		if (pNode)
+		{
+			std::vector<ed::PinId> nodeAttributes;
+			nodeAttributes.insert(nodeAttributes.end(), pNode->vInputAttributes.begin(), pNode->vInputAttributes.end());
+			nodeAttributes.insert(nodeAttributes.end(), pNode->vOutputAttributes.begin(), pNode->vOutputAttributes.end());
+
+			for (auto& aid : nodeAttributes)
+			{
+				auto& attrib = findAttribute(aid);
+				if (!attrib)
+					continue;
+
+				auto target_type = std::find(attrib->vTypes.begin(), attrib->vTypes.end(), lhs->eSelectedType);
+
+				if (attrib->vTypes.size() == 1)
+					attrib->eSelectedType = attrib->vTypes.front();
+				else
+				{
+					if (target_type != attrib->vTypes.end())
+						attrib->eSelectedType = *target_type;
+					else
+						attrib->eSelectedType = attrib->vTypes.at(attrib->defautlType);
+				}
+			}
+		}
+
+		lhs->linked = rhs->linked = true;
+
+		auto pLink = std::make_unique<FMaterialEditorLink>();
+		pLink->id = nextId();
+		pLink->startPin = startPin;
+		pLink->endPin = endPin;
+		vLinks.emplace_back(std::move(pLink));
+	}
 }
 
 void CMaterialEditorWindow::destroyLink(ax::NodeEditor::LinkId id)
 {
+	auto& link = findLink(id);
+	if (!link)
+		return;
+
+	auto& lhs = findAttribute(link->startPin);
+	auto& rhs = findAttribute(link->endPin);
+
+	lhs->linked = rhs->linked = false;
+
+	auto& pNode = findNode(rhs->parent);
+	if (pNode)
+	{
+		std::vector<ed::PinId> nodeAttributes;
+		nodeAttributes.insert(nodeAttributes.end(), pNode->vInputAttributes.begin(), pNode->vInputAttributes.end());
+		nodeAttributes.insert(nodeAttributes.end(), pNode->vOutputAttributes.begin(), pNode->vOutputAttributes.end());
+
+		for (auto& aid : nodeAttributes)
+		{
+			auto& attrib = findAttribute(aid);
+			if (!attrib)
+				continue;
+
+			if (attrib->vTypes.size() == 1)
+				attrib->eSelectedType = attrib->vTypes.front();
+			else
+				attrib->eSelectedType = attrib->vTypes.at(attrib->defautlType);
+		}
+	}
+
 	// TODO: remove attributes linked
 	qFreedIds.push(id.Get());
 	auto to_remove = std::remove_if(vLinks.begin(), vLinks.end(), [id = id](const std::unique_ptr<FMaterialEditorLink>& link) { return link->id == id; });
 	vLinks.erase(to_remove);
+}
+
+bool CMaterialEditorWindow::canCreateLink(const std::unique_ptr<FMaterialEditorAttribute>& lhs, const std::unique_ptr<FMaterialEditorAttribute>& rhs)
+{
+	if (lhs == rhs)
+		return false;
+
+	if (lhs->ePinKind == rhs->ePinKind || lhs->parent == rhs->parent)
+		return false;
+
+	// Check all avaliable types
+	auto targetType = std::find(rhs->vTypes.begin(), rhs->vTypes.end(), lhs->eSelectedType);
+	if (targetType == rhs->vTypes.end())
+		return false;
+
+	// Check is some target pins already linked, and type is selected
+	bool isTypeSelected{ false };
+	auto& pNode = findNode(rhs->parent);
+	for (auto& id : pNode->vInputAttributes)
+	{
+		auto& attr = findAttribute(id);
+		if (attr->linked && lhs->eSelectedType != attr->eSelectedType)
+			return false;
+	}
+
+	return true;
 }
 
 void CMaterialEditorWindow::onSetMaterial(CEvent& event)
