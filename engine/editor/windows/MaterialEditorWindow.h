@@ -73,12 +73,12 @@ namespace engine
 
 			void create() override;
 			void __draw(float fDt) override;
-		private:
-			uint32_t nextId();
 
 			std::unique_ptr<FMaterialEditorNode>& findNode(ax::NodeEditor::NodeId id);
 			std::unique_ptr<FMaterialEditorAttribute>& findAttribute(ax::NodeEditor::PinId id);
 			std::unique_ptr<FMaterialEditorLink>& findLink(ax::NodeEditor::LinkId id);
+		private:
+			uint32_t nextId();
 
 			ax::NodeEditor::NodeId createNode(const FMaterialEditorNodeCreateInfo& ci);
 			void destroyNode(ax::NodeEditor::NodeId id);
@@ -89,6 +89,7 @@ namespace engine
 			bool canCreateLink(const std::unique_ptr<FMaterialEditorAttribute>& lhs, const std::unique_ptr<FMaterialEditorAttribute>& rhs);
 
 			void onSetMaterial(CEvent& event);
+			void renderAttribute(ax::NodeEditor::PinId attr_id, bool hasInputs);
 			void makePopupMenuContent(const std::vector<FMaterialEditorGroupCreateInfo>& groups);
 		private:
 			size_t selected_material{ invalid_index };
@@ -96,6 +97,7 @@ namespace engine
 
 			const char* pNextPopup{ nullptr };
 			bool createNewNode{ false };
+			ax::NodeEditor::PinId newNodeLinkPin{ 0 };
 
 			std::queue<int32_t> qFreedIds;
 
@@ -104,7 +106,6 @@ namespace engine
 
 			std::vector<FMaterialEditorGroupCreateInfo> vGroups;
 
-			std::map<ax::NodeEditor::NodeId, float, FNodeIdLess> mNodeTouchTime;
 			std::vector<std::unique_ptr<FMaterialEditorNode>> vNodes;
 			std::vector<std::unique_ptr<FMaterialEditorAttribute>> vAttributes;
 			std::vector<std::unique_ptr<FMaterialEditorLink>> vLinks;

@@ -4,6 +4,7 @@
 #include "system/filesystem/filesystem.h"
 
 #include <imgui/imgui_node_editor_internal.h>
+#include <imgui/additional_widgets.h>
 #include "materialeditor/utilities/builders.h"
 #include "materialeditor/utilities/widgets.h"
 
@@ -121,33 +122,31 @@ void CMaterialEditorWindow::create()
 	config.SettingsFile = "materialEditorSettings.json";
 	config.UserPointer = this;
 
-	//config.LoadNodeSettings = [](ed::NodeId nodeId, char* data, void* userPointer) -> size_t
-	//{
-	//    auto self = static_cast<Example*>(userPointer);
-	//
-	//    auto node = self->FindNode(nodeId);
-	//    if (!node)
-	//        return 0;
-	//
-	//    if (data != nullptr)
-	//        memcpy(data, node->State.data(), node->State.size());
-	//    return node->State.size();
-	//};
-	//
-	//config.SaveNodeSettings = [](ed::NodeId nodeId, const char* data, size_t size, ed::SaveReasonFlags reason, void* userPointer) -> bool
-	//{
-	//    auto self = static_cast<Example*>(userPointer);
-	//
-	//    auto node = self->FindNode(nodeId);
-	//    if (!node)
-	//        return false;
-	//
-	//    node->State.assign(data, size);
-	//
-	//    self->TouchNode(nodeId);
-	//
-	//    return true;
-	//};
+	config.LoadNodeSettings = [](ed::NodeId nodeId, char* data, void* userPointer) -> size_t
+	{
+	    auto self = static_cast<CMaterialEditorWindow*>(userPointer);
+	
+	    auto& node = self->findNode(nodeId);
+	    if (!node)
+	        return 0;
+	
+	    if (data != nullptr)
+	        memcpy(data, node->srState.data(), node->srState.size());
+	    return node->srState.size();
+	};
+	
+	config.SaveNodeSettings = [](ed::NodeId nodeId, const char* data, size_t size, ed::SaveReasonFlags reason, void* userPointer) -> bool
+	{
+	    auto self = static_cast<CMaterialEditorWindow*>(userPointer);
+	
+	    auto& node = self->findNode(nodeId);
+	    if (!node)
+	        return false;
+	
+	    node->srState.assign(data, size);
+	
+	    return true;
+	};
 
 	pEditor = ed::CreateEditor(&config);
 	ed::SetCurrentEditor(pEditor);
@@ -160,21 +159,7 @@ void CMaterialEditorWindow::__draw(float fDt)
 	static ed::NodeId contextNodeId = 0;
 	static ed::LinkId contextLinkId = 0;
 	static ed::PinId  contextPinId = 0;
-	static ed::PinId newNodeLinkPin = 0;
 	static ed::PinId newLinkPin = 0;
-
-	const bool open_popup =
-		ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
-		ImGui::IsMouseClicked(ImGuiMouseButton_Right);
-
-	if (open_popup)
-		pNextPopup = "add node";
-
-	for (auto& [id, time] : mNodeTouchTime)
-	{
-		if (time > 0.0f)
-			time -= fDt;
-	}
 
 	ed::SetCurrentEditor(pEditor);
 	ed::Begin("Material editor");
@@ -192,32 +177,18 @@ void CMaterialEditorWindow::__draw(float fDt)
 		pBuilder->EndHeader();
 
 		for (auto& iid : node->vInputAttributes)
+			renderAttribute(iid, !node->vInputAttributes.empty());
+
+		if (node->eNodeType == EMaterialEditorNodeType::eSampler)
 		{
-			auto& attribute = findAttribute(iid);
-			auto alpha = ImGui::GetStyle().Alpha;
-			pBuilder->Input(iid);
-			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-			ax::Widgets::Icon(ImVec2(24.f, 24.f), ax::Drawing::IconType::Circle, attribute->linked, getAttributeColor(attribute->eSelectedType), ImColor(32, 32, 32, (int)(alpha * 255)));
-			ImGui::Spring(0);
-			ImGui::TextUnformatted(attribute->srName.c_str());
-			ImGui::Spring(0);
-			ImGui::PopStyleVar();
-			pBuilder->EndInput();
+			pBuilder->Middle();
+			ImGui::Spring(1, 0);
+			ImGui::Button("", ImVec2(64.f, 64.f));
+			ImGui::Spring(1, 0);
 		}
 
 		for (auto& oid : node->vOutputAttributes)
-		{
-			auto& attribute = findAttribute(oid);
-			auto alpha = ImGui::GetStyle().Alpha;
-			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-			pBuilder->Output(oid);
-			ImGui::Spring(0);
-			ImGui::TextUnformatted(attribute->srName.c_str());
-			ImGui::Spring(0);
-			ax::Widgets::Icon(ImVec2(24.f, 24.f), ax::Drawing::IconType::Circle, attribute->linked, getAttributeColor(attribute->eSelectedType), ImColor(32, 32, 32, (int)(alpha * 255)));
-			ImGui::PopStyleVar();
-			pBuilder->EndOutput();
-		}
+			renderAttribute(oid, !node->vInputAttributes.empty());
 
 		pBuilder->End();
 	}
@@ -285,9 +256,7 @@ void CMaterialEditorWindow::__draw(float fDt)
 					createNewNode = true;
 					newNodeLinkPin = findAttribute(pinId)->id;
 					newLinkPin = 0;
-					ed::Suspend();
 					pNextPopup = "add node";
-					ed::Resume();
 				}
 			}
 		}
@@ -315,20 +284,67 @@ void CMaterialEditorWindow::__draw(float fDt)
 		ed::EndDelete();
 	}
 
-	ed::End();
+	ed::Suspend();
+	if (ed::ShowNodeContextMenu(&contextNodeId))
+		pNextPopup = "node popup";
+	else if (ed::ShowPinContextMenu(&contextPinId))
+		pNextPopup = "attripute popup";
+	else if (ed::ShowLinkContextMenu(&contextLinkId))
+		pNextPopup = "link popup";
+	else if (ed::ShowBackgroundContextMenu())
+	{
+		pNextPopup = "add node";
+		newNodeLinkPin = 0;
+	}
+	ed::Resume();
 
+	ed::Suspend();
 	if (pNextPopup)
 	{
 		ImGui::OpenPopup(pNextPopup);
 		pNextPopup = nullptr;
 	}
+	ed::Resume();
 
+	ed::Suspend();
 	if (ImGui::BeginPopup("add node"))
 	{
 		makePopupMenuContent(vGroups);
 		createNewNode = false;
 		ImGui::EndPopup();
 	}
+	ed::Resume();
+
+	ed::Suspend();
+	if (ImGui::BeginPopup("node popup"))
+	{
+		if (ImGui::MenuItem("Delete"))
+			destroyNode(contextNodeId);
+
+		ImGui::EndPopup();
+	}
+	ed::Resume();
+
+	ed::Suspend();
+	if (ImGui::BeginPopup("attripute popup"))
+	{
+		if (ImGui::MenuItem("Break"));
+
+		ImGui::EndGroup();
+	}
+	ed::Resume();
+
+	ed::Suspend();
+	if (ImGui::BeginPopup("link popup"))
+	{
+		if (ImGui::MenuItem("Break"))
+			destroyLink(contextLinkId);
+
+		ImGui::EndPopup();
+	}
+	ed::Resume();
+
+	ed::End();
 }
 
 uint32_t CMaterialEditorWindow::nextId()
@@ -571,6 +587,168 @@ void CMaterialEditorWindow::onSetMaterial(CEvent& event)
 	selected_material = event.getParam<size_t>(Events::Editor::SelectMaterial);
 }
 
+void CMaterialEditorWindow::renderAttribute(ax::NodeEditor::PinId attr_id, bool hasInputs)
+{
+	auto& attribute = findAttribute(attr_id);
+	auto isInput = attribute->ePinKind == EMaterialEditorPinKind::eInput;
+	auto alpha = ImGui::GetStyle().Alpha;
+
+	if (isInput)
+		pBuilder->Input(attr_id);
+	else
+		pBuilder->Output(attr_id);
+
+	ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+
+	if (isInput)
+	{
+		ImGui::Spring(0);
+		ax::Widgets::Icon(ImVec2(24.f, 24.f), ax::Drawing::IconType::Circle, attribute->linked, getAttributeColor(attribute->eSelectedType), ImColor(32, 32, 32, (int)(alpha * 255)));
+		ImGui::Spring(0);
+	}
+
+	ImGui::PushItemWidth(100.f);
+	if ((attribute->linked && hasInputs) || (!isInput && hasInputs))
+		ImGui::TextUnformatted(attribute->srName.c_str());
+	else
+	{
+		switch (attribute->eSelectedType)
+		{
+		case EMaterialEditorValueType::eBool: {
+			static bool value{ false };
+			ImGui::Checkbox(attribute->srName.c_str(), &value);
+		} break;
+		case EMaterialEditorValueType::eFloat: {
+			static float value{ 0.f };
+			ImGui::DragFloat(attribute->srName.c_str(), &value);
+		} break;
+		case EMaterialEditorValueType::eVec2: {
+			static glm::vec2 value{ 0.f };
+			ImGui::DragFloat2(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eVec3: {
+			static glm::vec3 value{ 0.f };
+			ImGui::DragFloat3(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eVec4: {
+			static glm::vec4 value{ 0.f };
+			ImGui::DragFloat4(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eMat2: {
+			static glm::mat2 value{ 0.f };
+			ImGui::DragFloat2(attribute->srName.c_str(), glm::value_ptr(value[0]));
+			ImGui::DragFloat2(attribute->srName.c_str(), glm::value_ptr(value[1]));
+		}break;
+		case EMaterialEditorValueType::eMat3: {
+			static glm::mat3 value{ 0.f };
+			ImGui::DragFloat3(attribute->srName.c_str(), glm::value_ptr(value[0]));
+			ImGui::DragFloat3(attribute->srName.c_str(), glm::value_ptr(value[1]));
+			ImGui::DragFloat3(attribute->srName.c_str(), glm::value_ptr(value[2]));
+		}break;
+		case EMaterialEditorValueType::eMat4: {
+			static glm::mat4 value{ 0.f };
+			ImGui::DragFloat4(attribute->srName.c_str(), glm::value_ptr(value[0]));
+			ImGui::DragFloat4(attribute->srName.c_str(), glm::value_ptr(value[1]));
+			ImGui::DragFloat4(attribute->srName.c_str(), glm::value_ptr(value[2]));
+			ImGui::DragFloat4(attribute->srName.c_str(), glm::value_ptr(value[3]));
+		}break;
+		case EMaterialEditorValueType::eDouble: {
+			static double value{ 0.0 };
+			ImGui::DragDouble(attribute->srName.c_str(), &value);
+		}break;
+		case EMaterialEditorValueType::eDvec2: {
+			static glm::dvec2 value{ 0.0 };
+			ImGui::DragDouble2(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eDvec3: {
+			static glm::dvec3 value{ 0.0 };
+			ImGui::DragDouble3(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eDvec4: {
+			static glm::dvec4 value{ 0.0 };
+			ImGui::DragDouble4(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eDmat2: {
+			static glm::dmat2 value{ 0.0 };
+			ImGui::DragDouble2(attribute->srName.c_str(), glm::value_ptr(value[0]));
+			ImGui::DragDouble2(attribute->srName.c_str(), glm::value_ptr(value[1]));
+		}break;
+		case EMaterialEditorValueType::eDmat3: {
+			static glm::dmat3 value{ 0.0 };
+			ImGui::DragDouble3(attribute->srName.c_str(), glm::value_ptr(value[0]));
+			ImGui::DragDouble3(attribute->srName.c_str(), glm::value_ptr(value[1]));
+			ImGui::DragDouble3(attribute->srName.c_str(), glm::value_ptr(value[2]));
+		}break;
+		case EMaterialEditorValueType::eDmat4: {
+			static glm::dmat4 value{ 0.0 };
+			ImGui::DragDouble4(attribute->srName.c_str(), glm::value_ptr(value[0]));
+			ImGui::DragDouble4(attribute->srName.c_str(), glm::value_ptr(value[1]));
+			ImGui::DragDouble4(attribute->srName.c_str(), glm::value_ptr(value[2]));
+			ImGui::DragDouble4(attribute->srName.c_str(), glm::value_ptr(value[3]));
+		}break;
+		case EMaterialEditorValueType::eInt: {
+			static int value{ 0 };
+			ImGui::DragInt(attribute->srName.c_str(), &value);
+		} break;
+		case EMaterialEditorValueType::eIvec2: {
+			static glm::ivec2 value{ 0 };
+			ImGui::DragInt2(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eIvec3: {
+			static glm::ivec3 value{ 0 };
+			ImGui::DragInt3(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eIvec4: {
+			static glm::ivec4 value{ 0 };
+			ImGui::DragInt4(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eUInt: {
+			static unsigned int value{ 0 };
+			ImGui::DragUInt(attribute->srName.c_str(), &value);
+		} break;
+		case EMaterialEditorValueType::eUvec2: {
+			static glm::uvec2 value{ 0 };
+			ImGui::DragUInt2(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eUvec3: {
+			static glm::uvec3 value{ 0 };
+			ImGui::DragUInt3(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		case EMaterialEditorValueType::eUvec4: {
+			static glm::uvec4 value{ 0 };
+			ImGui::DragUInt4(attribute->srName.c_str(), glm::value_ptr(value));
+		}break;
+		}
+	}
+	ImGui::PopItemWidth();
+
+	static bool wasActive = false;
+	if (ImGui::IsItemActive() && !wasActive)
+	{
+		ed::EnableShortcuts(false);
+		wasActive = true;
+	}
+	else if (!ImGui::IsItemActive() && wasActive)
+	{
+		ed::EnableShortcuts(true);
+		wasActive = false;
+	}
+
+	if (!isInput)
+	{
+		ImGui::Spring(0);
+		ax::Widgets::Icon(ImVec2(24.f, 24.f), ax::Drawing::IconType::Circle, attribute->linked, getAttributeColor(attribute->eSelectedType), ImColor(32, 32, 32, (int)(alpha * 255)));
+		ImGui::Spring(0);
+	}
+
+	ImGui::PopStyleVar();
+
+	if (isInput)
+		pBuilder->EndInput();
+	else
+		pBuilder->EndOutput();
+}
+
 void CMaterialEditorWindow::makePopupMenuContent(const std::vector<FMaterialEditorGroupCreateInfo>& groups)
 {
 	const ImVec2 click_pos = ImGui::GetMousePosOnOpeningCurrentPopup();
@@ -594,6 +772,27 @@ void CMaterialEditorWindow::makePopupMenuContent(const std::vector<FMaterialEdit
 					{
 						auto id = createNode(node);
 						ed::SetNodePosition(id, click_pos);
+
+						auto& pNode = findNode(id);
+						if (auto startPin = newNodeLinkPin)
+						{
+							auto& startAttribute = findAttribute(startPin);
+							auto& vAttributes = startAttribute->ePinKind == EMaterialEditorPinKind::eInput ? pNode->vOutputAttributes : pNode->vInputAttributes;
+
+							for (auto& oid : vAttributes)
+							{
+								auto& endAttribute = findAttribute(oid);
+								if (canCreateLink(startAttribute, endAttribute))
+								{
+									auto endPin = oid;
+									if (startAttribute->ePinKind == EMaterialEditorPinKind::eInput)
+										std::swap(startPin, endPin);
+
+									createLink(startPin, endPin);
+									break;
+								}
+							}
+						}
 					}
 				}
 				ImGui::EndMenu();
