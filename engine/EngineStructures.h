@@ -48,6 +48,8 @@ namespace engine
 	{
 		int32_t width{ 0 };
 		int32_t height{ 0 };
+		int32_t actualWidth{ 0 };
+		int32_t actualHeight{ 0 };
 
 		std::string srName;
 	};

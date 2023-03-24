@@ -118,7 +118,7 @@ void CDevice::create(const FEngineCreateInfo& createInfo)
     createDevice();
     createMemoryAllocator(createInfo);
     createPipelineCache();
-    createSwapchain();
+    createSwapchain(createInfo.window.actualWidth, createInfo.window.actualHeight);
 
     viewportExtent = swapchainExtent;
 }
@@ -286,7 +286,7 @@ void CDevice::createPipelineCache()
     log_cerror(VkHelper::check(res), "Cannot create pipeline cache.");
 }
 
-void CDevice::createSwapchain()
+void CDevice::createSwapchain(int32_t width, int32_t height)
 {
     vk::Result res;
     vk::SwapchainKHR oldSwapchain = swapChain;
@@ -296,7 +296,7 @@ void CDevice::createSwapchain()
     auto surfaceCaps = vkPhysical.getSurfaceCapabilitiesKHR(vkSurface);
     vk::SurfaceFormatKHR surfaceFormat = VkHelper::chooseSwapSurfaceFormat(swapChainSupport.formats);
     vk::PresentModeKHR presentMode = VkHelper::chooseSwapPresentMode(swapChainSupport.presentModes);
-    swapchainExtent = chooseSwapExtent(swapChainSupport.capabilities);
+    swapchainExtent = chooseSwapExtent(swapChainSupport.capabilities, width, height);
 
     uint32_t imageCount = framesInFlight;
     if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
@@ -435,13 +435,13 @@ void CDevice::updateCommandPools()
     }
 }
 
-void CDevice::recreateSwapchain()
+void CDevice::recreateSwapchain(int32_t width, int32_t height)
 {
     log_debug("Recreating vulkan swapchain.");
     
     commandPools.clear();
     cleanupSwapchain();
-    createSwapchain();
+    createSwapchain(width, height);
     currentFrame = 0;
 }
 
@@ -1265,13 +1265,13 @@ FSwapChainSupportDetails CDevice::querySwapChainSupport(const vk::PhysicalDevice
     return details;
 }
 
-vk::Extent2D CDevice::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
+vk::Extent2D CDevice::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, int32_t width, int32_t height)
 {
     if (capabilities.currentExtent.width != (std::numeric_limits<uint32_t>::max)())
         return capabilities.currentExtent;
     else
     {
-        vk::Extent2D actualExtent = { static_cast<uint32_t>(CWindowHandle::iWidth), static_cast<uint32_t>(CWindowHandle::iHeight) };
+        vk::Extent2D actualExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
 
         actualExtent.width = (std::max)(capabilities.minImageExtent.width, (std::min)(capabilities.maxImageExtent.width, actualExtent.width));
         actualExtent.height = (std::max)(capabilities.minImageExtent.height, (std::min)(capabilities.maxImageExtent.height, actualExtent.height));

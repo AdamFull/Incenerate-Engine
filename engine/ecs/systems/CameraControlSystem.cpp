@@ -150,11 +150,16 @@ void CCameraControlSystem::onKeyInput(CEvent& event)
 
 void CCameraControlSystem::onMouseInput(CEvent& event)
 {
+	auto& window = EGEngine->getWindow();
+
+	int32_t wwidth{ 0 }, wheight{ 0 };
+	window->getWindowSize(&wwidth, &wheight);
+
 	auto fx = event.getParam<float>(Events::Input::MouseX);
 	auto fy = event.getParam<float>(Events::Input::MouseY);
 
-	float xmax = static_cast<float>(CWindowHandle::iWidth);
-	float ymax = static_cast<float>(CWindowHandle::iHeight);
+	float xmax = static_cast<float>(wwidth);
+	float ymax = static_cast<float>(wheight);
 
 	oldPos = cursorPos;
 	cursorPos = {

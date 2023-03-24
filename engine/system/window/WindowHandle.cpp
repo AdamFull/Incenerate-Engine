@@ -6,9 +6,6 @@
 using namespace engine::system::window;
 using namespace engine::ecs;
 
-int32_t CWindowHandle::iWidth{ 0 }, CWindowHandle::iHeight{ 0 };
-bool CWindowHandle::bWasResized{ false };
-
 CWindowHandle::~CWindowHandle()
 {
     destroy();
@@ -41,6 +38,9 @@ void CWindowHandle::destroy()
 bool CWindowHandle::begin()
 {
     bool bKeyStateChange{ false };
+
+    if(!isMinimized())
+        bWasResized = false;
 
     SDL_Event event;
     vWinEvents.clear();
@@ -157,15 +157,31 @@ bool CWindowHandle::begin()
     return bRunning;
 }
 
+void CWindowHandle::createContext(void*& pContext)
+{
+    pContext = SDL_GL_CreateContext(pWindow);
+    SDL_GL_MakeCurrent(pWindow, pContext);
+}
+
+const std::vector<SDL_Event>& CWindowHandle::getWinEvents()
+{
+    return vWinEvents;
+}
+
+SDL_Window* CWindowHandle::getWindowPointer()
+{
+    return pWindow;
+}
+
 bool CWindowHandle::isMinimized()
 {
     auto flags = SDL_GetWindowFlags(pWindow);
     return flags & SDL_WINDOW_MINIMIZED;
 }
 
-const std::vector<SDL_Event>& CWindowHandle::getWinEvents()
+bool CWindowHandle::wasResized()
 {
-    return vWinEvents;
+    return bWasResized;
 }
 
 void CWindowHandle::getWindowSize(int32_t* width, int32_t* height)
@@ -174,18 +190,17 @@ void CWindowHandle::getWindowSize(int32_t* width, int32_t* height)
     *height = iHeight;
 }
 
-SDL_Window* CWindowHandle::getWindowPointer()
-{
-    return pWindow;
-}
-
-void CWindowHandle::createContext(void*& pContext)
-{
-    pContext = SDL_GL_CreateContext(pWindow);
-    SDL_GL_MakeCurrent(pWindow, pContext);
-}
-
 float CWindowHandle::getAspect()
 {
     return static_cast<float>(iWidth) / static_cast<float>(iHeight);
+}
+
+int32_t CWindowHandle::getWidth()
+{
+    return iWidth;
+}
+
+int32_t CWindowHandle::getHeight()
+{
+    return iHeight;
 }

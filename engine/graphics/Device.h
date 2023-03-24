@@ -24,7 +24,7 @@ namespace engine
 
 			void updateCommandPools();
 
-            void recreateSwapchain();
+            void recreateSwapchain(int32_t width, int32_t height);
             void nillViewportFlag();
 
             inline void GPUWait() { vkDevice.waitIdle(); }
@@ -280,12 +280,12 @@ namespace engine
             void createSurface();
             void createDevice();
             void createPipelineCache();
-            void createSwapchain();
+            void createSwapchain(int32_t width, int32_t height);
 
             void cleanupSwapchain();
 
             FSwapChainSupportDetails querySwapChainSupport(const vk::PhysicalDevice& device);
-            vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surfaceCapabilities);
+            vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surfaceCapabilities, int32_t width, int32_t height);
 
             vk::PhysicalDevice getPhysicalDevice(const std::vector<const char*>& deviceExtensions);
             std::vector<vk::PhysicalDevice> getAvaliablePhysicalDevices(const std::vector<const char*>& deviceExtensions);

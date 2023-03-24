@@ -28,6 +28,8 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 {
 	eAPI = createInfo.eAPI;
 
+    pWindow->getWindowSize(const_cast<int32_t*>(&createInfo.window.actualWidth), const_cast<int32_t*>(&createInfo.window.actualHeight));
+
     pImageManager = std::make_unique<CObjectManager<CImage>>();
     pShaderManager = std::make_unique<CObjectManager<CShaderObject>>();
     pMaterialManager = std::make_unique<CObjectManager<CMaterial>>();
@@ -356,9 +358,8 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
 
     if (bSwapchain)
     {
-        pDevice->recreateSwapchain();
+        pDevice->recreateSwapchain(pWindow->getWidth(), pWindow->getHeight());
         imageIndex = 0;
-        CWindowHandle::bWasResized = false;
     }
 
     for (auto& [name, stage] : mStageInfos)
@@ -424,7 +425,7 @@ void CAPIHandle::end(float fDT)
     catch (vk::OutOfDateKHRError err) { resultPresent = vk::Result::eErrorOutOfDateKHR; }
     catch (vk::SystemError err) { log_error("failed to present swap chain image!"); }
 
-    if (resultPresent == vk::Result::eSuboptimalKHR || resultPresent == vk::Result::eErrorOutOfDateKHR || CWindowHandle::bWasResized)
+    if (resultPresent == vk::Result::eSuboptimalKHR || resultPresent == vk::Result::eErrorOutOfDateKHR || pWindow->wasResized())
         reCreate(true, true);
 
     //pQueryPool->takeResult();

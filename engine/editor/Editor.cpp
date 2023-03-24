@@ -567,11 +567,16 @@ void CEditor::save_editor()
 
 void CEditor::baseInitialize()
 {   
+    auto& window = EGEngine->getWindow();
+
+    int32_t wwidth{ 0 }, wheight{ 0 };
+    window->getWindowSize(&wwidth, &wheight);
+
     // Dimensions
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-    io.DisplaySize = ImVec2(static_cast<float>(CWindowHandle::iWidth), static_cast<float>(CWindowHandle::iHeight));
+    io.DisplaySize = ImVec2(static_cast<float>(wwidth), static_cast<float>(wheight));
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
     Themes::cinder();
