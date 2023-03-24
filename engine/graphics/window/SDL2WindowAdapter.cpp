@@ -1,30 +1,33 @@
-#include "WindowHandle.h"
+#include "SDL2WindowAdapter.h"
 
 #include <utility/logger/logger.h>
 #include "Engine.h"
+#include "SDL2KeycodeHelper.hpp"
 
-using namespace engine::system::window;
+#include <SDL_vulkan.h>
+
+using namespace engine::graphics;
 using namespace engine::ecs;
 
-CWindowHandle::~CWindowHandle()
+CSDL2WindowAdapter::~CSDL2WindowAdapter()
 {
-    destroy();
+	destroy();
 }
 
-void CWindowHandle::create(const FWindowCreateInfo& createInfo)
+void CSDL2WindowAdapter::create(const FWindowCreateInfo& createInfo)
 {
     uint32_t flags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
     iWidth = createInfo.width;
     iHeight = createInfo.height;
-    
+
     SDL_Init(SDL_INIT_VIDEO);
     pWindow = SDL_CreateWindow(createInfo.srName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, iWidth, iHeight, flags);
     log_cerror((pWindow != nullptr), "Could not create window.");
     log_info("Created window: [name: {}, extent: {}x{}, aspect: {}]", createInfo.srName, iWidth, iHeight, getAspect());
 }
 
-void CWindowHandle::destroy()
+void CSDL2WindowAdapter::destroy()
 {
     if (pWindow)
     {
@@ -35,11 +38,11 @@ void CWindowHandle::destroy()
     }
 }
 
-bool CWindowHandle::begin()
+bool CSDL2WindowAdapter::processEvents()
 {
     bool bKeyStateChange{ false };
 
-    if(!isMinimized())
+    if (!isMinimized())
         bWasResized = false;
 
     SDL_Event event;
@@ -66,7 +69,7 @@ bool CWindowHandle::begin()
         case SDL_KEYUP:
         case SDL_KEYDOWN:
         {
-            bKeyStateChange |= mKeys.update(event.key);
+            bKeyStateChange |= mKeys.update(keyboardCodeToEngineCode(event.key.keysym.scancode), event.key.state);
         } break;
 
         case SDL_TEXTINPUT:
@@ -76,30 +79,26 @@ bool CWindowHandle::begin()
         case SDL_CONTROLLERBUTTONUP:
         case SDL_CONTROLLERBUTTONDOWN:
         {
-            bKeyStateChange |= mKeys.update(event.cbutton);
+            bKeyStateChange |= mKeys.update(gamepadCodeToEngineCode((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state);
         } break;
 
         case SDL_MOUSEBUTTONUP:
         case SDL_MOUSEBUTTONDOWN:
         {
-            bKeyStateChange |= mKeys.update(event.button);
+            bKeyStateChange |= mKeys.update(mouseCodeToEngineCode(event.button.button), event.button.state);
         };
 
         case SDL_MOUSEWHEEL:
         {
-            //FWindowCallback::OnMouseWheel(event.wheel.x, event.wheel.y);
         } break;
 
         case SDL_FINGERMOTION:
         {
-            //FWindowCallback::OnCursorMove(event.tfinger.dx, event.tfinger.dy);
         } break;
 
         case SDL_CONTROLLERTOUCHPADMOTION:
         {
             static float controller_xold{ 0.f }, controller_yold{ 0.f };
-
-            //FWindowCallback::OnCursorMove(controller_xold - static_cast<float>(event.ctouchpad.x), controller_yold - static_cast<float>(event.ctouchpad.y));
 
             controller_xold = event.ctouchpad.x;
             controller_yold = event.ctouchpad.y;
@@ -117,13 +116,11 @@ bool CWindowHandle::begin()
         case SDL_FINGERDOWN:
         case SDL_FINGERUP:
         {
-            //FWindowCallback::OnCursorInput(event.tfinger.x, event.tfinger.y);
         } break;
 
         case SDL_CONTROLLERTOUCHPADDOWN:
         case SDL_CONTROLLERTOUCHPADUP:
         {
-            //FWindowCallback::OnCursorInput(event.ctouchpad.x, event.ctouchpad.y);
         } break;
 
         case SDL_CONTROLLERAXISMOTION:
@@ -157,50 +154,47 @@ bool CWindowHandle::begin()
     return bRunning;
 }
 
-void CWindowHandle::createContext(void*& pContext)
+void CSDL2WindowAdapter::createSurface(const vk::Instance& instance, vk::SurfaceKHR& surface, vk::AllocationCallbacks* allocator)
 {
-    pContext = SDL_GL_CreateContext(pWindow);
-    SDL_GL_MakeCurrent(pWindow, pContext);
+    VkSurfaceKHR rawSurfaceKHR{ VK_NULL_HANDLE };
+    SDL_Vulkan_CreateSurface(pWindow, instance, &rawSurfaceKHR);
+    surface = rawSurfaceKHR;
 }
 
-const std::vector<SDL_Event>& CWindowHandle::getWinEvents()
+std::vector<const char*> CSDL2WindowAdapter::getWindowExtensions(bool validation)
 {
-    return vWinEvents;
+    uint32_t extensionCount{ 0 };
+    std::vector<const char*> extensions{};
+
+    if (SDL_Vulkan_GetInstanceExtensions(pWindow, &extensionCount, nullptr))
+    {
+        extensions.resize(extensionCount);
+        SDL_Vulkan_GetInstanceExtensions(pWindow, &extensionCount, extensions.data());
+    }
+
+    if (validation)
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+    return extensions;
 }
 
-SDL_Window* CWindowHandle::getWindowPointer()
-{
-    return pWindow;
-}
-
-bool CWindowHandle::isMinimized()
+bool CSDL2WindowAdapter::isMinimized()
 {
     auto flags = SDL_GetWindowFlags(pWindow);
     return flags & SDL_WINDOW_MINIMIZED;
 }
 
-bool CWindowHandle::wasResized()
+bool CSDL2WindowAdapter::wasResized()
 {
     return bWasResized;
 }
 
-void CWindowHandle::getWindowSize(int32_t* width, int32_t* height)
+void* CSDL2WindowAdapter::getHandle()
 {
-    *width = iWidth;
-    *height = iHeight;
+    return pWindow;
 }
 
-float CWindowHandle::getAspect()
+const std::vector<SDL_Event>& CSDL2WindowAdapter::getWinEvents()
 {
-    return static_cast<float>(iWidth) / static_cast<float>(iHeight);
-}
-
-int32_t CWindowHandle::getWidth()
-{
-    return iWidth;
-}
-
-int32_t CWindowHandle::getHeight()
-{
-    return iHeight;
+    return vWinEvents;
 }

@@ -1,6 +1,5 @@
 #include "APIHandle.h"
 
-#include "system/window/WindowHandle.h"
 #include "system/filesystem/filesystem.h"
 #include "Engine.h"
 
@@ -12,7 +11,6 @@
 using namespace engine::graphics;
 using namespace engine::system;
 using namespace engine::ecs;
-using namespace engine::system::window;
 
 CAPIHandle::CAPIHandle(winhandle_t window)
 {
@@ -37,7 +35,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     pRenderStageManager = std::make_unique<CObjectManager<CRenderStage>>();
 
 	pDevice = std::make_unique<CDevice>(this);
-	pDevice->create(createInfo);
+	pDevice->create(createInfo, pWindow);
 
     pLoader = std::make_unique<CShaderLoader>(pDevice.get());
     pLoader->create();
@@ -337,7 +335,7 @@ void CAPIHandle::forceReleaseResources()
 
 void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
 {
-    //ReCreation guide
+    // ReCreation guide
     // 
     // re create viewport only:
     // 1. gpu wait
@@ -354,7 +352,7 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
     pDevice->GPUWait();
 
     while (pWindow->isMinimized())
-        pWindow->begin();
+        pWindow->processEvents();
 
     if (bSwapchain)
     {

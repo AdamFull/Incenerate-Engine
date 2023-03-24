@@ -3,9 +3,6 @@
 #include <set>
 
 #include "Engine.h"
-#include "system/window/WindowHandle.h"
-
-#include <SDL_vulkan.h>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -37,25 +34,6 @@ bool VkHelper::checkValidationLayerSupport(const std::vector<const char*>& valid
     }
 
     return layerFound;
-}
-
-std::vector<const char*> VkHelper::getRequiredExtensions(bool validation)
-{
-    auto window = CEngine::getInstance()->getWindow()->getWindowPointer();
-
-    uint32_t extensionCount{ 0 };
-    std::vector<const char*> extensions{};
-
-    if (SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, nullptr))
-    {
-        extensions.resize(extensionCount);
-        SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensions.data());
-    }
-
-    if (validation)
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
-    return extensions;
 }
 
 bool VkHelper::checkDeviceExtensionSupport(const vk::PhysicalDevice& device, const std::vector<const char*>& deviceExtensions)

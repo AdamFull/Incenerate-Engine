@@ -18,7 +18,7 @@ namespace engine
             CDevice(CAPIHandle* api);
 			~CDevice();
 
-			void create(const FEngineCreateInfo& createInfo);
+			void create(const FEngineCreateInfo& createInfo, IWindowAdapter* window);
 
 			static VKAPI_ATTR VkBool32 VKAPI_CALL validationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT*, void*);
 
@@ -275,9 +275,9 @@ namespace engine
 
         private:
             void createMemoryAllocator(const FEngineCreateInfo& createInfo);
-            void createInstance(const FEngineCreateInfo& createInfo);
+            void createInstance(const FEngineCreateInfo& createInfo, IWindowAdapter* window);
             void createDebugCallback();
-            void createSurface();
+            void createSurface(IWindowAdapter* window);
             void createDevice();
             void createPipelineCache();
             void createSwapchain(int32_t width, int32_t height);

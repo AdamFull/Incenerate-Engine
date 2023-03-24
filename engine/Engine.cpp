@@ -2,10 +2,10 @@
 #include "system/filesystem/filesystem.h"
 
 #include "game/SceneSerializer.h"
+#include "graphics/window/SDL2WindowAdapter.h"
 
 using namespace engine;
 using namespace engine::editor;
-using namespace engine::ecs;
 using namespace engine::game;
 using namespace engine::graphics;
 using namespace engine::system;
@@ -51,7 +51,7 @@ void CEngine::create()
 	pScripting = std::make_unique<CScriptingCore>();
 	pScripting->create();
 
-	pWindow = std::make_unique<CWindowHandle>();
+	pWindow = std::make_unique<CSDL2WindowAdapter>();
 	pWindow->create(createInfo.window);
 
 	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
@@ -81,7 +81,7 @@ void CEngine::beginEngineLoop()
 	float dt{ 0.f };
 
 	//pLoaderThread->wait();
-	while (pWindow->begin())
+	while (pWindow->processEvents())
 	{
 		auto commandBuffer = pGraphics->begin();
 		

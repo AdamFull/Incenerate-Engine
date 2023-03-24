@@ -39,5 +39,7 @@ namespace engine
 		class CCommandBuffer;
 		class CCommandPool;
 		class CVertexBufferObject;
+
+		class IWindowAdapter;
 	}
 }

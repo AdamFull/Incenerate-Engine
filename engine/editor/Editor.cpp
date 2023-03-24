@@ -30,6 +30,10 @@
 #include "game/SceneGraph.hpp"
 #include "game/SceneSerializer.h"
 
+#include "graphics/window/SDL2WindowAdapter.h"
+
+#include <SDL2/SDL.h>
+
 constexpr const char* editor_local_data = "editorloc";
 
 namespace engine
@@ -116,7 +120,7 @@ void CEditor::create()
     vEditorWindows.emplace_back(std::make_unique<CRenderDebugWindow>("Render Debug Window"));
     vEditorWindows.emplace_back(std::make_unique<CMaterialEditorWindow>("Material editor"));
 
-    ImGui_ImplSDL2_InitForVulkan(EGWindow->getWindowPointer());
+    ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window*>(EGWindow->getHandle()));
     ImGui_ImplVulkan_InitInfo init_info = {};
     init_info.Instance = device->getVkInstance();
     init_info.PhysicalDevice = device->getPhysical();
@@ -208,7 +212,9 @@ void CEditor::newFrame(float fDt)
     ImGui::NewFrame();
     ImGuizmo::BeginFrame();
 
-    auto& events = EGWindow->getWinEvents();
+    auto window = static_cast<CSDL2WindowAdapter*>(EGWindow.get());
+
+    auto& events = window->getWinEvents();
     for (auto& sevent : events)
         ImGui_ImplSDL2_ProcessEvent(&sevent);
 

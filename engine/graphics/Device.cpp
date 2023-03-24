@@ -1,10 +1,8 @@
 #include "Engine.h"
-#include "system/window/WindowHandle.h"
 #include "buffers/CommandBuffer.h"
 
 #include <set>
 
-#include <SDL_vulkan.h>
 #include <vulkan/vulkan_to_string.hpp>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -101,7 +99,7 @@ CDevice::~CDevice()
     pAllocator = nullptr;
 }
 
-void CDevice::create(const FEngineCreateInfo& createInfo)
+void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window)
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
@@ -112,9 +110,9 @@ void CDevice::create(const FEngineCreateInfo& createInfo)
 
     log_debug("Validation state: {}", bValidation);
    
-    createInstance(createInfo);
+    createInstance(createInfo, window);
     createDebugCallback();
-    createSurface();
+    createSurface(window);
     createDevice();
     createMemoryAllocator(createInfo);
     createPipelineCache();
@@ -140,12 +138,12 @@ void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
     vmaAlloc = vma::createAllocator(createInfo);
 }
 
-void CDevice::createInstance(const FEngineCreateInfo& createInfo)
+void CDevice::createInstance(const FEngineCreateInfo& createInfo, IWindowAdapter* window)
 {
     if (bValidation && !VkHelper::checkValidationLayerSupport(validationLayers))
         log_error("Validation layers requested, but not available!");
 
-    auto extensions = VkHelper::getRequiredExtensions(bValidation);
+    auto extensions = window->getWindowExtensions(bValidation);
 
     auto vkVersion = getVulkanVersion(createInfo.eAPI);
 
@@ -199,13 +197,10 @@ void CDevice::createDebugCallback()
         log_error("failed to set up debug callback!");
 }
 
-void CDevice::createSurface()
+void CDevice::createSurface(IWindowAdapter* window)
 {
-    auto window = CEngine::getInstance()->getWindow()->getWindowPointer();
     log_cerror(vkInstance, "Unable to create surface, cause vulkan instance is not valid");
-    VkSurfaceKHR rawSurfaceKHR{ VK_NULL_HANDLE };
-    SDL_Vulkan_CreateSurface(window, vkInstance, &rawSurfaceKHR);
-    vkSurface = rawSurfaceKHR;
+    window->createSurface(vkInstance, vkSurface, pAllocator);
     log_cerror(vkSurface, "Surface creation failed");
 }
 

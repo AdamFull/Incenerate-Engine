@@ -1,7 +1,6 @@
 #include "CameraControlSystem.h"
 
 #include "Engine.h"
-#include "system/window/WindowHandle.h"
 
 #include "ecs/components/components.h"
 
@@ -10,7 +9,7 @@
 #include <Helpers.h>
 
 using namespace engine::ecs;
-using namespace engine::system::window;
+using namespace engine::graphics;
 
 // TODO: it's temporary implementation. Maybe need to create special camera controller?
 

@@ -6,6 +6,7 @@
 #include "EngineStructures.h"
 
 #include "shader/ShaderLoader.h"
+#include "graphics/window/WindowAdapter.h"
 #include "graphics/image/Image.h"
 #include "rendering/RenderStage.h"
 #include "rendering/material/Material.h"
@@ -24,7 +25,7 @@ namespace engine
 
 	namespace graphics
 	{
-		using winhandle_t = system::window::CWindowHandle*;
+		using winhandle_t = IWindowAdapter*;
 		class CAPIHandle
 		{
 		public:

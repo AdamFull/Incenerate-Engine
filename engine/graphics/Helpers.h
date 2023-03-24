@@ -20,7 +20,6 @@ namespace engine
 
 			static bool check(vk::Result result);
 			static bool checkValidationLayerSupport(const std::vector<const char*>& validationLayers);
-			static std::vector<const char*> getRequiredExtensions(bool validation = false);
 
 			static bool checkDeviceExtensionSupport(const vk::PhysicalDevice& device, const std::vector<const char*>& deviceExtensions);
 

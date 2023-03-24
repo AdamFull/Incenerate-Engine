@@ -1,8 +1,8 @@
 #pragma once
 
 #include "EngineStructures.h"
-#include "system/window/WindowHandle.h"
 #include "graphics/APIHandle.h"
+#include "graphics/window/WindowAdapter.h"
 #include "audio/AudioCore.h"
 #include "physics/PhysicsCore.h"
 #include "event/EventManager.hpp"
@@ -33,7 +33,7 @@ namespace engine
 	};
 
 	using editorptr_t = std::unique_ptr<editor::CEditor>;
-	using winptr_t = std::unique_ptr<system::window::CWindowHandle>;
+	using winptr_t = std::unique_ptr<graphics::IWindowAdapter>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
 	using audiocore_t = std::unique_ptr<audio::CAudioCore>;
 	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
