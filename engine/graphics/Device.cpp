@@ -13,10 +13,12 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 using namespace engine::graphics;
 using namespace engine::system::window;
 
-std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
-std::vector<const char*> deviceExtensions{ 
+std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation", "VK_LAYER_KHRONOS_synchronization2" };
+std::vector<const char*> deviceExtensions { 
     VK_KHR_SWAPCHAIN_EXTENSION_NAME, 
     VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+    VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
+    VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
     VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME
 };
 
@@ -246,11 +248,20 @@ void CDevice::createDevice()
     vk12features.shaderOutputViewportIndex = true;
     vk12features.pNext = vkVersion > VK_API_VERSION_1_2 ? &vk13features : nullptr;
 
+    vk::PhysicalDeviceSynchronization2FeaturesKHR synchronizationFeatures{};
+    synchronizationFeatures.synchronization2 = true;
+    synchronizationFeatures.pNext = vkVersion > VK_API_VERSION_1_1 ? &vk12features : nullptr;
+
     auto createInfo = vk::DeviceCreateInfo{};
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.pNext = vkVersion > VK_API_VERSION_1_1 ? &vk12features : nullptr;
+
+    if (vkVersion > VK_API_VERSION_1_2)
+        createInfo.pNext = &vk12features;
+    else
+        createInfo.pNext = &synchronizationFeatures;
+
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
@@ -724,45 +735,14 @@ void CDevice::transitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk
     if (!prepareTransferImageLayoutBarrier(barrier))
         log_error("Unsupported layout transition!");
     
-    auto eAPI = pAPI->getAPI();
+    vk::DependencyInfo depInfo{};
+    depInfo.imageMemoryBarrierCount = 1;
+    depInfo.pImageMemoryBarriers = &barrier;
+    depInfo.memoryBarrierCount = 0;
+    depInfo.pBufferMemoryBarriers = nullptr;
+    depInfo.dependencyFlags = vk::DependencyFlagBits::eByRegion;
 
-    if (eAPI == ERenderApi::eVulkan_1_3)
-    {
-        vk::DependencyInfo depInfo{};
-        depInfo.imageMemoryBarrierCount = 1;
-        depInfo.pImageMemoryBarriers = &barrier;
-        depInfo.memoryBarrierCount = 0;
-        depInfo.pBufferMemoryBarriers = nullptr;
-        depInfo.dependencyFlags = vk::DependencyFlagBits::eByRegion;
-
-        commandBuffer.pipelineBarrier2(depInfo);
-    }
-    else
-    {
-        auto srcStageMask = static_cast<vk::PipelineStageFlags>((uint64_t)barrier.srcStageMask);
-        auto dstStageMask = static_cast<vk::PipelineStageFlags>((uint64_t)barrier.dstStageMask);
-
-        vk::ImageMemoryBarrier memoryBarrier{};
-        memoryBarrier.newLayout = barrier.newLayout;
-        memoryBarrier.oldLayout = barrier.oldLayout;
-        memoryBarrier.srcQueueFamilyIndex = barrier.srcQueueFamilyIndex;
-        memoryBarrier.dstQueueFamilyIndex = barrier.dstQueueFamilyIndex;
-        memoryBarrier.setSrcAccessMask(static_cast<vk::AccessFlags>((uint64_t)barrier.srcAccessMask));
-        memoryBarrier.setDstAccessMask(static_cast<vk::AccessFlags>((uint64_t)barrier.dstAccessMask));
-        memoryBarrier.image = barrier.image;
-        memoryBarrier.subresourceRange = barrier.subresourceRange;
-        
-        commandBuffer.pipelineBarrier(
-            srcStageMask,
-            dstStageMask,
-            vk::DependencyFlagBits::eByRegion,
-            0,
-            nullptr,
-            0,
-            nullptr,
-            1,
-            &memoryBarrier);
-    }
+    commandBuffer.pipelineBarrier2(depInfo);
 }
 
 void CDevice::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
@@ -770,45 +750,14 @@ void CDevice::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk
     if (!prepareGraphicsImageLayoutBarrier(barrier))
         log_error("Unsupported layout transition!");
 
-    auto eAPI = pAPI->getAPI();
+    vk::DependencyInfo depInfo{};
+    depInfo.imageMemoryBarrierCount = 1;
+    depInfo.pImageMemoryBarriers = &barrier;
+    depInfo.memoryBarrierCount = 0;
+    depInfo.pBufferMemoryBarriers = nullptr;
+    depInfo.dependencyFlags = vk::DependencyFlagBits::eByRegion;
 
-    if (eAPI == ERenderApi::eVulkan_1_3)
-    {
-        vk::DependencyInfo depInfo{};
-        depInfo.imageMemoryBarrierCount = 1;
-        depInfo.pImageMemoryBarriers = &barrier;
-        depInfo.memoryBarrierCount = 0;
-        depInfo.pBufferMemoryBarriers = nullptr;
-        depInfo.dependencyFlags = vk::DependencyFlagBits::eByRegion;
-
-        commandBuffer.pipelineBarrier2(depInfo);
-    }
-    else
-    {
-        auto srcStageMask = static_cast<vk::PipelineStageFlags>((uint64_t)barrier.srcStageMask);
-        auto dstStageMask = static_cast<vk::PipelineStageFlags>((uint64_t)barrier.dstStageMask);
-
-        vk::ImageMemoryBarrier memoryBarrier{};
-        memoryBarrier.newLayout = barrier.newLayout;
-        memoryBarrier.oldLayout = barrier.oldLayout;
-        memoryBarrier.srcQueueFamilyIndex = barrier.srcQueueFamilyIndex;
-        memoryBarrier.dstQueueFamilyIndex = barrier.dstQueueFamilyIndex;
-        memoryBarrier.setSrcAccessMask(static_cast<vk::AccessFlags>((uint64_t)barrier.srcAccessMask));
-        memoryBarrier.setDstAccessMask(static_cast<vk::AccessFlags>((uint64_t)barrier.dstAccessMask));
-        memoryBarrier.image = barrier.image;
-        memoryBarrier.subresourceRange = barrier.subresourceRange;
-
-        commandBuffer.pipelineBarrier(
-            srcStageMask,
-            dstStageMask,
-            vk::DependencyFlagBits::eByRegion,
-            0,
-            nullptr,
-            0,
-            nullptr,
-            1,
-            &memoryBarrier);
-    }
+    commandBuffer.pipelineBarrier2(depInfo);
 }
 
 void CDevice::copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions)
@@ -1207,54 +1156,29 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
     {
         auto& queue = getQueue(ququeFlags);
 
-        auto eAPI = pAPI->getAPI();
-        if (eAPI == ERenderApi::eVulkan_1_3)
-        {
-            vk::SubmitInfo2 submitInfo = {};
+        vk::SubmitInfo2 submitInfo = {};
 
-            vk::SemaphoreSubmitInfo waitSubmitInfo{};
-            waitSubmitInfo.semaphore = vImageAvailableSemaphores[currentFrame];
-            waitSubmitInfo.stageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
+        vk::SemaphoreSubmitInfo waitSubmitInfo{};
+        waitSubmitInfo.semaphore = vImageAvailableSemaphores[currentFrame];
+        waitSubmitInfo.stageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
 
-            submitInfo.pWaitSemaphoreInfos = &waitSubmitInfo;
-            submitInfo.waitSemaphoreInfoCount = 1;
+        submitInfo.pWaitSemaphoreInfos = &waitSubmitInfo;
+        submitInfo.waitSemaphoreInfoCount = 1;
 
-            vk::SemaphoreSubmitInfo signalSubmitInfo{};
-            signalSubmitInfo.semaphore = vRenderFinishedSemaphores[currentFrame];
-            signalSubmitInfo.stageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
+        vk::SemaphoreSubmitInfo signalSubmitInfo{};
+        signalSubmitInfo.semaphore = vRenderFinishedSemaphores[currentFrame];
+        signalSubmitInfo.stageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
 
-            submitInfo.pSignalSemaphoreInfos = &signalSubmitInfo;
-            submitInfo.signalSemaphoreInfoCount = 1;
+        submitInfo.pSignalSemaphoreInfos = &signalSubmitInfo;
+        submitInfo.signalSemaphoreInfoCount = 1;
 
-            vk::CommandBufferSubmitInfo commandSubmitInfo{};
-            commandSubmitInfo.commandBuffer = *commandBuffer;
+        vk::CommandBufferSubmitInfo commandSubmitInfo{};
+        commandSubmitInfo.commandBuffer = *commandBuffer;
 
-            submitInfo.pCommandBufferInfos = &commandSubmitInfo;
-            submitInfo.commandBufferInfoCount = 1;
+        submitInfo.pCommandBufferInfos = &commandSubmitInfo;
+        submitInfo.commandBufferInfoCount = 1;
 
-            queue.submit2(submitInfo, vInFlightFences[currentFrame]);
-        }
-        else
-        {
-            vk::SubmitInfo submitInfo = {};
-
-            vk::Semaphore waitSemaphores[] = { vImageAvailableSemaphores[currentFrame] };
-            vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-            vk::Semaphore signalSemaphores[] = { vRenderFinishedSemaphores[currentFrame] };
-
-            submitInfo.waitSemaphoreCount = 1;
-            submitInfo.pWaitSemaphores = waitSemaphores;
-            submitInfo.pWaitDstStageMask = waitStages;
-
-            submitInfo.signalSemaphoreCount = 1;
-            submitInfo.pSignalSemaphores = signalSemaphores;
-
-            vk::CommandBuffer commandBuffers[] = { *commandBuffer };
-            submitInfo.commandBufferCount = 1;
-            submitInfo.pCommandBuffers = commandBuffers;
-
-            queue.submit(submitInfo, vInFlightFences[currentFrame]);
-        }
+        queue.submit2(submitInfo, vInFlightFences[currentFrame]);
     }
     catch (vk::SystemError err)
     {
@@ -1408,7 +1332,7 @@ vk::PhysicalDevice CDevice::getPhysicalDevice(const std::vector<const char*>& de
         }
     }
 
-    if (selected_device && isDeviceSuitable(selected_device, deviceExtensions))
+    if (selected_device)
         return selected_device;
 
     return nullptr;

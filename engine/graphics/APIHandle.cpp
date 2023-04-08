@@ -1077,10 +1077,17 @@ void CAPIHandle::BarrierFromComputeToCompute()
 
 void CAPIHandle::BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer)
 {
-    if (eAPI == ERenderApi::eVulkan_1_3)
-        BarrierFromComputeToComputeVK13(commandBuffer);
-    else
-        BarrierFromComputeToComputeVK10(commandBuffer);
+    vk::MemoryBarrier2KHR barrier{};
+    barrier.srcStageMask = vk::PipelineStageFlagBits2::eComputeShader;
+    barrier.srcAccessMask = vk::AccessFlagBits2::eShaderWrite;
+    barrier.dstStageMask = vk::PipelineStageFlagBits2::eComputeShader;
+    barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
+
+    vk::DependencyInfoKHR dependencyInfo{};
+    dependencyInfo.memoryBarrierCount = 1;
+    dependencyInfo.pMemoryBarriers = &barrier;
+
+    commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
 }
 
 void CAPIHandle::BarrierFromComputeToGraphics()
@@ -1091,10 +1098,17 @@ void CAPIHandle::BarrierFromComputeToGraphics()
 
 void CAPIHandle::BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer)
 {
-    if (eAPI == ERenderApi::eVulkan_1_3)
-        BarrierFromComputeToGraphicsVK13(commandBuffer);
-    else
-        BarrierFromComputeToGraphicsVK10(commandBuffer);
+    vk::MemoryBarrier2KHR barrier{};
+    barrier.srcStageMask = vk::PipelineStageFlagBits2::eComputeShader;
+    barrier.srcAccessMask = vk::AccessFlagBits2::eShaderWrite;
+    barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
+    barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
+
+    vk::DependencyInfoKHR dependencyInfo{};
+    dependencyInfo.memoryBarrierCount = 1;
+    dependencyInfo.pMemoryBarriers = &barrier;
+
+    commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
 }
 
 void CAPIHandle::BarrierFromGraphicsToCompute(size_t image_id)
@@ -1108,10 +1122,25 @@ void CAPIHandle::BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, 
     auto& image = getImage(image_id);
     if (image)
     {
-        if (eAPI == ERenderApi::eVulkan_1_3)
-            BarrierFromGraphicsToComputeVK13(commandBuffer, image);
-        else
-            BarrierFromGraphicsToComputeVK10(commandBuffer, image);
+        vk::ImageMemoryBarrier2KHR imageMemoryBarrier{};
+        imageMemoryBarrier.srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
+        imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
+        imageMemoryBarrier.dstStageMask = vk::PipelineStageFlagBits2::eComputeShader;
+        imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
+        imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
+        imageMemoryBarrier.newLayout = image->getLayout();
+        imageMemoryBarrier.image = image->getImage();
+        imageMemoryBarrier.subresourceRange.aspectMask = image->getAspectMask();
+        imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+        imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
+        imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
+
+        vk::DependencyInfoKHR dependencyInfo{};
+        dependencyInfo.imageMemoryBarrierCount = 1;
+        dependencyInfo.pImageMemoryBarriers = &imageMemoryBarrier;
+
+        commandBuffer.pipelineBarrier2KHR(dependencyInfo);
     }
 }
 
@@ -1126,10 +1155,25 @@ void CAPIHandle::BarrierFromGraphicsToTransfer(vk::CommandBuffer& commandBuffer,
     auto& image = getImage(image_id);
     if (image)
     {
-        if (eAPI == ERenderApi::eVulkan_1_3)
-            BarrierFromGraphicsToTransferVK13(commandBuffer, image);
-        else
-            BarrierFromGraphicsToTransferVK10(commandBuffer, image);
+        vk::ImageMemoryBarrier2KHR imageMemoryBarrier{};
+        imageMemoryBarrier.srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
+        imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
+        imageMemoryBarrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
+        imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits2::eTransferRead | vk::AccessFlagBits2::eTransferWrite;
+        imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
+        imageMemoryBarrier.newLayout = image->getLayout();
+        imageMemoryBarrier.image = image->getImage();
+        imageMemoryBarrier.subresourceRange.aspectMask = image->getAspectMask();
+        imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+        imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+        imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
+        imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
+
+        vk::DependencyInfoKHR dependencyInfo{};
+        dependencyInfo.imageMemoryBarrierCount = 1;
+        dependencyInfo.pImageMemoryBarriers = &imageMemoryBarrier;
+
+        commandBuffer.pipelineBarrier2KHR(dependencyInfo);
     }
 }
 
@@ -1172,168 +1216,4 @@ vk::Result CAPIHandle::endFrame()
     commandBuffers->end();
     frameStarted = false;
     return commandBuffers->submit(imageIndex);
-}
-
-void CAPIHandle::BarrierFromComputeToComputeVK10(vk::CommandBuffer& commandBuffer)
-{
-    vk::MemoryBarrier barrier{};
-    barrier.srcAccessMask = vk::AccessFlagBits::eShaderWrite;
-    barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-
-    commandBuffer.pipelineBarrier(
-        vk::PipelineStageFlagBits::eComputeShader,
-        vk::PipelineStageFlagBits::eComputeShader,
-        vk::DependencyFlags(),
-        1,
-        &barrier,
-        0,
-        nullptr,
-        0,
-        nullptr);
-}
-
-void CAPIHandle::BarrierFromComputeToGraphicsVK10(vk::CommandBuffer& commandBuffer)
-{
-    vk::MemoryBarrier barrier{};
-    barrier.srcAccessMask = vk::AccessFlagBits::eShaderWrite;
-    barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-
-    commandBuffer.pipelineBarrier(
-        vk::PipelineStageFlagBits::eComputeShader,
-        vk::PipelineStageFlagBits::eFragmentShader,
-        vk::DependencyFlags(),
-        1,
-        &barrier,
-        0,
-        nullptr,
-        0,
-        nullptr);
-}
-
-void CAPIHandle::BarrierFromGraphicsToComputeVK10(vk::CommandBuffer& commandBuffer, const std::unique_ptr<CImage>& image)
-{
-    vk::ImageMemoryBarrier imageMemoryBarrier{};
-    imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-    imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-    imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
-    imageMemoryBarrier.newLayout = image->getLayout();
-    imageMemoryBarrier.image = image->getImage();
-    imageMemoryBarrier.subresourceRange.aspectMask = image->getAspectMask();
-    imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-    imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-    imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
-    imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
-
-    commandBuffer.pipelineBarrier(
-        vk::PipelineStageFlagBits::eColorAttachmentOutput,
-        vk::PipelineStageFlagBits::eComputeShader,
-        vk::DependencyFlags(),
-        0,
-        nullptr,
-        0,
-        nullptr,
-        1,
-        &imageMemoryBarrier);
-}
-
-void CAPIHandle::BarrierFromGraphicsToTransferVK10(vk::CommandBuffer& commandBuffer, const std::unique_ptr<CImage>& image)
-{
-    vk::ImageMemoryBarrier imageMemoryBarrier{};
-    imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-    imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eTransferRead | vk::AccessFlagBits::eTransferWrite;
-    imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
-    imageMemoryBarrier.newLayout = image->getLayout();
-    imageMemoryBarrier.image = image->getImage();
-    imageMemoryBarrier.subresourceRange.aspectMask = image->getAspectMask();
-    imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-    imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-    imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
-    imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
-
-    commandBuffer.pipelineBarrier(
-        vk::PipelineStageFlagBits::eColorAttachmentOutput,
-        vk::PipelineStageFlagBits::eTransfer,
-        vk::DependencyFlags(),
-        0,
-        nullptr,
-        0,
-        nullptr,
-        1,
-        &imageMemoryBarrier);
-}
-
-void CAPIHandle::BarrierFromComputeToComputeVK13(vk::CommandBuffer& commandBuffer)
-{
-    vk::MemoryBarrier2KHR barrier{};
-    barrier.srcStageMask = vk::PipelineStageFlagBits2::eComputeShader;
-    barrier.srcAccessMask = vk::AccessFlagBits2::eShaderWrite;
-    barrier.dstStageMask = vk::PipelineStageFlagBits2::eComputeShader;
-    barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
-
-    vk::DependencyInfoKHR dependencyInfo{};
-    dependencyInfo.memoryBarrierCount = 1;
-    dependencyInfo.pMemoryBarriers = &barrier;
-
-    commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
-}
-
-void CAPIHandle::BarrierFromComputeToGraphicsVK13(vk::CommandBuffer& commandBuffer)
-{
-    vk::MemoryBarrier2KHR barrier{};
-    barrier.srcStageMask = vk::PipelineStageFlagBits2::eComputeShader;
-    barrier.srcAccessMask = vk::AccessFlagBits2::eShaderWrite;
-    barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
-    barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
-
-    vk::DependencyInfoKHR dependencyInfo{};
-    dependencyInfo.memoryBarrierCount = 1;
-    dependencyInfo.pMemoryBarriers = &barrier;
-
-    commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
-}
-
-void CAPIHandle::BarrierFromGraphicsToComputeVK13(vk::CommandBuffer& commandBuffer, const std::unique_ptr<CImage>& image)
-{
-    vk::ImageMemoryBarrier2KHR imageMemoryBarrier{};
-    imageMemoryBarrier.srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
-    imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
-    imageMemoryBarrier.dstStageMask = vk::PipelineStageFlagBits2::eComputeShader;
-    imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
-    imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
-    imageMemoryBarrier.newLayout = image->getLayout();
-    imageMemoryBarrier.image = image->getImage();
-    imageMemoryBarrier.subresourceRange.aspectMask = image->getAspectMask();
-    imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-    imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-    imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
-    imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
-
-    vk::DependencyInfoKHR dependencyInfo{};
-    dependencyInfo.imageMemoryBarrierCount = 1;
-    dependencyInfo.pImageMemoryBarriers = &imageMemoryBarrier;
-
-    commandBuffer.pipelineBarrier2KHR(dependencyInfo);
-}
-
-void CAPIHandle::BarrierFromGraphicsToTransferVK13(vk::CommandBuffer& commandBuffer, const std::unique_ptr<CImage>& image)
-{
-    vk::ImageMemoryBarrier2KHR imageMemoryBarrier{};
-    imageMemoryBarrier.srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
-    imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
-    imageMemoryBarrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits2::eTransferRead | vk::AccessFlagBits2::eTransferWrite;
-    imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
-    imageMemoryBarrier.newLayout = image->getLayout();
-    imageMemoryBarrier.image = image->getImage();
-    imageMemoryBarrier.subresourceRange.aspectMask = image->getAspectMask();
-    imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-    imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-    imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
-    imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
-
-    vk::DependencyInfoKHR dependencyInfo{};
-    dependencyInfo.imageMemoryBarrierCount = 1;
-    dependencyInfo.pImageMemoryBarriers = &imageMemoryBarrier;
-
-    commandBuffer.pipelineBarrier2KHR(dependencyInfo);
 }
