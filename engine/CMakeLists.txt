@@ -20,7 +20,7 @@ file(GLOB_RECURSE ENGINE_SYSTEM_SOURCE "system/*.cpp" "system/*.c" "system/*.cc"
 file(GLOB_RECURSE ENGINE_GAME_SOURCE "game/*.cpp" "game/*.c" "game/*.cc" "game/*.h" "game/*.hpp")
 file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc" "*.h" "*.hpp")
 
-include_directories(${Vulkan_INCLUDE_DIR})
+include_directories("external/vulkan/include")
 
 add_library(${PROJECT_NAME} STATIC 
 ${ENGINE_EDITOR_SOURCE}
@@ -43,7 +43,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} 
-    PUBLIC "${Vulkan_INCLUDE_DIR}"
+    PUBLIC "${EXTERNALS_PATH}/vulkan/include"
     PUBLIC "${EXTERNALS_PATH}/SDL/include"
     PUBLIC "${EXTERNALS_PATH}/ktx/include"
     PUBLIC "${EXTERNALS_PATH}/openal-soft/include"

@@ -38,14 +38,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC lualib)
 #add_subdirectory(Effekseer)
 #target_link_libraries(${PROJECT_NAME} PUBLIC Effekseer)
 
-if(ANDROID)
-    add_definitions(-DVULKAN_HPP_TYPESAFE_CONVERSION -DVMA_IMPLEMENTATION -DVMA_STATS_STRING_ENABLED=0)
-    set(VULKAN_DIR ${ANDROID_NDK}/sources/third_party/vulkan/src)
-    set(Vulkan_INCLUDE_DIR ${VULKAN_DIR}/include)
-else()
-    find_package(Vulkan REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${Vulkan_LIBRARIES})
-endif()
+add_subdirectory(vulkan)
+target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan-Headers)
 
 add_subdirectory(vma)
 target_link_libraries(${PROJECT_NAME} PUBLIC VulkanMemoryAllocator)
@@ -56,6 +50,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC BulletDynamics)
 target_link_libraries(${PROJECT_NAME} PUBLIC LinearMath)
 
 target_include_directories(${PROJECT_NAME} 
-    PUBLIC "${Vulkan_INCLUDE_DIR}"
+    PUBLIC "vulkan/include"
+    PUBLIC "SDL/include"
 	PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
 )

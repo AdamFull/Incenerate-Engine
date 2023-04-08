@@ -32,7 +32,7 @@
 
 #include "graphics/window/SDL2WindowAdapter.h"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 constexpr const char* editor_local_data = "editorloc";
 
