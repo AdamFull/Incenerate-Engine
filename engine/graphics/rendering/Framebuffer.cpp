@@ -52,7 +52,7 @@ void CFramebuffer::begin(vk::CommandBuffer& commandBuffer)
     renderPassBeginInfo.renderArea = renderArea;
     renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(vClearValues.size());
     renderPassBeginInfo.pClearValues = vClearValues.data();
-    commandBuffer.beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
+    commandBuffer.beginRenderPass2(renderPassBeginInfo, vk::SubpassContents::eInline);
 
     vk::Viewport viewport{};
     if (flipViewport)
@@ -80,12 +80,13 @@ void CFramebuffer::begin(vk::CommandBuffer& commandBuffer)
 
 void CFramebuffer::end(vk::CommandBuffer& commandBuffer)
 {
-    commandBuffer.endRenderPass();
+    vk::SubpassEndInfo endInfo{};
+    commandBuffer.endRenderPass2(endInfo);
 }
 
 void CFramebuffer::addInputReference(uint32_t index, const std::vector<std::string>& vref)
 {
-    std::vector<vk::AttachmentReference> references;
+    std::vector<vk::AttachmentReference2> references;
     for (auto& arg : vref)
     {
         auto attachment = mFbAttachments.find(arg);
@@ -98,7 +99,7 @@ void CFramebuffer::addInputReference(uint32_t index, const std::vector<std::stri
             else
                 imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
-            references.emplace_back(vk::AttachmentReference{ attachment->second.reference, imageLayout });
+            references.emplace_back(vk::AttachmentReference2{ attachment->second.reference, imageLayout });
         }
             
         else
@@ -109,7 +110,7 @@ void CFramebuffer::addInputReference(uint32_t index, const std::vector<std::stri
 
 void CFramebuffer::addOutputReference(uint32_t index, const std::vector<std::string>& vref)
 {
-    std::vector<vk::AttachmentReference> references;
+    std::vector<vk::AttachmentReference2> references;
     for (auto& arg : vref)
     {
         auto attachment = mFbAttachments.find(arg);
@@ -122,7 +123,7 @@ void CFramebuffer::addOutputReference(uint32_t index, const std::vector<std::str
             else
                 imageLayout = vk::ImageLayout::eColorAttachmentOptimal;
 
-            references.emplace_back(vk::AttachmentReference{ attachment->second.reference, imageLayout });
+            references.emplace_back(vk::AttachmentReference2{ attachment->second.reference, imageLayout });
         }
         else
             log_error("Attachment not found.");
@@ -132,7 +133,7 @@ void CFramebuffer::addOutputReference(uint32_t index, const std::vector<std::str
 
 void CFramebuffer::addDescription(uint32_t subpass, const std::string& depthReference)
 {
-    vk::SubpassDescription description{};
+    vk::SubpassDescription2 description{};
     description.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
 
     auto attachmentRef = mOutputReferences.find(subpass);
@@ -155,7 +156,7 @@ void CFramebuffer::addDescription(uint32_t subpass, const std::string& depthRefe
 void CFramebuffer::addSubpassDependency(uint32_t src, uint32_t dst, vk::PipelineStageFlags srcStageMask, vk::PipelineStageFlags dstStageMask, vk::AccessFlags srcAccessMask,
     vk::AccessFlags dstAccessMask, vk::DependencyFlags depFlags)
 {
-    vk::SubpassDependency dep{};
+    vk::SubpassDependency2 dep{};
     dep.srcSubpass = src;
     dep.dstSubpass = dst;
     dep.srcStageMask = srcStageMask;    //Pipeline stage what we waiting
@@ -185,7 +186,7 @@ void CFramebuffer::addImage(const std::string& name, vk::Format format, vk::Imag
 {
     uint32_t reference{ 0 };
     vk::ClearValue clearValue{};
-    vk::AttachmentDescription attachmentDescription{};
+    vk::AttachmentDescription2 attachmentDescription{};
     attachmentDescription.format = format;
     attachmentDescription.samples = vk::SampleCountFlagBits::e1;
     attachmentDescription.loadOp = vk::AttachmentLoadOp::eClear;
@@ -250,7 +251,7 @@ void CFramebuffer::addImage(const std::string& name, vk::Format format, vk::Imag
         else
             attachmentDescription.finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
         clearValue.setDepthStencil(vk::ClearDepthStencilValue{ 1.0f, 0 });
-        mDepthReference.emplace(name, vk::AttachmentReference{ static_cast<uint32_t>(mFbAttachments.size()), vk::ImageLayout::eDepthStencilAttachmentOptimal });
+        mDepthReference.emplace(name, vk::AttachmentReference2{ static_cast<uint32_t>(mFbAttachments.size()), vk::ImageLayout::eDepthStencilAttachmentOptimal });
     }
 
     reference = static_cast<uint32_t>(mFbAttachments.size());
@@ -271,14 +272,14 @@ std::unordered_map<std::string, size_t>& CFramebuffer::getCurrentImages()
 
 void CFramebuffer::createRenderPass()
 {
-    vk::RenderPassCreateInfo renderPassCI = {};
+    vk::RenderPassCreateInfo2 renderPassCI{};
     renderPassCI.attachmentCount = static_cast<uint32_t>(vAttachDesc.size());
     renderPassCI.pAttachments = vAttachDesc.data();
     renderPassCI.subpassCount = static_cast<uint32_t>(vSubpassDesc.size());
     renderPassCI.pSubpasses = vSubpassDesc.data();
     renderPassCI.dependencyCount = static_cast<uint32_t>(vSubpassDep.size());
     renderPassCI.pDependencies = vSubpassDep.data();
-    vk::Result res = pDevice->create(renderPassCI, &renderPass); 
+    vk::Result res = pDevice->create(renderPassCI, &renderPass);
     log_cerror(VkHelper::check(res), "Cannot create render pass.");
 }
 

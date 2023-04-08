@@ -131,6 +131,10 @@ namespace engine
             {
                 return vkDevice.createRenderPass(&info, pAllocator, ref);
             }
+            inline vk::Result create(vk::RenderPassCreateInfo2& info, vk::RenderPass* ref)
+            {
+                return vkDevice.createRenderPass2(&info, pAllocator, ref);
+            }
             template <>
             inline vk::Result create(vk::FramebufferCreateInfo& info, vk::Framebuffer* ref)
             {

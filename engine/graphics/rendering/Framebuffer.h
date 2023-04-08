@@ -58,9 +58,9 @@ namespace engine
 			std::unordered_map<std::string, size_t>& getImages(uint32_t index) { return mFramebufferImages[index]; }
 			std::unordered_map<std::string, size_t>& getCurrentImages();
 			size_t getDepthImage() { return depthImageIDX; }
-			const std::vector<vk::AttachmentDescription>& getAttachmentDescriptions() const { return vAttachDesc; };
+			const std::vector<vk::AttachmentDescription2>& getAttachmentDescriptions() const { return vAttachDesc; };
 
-			vk::SubpassDescription& getDescription() { return vSubpassDesc.front(); }
+			vk::SubpassDescription2& getDescription() { return vSubpassDesc.front(); }
 
 			void createRenderPass();
 			void createFramebuffer();
@@ -80,13 +80,13 @@ namespace engine
 
 			vk::RenderPass renderPass{ nullptr };
 			bool flipViewport{ false };
-			std::vector<vk::AttachmentDescription> vAttachDesc;
-			std::vector<vk::SubpassDescription> vSubpassDesc;
-			std::vector<vk::SubpassDependency> vSubpassDep;
+			std::vector<vk::AttachmentDescription2> vAttachDesc;
+			std::vector<vk::SubpassDescription2> vSubpassDesc;
+			std::vector<vk::SubpassDependency2> vSubpassDep;
 			std::vector<vk::ClearValue> vClearValues;
-			std::map<uint32_t, std::vector<vk::AttachmentReference>> mInputReferences;
-			std::map<uint32_t, std::vector<vk::AttachmentReference>> mOutputReferences;
-			std::map<std::string, vk::AttachmentReference> mDepthReference;
+			std::map<uint32_t, std::vector<vk::AttachmentReference2>> mInputReferences;
+			std::map<uint32_t, std::vector<vk::AttachmentReference2>> mOutputReferences;
+			std::map<std::string, vk::AttachmentReference2> mDepthReference;
 
 			std::vector<vk::Framebuffer> vFramebuffers;
 			nlohmann::fifo_map<std::string, FFramebufferAttachmentInfo> mFbAttachments;
