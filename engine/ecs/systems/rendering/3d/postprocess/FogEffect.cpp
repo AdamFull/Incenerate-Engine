@@ -40,7 +40,7 @@ size_t CFogEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 
 		graphics->bindShader(invalid_index);
 
-		VkHelper::BarrierFromComputeToCompute();
+		graphics->BarrierFromComputeToCompute();
 
 		return out_source;
 	}

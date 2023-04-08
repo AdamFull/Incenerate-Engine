@@ -36,7 +36,7 @@ size_t CChromaticAberrationEffect::render(FCameraComponent* camera, size_t in_so
 
 		graphics->bindShader(invalid_index);
 
-		VkHelper::BarrierFromComputeToCompute();
+		graphics->BarrierFromComputeToCompute();
 
 		return out_source;
 	}

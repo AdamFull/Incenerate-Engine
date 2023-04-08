@@ -27,15 +27,6 @@ namespace engine
 			static vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>);
 
 			static bool hasStencilComponent(vk::Format format);
-
-			static void BarrierFromComputeToCompute();
-			static void BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer);
-			static void BarrierFromComputeToGraphics();
-			static void BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer);
-			static void BarrierFromGraphicsToCompute(size_t image_id = invalid_index);
-			static void BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, size_t image_id = invalid_index);
-			static void BarrierFromGraphicsToTransfer(size_t image_id = invalid_index);
-			static void BarrierFromGraphicsToTransfer(vk::CommandBuffer& commandBuffer, size_t image_id = invalid_index);
 		};
 	}
 }

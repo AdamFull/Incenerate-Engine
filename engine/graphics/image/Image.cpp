@@ -30,6 +30,7 @@ CImage::~CImage()
 
 void CImage::create(std::unique_ptr<FImageCreateInfo>& info, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode, vk::Filter filter)
 {
+    enableAnisotropy = VK_TRUE;
     loadFromMemory(info, info->pixFormat, flags, aspect, addressMode, filter);
 }
 

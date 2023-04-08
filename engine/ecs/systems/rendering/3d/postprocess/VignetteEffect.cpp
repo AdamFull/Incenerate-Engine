@@ -37,7 +37,7 @@ size_t CVignetteEffect::render(FCameraComponent* camera, size_t in_source, size_
 
 		graphics->bindShader(invalid_index);
 
-		VkHelper::BarrierFromComputeToCompute();
+		graphics->BarrierFromComputeToCompute();
 
 		return out_source;
 	}

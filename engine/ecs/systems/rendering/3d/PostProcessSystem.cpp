@@ -56,8 +56,8 @@ void CPostProcessSystem::__update(float fDt)
 		bloom.update();
 	}
 
-	VkHelper::BarrierFromGraphicsToCompute(getSubresource("composition_tex"));
-	VkHelper::BarrierFromGraphicsToCompute(getSubresource("depth_tex"));
+	graphics->BarrierFromGraphicsToCompute(getSubresource("composition_tex"));
+	graphics->BarrierFromGraphicsToCompute(getSubresource("depth_tex"));
 
 	size_t current_image = getSubresource("composition_tex");
 	current_image = tonemap.render(camera, fDt, current_image, final_image);
@@ -81,5 +81,5 @@ void CPostProcessSystem::__update(float fDt)
 		graphics->bindShader(invalid_index);
 	}
 
-	VkHelper::BarrierFromComputeToGraphics();
+	graphics->BarrierFromComputeToGraphics();
 }

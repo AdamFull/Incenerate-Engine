@@ -37,7 +37,7 @@ size_t CFXAAEffect::render(FCameraComponent* camera, size_t in_source, size_t ou
 
 		graphics->bindShader(invalid_index);
 
-		VkHelper::BarrierFromComputeToCompute();
+		graphics->BarrierFromComputeToCompute();
 
 		return out_source;
 	}

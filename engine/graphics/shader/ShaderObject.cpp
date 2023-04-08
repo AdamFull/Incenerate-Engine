@@ -129,6 +129,8 @@ void CShaderObject::dispatch(const std::vector<FDispatchParam>& params)
 void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector<FDispatchParam>& params)
 {
 	auto& pInstance = vInstances.at(currentUsage);
+	// TODO: bad
+	auto& graphics = EGEngine->getGraphics();
 
 	bindDescriptor(commandBuffer);
 
@@ -139,7 +141,7 @@ void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector
 	{
 		// Synchronize dispatches
 		if (idx > 0)
-			VkHelper::BarrierFromComputeToCompute(commandBuffer);
+			graphics->BarrierFromComputeToCompute(commandBuffer);
 
 		auto& localSizes = pShader->getLocalSizes(idx);
 		auto& param = params[idx];

@@ -60,7 +60,7 @@ size_t CTonemapEffect::render(FCameraComponent* camera, float time, size_t in_so
 
 		graphics->bindShader(invalid_index);
 
-		VkHelper::BarrierFromComputeToCompute();
+		graphics->BarrierFromComputeToCompute();
 
 		return out_source;
 	}

@@ -65,7 +65,7 @@ size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 			graphics->bindShader(invalid_index);
 		}
 
-		VkHelper::BarrierFromComputeToCompute();
+		graphics->BarrierFromComputeToCompute();
 
 		// Apply depth of field
 		{
@@ -90,7 +90,7 @@ size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 
 			graphics->bindShader(invalid_index);
 
-			VkHelper::BarrierFromComputeToCompute();
+			graphics->BarrierFromComputeToCompute();
 		}
 
 		return temp_image;

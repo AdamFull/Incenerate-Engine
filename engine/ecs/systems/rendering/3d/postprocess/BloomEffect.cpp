@@ -91,7 +91,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 			graphics->bindShader(invalid_index);
 		}
 
-		VkHelper::BarrierFromComputeToCompute();
+		graphics->BarrierFromComputeToCompute();
 
 		// Downsample
 		{
@@ -112,7 +112,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 				graphics->bindTexture("writeColor", bloom_image, i);
 				graphics->dispatch(mip_param);
 
-				VkHelper::BarrierFromComputeToCompute();
+				graphics->BarrierFromComputeToCompute();
 
 				graphics->bindTexture("samplerColor", bloom_image, i);
 			}
@@ -138,7 +138,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 
 				graphics->dispatch(param);
 
-				VkHelper::BarrierFromComputeToCompute();
+				graphics->BarrierFromComputeToCompute();
 			}
 
 			graphics->bindShader(invalid_index);
@@ -158,7 +158,7 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 
 			graphics->bindShader(invalid_index);
 
-			VkHelper::BarrierFromComputeToCompute();
+			graphics->BarrierFromComputeToCompute();
 		}
 
 		return final_image;

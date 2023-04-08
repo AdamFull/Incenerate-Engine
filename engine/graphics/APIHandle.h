@@ -123,9 +123,31 @@ namespace engine
 			void dispatch(const std::vector<FDispatchParam>& params);
 			void dispatch(const FDispatchParam& param);
 
+
+			void BarrierFromComputeToCompute();
+			void BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer);
+			void BarrierFromComputeToGraphics();
+			void BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer);
+			void BarrierFromGraphicsToCompute(size_t image_id = invalid_index);
+			void BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, size_t image_id = invalid_index);
+			void BarrierFromGraphicsToTransfer(size_t image_id = invalid_index);
+			void BarrierFromGraphicsToTransfer(vk::CommandBuffer& commandBuffer, size_t image_id = invalid_index);
+
 		private:
 			vk::CommandBuffer beginFrame();
 			vk::Result endFrame();
+
+			// Vulkan 1.0, 1.1, 1.2
+			void BarrierFromComputeToComputeVK10(vk::CommandBuffer& commandBuffer);
+			void BarrierFromComputeToGraphicsVK10(vk::CommandBuffer& commandBuffer);
+			void BarrierFromGraphicsToComputeVK10(vk::CommandBuffer& commandBuffer, const std::unique_ptr<CImage>& image);
+			void BarrierFromGraphicsToTransferVK10(vk::CommandBuffer& commandBuffer, const std::unique_ptr<CImage>& image);
+
+			// Vulkan 1.3 (synchronization 2.0)
+			void BarrierFromComputeToComputeVK13(vk::CommandBuffer& commandBuffer);
+			void BarrierFromComputeToGraphicsVK13(vk::CommandBuffer& commandBuffer);
+			void BarrierFromGraphicsToComputeVK13(vk::CommandBuffer& commandBuffer, const std::unique_ptr<CImage>& image);
+			void BarrierFromGraphicsToTransferVK13(vk::CommandBuffer& commandBuffer, const std::unique_ptr<CImage>& image);
 
 		protected:
 			winhandle_t pWindow{ nullptr };
