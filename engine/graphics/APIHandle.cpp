@@ -48,7 +48,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
     auto empty_image_2d = std::make_unique<CImage2D>(pDevice.get());
     empty_image_2d->create(vk::Extent2D{ 1u, 1u }, vk::Format::eR8G8B8A8Srgb);
-    addImage("empty_image_2d", std::move(empty_image_2d));
+    auto empty_image = addImage("empty_image_2d", std::move(empty_image_2d));
 
     auto depth_format = pDevice->getDepthFormat();
     
@@ -978,18 +978,20 @@ void CAPIHandle::flushShader()
 
 const std::unique_ptr<CHandler>& CAPIHandle::getUniformHandle(const std::string& name)
 {
+    static std::unique_ptr<CHandler> pEmpty{ nullptr };
     if (pBindedShader)
         return pBindedShader->getUniformBuffer(name);
 
-    return nullptr;
+    return pEmpty;
 }
 
 const std::unique_ptr<CPushHandler>& CAPIHandle::getPushBlockHandle(const std::string& name)
 {
+    static std::unique_ptr<CPushHandler> pEmpty{ nullptr };
     if (pBindedShader)
         return pBindedShader->getPushBlock(name);
 
-    return nullptr;
+    return pEmpty;
 }
 
 void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_index, size_t index_count, size_t instance_count)

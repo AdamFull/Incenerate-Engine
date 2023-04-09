@@ -189,7 +189,8 @@ void CShaderObject::addTexture(const std::string& attachment, size_t id, uint32_
 	auto& texture = graphics->getImage(id);
 
 	vk::DescriptorImageInfo descriptor;
-	if (texture->isLoaded())
+
+	if (texture && texture->isLoaded())
 		descriptor = texture->getDescriptor(mip_level);
 	else
 	{
@@ -212,18 +213,20 @@ vk::DescriptorImageInfo& CShaderObject::getTexture(const std::string& attachment
 
 const std::unique_ptr<CHandler>& CShaderObject::getUniformBuffer(const std::string& name)
 {
+	static std::unique_ptr<CHandler> pEmpty{ nullptr };
 	auto& pInstance = vInstances.at(currentUsage);
 
 	auto uniformBlock = pInstance->mBuffers.find(name);
 	if (uniformBlock != pInstance->mBuffers.end())
 		return uniformBlock->second;
-	return nullptr;
+	return pEmpty;
 }
 
 const std::unique_ptr<CPushHandler>& CShaderObject::getPushBlock(const std::string& name)
 {
+	static std::unique_ptr<CPushHandler> pEmpty{ nullptr };
 	auto pushBlock = mPushBlocks.find(name);
 	if (pushBlock != mPushBlocks.end())
 		return pushBlock->second;
-	return nullptr;
+	return pEmpty;
 }

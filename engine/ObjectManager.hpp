@@ -79,18 +79,20 @@ namespace engine
 
 		const std::unique_ptr<_Ty>& get(const std::string& name)
 		{
+			static std::unique_ptr<_Ty> pEmpty{ nullptr };
 			auto id = getId(name);
 			if (id != invalid_index)
 				return get(id);
-			return nullptr;
+			return pEmpty;
 		}
 
 		const std::unique_ptr<_Ty>& get(size_t id)
 		{
+			static std::unique_ptr<_Ty> pEmpty{ nullptr };
 			auto objit = mIdToObject.find(id);
 			if (objit != mIdToObject.end())
 				return objit->second;
-			return nullptr;
+			return pEmpty;
 		}
 
 		void performDeletion()
