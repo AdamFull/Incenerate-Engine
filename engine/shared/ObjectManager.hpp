@@ -3,6 +3,8 @@
 #include <atomic>
 #include <queue>
 
+#include "SharedInstances.h"
+
 namespace engine
 {
 	template<class _Ty>

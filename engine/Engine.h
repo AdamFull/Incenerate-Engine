@@ -14,10 +14,13 @@
 #include "ecs/systems/BaseSystem.h"
 #include "ecs/components/fwd.h"
 
+#include "filesystem/VirtualFileSystemManager.h"
+
 #include <utility/threading.hpp>
 
 #define EGEngine CEngine::getInstance()
 #define EGScripting CEngine::getInstance()->getScripting()
+#define EGFilesystem CEngine::getInstance()->getFilesystem()
 #define EGEditor CEngine::getInstance()->getEditor()
 #define EGAudio CEngine::getInstance()->getAudio()
 #define EGWindow CEngine::getInstance()->getWindow()
@@ -40,6 +43,7 @@ namespace engine
 	using scriptcore_t = std::unique_ptr<scripting::CScriptingCore>;
 	using physicscore_t = std::unique_ptr<physics::CPhysicsCore>;
 	using particlescore_t = std::unique_ptr<particles::CParticlesCore>;
+	using filesystem_t = std::unique_ptr<filesystem::CVirtualFileSystemManager>;
 
 	class CEngine : public utl::singleton<CEngine>
 	{
@@ -63,6 +67,7 @@ namespace engine
 		const scriptcore_t& getScripting() const;
 		const physicscore_t& getPhysics() const;
 		const particlescore_t& getParticles() const;
+		const filesystem_t& getFilesystem() const;
 
 		const std::unique_ptr<utl::threadworker>& getLoaderThread();
 
@@ -108,6 +113,7 @@ namespace engine
 		scriptcore_t pScripting;
 		physicscore_t pPhysics;
 		particlescore_t pParticles;
+		filesystem_t pFilesystem;
 
 		std::unique_ptr<utl::threadworker> pLoaderThread;
 

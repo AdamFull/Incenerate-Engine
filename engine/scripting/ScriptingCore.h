@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ScriptSource.h"
-#include "ObjectManager.hpp"
+#include "shared/ObjectManager.hpp"
 
 namespace engine
 {

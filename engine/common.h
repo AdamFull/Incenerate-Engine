@@ -31,7 +31,7 @@
 
 #include "fdecl.h"
 
-constexpr inline const size_t invalid_index{ -1ull };
+#include "shared/SharedInstances.h"
 
 #define MAX_DIRECTIONAL_LIGHT_COUNT 1
 #define MAX_SPOT_LIGHT_COUNT 15

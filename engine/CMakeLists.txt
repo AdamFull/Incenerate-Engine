@@ -5,6 +5,7 @@ set(ENGINE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(EXTERNALS_PATH "${ENGINE_ROOT}/external")
 
 add_subdirectory("external")
+add_subdirectory("filesystem")
 
 file(GLOB_RECURSE ENGINE_EDITOR_SOURCE "editor/*.cpp" "editor/*.c" "editor/*.cc" "editor/*.h" "editor/*.hpp")
 file(GLOB_RECURSE ENGINE_LOADERS_SOURCE "loaders/*.cpp" "loaders/*.c" "loaders/*.cc" "loaders/*.h" "loaders/*.hpp")
@@ -35,11 +36,11 @@ ${ENGINE_AUDIO_SOURCE}
 ${ENGINE_SCRIPTING_SOURCE}
 ${ENGINE_SYSTEM_SOURCE}
 ${ENGINE_GAME_SOURCE}
-${ENGINE_SOURCE}
- "ecs/systems/rendering/3d/postprocess/FogEffect.h")
+${ENGINE_SOURCE})
 
 target_link_libraries(${PROJECT_NAME} 
     PUBLIC external_lib
+    PUBLIC incenerate_engine_vfs
 )
 
 target_include_directories(${PROJECT_NAME} 
@@ -54,6 +55,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${ENGINE_ROOT}/graphics"
     PUBLIC "${ENGINE_ROOT}/system"
     PUBLIC "${ENGINE_ROOT}/game"
+    PUBLIC "${ENGINE_ROOT}/filesystem"
 )
 
 target_precompile_headers( ${PROJECT_NAME} PUBLIC common.h)

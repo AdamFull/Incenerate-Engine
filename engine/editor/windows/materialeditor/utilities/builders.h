@@ -25,7 +25,7 @@ namespace Utilities {
 //------------------------------------------------------------------------------
 struct BlueprintNodeBuilder
 {
-    BlueprintNodeBuilder(size_t texture = invalid_index, int textureWidth = 0, int textureHeight = 0);
+    BlueprintNodeBuilder(size_t texture = engine::invalid_index, int textureWidth = 0, int textureHeight = 0);
 
     void Begin(NodeId id);
     void End();
@@ -62,7 +62,7 @@ private:
 
     std::unique_ptr<engine::graphics::CDescriptorSet> pDescriptorSet;
 
-    size_t HeaderTextureId{ invalid_index };
+    size_t HeaderTextureId{ engine::invalid_index };
     int         HeaderTextureWidth;
     int         HeaderTextureHeight;
     NodeId      CurrentNodeId;

@@ -4,6 +4,8 @@
 #include "game/SceneSerializer.h"
 #include "graphics/window/SDL2WindowAdapter.h"
 
+#include "filesystem/native/NativeFileSystem.h"
+
 using namespace engine;
 using namespace engine::editor;
 using namespace engine::game;
@@ -14,6 +16,7 @@ using namespace engine::audio;
 using namespace engine::scripting;
 using namespace engine::physics;
 using namespace engine::particles;
+using namespace engine::filesystem;
 
 CEngine::CEngine()
 {
@@ -32,6 +35,20 @@ void CEngine::create()
 {
 	utl::stopwatch sw;
 	log_info("Beginning engine initialization.");
+
+	auto local_path = std::filesystem::current_path() / "embed";
+	auto temp_path = std::filesystem::temp_directory_path() / "incenerate-engine";
+
+	pFilesystem = std::make_unique<CVirtualFileSystemManager>();
+	pFilesystem->mount("/embed", std::make_unique<CNativeFileSystem>(local_path.string()));
+	pFilesystem->mount("/temp", std::make_unique<CNativeFileSystem>(temp_path.string()));
+
+	auto iterator = pFilesystem->walk("/embed/font");
+	for (auto& it = iterator->begin(); it != iterator->end(); ++it)
+	{
+		auto dat = *it;
+		int iii = 0;
+	}
 
 	FEngineCreateInfo createInfo;
 	fs::read_json("config.json", createInfo, true);
@@ -159,6 +176,11 @@ const physicscore_t& CEngine::getPhysics() const
 const particlescore_t& CEngine::getParticles() const
 {
 	return pParticles;
+}
+
+const filesystem_t& CEngine::getFilesystem() const
+{
+	return pFilesystem;
 }
 
 const std::unique_ptr<utl::threadworker>& CEngine::getLoaderThread()
