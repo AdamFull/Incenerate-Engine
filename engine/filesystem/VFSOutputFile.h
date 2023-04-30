@@ -48,10 +48,17 @@ namespace engine
 
 			/**
 			 * @brief Writes a string to the output file.
-			 * @param str The string to be written.
+			 * @param data The string to be written.
 			 * @return A reference to the CVFSOutFile object.
 			 */
-			CVFSOutFile& write(const std::string& str) override;
+			CVFSOutFile& write(const std::string& data) override;
+
+			/**
+			 * @brief Writes a string to the output file.
+			 * @param data The data vector to be written.
+			 * @return A reference to the CVFSOutFile object.
+			 */
+			CVFSOutFile& write(const std::vector<uint8_t>& data) override;
 
 			/**
 			 * @brief Writes a buffer of characters to the output file.

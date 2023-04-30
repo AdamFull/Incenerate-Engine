@@ -43,15 +43,8 @@ void CEngine::create()
 	pFilesystem->mount("/embed", std::make_unique<CNativeFileSystem>(local_path.string()));
 	pFilesystem->mount("/temp", std::make_unique<CNativeFileSystem>(temp_path.string()));
 
-	auto iterator = pFilesystem->walk("/embed/font");
-	for (auto& it = iterator->begin(); it != iterator->end(); ++it)
-	{
-		auto dat = *it;
-		int iii = 0;
-	}
-
 	FEngineCreateInfo createInfo;
-	fs::read_json("config.json", createInfo, true);
+	pFilesystem->readJson("/embed/config.json", createInfo);
 
 	//pLoaderThread = std::make_unique<utl::threadworker>();
 

@@ -187,16 +187,47 @@ std::unique_ptr<IDirectoryIteratorInterface> CVirtualFileSystemManager::walk(con
 
 bool CVirtualFileSystemManager::readFile(const std::string& path, std::string& data)
 {
+	auto pFile = openFile(path);
+	if (pFile && pFile->is_open())
+	{
+		pFile->seekg(0, SEEK_END);
+		auto file_size = pFile->tellg();
+		pFile->seekg(0);
+
+		data.resize(file_size);
+		pFile->read(data);
+		auto read_size = pFile->gcount();
+
+		if (read_size != static_cast<size_t>(file_size))
+			throw std::runtime_error("Error while reading file. Readed incorrect number of bytes.");
+
+		return true;
+	}
+
 	return false;
 }
 
 bool CVirtualFileSystemManager::writeFile(const std::string& path, const std::string& data)
 {
+	auto pFile = createFile(path);
+	if (pFile && pFile->is_open())
+	{
+		pFile->write(data);
+		return true;
+	}
+
 	return false;
 }
 
 bool CVirtualFileSystemManager::writeFile(const std::string& path, std::vector<uint8_t>& binary)
 {
+	auto pFile = createFile(path);
+	if (pFile && pFile->is_open())
+	{
+		pFile->write(binary);
+		return true;
+	}
+
 	return false;
 }
 

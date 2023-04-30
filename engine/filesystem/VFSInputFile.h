@@ -80,6 +80,13 @@ namespace engine
 			CVFSInFile& read(char* buffer, std::size_t count) override;
 
 			/**
+			 * @brief Reads characters from the input file into a buffer.
+			 * @param buffer The buffer to store the characters read.
+			 * @return A reference to the CVFSInFile object.
+			 */
+			CVFSInFile& read(std::string& buffer) override;
+
+			/**
 			 * @brief Puts the last character read back into the input file.
 			 * @return A reference to the CVFSInFile object.
 			 */
@@ -97,6 +104,14 @@ namespace engine
 			 * @return A reference to the CVFSInFile object.
 			 */
 			CVFSInFile& seekg(std::streampos pos) override;
+
+			/**
+			 * @brief Sets the input position indicator to the specified position.
+			 * @param pos The new position in the input file as a std::streampos.
+			 * @param origin The origin in the input file as a C FILE seek pos.
+			 * @return A reference to the CVFSInFile object.
+			 */
+			CVFSInFile& seekg(std::streampos pos, int32_t origin) override;
 
 			/**
 			 * @brief Checks if the end-of-file (EOF) has been reached.

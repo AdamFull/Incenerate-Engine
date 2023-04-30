@@ -88,6 +88,13 @@ CVFSInFile& CVFSInFile::read(char* buffer, std::size_t count)
 	return *this;
 }
 
+CVFSInFile& CVFSInFile::read(std::string& buffer)
+{
+	read(buffer.data(), buffer.size());
+
+	return *this;
+}
+
 CVFSInFile& CVFSInFile::unget()
 {
 	if (m_pFileInterface)
@@ -103,8 +110,15 @@ std::streampos CVFSInFile::tellg()
 
 CVFSInFile& CVFSInFile::seekg(std::streampos pos)
 {
-	if(m_pFileInterface)
-		m_pFileInterface->seek(pos, SEEK_SET);
+	seekg(pos, SEEK_SET);
+
+	return *this;
+}
+
+CVFSInFile& CVFSInFile::seekg(std::streampos pos, int32_t origin)
+{
+	if (m_pFileInterface)
+		m_pFileInterface->seek(pos, origin);
 
 	return *this;
 }

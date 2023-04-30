@@ -23,10 +23,17 @@ namespace engine
 
 			/**
 			 * @brief Writes a string to the output file.
-			 * @param str The string to be written.
+			 * @param data The string to be written.
 			 * @return A reference to the IVFSOutputFileInterface object.
 			 */
-			virtual IVFSOutputFileInterface& write(const std::string& str) = 0;
+			virtual IVFSOutputFileInterface& write(const std::string& data) = 0;
+
+			/**
+			 * @brief Writes a string to the output file.
+			 * @param data The data vector to be written.
+			 * @return A reference to the IVFSOutputFileInterface object.
+			 */
+			virtual IVFSOutputFileInterface& write(const std::vector<uint8_t>& data) = 0;
 
 			/**
 			 * @brief Writes a buffer of characters to the output file.

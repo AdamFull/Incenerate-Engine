@@ -39,6 +39,14 @@ CVFSOutFile& CVFSOutFile::write(const std::string& str)
 	return *this;
 }
 
+CVFSOutFile& CVFSOutFile::write(const std::vector<uint8_t>& data)
+{
+	if (m_pFileInterface)
+		m_pFileInterface->write(data.data(), sizeof(uint8_t), data.size());
+
+	return *this;
+}
+
 CVFSOutFile& CVFSOutFile::write(const char* buffer, std::size_t count)
 {
 	if (m_pFileInterface)

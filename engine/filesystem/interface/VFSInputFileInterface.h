@@ -56,6 +56,13 @@ namespace engine
 			virtual IVFSInputFileInterface& read(char* buffer, std::size_t count) = 0;
 
 			/**
+			 * @brief Reads characters from the input file into a buffer.
+			 * @param buffer The buffer to store the characters read.
+			 * @return A reference to the IVFSInputFileInterface object.
+			 */
+			virtual IVFSInputFileInterface& read(std::string& buffer) = 0;
+
+			/**
 			 * @brief Puts the last character read back into the input file.
 			 * @return A reference to the IVFSInputFileInterface object.
 			 */
@@ -73,6 +80,14 @@ namespace engine
 			 * @return A reference to the IVFSInputFileInterface object.
 			 */
 			virtual IVFSInputFileInterface& seekg(std::streampos pos) = 0;
+
+			/**
+			 * @brief Sets the input position indicator to the specified position.
+			 * @param pos The new position in the input file as a std::streampos.
+			 * @param origin The origin in the input file as a C FILE seek pos.
+			 * @return A reference to the IVFSInputFileInterface object.
+			 */
+			virtual IVFSInputFileInterface& seekg(std::streampos pos, int32_t origin) = 0;
 
 			/**
 			 * @brief Checks if the end-of-file (EOF) has been reached.
