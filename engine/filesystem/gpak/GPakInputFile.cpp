@@ -39,7 +39,7 @@ int32_t CGPakInputFile::getc()
 	return m_pFilePtr ? gpak_fgetc(m_pFilePtr) : -1;
 }
 
-std::size_t CGPakInputFile::read(char* buffer, std::size_t elemSize, std::size_t elemCount)
+std::size_t CGPakInputFile::read(void* buffer, std::size_t elemSize, std::size_t elemCount)
 {
 	return m_pFilePtr ? gpak_fread(buffer, elemSize, elemCount, m_pFilePtr) : 0ull;
 }

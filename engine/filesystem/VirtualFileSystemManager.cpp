@@ -190,17 +190,19 @@ bool CVirtualFileSystemManager::readFile(const std::string& path, std::string& d
 	auto pFile = openFile(path);
 	if (pFile && pFile->is_open())
 	{
-		pFile->seekg(0, SEEK_END);
-		auto file_size = pFile->tellg();
-		pFile->seekg(0);
-
-		data.resize(file_size);
 		pFile->read(data);
-		auto read_size = pFile->gcount();
+		return true;
+	}
 
-		if (read_size != static_cast<size_t>(file_size))
-			throw std::runtime_error("Error while reading file. Readed incorrect number of bytes.");
+	return false;
+}
 
+bool CVirtualFileSystemManager::readFile(const std::string& path, std::vector<uint8_t>& data)
+{
+	auto pFile = openFile(path);
+	if (pFile && pFile->is_open())
+	{
+		pFile->read(data);
 		return true;
 	}
 

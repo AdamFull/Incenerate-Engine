@@ -1,13 +1,15 @@
 #include "ShaderCompiler.h"
 
-#include "system/filesystem/filesystem.h"
+#include "Engine.h"
+
+#include "filesystem/vfs_helper.h"
 
 #include <glslanglib/SPIRV/GlslangToSpv.h>
 #include <glslanglib/glslang/Public/ShaderLang.h>
 
 using namespace engine;
 using namespace engine::graphics;
-using namespace engine::system;
+using namespace engine::filesystem;
 
 constexpr const char* cache_file_name = "spirv.cache";
 
@@ -73,7 +75,7 @@ private:
 	std::filesystem::path directory{ "" };
 };
 
-vk::ShaderStageFlagBits getShaderStage(const std::filesystem::path& moduleName)
+vk::ShaderStageFlagBits getShaderStage(const std::string& moduleName)
 {
 	auto fileExt = fs::get_ext(moduleName);
 	std::transform(fileExt.begin(), fileExt.end(), fileExt.begin(), ::tolower);
@@ -288,11 +290,11 @@ CShaderCompiler::~CShaderCompiler()
 	glslang::FinalizeProcess();
 }
 
-std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::path& path, const std::string& preamble, ERenderApi eAPI)
+std::optional<FCachedShader> CShaderCompiler::compile(const std::string& path, const std::string& preamble, ERenderApi eAPI)
 {
 	// TODO: shader caching works wrong
 	std::string data;
-	if (fs::read_file(path, data, true))
+	if (EGFilesystem->readFile(path, data))
 	{
 		auto fname = fs::get_filename(path);
 		auto hash = utl::const_hash(data.c_str());
@@ -309,7 +311,7 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::filesystem::pat
 
 		auto messages = static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules | EShMsgDefault);
 
-		auto srShaderName = fs::from_unicode(path);
+		auto srShaderName = path;
 		auto shaderName = srShaderName.c_str();
 		auto shaderSource = data.c_str();
 		shader.setStringsWithLengthsAndNames(&shaderSource, nullptr, &shaderName, 1);
@@ -429,10 +431,12 @@ std::optional<FCachedShader> CShaderCompiler::update(const std::string& name, co
 
 void CShaderCompiler::load_cache()
 {
-	fs::read_json(cache_file_name, cache, true);
+	// TODO temporary dir
+	EGFilesystem->readJson(cache_file_name, cache);
 }
 
 void CShaderCompiler::save_cache()
 {
-	fs::write_json(cache_file_name, cache, -1, true);
+	// TODO temporary dir
+	EGFilesystem->writeJson(cache_file_name, cache);
 }

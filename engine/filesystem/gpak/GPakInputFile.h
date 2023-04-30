@@ -58,7 +58,7 @@ namespace engine
 			 * @param elemCount The number of elements to read.
 			 * @return The number of elements successfully read.
 			 */
-			std::size_t read(char* buffer, std::size_t elemSize, std::size_t elemCount) override;
+			std::size_t read(void* buffer, std::size_t elemSize, std::size_t elemCount) override;
 
 			/**
 			 * @brief Unget a character, pushing it back onto the input stream.

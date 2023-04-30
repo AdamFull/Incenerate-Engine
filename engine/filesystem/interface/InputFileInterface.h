@@ -46,7 +46,7 @@ namespace engine
 			 * @param elemCount The number of elements to read.
 			 * @return The total number of elements successfully read.
 			 */
-			virtual std::size_t read(char* buffer, std::size_t elemSize, std::size_t elemCount) = 0;
+			virtual std::size_t read(void* buffer, std::size_t elemSize, std::size_t elemCount) = 0;
 
 			/**
 			 * @brief Unget a character from the file.

@@ -1,6 +1,6 @@
 #include "EditorProject.h"
 
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 #include "Engine.h"
 #include "game/SceneSerializer.h"
 #include "game/SceneGraph.hpp"
@@ -31,7 +31,7 @@ namespace engine
 
 using namespace engine::game;
 using namespace engine::ecs;
-using namespace engine::system;
+using namespace engine::filesystem;
 using namespace engine::editor;
 
 CEditorProject::CEditorProject(entt::entity& editor_camera)
@@ -41,36 +41,36 @@ CEditorProject::CEditorProject(entt::entity& editor_camera)
 
 bool CEditorProject::make_new(const std::filesystem::path& path)
 {
-    auto parent_path = path.parent_path();
-    auto assets_path = parent_path / "assets";
-    fs::set_workdir(assets_path);
-    std::filesystem::create_directories(assets_path);
-
-    EGSceneManager->make_new(assets_path / "scene.iescene");
-    EGSceneManager->save();
-
-    project.assets = "assets";
-    project.last_scene = "scene.iescene";
-    if (fs::write_bson(path, project, true))
-    {
-        createOrLoadEditorCamera();
-        projectpath = path;
-        return true;
-    }
+    //auto parent_path = path.parent_path();
+    //auto assets_path = parent_path / "assets";
+    //fs::set_workdir(assets_path);
+    //std::filesystem::create_directories(assets_path);
+    //
+    //EGSceneManager->make_new(assets_path / "scene.iescene");
+    //EGSceneManager->save();
+    //
+    //project.assets = "assets";
+    //project.last_scene = "scene.iescene";
+    //if (fs::write_bson(path, project, true))
+    //{
+    //    createOrLoadEditorCamera();
+    //    projectpath = path;
+    //    return true;
+    //}
 
     return false;
 }
 
 bool CEditorProject::open(const std::filesystem::path& path)
 {
-    if (fs::read_bson(path, project))
-    {
-        fs::set_workdir(path.parent_path() / project.assets);
-        createOrLoadEditorCamera();
-        EGSceneManager->load(project.last_scene);
-        projectpath = path;
-        return true;
-    }
+    //if (fs::read_bson(path, project))
+    //{
+    //    fs::set_workdir(path.parent_path() / project.assets);
+    //    createOrLoadEditorCamera();
+    //    EGSceneManager->load(project.last_scene);
+    //    projectpath = path;
+    //    return true;
+    //}
 
     return false;
 }
@@ -79,8 +79,8 @@ void CEditorProject::save()
 {
     project.camera = CSceneLoader::saveNode(*editor_camera);
 
-    if (!projectpath.empty())
-        fs::write_bson(projectpath, project, true);
+    //if (!projectpath.empty())
+    //    fs::write_bson(projectpath, project, true);
 
     EGSceneManager->save();
 }

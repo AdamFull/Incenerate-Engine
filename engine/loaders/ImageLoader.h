@@ -41,13 +41,13 @@ namespace engine
         class CImageLoader
         {
         public:
-            static void load(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header = false);
+            static void load(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header = false);
         private:
-            static void loadSTB(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
-            static void loadKTX(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
-            static void loadKTX2(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
-            static void loadDDS(const std::filesystem::path& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
-            static EImageFormat getTextureFormat(const std::filesystem::path& fsPath);
+            static void loadSTB(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            static void loadKTX(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            static void loadKTX2(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            static void loadDDS(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            static EImageFormat getTextureFormat(const std::string& fsPath);
         };
 	}
 }

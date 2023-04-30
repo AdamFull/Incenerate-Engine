@@ -39,6 +39,7 @@ namespace engine
             virtual std::unique_ptr<IDirectoryIteratorInterface> walk(const std::string& path, bool recursive) = 0;
 
             virtual bool readFile(const std::string& path, std::string& data) = 0;
+            virtual bool readFile(const std::string& path, std::vector<uint8_t>& data) = 0;
 
             virtual bool writeFile(const std::string& path, const std::string& data) = 0;
             virtual bool writeFile(const std::string& path, std::vector<uint8_t>& binary) = 0;
@@ -64,7 +65,7 @@ namespace engine
             }
 
             template<class _Ty>
-            bool writeJson(const std::filesystem::path& path, const _Ty& type, int32_t indent = -1)
+            bool writeJson(const std::string& path, const _Ty& type, int32_t indent = -1)
             {
                 auto json = nlohmann::json(type);
                 if (!json.empty())
@@ -78,7 +79,7 @@ namespace engine
             }
 
             template<class _Ty>
-            bool readBson(const std::filesystem::path& path, _Ty& type)
+            bool readBson(const std::string& path, _Ty& type)
             {
                 std::string data{};
                 if (readFile(path, data))
@@ -95,7 +96,7 @@ namespace engine
             }
 
             template<class _Ty>
-            bool writeBson(const std::filesystem::path& path, const _Ty& type)
+            bool writeBson(const std::string& path, const _Ty& type)
             {
                 auto json = nlohmann::json(type);
                 if (!json.empty())

@@ -34,7 +34,7 @@ void CImage::create(std::unique_ptr<FImageCreateInfo>& info, vk::ImageUsageFlags
     loadFromMemory(info, info->pixFormat, flags, aspect, addressMode, filter);
 }
 
-void CImage::create(const std::filesystem::path& srPath, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode, vk::Filter filter)
+void CImage::create(const std::string& srPath, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode, vk::Filter filter)
 {
     enableAnisotropy = VK_TRUE;
     std::unique_ptr<FImageCreateInfo> texture;
@@ -44,7 +44,7 @@ void CImage::create(const std::filesystem::path& srPath, vk::ImageUsageFlags fla
     loadFromMemory(texture, texture->pixFormat, flags, aspect, addressMode, filter);
 }
 
-void CImage::create(const std::filesystem::path& srPath, vk::Format format, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode, vk::Filter filter)
+void CImage::create(const std::string& srPath, vk::Format format, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode, vk::Filter filter)
 {
     enableAnisotropy = VK_TRUE;
     std::unique_ptr<FImageCreateInfo> texture;

@@ -1,27 +1,28 @@
 #include "WavLoader.h"
 
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
 using namespace engine::loaders;
-using namespace engine::system;
+using namespace engine::filesystem;
 
 EAudioReaderError CWavReader::open(const std::filesystem::path& filepath)
 {
+	// TODO make it with vfs
 	char header[header_size];
 
-	auto relpath = fs::get_workdir() / filepath;
-
-	pFile = fopen(fs::from_unicode(relpath).c_str(), "rb");
-	if (!pFile)
-		return EAudioReaderError::eCannotOpenFile;
-
-	auto readed_size = fread(header, 1, header_size, pFile);
-	if (readed_size != header_size)
-		return EAudioReaderError::eInvalidHeader;
-
-	rawheader = *((FWaveHeader*)header);
-
-	fread(header, 1, 10, pFile);
+	//auto relpath = fs::get_workdir() / filepath;
+	//
+	//pFile = fopen(fs::from_unicode(relpath).c_str(), "rb");
+	//if (!pFile)
+	//	return EAudioReaderError::eCannotOpenFile;
+	//
+	//auto readed_size = fread(header, 1, header_size, pFile);
+	//if (readed_size != header_size)
+	//	return EAudioReaderError::eInvalidHeader;
+	//
+	//rawheader = *((FWaveHeader*)header);
+	//
+	//fread(header, 1, 10, pFile);
 
 	return validateHeader();;
 }

@@ -120,6 +120,7 @@ namespace engine
 			std::unique_ptr<IDirectoryIteratorInterface> walk(const std::string& path, bool recursive = true);
 
 			bool readFile(const std::string& path, std::string& data) override;
+			bool readFile(const std::string& path, std::vector<uint8_t>& data) override;
 
 			bool writeFile(const std::string& path, const std::string& data) override;
 			bool writeFile(const std::string& path, std::vector<uint8_t>& binary) override;

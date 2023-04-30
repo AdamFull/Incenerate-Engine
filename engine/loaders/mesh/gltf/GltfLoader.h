@@ -74,7 +74,7 @@ namespace engine
 		class CGltfLoader
 		{
 		public:
-			void load(const std::filesystem::path& source, const entt::entity& pRoot, ecs::FSceneComponent* component);
+			void load(const std::string& source, const entt::entity& pRoot, ecs::FSceneComponent* component);
 
 		private:
 			static bool loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* userData);
@@ -87,9 +87,9 @@ namespace engine
 			void loadTextures(const tinygltf::Model& model);
 			void loadAnimations(const tinygltf::Model& model, ecs::FSceneComponent* component);
 			void loadSkins(const tinygltf::Model& model, ecs::FSceneComponent* component);
-			size_t loadTexture(const std::pair<std::filesystem::path, bool>& texpair, vk::Format override);
+			size_t loadTexture(const std::pair<std::string, bool>& texpair, vk::Format override);
 		private:
-			std::vector<std::pair<std::filesystem::path, bool>> vTextures;
+			std::vector<std::pair<std::string, bool>> vTextures;
 			std::vector<size_t> vMaterials;
 			std::unordered_map<uint32_t, entt::entity> mIndexToEntity;
 			entt::entity head{ entt::null };
@@ -99,7 +99,7 @@ namespace engine
 
 			size_t vbo_id{ invalid_index };
 			uint32_t current_primitive{ 0 };
-			std::filesystem::path fsParentPath{ "" };
+			std::string fsParentPath{ "" };
 		};
 	}
 }

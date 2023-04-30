@@ -34,7 +34,7 @@ int32_t CNativeInputFile::getc()
 	return m_pFilePtr ? std::fgetc(m_pFilePtr) : -1;
 }
 
-std::size_t CNativeInputFile::read(char* buffer, std::size_t elemSize, std::size_t elemCount)
+std::size_t CNativeInputFile::read(void* buffer, std::size_t elemSize, std::size_t elemCount)
 {
 	return m_pFilePtr ? std::fread(buffer, elemSize, elemCount, m_pFilePtr) : 0ull;
 }

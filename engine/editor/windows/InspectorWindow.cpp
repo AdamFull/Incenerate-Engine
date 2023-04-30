@@ -9,7 +9,7 @@
 
 #include "ecs/helper.hpp"
 
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
 #include "game/SceneGraph.hpp"
 
@@ -20,7 +20,7 @@
 #include "editor/operations/RemoveComponentOperation.h"
 
 using namespace engine::editor;
-using namespace engine::system;
+using namespace engine::filesystem;
 using namespace engine::loaders;
 using namespace engine::game;
 using namespace engine::audio;
@@ -182,15 +182,15 @@ void CEditorInspector::__draw(float fDt)
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
-				const wchar_t* path = (const wchar_t*)payload->Data;
-				auto source = std::filesystem::path(path);
+				const char* path = (const char*)payload->Data;
+				auto source = std::string(path);
 
 				if (fs::is_audio_format(source))
 				{
 					if (!registry.try_get<FAudioComponent>(selected))
 					{
 						FAudioComponent naudio{};
-						naudio.source = fs::from_unicode(source);
+						naudio.source = source;
 
 						registry.emplace<FAudioComponent>(selected, std::move(naudio));
 					}
@@ -200,7 +200,7 @@ void CEditorInspector::__draw(float fDt)
 					if (!registry.try_get<FScriptComponent>(selected))
 					{
 						FScriptComponent nscript{};
-						nscript.source = fs::from_unicode(source);
+						nscript.source = source;
 
 						registry.emplace<FScriptComponent>(selected, std::move(nscript));
 					}
@@ -212,7 +212,7 @@ void CEditorInspector::__draw(float fDt)
 					if (!registry.try_get<FEnvironmentComponent>(selected) && pImageCI->isCubemap)
 					{
 						FEnvironmentComponent nskybox{};
-						nskybox.source = fs::from_unicode(source);
+						nskybox.source = source;
 
 						registry.emplace<FEnvironmentComponent>(selected, std::move(nskybox));
 					}
@@ -222,7 +222,7 @@ void CEditorInspector::__draw(float fDt)
 					if (!registry.try_get<FSceneComponent>(selected))
 					{
 						FSceneComponent nscene{};
-						nscene.source = fs::from_unicode(source);
+						nscene.source = source;
 
 						registry.emplace<FSceneComponent>(selected, std::move(nscene));
 					}
@@ -241,14 +241,14 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 		{
-			const wchar_t* path = (const wchar_t*)payload->Data;
-			auto source = std::filesystem::path(path);
+			const char* path = (const char*)payload->Data;
+			auto source = std::string(path);
 
 			if (fs::is_audio_format(source))
 			{
 				if (object->source != source)
 				{
-					object->source = fs::from_unicode(source);
+					object->source = source;
 
 					if (object->loaded)
 					{
@@ -262,7 +262,7 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 						auto& registry = EGEngine->getRegistry();
 
 						FAudioComponent naudio{};
-						naudio.source = fs::from_unicode(source);
+						naudio.source = source;
 
 						registry.remove<FAudioComponent>(self);
 						registry.emplace<FAudioComponent>(self, std::move(naudio));
@@ -451,12 +451,12 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 		{
-			const wchar_t* path = (const wchar_t*)payload->Data;
-			auto source = std::filesystem::path(path);
+			const char* path = (const char*)payload->Data;
+			auto source = std::string(path);
 
 			if (fs::is_script_format(source))
 			{
-				object->source = fs::from_unicode(source);
+				object->source = source;
 				if (object->loaded)
 				{
 					EGScripting->removeSource(object->data);
@@ -489,8 +489,8 @@ void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 		{
-			const wchar_t* path = (const wchar_t*)payload->Data;
-			auto source = std::filesystem::path(path);
+			const char* path = (const char*)payload->Data;
+			auto source = std::string(path);
 
 			if (fs::is_skybox_format(source))
 			{
@@ -499,7 +499,7 @@ void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 
 				if (object->source != source && pImageCI->isCubemap)
 				{
-					object->source = fs::from_unicode(source);
+					object->source = source;
 					if (object->loaded)
 					{
 						auto& graphics = EGEngine->getGraphics();
@@ -537,14 +537,14 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 		{
-			const wchar_t* path = (const wchar_t*)payload->Data;
-			auto source = std::filesystem::path(path);
+			const char* path = (const char*)payload->Data;
+			auto source = std::string(path);
 
 			if (fs::is_mesh_format(source))
 			{
 				if (object->source != source)
 				{
-					object->source = fs::from_unicode(source);
+					object->source = source;
 					if (object->loaded)
 					{
 						auto& hierarchy = registry.get<FHierarchyComponent>(self);
@@ -561,7 +561,7 @@ void CEditorInspector::sceneEdit(FSceneComponent* object)
 						auto& registry = EGEngine->getRegistry();
 
 						FSceneComponent nscene{};
-						nscene.source = fs::from_unicode(source);
+						nscene.source = source;
 
 						registry.remove<FSceneComponent>(self);
 						registry.emplace<FSceneComponent>(self, std::move(nscene));
@@ -625,14 +625,14 @@ void CEditorInspector::particleSystemEdit(FTransformComponent* transform, FParti
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 		{
-			const wchar_t* path = (const wchar_t*)payload->Data;
-			auto source = std::filesystem::path(path);
+			const char* path = (const char*)payload->Data;
+			auto source = std::string(path);
 
 			if (fs::is_particle_format(source))
 			{
 				if (object->source != source)
 				{
-					object->source = fs::from_unicode(source);
+					object->source = source;
 					if (object->loaded)
 					{
 						// Delete old
@@ -643,7 +643,7 @@ void CEditorInspector::particleSystemEdit(FTransformComponent* transform, FParti
 						auto& registry = EGEngine->getRegistry();
 
 						FParticleComponent nparticle{};
-						nparticle.source = fs::from_unicode(source);
+						nparticle.source = source;
 
 						registry.remove<FParticleComponent>(self);
 						registry.emplace<FParticleComponent>(self, std::move(nparticle));

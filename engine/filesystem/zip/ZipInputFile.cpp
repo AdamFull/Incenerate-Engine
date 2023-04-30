@@ -114,7 +114,7 @@ int32_t CZipInputFile::getc()
 	return m_pFilePtr ? lzip_fgetc(m_pFilePtr) : -1;
 }
 
-std::size_t CZipInputFile::read(char* buffer, std::size_t elemSize, std::size_t elemCount)
+std::size_t CZipInputFile::read(void* buffer, std::size_t elemSize, std::size_t elemCount)
 {
 	return m_pFilePtr ? lzip_fread(buffer, elemSize, elemCount, m_pFilePtr) : 0ull;
 }

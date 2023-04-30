@@ -1,6 +1,6 @@
 #include "APIHandle.h"
 
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 #include "Engine.h"
 
 #include "image/Image2D.h"
@@ -9,7 +9,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace engine::graphics;
-using namespace engine::system;
+using namespace engine::filesystem;
 using namespace engine::ecs;
 
 CAPIHandle::CAPIHandle(winhandle_t window)
@@ -450,7 +450,7 @@ size_t CAPIHandle::addImage(const std::string& name, std::unique_ptr<CImage>&& i
     return pImageManager->add(name, std::move(image));
 }
 
-size_t CAPIHandle::addImage(const std::string& name, const std::filesystem::path& path)
+size_t CAPIHandle::addImage(const std::string& name, const std::string& path)
 {
     std::unique_ptr<CImage> image = std::make_unique<CImage>(pDevice.get());
 
@@ -465,7 +465,7 @@ size_t CAPIHandle::addImage(const std::string& name, const std::filesystem::path
     return addImage(name, std::move(image));
 }
 
-size_t CAPIHandle::addImageAsync(const std::string& name, const std::filesystem::path& path)
+size_t CAPIHandle::addImageAsync(const std::string& name, const std::string& path)
 {
     auto& loaderThread = EGEngine->getLoaderThread();
 

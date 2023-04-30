@@ -1,7 +1,7 @@
 #include "MaterialEditorWindow.h"
 
 #include "Engine.h"
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
 #include <imgui/imgui_node_editor_internal.h>
 #include <imgui/additional_widgets.h>
@@ -11,7 +11,7 @@
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
 
-using namespace engine::system;
+using namespace engine::filesystem;
 using namespace engine::editor;
 using namespace engine::graphics;
 
@@ -116,7 +116,7 @@ void CMaterialEditorWindow::create()
 	//bIsOpen = false;
 	EGEngine->addEventListener(Events::Editor::SelectMaterial, this, &CMaterialEditorWindow::onSetMaterial);
 
-	fs::read_json("materialeditor.json", vGroups, true);
+	EGFilesystem->readJson("/embed/materialeditor.json", vGroups);
 
 	ed::Config config;
 	config.SettingsFile = "materialEditorSettings.json";

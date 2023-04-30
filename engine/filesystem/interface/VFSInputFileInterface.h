@@ -63,6 +63,13 @@ namespace engine
 			virtual IVFSInputFileInterface& read(std::string& buffer) = 0;
 
 			/**
+			 * @brief Reads characters from the input file into a buffer.
+			 * @param buffer The buffer to store the characters read.
+			 * @return A reference to the IVFSInputFileInterface object.
+			 */
+			virtual IVFSInputFileInterface& read(std::vector<uint8_t>& buffer) = 0;
+
+			/**
 			 * @brief Puts the last character read back into the input file.
 			 * @return A reference to the IVFSInputFileInterface object.
 			 */

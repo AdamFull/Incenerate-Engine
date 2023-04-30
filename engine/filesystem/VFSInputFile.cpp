@@ -90,7 +90,25 @@ CVFSInFile& CVFSInFile::read(char* buffer, std::size_t count)
 
 CVFSInFile& CVFSInFile::read(std::string& buffer)
 {
+	seekg(0, SEEK_END);
+	auto filesize = tellg();
+	seekg(0);
+
+	buffer.resize(filesize);
 	read(buffer.data(), buffer.size());
+
+	return *this;
+}
+
+CVFSInFile& CVFSInFile::read(std::vector<uint8_t>& buffer)
+{
+	seekg(0, SEEK_END);
+	auto filesize = tellg();
+	seekg(0);
+
+	buffer.resize(filesize);
+	if (m_pFileInterface)
+		m_gcount = m_pFileInterface->read(buffer.data(), sizeof(uint8_t), filesize);
 
 	return *this;
 }

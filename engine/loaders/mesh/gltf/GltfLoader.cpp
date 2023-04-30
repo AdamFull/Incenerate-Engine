@@ -10,7 +10,7 @@
 
 #include "ecs/components/components.h"
 
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
 #include "loaders/ImageLoader.h"
 
@@ -22,6 +22,7 @@ using namespace engine::system;
 using namespace engine::graphics;
 using namespace engine::game;
 using namespace engine::ecs;
+using namespace engine::filesystem;
 
 
 std::string url_decode(const std::string& str)
@@ -108,7 +109,7 @@ bool CGltfLoader::loadImageDataFuncEmpty(tinygltf::Image* image, const int image
     return true;//tinygltf::LoadImageData(image, imageIndex, error, warning, req_width, req_height, bytes, size, userData);
 }
 
-void CGltfLoader::load(const const std::filesystem::path& source, const entt::entity& root, FSceneComponent* component)
+void CGltfLoader::load(const const std::string& source, const entt::entity& root, FSceneComponent* component)
 {
     auto& graphics = EGEngine->getGraphics();
     head = root;
@@ -118,25 +119,31 @@ void CGltfLoader::load(const const std::filesystem::path& source, const entt::en
     std::string error, warning;
     gltfContext.SetImageLoader(&CGltfLoader::loadImageDataFuncEmpty, this);
 
-    auto fpath = std::filesystem::weakly_canonical(fs::get_workdir() / source);
-    fsParentPath = std::filesystem::weakly_canonical(fpath.parent_path());
-    fsParentPath = std::filesystem::relative(fsParentPath, fs::get_workdir());
-    auto ext = fs::get_ext(fpath);
+    fsParentPath = fs::parent_path(source);
+    auto ext = fs::get_ext(source);
 
     bool fileLoaded{ false };
     if (ext == ".glb")
-        fileLoaded = gltfContext.LoadBinaryFromFile(&gltfModel, &error, &warning, fs::from_unicode(fpath));
-    else if(ext == ".gltf")
-        fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, fs::from_unicode(fpath));
+    {
+        std::vector<uint8_t> meshdata;
+        EGFilesystem->readFile(source, meshdata);
+        fileLoaded = gltfContext.LoadBinaryFromMemory(&gltfModel, &error, &warning, meshdata.data(), meshdata.size());
+    }
+    else if (ext == ".gltf")
+    {
+        std::string meshdata;
+        EGFilesystem->readFile(source, meshdata);
+        fileLoaded = gltfContext.LoadASCIIFromString(&gltfModel, &error, &warning, meshdata.c_str(), meshdata.size(), "");
+    }
 
     if (!warning.empty())
-        log_warning("\nWarnings while loading gltf scene \"{}\": \n{}", fs::from_unicode(source), warning);
+        log_warning("\nWarnings while loading gltf scene \"{}\": \n{}", source, warning);
     if (!error.empty())
-        log_error("\nErrors while loading gltf scene \"{}\": \n{}", fs::from_unicode(source), error);
+        log_error("\nErrors while loading gltf scene \"{}\": \n{}", source, error);
 
     if (fileLoaded)
     {
-        vbo_id = graphics->addVertexBuffer(fs::from_unicode(fpath.filename()));
+        vbo_id = graphics->addVertexBuffer(source);
 
         loadTextures(gltfModel);
         loadMaterials(gltfModel);
@@ -777,8 +784,8 @@ void CGltfLoader::loadTextures(const tinygltf::Model& model)
         }
 
         auto& image = model.images.at(image_index); 
-        auto texture_path = std::filesystem::weakly_canonical(fsParentPath / url_decode(image.uri));
-        vTextures.emplace_back(fs::from_unicode(texture_path), isBasisU || fs::is_ktx_format(texture_path));
+        auto texture_path = fs::path_append(fsParentPath, url_decode(image.uri));
+        vTextures.emplace_back(texture_path, isBasisU || fs::is_ktx_format(texture_path));
     }
 }
 
@@ -936,7 +943,7 @@ void CGltfLoader::loadSkins(const tinygltf::Model& model, FSceneComponent* compo
     }
 }
 
-size_t CGltfLoader::loadTexture(const std::pair<std::filesystem::path, bool>& texpair, vk::Format oformat)
+size_t CGltfLoader::loadTexture(const std::pair<std::string, bool>& texpair, vk::Format oformat)
 {
     auto& loaderThread = EGEngine->getLoaderThread();
     auto& graphics = EGEngine->getGraphics();

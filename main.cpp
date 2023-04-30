@@ -1,5 +1,4 @@
 #include "engine/engine.h"
-#include "engine/system/filesystem/filesystem.h"
 #include "engine/graphics/image/Image.h"
 
 #include <random>
@@ -7,7 +6,6 @@
 
 using namespace engine;
 using namespace engine::graphics;
-using namespace engine::system;
 
 int main()
 {

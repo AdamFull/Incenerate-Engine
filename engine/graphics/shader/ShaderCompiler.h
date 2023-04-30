@@ -14,7 +14,7 @@ namespace engine
 			CShaderCompiler();
 			~CShaderCompiler();
 
-			std::optional<FCachedShader> compile(const std::filesystem::path& path, const std::string& preamble, ERenderApi eAPI);
+			std::optional<FCachedShader> compile(const std::string& path, const std::string& preamble, ERenderApi eAPI);
 
 			std::optional<FCachedShader> get(const std::string& name, size_t hash);
 

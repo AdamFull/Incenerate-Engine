@@ -51,8 +51,8 @@ namespace engine
 			ERenderApi getAPI() { return eAPI; }
 
 			size_t addImage(const std::string& name, std::unique_ptr<CImage>&& image);
-			size_t addImage(const std::string& name, const std::filesystem::path& path);
-			size_t addImageAsync(const std::string& name, const std::filesystem::path& path);
+			size_t addImage(const std::string& name, const std::string& path);
+			size_t addImageAsync(const std::string& name, const std::string& path);
 			void incrementImageUsage(const std::string& name);
 			void incrementImageUsage(size_t id);
 			void removeImage(const std::string& name);

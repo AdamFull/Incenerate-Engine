@@ -1,7 +1,7 @@
 #include "ImageViewerWindow.h"
 
 #include "Engine.h"
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui.h>
@@ -9,7 +9,7 @@
 #include <editor/imgui_impl_vulkan.h>
 
 using namespace engine::graphics;
-using namespace engine::system;
+using namespace engine::filesystem;
 using namespace engine::editor;
 
 // TODO: Add event Events::Editor::OpenImageViewer
@@ -74,7 +74,7 @@ void CEditorImageViewer::OnOpenImage(CEvent& event)
 	if (openned_image != invalid_index)
 		graphics->removeImage(openned_image);
 
-	auto path = event.getParam<std::filesystem::path>(Events::Editor::OpenImageViewer);
+	auto path = event.getParam<std::string>(Events::Editor::OpenImageViewer);
 	auto name = fs::get_filename(path);
 	openned_image = graphics->addImage(name, path);
 	bIsOpen = true;

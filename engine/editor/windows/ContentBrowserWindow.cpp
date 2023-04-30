@@ -5,10 +5,10 @@
 #include <imgui/imgui.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
 
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
 using namespace engine;
-using namespace engine::system;
+using namespace engine::filesystem;
 using namespace engine::editor;
 
 constexpr const float padding{ 16.0f };
@@ -62,7 +62,7 @@ const std::string& getFileIcon(const std::string& filename, bool isDirectory)
 void CEditorContentBrowser::create()
 {
 	EGEngine->addEventListener(Events::Editor::ProjectUpdated, this, &CEditorContentBrowser::OnProjectChanged);
-	workdir = fs::get_workdir();
+	workdir = "/assets";
 	update_path(workdir);
 }
 
@@ -88,9 +88,9 @@ void CEditorContentBrowser::__draw(float fDt)
 		ImGui::SameLine();
 		auto& undo = EGEditor->getIcon(icons::undo);
 		if (ImGui::Button(undo.c_str()))
-			update_path(currentPath.parent_path());
+			update_path(fs::parent_path(currentPath));
 		ImGui::SameLine();
-		ImGui::Text(fs::from_unicode(relative).c_str());
+		ImGui::Text(currentPath.c_str());
 	}
 
 	ImGui::Separator();
@@ -118,7 +118,7 @@ void CEditorContentBrowser::__draw(float fDt)
 
 		auto& del = EGEditor->getIcon(icons::trash);
 		if (ImGui::MenuItem((del + " delete").c_str(), "DEL", false, !selected.empty()))
-			std::filesystem::remove_all(workdir / selected);
+			EGFilesystem->remove(fs::path_append(workdir, selected));
 
 		ImGui::EndPopup();
 	}
@@ -128,7 +128,7 @@ void CEditorContentBrowser::__draw(float fDt)
 		{
 			EGEditor->pushAction([this, filename]()
 				{
-					EGEditor->openExistingScene(currentPath / (filename + ".iescene"));
+					EGEditor->openExistingScene(fs::path_append(currentPath, (filename + ".iescene")));
 				});
 			update_path(workdir);
 		});
@@ -136,7 +136,7 @@ void CEditorContentBrowser::__draw(float fDt)
 	CreateFileModal("Create directory",
 		[this](const std::string& filename)
 		{
-			std::filesystem::create_directories(currentPath / filename);
+			EGFilesystem->createDirectories(fs::path_append(currentPath, filename));
 			update_path(currentPath);
 		});
 
@@ -167,9 +167,8 @@ void CEditorContentBrowser::__draw(float fDt)
 			else
 				currentColumn = 0;
 
-			auto relativePath = std::filesystem::relative(path, workdir);
-			auto filename = fs::from_unicode(relativePath.filename().wstring());
-			auto isDirectory = std::filesystem::is_directory(path);
+			auto filename = fs::get_filename(path);
+			auto isDirectory = EGFilesystem->isDirectory(path);
 
 			auto& icon = getFileIcon(filename, isDirectory);
 
@@ -185,7 +184,7 @@ void CEditorContentBrowser::__draw(float fDt)
 				if (ImGui::IsMouseClicked(1))
 				{
 					if (ImGui::IsItemHovered())
-						selected = relativePath;
+						selected = path;
 					else
 						selected = "";
 
@@ -197,7 +196,7 @@ void CEditorContentBrowser::__draw(float fDt)
 			{
 				if (isDirectory)
 				{
-					auto npath = currentPath / path.filename();
+					auto npath = fs::path_append(currentPath, filename);
 					update_path(npath);
 					ImGui::PopID();
 					break;
@@ -214,9 +213,9 @@ void CEditorContentBrowser::__draw(float fDt)
 
 			if (!isDirectory && ImGui::BeginDragDropSource())
 			{
-				const wchar_t* itemPath = relativePath.c_str();
-				ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
-				ImGui::Text((icon + (" " + fs::from_unicode(relativePath))).c_str());
+				const char* itemPath = path.c_str();
+				ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (strlen(itemPath) + 1) * sizeof(char));
+				ImGui::Text((icon + (" " + path)).c_str());
 				ImGui::EndDragDropSource();
 			}
 
@@ -231,26 +230,26 @@ void CEditorContentBrowser::__draw(float fDt)
 
 void CEditorContentBrowser::OnProjectChanged(CEvent& event)
 {
-	workdir = fs::get_workdir();
+	workdir = "/assets";
 	update_path(workdir);
 }
 
-void CEditorContentBrowser::update_path(const std::filesystem::path& npath)
+void CEditorContentBrowser::update_path(const std::string& npath)
 {
 	currentPath = npath;
-	relative = std::filesystem::relative(currentPath, workdir);
 	vCurrentDirData.clear();
 
-	if (std::filesystem::exists(currentPath))
+	if (EGFilesystem->exists(currentPath))
 	{
-		for (auto& entry : std::filesystem::directory_iterator(currentPath))
+		auto walk = EGFilesystem->walk(currentPath, false);
+		for (auto& it = walk->begin(); it != walk->end(); ++it)
 		{
-			auto path = entry.path();
+			auto& path = *it;
 			if (
-				entry.is_directory() || 
-				fs::is_image_format(path) || 
-				fs::is_audio_format(path) || 
-				fs::is_script_format(path) || 
+				EGFilesystem->isDirectory(path) ||
+				fs::is_image_format(path) ||
+				fs::is_audio_format(path) ||
+				fs::is_script_format(path) ||
 				fs::is_mesh_format(path) ||
 				fs::is_scene_format(path))
 				vCurrentDirData.emplace_back(path);

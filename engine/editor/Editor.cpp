@@ -12,7 +12,7 @@
 
 #include "EditorThemes.h"
 
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
 #include "windows/ViewportWindow.h"
 #include "windows/HierarchyWindow.h"
@@ -34,7 +34,7 @@
 
 #include <SDL.h>
 
-constexpr const char* editor_local_data = "editorloc";
+constexpr const char* editor_local_data = "/editor/editorloc";
 
 namespace engine
 {
@@ -57,8 +57,7 @@ namespace engine
 using namespace engine;
 using namespace engine::game;
 using namespace engine::graphics;
-using namespace engine::system;
-using namespace engine::system::window;
+using namespace engine::filesystem;
 using namespace engine::editor;
 using namespace engine::ecs;
 
@@ -398,63 +397,63 @@ void CEditor::onAllFramesDone(CEvent& event)
 
 void CEditor::makeNewProject(const std::filesystem::path& project_path)
 {
-    if (pEditorProject->make_new(project_path))
-    {
-        selected = entt::null;
-        recproj.last = fs::from_unicode(project_path);
-        recproj.recent.emplace(recproj.last);
-
-        save_editor();
-        ImGui::CloseCurrentPopup();
-        EGEngine->sendEvent(Events::Editor::ProjectUpdated);
-        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Created new project: %s", recproj.last.c_str()});
-        return;
-    }
+    //if (pEditorProject->make_new(project_path))
+    //{
+    //    selected = entt::null;
+    //    recproj.last = fs::from_unicode(project_path);
+    //    recproj.recent.emplace(recproj.last);
+    //
+    //    save_editor();
+    //    ImGui::CloseCurrentPopup();
+    //    EGEngine->sendEvent(Events::Editor::ProjectUpdated);
+    //    ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Created new project: %s", recproj.last.c_str()});
+    //    return;
+    //}
     ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Failed to create project!" });
 }
 
 void CEditor::openExistingProject(const std::filesystem::path& project_path)
 {
-    if (pEditorProject->open(project_path))
-    {
-        selected = entt::null;
-        recproj.last = fs::from_unicode(project_path);
-        recproj.recent.emplace(recproj.last);
-
-        save_editor();
-        ImGui::CloseCurrentPopup();
-        EGEngine->sendEvent(Events::Editor::ProjectUpdated);
-        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded project: %s.", recproj.last.c_str()});
-        return;
-    }
+    //if (pEditorProject->open(project_path))
+    //{
+    //    selected = entt::null;
+    //    recproj.last = fs::from_unicode(project_path);
+    //    recproj.recent.emplace(recproj.last);
+    //
+    //    save_editor();
+    //    ImGui::CloseCurrentPopup();
+    //    EGEngine->sendEvent(Events::Editor::ProjectUpdated);
+    //    ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded project: %s.", recproj.last.c_str()});
+    //    return;
+    //}
     ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Failed to load project!" });
 }
 
 void CEditor::makeNewScene(const std::filesystem::path& project_path)
 {
-    if (EGSceneManager->make_new(project_path))
-    {
-        selected = entt::null;
-        auto scenepath = std::filesystem::relative(project_path, fs::get_workdir());
-        pEditorProject->setScenePath(scenepath);
-        ImGui::CloseCurrentPopup();
-        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Created new scene: %s.", scenepath.string().c_str() });
-        return;
-    }
+    //if (EGSceneManager->make_new(project_path))
+    //{
+    //    selected = entt::null;
+    //    auto scenepath = std::filesystem::relative(project_path, fs::get_workdir());
+    //    pEditorProject->setScenePath(scenepath);
+    //    ImGui::CloseCurrentPopup();
+    //    ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Created new scene: %s.", scenepath.string().c_str() });
+    //    return;
+    //}
     ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Failed to create new scene!" });
 }
 
 void CEditor::openExistingScene(const std::filesystem::path& project_path)
 {
-    if (EGSceneManager->load(project_path))
-    {
-        selected = entt::null;
-        auto scenepath = std::filesystem::relative(project_path, fs::get_workdir());
-        pEditorProject->setScenePath(scenepath);
-        ImGui::CloseCurrentPopup();
-        ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded scene: %s.", scenepath.string().c_str() });
-        return;
-    }
+    //if (EGSceneManager->load(project_path))
+    //{
+    //    selected = entt::null;
+    //    auto scenepath = std::filesystem::relative(project_path, fs::get_workdir());
+    //    pEditorProject->setScenePath(scenepath);
+    //    ImGui::CloseCurrentPopup();
+    //    ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded scene: %s.", scenepath.string().c_str() });
+    //    return;
+    //}
     ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Failed to load scene!" });
 }
 
@@ -563,12 +562,12 @@ void CEditor::onKeyDown(CEvent& event)
 
 void CEditor::load_editor()
 {
-    fs::read_bson(editor_local_data, recproj, true);
+    EGFilesystem->readBson(editor_local_data, recproj);
 }
 
 void CEditor::save_editor()
 {
-    fs::write_bson(editor_local_data, recproj, true);
+    EGFilesystem->writeBson(editor_local_data, recproj);
 }
 
 void CEditor::baseInitialize()
@@ -586,7 +585,9 @@ void CEditor::baseInitialize()
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
     Themes::cinder();
-    auto fontfile = fs::from_unicode(fs::get_workdir(true) / "font" / FONT_ICON_FILE_NAME_MDI);
+
+    std::vector<uint8_t> fontdata;
+    EGFilesystem->readFile(fs::path_append("/editor/font", FONT_ICON_FILE_NAME_MDI), fontdata);
 
     static const ImWchar icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };
 
@@ -599,12 +600,12 @@ void CEditor::baseInitialize()
     icons_config.SizePixels = 12.0f;
 
     pSmallIcons = io.Fonts->AddFontDefault();
-    io.Fonts->AddFontFromFileTTF(fontfile.c_str(), 13.f, &icons_config, icons_ranges);
+    io.Fonts->AddFontFromMemoryTTF(fontdata.data(), fontdata.size(), 13.f, &icons_config, icons_ranges);
 
     icons_config.GlyphOffset.y = 15.0f;
     icons_config.SizePixels = 48.0f;
     icons_config.GlyphMaxAdvanceX = 48.f;
 
     pLargeIcons = io.Fonts->AddFontDefault();
-    io.Fonts->AddFontFromFileTTF(fontfile.c_str(), 48.f, &icons_config, icons_ranges);
+    io.Fonts->AddFontFromMemoryTTF(fontdata.data(), fontdata.size(), 48.f, &icons_config, icons_ranges);
 }

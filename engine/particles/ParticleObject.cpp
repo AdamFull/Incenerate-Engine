@@ -1,8 +1,8 @@
 #include "ParticleObject.h"
 
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
-using namespace engine::system;
+using namespace engine::filesystem;
 using namespace engine::particles;
 
 //CParticleObject::CParticleObject(Effekseer::ManagerRef manager)
@@ -12,8 +12,8 @@ using namespace engine::particles;
 
 void CParticleObject::load(const std::filesystem::path& path)
 {
-	auto fullpath = fs::get_workdir() / path;
-	auto u16_path = fullpath.u16string();
+	//auto fullpath = fs::get_workdir() / path;
+	//auto u16_path = fullpath.u16string();
 
 	//efkEffect = Effekseer::Effect::Create(efkManager, u16_path.c_str());
 }

@@ -9,7 +9,7 @@ namespace engine
 		class CMeshLoader
 		{
 		public:
-			static void load(const std::filesystem::path& source, const entt::entity& pRoot, ecs::FSceneComponent* component);
+			static void load(const std::string& source, const entt::entity& pRoot, ecs::FSceneComponent* component);
 		};
 	}
 }
