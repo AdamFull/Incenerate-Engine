@@ -13,7 +13,7 @@ using namespace engine::graphics;
 using namespace engine::audio;
 using namespace engine::scripting;
 using namespace engine::physics;
-using namespace engine::particles;
+//using namespace engine::particles;
 using namespace engine::filesystem;
 
 CEngine::CEngine()
@@ -65,8 +65,8 @@ void CEngine::create()
 	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
 	pGraphics->create(createInfo);
 
-	pParticles = std::make_unique<CParticlesCore>();
-	pParticles->create();
+	//pParticles = std::make_unique<CParticlesCore>();
+	//pParticles->create();
 
 	pEditor = std::make_unique<CEditor>();
 
@@ -164,10 +164,10 @@ const physicscore_t& CEngine::getPhysics() const
 	return pPhysics;
 }
 
-const particlescore_t& CEngine::getParticles() const
-{
-	return pParticles;
-}
+//const particlescore_t& CEngine::getParticles() const
+//{
+//	return pParticles;
+//}
 
 const filesystem_t& CEngine::getFilesystem() const
 {

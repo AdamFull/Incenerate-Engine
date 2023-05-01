@@ -200,7 +200,7 @@ void destroy_script(entt::registry& reg, entt::entity entity)
 		EGScripting->removeSource(script.data);
 }
 
-void construct_particle(entt::registry& reg, entt::entity entity)
+/*void construct_particle(entt::registry& reg, entt::entity entity)
 {
 	auto& particle = reg.get<FParticleComponent>(entity);
 
@@ -224,7 +224,7 @@ void destroy_particle(entt::registry& reg, entt::entity entity)
 		auto& particles = EGEngine->getParticles();
 		particles->removeParticle(particle.particle_id);
 	}
-}
+}*/
 
 void construct_terrain(entt::registry& reg, entt::entity entity)
 {
@@ -296,8 +296,8 @@ void CEngine::initEntityComponentSystem()
 	registry.on_construct<FScriptComponent>().connect<&construct_script>();
 	registry.on_destroy<FScriptComponent>().connect<&destroy_script>();
 
-	registry.on_construct<FParticleComponent>().connect<&construct_particle>();
-	registry.on_destroy<FParticleComponent>().connect<&destroy_particle>();
+	//registry.on_construct<FParticleComponent>().connect<&construct_particle>();
+	//registry.on_destroy<FParticleComponent>().connect<&destroy_particle>();
 
 	registry.on_construct<FTerrainComponent>().connect<&construct_terrain>();
 	registry.on_destroy<FTerrainComponent>().connect<&destroy_terrain>();

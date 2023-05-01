@@ -32,9 +32,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC imgui)
 add_subdirectory(tinyfiledialogs)
 target_link_libraries(${PROJECT_NAME} PUBLIC tfd)
 
-#add_subdirectory(Effekseer)
-#target_link_libraries(${PROJECT_NAME} PUBLIC Effekseer)
-
 add_subdirectory(vulkan)
 target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan-Headers)
 

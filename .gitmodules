@@ -30,9 +30,6 @@
 [submodule "engine/external/bullet3"]
 	path = engine/external/bullet3
 	url = https://github.com/bulletphysics/bullet3.git
-[submodule "engine/external/Effekseer"]
-	path = engine/external/Effekseer
-	url = https://github.com/effekseer/Effekseer.git
 [submodule "engine/external/vulkan"]
 	path = engine/external/vulkan
 	url = https://github.com/KhronosGroup/Vulkan-Headers.git

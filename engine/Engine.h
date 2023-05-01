@@ -7,7 +7,7 @@
 #include "physics/PhysicsCore.h"
 #include "event/EventManager.hpp"
 #include "scripting/ScriptingCore.h"
-#include "particles/ParticlesCore.h"
+//#include "particles/ParticlesCore.h"
 #include "editor/Editor.h"
 
 #include "game/SceneManager.h"
@@ -42,7 +42,7 @@ namespace engine
 	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
 	using scriptcore_t = std::unique_ptr<scripting::CScriptingCore>;
 	using physicscore_t = std::unique_ptr<physics::CPhysicsCore>;
-	using particlescore_t = std::unique_ptr<particles::CParticlesCore>;
+	//using particlescore_t = std::unique_ptr<particles::CParticlesCore>;
 	using filesystem_t = std::unique_ptr<filesystem::CVirtualFileSystemManager>;
 
 	class CEngine : public utl::singleton<CEngine>
@@ -66,7 +66,7 @@ namespace engine
 		const scenemgr_t& getSceneManager() const;
 		const scriptcore_t& getScripting() const;
 		const physicscore_t& getPhysics() const;
-		const particlescore_t& getParticles() const;
+		//const particlescore_t& getParticles() const;
 		const filesystem_t& getFilesystem() const;
 
 		const std::unique_ptr<utl::threadworker>& getLoaderThread();
@@ -112,7 +112,7 @@ namespace engine
 		scenemgr_t pSceneManager;
 		scriptcore_t pScripting;
 		physicscore_t pPhysics;
-		particlescore_t pParticles;
+		//particlescore_t pParticles;
 		filesystem_t pFilesystem;
 
 		std::unique_ptr<utl::threadworker> pLoaderThread;
