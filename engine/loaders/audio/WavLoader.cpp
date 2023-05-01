@@ -1,5 +1,7 @@
 #include "WavLoader.h"
 
+#include "Engine.h"
+
 #include "filesystem/vfs_helper.h"
 
 using namespace engine::loaders;
@@ -9,9 +11,7 @@ EAudioReaderError CWavReader::open(const std::filesystem::path& filepath)
 {
 	// TODO make it with vfs
 	char header[header_size];
-
-	//auto relpath = fs::get_workdir() / filepath;
-	//
+	
 	//pFile = fopen(fs::from_unicode(relpath).c_str(), "rb");
 	//if (!pFile)
 	//	return EAudioReaderError::eCannotOpenFile;

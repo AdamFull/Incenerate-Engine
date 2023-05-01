@@ -32,9 +32,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC imgui)
 add_subdirectory(tinyfiledialogs)
 target_link_libraries(${PROJECT_NAME} PUBLIC tfd)
 
-add_subdirectory(lua)
-target_link_libraries(${PROJECT_NAME} PUBLIC lualib)
-
 #add_subdirectory(Effekseer)
 #target_link_libraries(${PROJECT_NAME} PUBLIC Effekseer)
 

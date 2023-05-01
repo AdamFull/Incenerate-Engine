@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DirectoryIterator.h"
+#include "DirectoryIteratorInterface.h"
 #include "InputFileInterface.h"
 #include "OutputFileInterface.h"
 

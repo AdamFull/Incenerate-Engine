@@ -1,41 +1,45 @@
 #include "ScriptSource.h"
 
-#include "Engine.h"
-
 #include "filesystem/vfs_helper.h"
 
 using namespace engine::filesystem;
 using namespace engine::scripting;
 
+CScriptSource::CScriptSource(IVirtualFileSystemInterface* vfs_ptr) :
+	m_pVFS(vfs_ptr)
+{
+
+}
+
 void CScriptSource::load(const std::string& filepath, sol::state& lua)
 {
-	if (EGFilesystem->exists(filepath))
+	if (m_pVFS->exists(filepath))
 	{
-		pEnv = std::make_unique<sol::environment>(lua, sol::create, lua.globals());
+		m_pEnvironment = std::make_unique<sol::environment>(lua, sol::create, lua.globals());
 
-		if (pEnv)
+		if (m_pEnvironment)
 		{
 			std::string scriptdata;
-			EGFilesystem->readFile(filepath, scriptdata);
-			auto res = lua.script(scriptdata, *pEnv, sol::script_pass_on_error);
+			m_pVFS->readFile(filepath, scriptdata);
+			auto res = lua.script(scriptdata, *m_pEnvironment, sol::script_pass_on_error);
 
 			if (!res.valid())
 			{
 				auto error = res.get<sol::error>();
-				log_error(error.what());
+				//log_error(error.what());
 			}
 
-			pOnCreate = std::make_unique<sol::protected_function>(pEnv->get<sol::protected_function>("onCreate"));
-			if (!pOnCreate || !pOnCreate->valid())
-				pOnCreate.reset();
+			m_pOnCreate = std::make_unique<sol::protected_function>(m_pEnvironment->get<sol::protected_function>("onCreate"));
+			if (!m_pOnCreate || !m_pOnCreate->valid())
+				m_pOnCreate.reset();
 
-			pOnUpdate = std::make_unique<sol::protected_function>(pEnv->get<sol::protected_function>("onUpdate"));
-			if (!pOnUpdate || !pOnUpdate->valid())
-				pOnUpdate.reset();
+			m_pOnUpdate = std::make_unique<sol::protected_function>(m_pEnvironment->get<sol::protected_function>("onUpdate"));
+			if (!m_pOnUpdate || !m_pOnUpdate->valid())
+				m_pOnUpdate.reset();
 
-			pOnDestroy = std::make_unique<sol::protected_function>(pEnv->get<sol::protected_function>("onDestroy"));
-			if (!pOnDestroy || !pOnDestroy->valid())
-				pOnDestroy.reset();
+			m_pOnDestroy = std::make_unique<sol::protected_function>(m_pEnvironment->get<sol::protected_function>("onDestroy"));
+			if (!m_pOnDestroy || !m_pOnDestroy->valid())
+				m_pOnDestroy.reset();
 
 			lua.collect_garbage();
 		}
@@ -44,39 +48,39 @@ void CScriptSource::load(const std::string& filepath, sol::state& lua)
 
 void CScriptSource::callOnCreate()
 {
-	if (pOnCreate && pOnCreate->valid())
+	if (m_pOnCreate && m_pOnCreate->valid())
 	{
-		auto result = pOnCreate->call();
+		auto result = m_pOnCreate->call();
 		if (!result.valid())
 		{
 			auto err = result.get<sol::error>();
-			log_error(err.what());
+			//log_error(err.what());
 		}
 	}
 }
 
 void CScriptSource::callOnUpdate(float fDT)
 {
-	if (pOnUpdate && pOnUpdate->valid())
+	if (m_pOnUpdate && m_pOnUpdate->valid())
 	{
-		auto result = pOnUpdate->call(fDT);
+		auto result = m_pOnUpdate->call(fDT);
 		if (!result.valid())
 		{
 			auto err = result.get<sol::error>();
-			log_error(err.what());
+			//log_error(err.what());
 		}
 	}
 }
 
 void CScriptSource::callOnDestroy()
 {
-	if (pOnDestroy && pOnDestroy->valid())
+	if (m_pOnDestroy && m_pOnDestroy->valid())
 	{
-		auto result = pOnDestroy->call();
+		auto result = m_pOnDestroy->call();
 		if (!result.valid())
 		{
 			auto err = result.get<sol::error>();
-			log_error(err.what());
+			//log_error(err.what());
 		}
 	}
 }

@@ -6,6 +6,7 @@ set(EXTERNALS_PATH "${ENGINE_ROOT}/external")
 
 add_subdirectory("external")
 add_subdirectory("filesystem")
+add_subdirectory("scripting")
 
 file(GLOB_RECURSE ENGINE_EDITOR_SOURCE "editor/*.cpp" "editor/*.c" "editor/*.cc" "editor/*.h" "editor/*.hpp")
 file(GLOB_RECURSE ENGINE_LOADERS_SOURCE "loaders/*.cpp" "loaders/*.c" "loaders/*.cc" "loaders/*.h" "loaders/*.hpp")
@@ -16,7 +17,6 @@ file(GLOB_RECURSE ENGINE_ECS_SOURCE "ecs/*.cpp" "ecs/*.c" "ecs/*.cc" "ecs/*.h" "
 file(GLOB_RECURSE ENGINE_EVENT_SOURCE "event/*.cpp" "event/*.c" "event/*.cc" "event/*.h" "event/*.event")
 file(GLOB_RECURSE ENGINE_GRAPHICS_SOURCE "graphics/*.cpp" "graphics/*.c" "graphics/*.cc" "graphics/*.h" "graphics/*.hpp")
 file(GLOB_RECURSE ENGINE_AUDIO_SOURCE "audio/*.cpp" "audio/*.c" "audio/*.cc" "audio/*.h" "audio/*.hpp")
-file(GLOB_RECURSE ENGINE_SCRIPTING_SOURCE "scripting/*.cpp" "scripting/*.c" "scripting/*.cc" "scripting/*.h" "scripting/*.hpp")
 file(GLOB_RECURSE ENGINE_SYSTEM_SOURCE "system/*.cpp" "system/*.c" "system/*.cc" "system/*.h" "system/*.hpp")
 file(GLOB_RECURSE ENGINE_GAME_SOURCE "game/*.cpp" "game/*.c" "game/*.cc" "game/*.h" "game/*.hpp")
 file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc" "*.h" "*.hpp")
@@ -33,7 +33,6 @@ ${ENGINE_ECS_SOURCE}
 ${ENGINE_EVENT_SOURCE}
 ${ENGINE_GRAPHICS_SOURCE} 
 ${ENGINE_AUDIO_SOURCE}
-${ENGINE_SCRIPTING_SOURCE}
 ${ENGINE_SYSTEM_SOURCE}
 ${ENGINE_GAME_SOURCE}
 ${ENGINE_SOURCE})
@@ -41,6 +40,7 @@ ${ENGINE_SOURCE})
 target_link_libraries(${PROJECT_NAME} 
     PUBLIC external_lib
     PUBLIC incenerate_engine_vfs
+    PUBLIC incenerate_engine_scripting
 )
 
 target_include_directories(${PROJECT_NAME} 

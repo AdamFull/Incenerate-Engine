@@ -1,14 +1,14 @@
 #include "lua_bindings.h"
 
-#include "ecs/components/components.h"
+//#include "ecs/components/components.h"
 
-using namespace engine::ecs;
+//using namespace engine::ecs;
 
 namespace engine
 {
 	namespace scripting
 	{
-		void bind_components(sol::state& lua)
+		/*void bind_components(sol::state& lua)
 		{
 			auto transform = lua.new_usertype<FTransformComponent>("FTransformComponent", sol::constructors<FTransformComponent()>());
 			transform.set("position", &FTransformComponent::position);
@@ -106,6 +106,6 @@ namespace engine
 			spot_light.set("outerAngle", &FSpotLightComponent::outerAngle);
 			spot_light.set("toTarget", &FSpotLightComponent::toTarget);
 			spot_light.set("castShadows", &FSpotLightComponent::castShadows);
-		}
+		}*/
 	}
 }

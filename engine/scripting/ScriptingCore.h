@@ -10,6 +10,9 @@ namespace engine
 		class CScriptingCore
 		{
 		public:
+			CScriptingCore() = default;
+			CScriptingCore(filesystem::IVirtualFileSystemInterface* vfs_ptr);
+
 			void create();
 			void update();
 
@@ -21,8 +24,8 @@ namespace engine
 			const std::unique_ptr<CScriptSource>& getSource(size_t id);
 		private:
 			sol::state lua;
-
 			std::unique_ptr<CObjectManager<CScriptSource>> pScriptManager;
+			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
 		};
 	}
 }

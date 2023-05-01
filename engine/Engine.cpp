@@ -56,7 +56,7 @@ void CEngine::create()
 	pAudio = std::make_unique<CAudioCore>();
 	pAudio->create();
 
-	pScripting = std::make_unique<CScriptingCore>();
+	pScripting = std::make_unique<CScriptingCore>(pFilesystem.get());
 	pScripting->create();
 
 	pWindow = std::make_unique<CSDL2WindowAdapter>();

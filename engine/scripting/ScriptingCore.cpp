@@ -4,12 +4,18 @@
 
 using namespace engine::scripting;
 
+CScriptingCore::CScriptingCore(filesystem::IVirtualFileSystemInterface* vfs_ptr) :
+    m_pVFS(vfs_ptr)
+{
+
+}
+
 void CScriptingCore::create()
 {
     pScriptManager = std::make_unique<CObjectManager<CScriptSource>>();
 
     bind_glm_lib(lua);
-    bind_components(lua);
+    //bind_components(lua);
 }
 
 void CScriptingCore::update()
@@ -19,7 +25,7 @@ void CScriptingCore::update()
 
 size_t CScriptingCore::addSource(const std::string& name, const std::string& filepath)
 {
-    auto script = std::make_unique<CScriptSource>();
+    auto script = std::make_unique<CScriptSource>(m_pVFS);
     script->load(filepath, lua);
     return pScriptManager->add(name, std::move(script));
 }
