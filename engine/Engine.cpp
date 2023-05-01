@@ -1,5 +1,5 @@
 #include "Engine.h"
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
 #include "game/SceneSerializer.h"
 #include "graphics/window/SDL2WindowAdapter.h"
@@ -10,8 +10,6 @@ using namespace engine;
 using namespace engine::editor;
 using namespace engine::game;
 using namespace engine::graphics;
-using namespace engine::system;
-using namespace engine::system::window;
 using namespace engine::audio;
 using namespace engine::scripting;
 using namespace engine::physics;

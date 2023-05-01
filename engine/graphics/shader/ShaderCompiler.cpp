@@ -18,22 +18,22 @@ class CShaderIncluder : public glslang::TShader::Includer
 public:
 	IncludeResult* includeLocal(const char* headerName, const char* includerName, size_t inclusionDepth) override
 	{
-		std::filesystem::path local_path{};
+		std::string local_path{};
 		if (inclusionDepth == 1)
 		{
-			directory = std::filesystem::path(includerName).parent_path();
+			directory = fs::parent_path(includerName);
 			local_path = directory;
 		}
 		else
 		{
-			directory = directory / std::filesystem::path(includerName).parent_path();
+			directory = fs::path_append(directory, fs::parent_path(includerName));
 			local_path = directory;
 		}
 
-		local_path = std::filesystem::weakly_canonical(directory / headerName);
+		local_path = fs::normalize(fs::path_append(directory, headerName));
 
 		std::string fileLoaded;
-		if (!fs::read_file(local_path, fileLoaded, true))
+		if (!EGFilesystem->readFile(local_path, fileLoaded))
 		{
 			std::stringstream ss;
 			ss << "In shader file: " << includerName << " Shader Include could not be loaded: " << std::quoted(headerName);
@@ -48,10 +48,11 @@ public:
 
 	IncludeResult* includeSystem(const char* headerName, const char* includerName, size_t inclusionDepth) override
 	{
-		auto header = std::filesystem::path("shaders") / headerName;
+		auto header = fs::path_append("shaders", headerName);
 
 		std::string fileLoaded;
-		if (!fs::read_file(header, fileLoaded, true)) {
+		if (!EGFilesystem->readFile(header, fileLoaded)) 
+		{
 			std::stringstream ss;
 			ss << "Shader Include could not be loaded: " << std::quoted(headerName);
 			log_error(ss.str());
@@ -72,7 +73,7 @@ public:
 		}
 	}
 private:
-	std::filesystem::path directory{ "" };
+	std::string directory{ "" };
 };
 
 vk::ShaderStageFlagBits getShaderStage(const std::string& moduleName)

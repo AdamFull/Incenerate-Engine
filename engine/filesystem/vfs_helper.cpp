@@ -82,6 +82,33 @@ std::string fs::path_append(const std::string& base_path, const std::string& rel
 	return result_path;
 }
 
+std::string fs::normalize(const std::string& path)
+{
+	std::deque<std::string> components;
+	std::istringstream iss(path);
+	std::string part;
+
+	while (std::getline(iss, part, '/')) 
+	{
+		if (part.empty() || part == ".")
+			continue;
+
+		else if (part == "..")
+		{
+			if (!components.empty())
+				components.pop_back();
+		}
+		else
+			components.push_back(std::move(part));
+	}
+
+	std::ostringstream oss;
+	for (const auto& component : components)
+		oss << '/' << component;
+
+	return oss.str().empty() ? "/" : oss.str();
+}
+
 bool fs::is_scene_format(const std::string& path)
 {
 	auto ext = get_ext(path);

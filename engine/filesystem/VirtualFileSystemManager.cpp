@@ -221,7 +221,7 @@ bool CVirtualFileSystemManager::writeFile(const std::string& path, const std::st
 	return false;
 }
 
-bool CVirtualFileSystemManager::writeFile(const std::string& path, std::vector<uint8_t>& binary)
+bool CVirtualFileSystemManager::writeFile(const std::string& path, const std::vector<uint8_t>& binary)
 {
 	auto pFile = createFile(path);
 	if (pFile && pFile->is_open())

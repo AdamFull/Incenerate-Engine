@@ -17,7 +17,7 @@ void CScriptingCore::update()
 
 }
 
-size_t CScriptingCore::addSource(const std::string& name, const std::filesystem::path& filepath)
+size_t CScriptingCore::addSource(const std::string& name, const std::string& filepath)
 {
     auto script = std::make_unique<CScriptSource>();
     script->load(filepath, lua);

@@ -53,6 +53,7 @@ namespace engine
             static std::string get_filename(const std::string& path);
             static std::string parent_path(const std::string& path);
             static std::string path_append(const std::string& base_path, const std::string& relative_path);
+            static std::string normalize(const std::string& path);
 
             static bool is_scene_format(const std::string& path);
             static bool is_image_format(const std::string& path);

@@ -62,10 +62,10 @@ namespace engine
 
 			void onAllFramesDone(CEvent& event);
 
-			void makeNewProject(const std::filesystem::path& project_path);
-			void openExistingProject(const std::filesystem::path& project_path);
-			void makeNewScene(const std::filesystem::path& project_path);
-			void openExistingScene(const std::filesystem::path& project_path);
+			void makeNewProject(const std::string& project_path);
+			void openExistingProject(const std::string& project_path);
+			void makeNewScene(const std::string& project_path);
+			void openExistingScene(const std::string& project_path);
 
 			template<class _Lambda>
 			void pushAction(_Lambda&& lfunc)
@@ -106,8 +106,6 @@ namespace engine
 			{
 				return utl::const_hash(typeid(_Ty).name());
 			}
-
-			void baseInitialize();
 		private:
 			FRecentProjects recproj;
 			std::unique_ptr<CEditorProject> pEditorProject;

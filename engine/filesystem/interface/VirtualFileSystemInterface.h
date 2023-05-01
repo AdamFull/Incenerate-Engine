@@ -42,7 +42,7 @@ namespace engine
             virtual bool readFile(const std::string& path, std::vector<uint8_t>& data) = 0;
 
             virtual bool writeFile(const std::string& path, const std::string& data) = 0;
-            virtual bool writeFile(const std::string& path, std::vector<uint8_t>& binary) = 0;
+            virtual bool writeFile(const std::string& path, const std::vector<uint8_t>& binary) = 0;
 
             template<class _Ty>
             bool readJson(const std::string& path, _Ty& type)

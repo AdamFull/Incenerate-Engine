@@ -13,7 +13,7 @@ namespace engine
 			void create();
 			void update();
 
-			size_t addSource(const std::string& name, const std::filesystem::path& filepath);
+			size_t addSource(const std::string& name, const std::string& filepath);
 			size_t addSource(const std::string& name, std::unique_ptr<CScriptSource>&& source);
 			void removeSource(const std::string& name);
 			void removeSource(size_t id);

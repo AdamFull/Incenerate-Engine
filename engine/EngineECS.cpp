@@ -8,14 +8,14 @@
 
 #include "ecs/helper.hpp"
 
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
 #include "loaders/MeshLoader.h"
 #include "game/SceneGraph.hpp"
 #include "game/TerrainGenerator.h"
 
 using namespace engine;
-using namespace engine::system;
+using namespace engine::filesystem;
 using namespace engine::audio;
 using namespace engine::graphics;
 using namespace engine::loaders;

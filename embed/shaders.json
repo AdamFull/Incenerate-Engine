@@ -2,21 +2,21 @@
   "brdflut_generator": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/generators/brdflut.comp"
+      "/embed/shaders/generators/brdflut.comp"
     ],
     "defines": {}
   },
   "irradiancecube_generator": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/generators/Irradiancecube.comp"
+      "/embed/shaders/generators/Irradiancecube.comp"
     ],
     "defines": {}
   },
   "prefilteredmap_generator": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/generators/prefilteredmap.comp"
+      "/embed/shaders/generators/prefilteredmap.comp"
     ],
     "defines": {}
   },
@@ -29,10 +29,10 @@
     "tesselation": false,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/default/default.vert",
-      "shaders/main/default/default.frag",
-      "shaders/main/default/default.tesc",
-      "shaders/main/default/default.tese"
+      "/embed/shaders/main/default/default.vert",
+      "/embed/shaders/main/default/default.frag",
+      "/embed/shaders/main/default/default.tesc",
+      "/embed/shaders/main/default/default.tese"
     ],
     "defines": {}
   },
@@ -45,10 +45,10 @@
     "tesselation": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/default/terrain.vert",
-      "shaders/main/default/terrain.frag",
-      "shaders/main/default/terrain.tesc",
-      "shaders/main/default/terrain.tese"
+      "/embed/shaders/main/default/terrain.vert",
+      "/embed/shaders/main/default/terrain.frag",
+      "/embed/shaders/main/default/terrain.tesc",
+      "/embed/shaders/main/default/terrain.tese"
     ],
     "defines": {}
   },
@@ -61,9 +61,9 @@
     "tesselation": false,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/default/terrain.vert",
-      "shaders/main/default/terrain.geom",
-      "shaders/main/default/terrain.frag"
+      "/embed/shaders/main/default/terrain.vert",
+      "/embed/shaders/main/default/terrain.geom",
+      "/embed/shaders/main/default/terrain.frag"
     ],
     "defines": {}
   },
@@ -75,8 +75,8 @@
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/default/billboard.vert",
-      "shaders/main/default/billboard.frag"
+      "/embed/shaders/main/default/billboard.vert",
+      "/embed/shaders/main/default/billboard.frag"
     ],
     "defines": {}
   },
@@ -88,8 +88,8 @@
     "depth_test": false,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/default/skybox.vert",
-      "shaders/main/default/skybox.frag"
+      "/embed/shaders/main/default/skybox.vert",
+      "/embed/shaders/main/default/skybox.frag"
     ],
     "defines": {}
   },
@@ -101,9 +101,9 @@
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/default/debug/displaynormal.vert",
-      "shaders/main/default/debug/displaynormal.geom",
-      "shaders/main/default/debug/displaynormal.frag"
+      "/embed/shaders/main/default/debug/displaynormal.vert",
+      "/embed/shaders/main/default/debug/displaynormal.geom",
+      "/embed/shaders/main/default/debug/displaynormal.frag"
     ],
     "defines": {}
   },
@@ -117,8 +117,8 @@
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/default/debug/debugdraw.vert",
-      "shaders/main/default/debug/displaynormal.frag"
+      "/embed/shaders/main/default/debug/debugdraw.vert",
+      "/embed/shaders/main/default/debug/displaynormal.frag"
     ],
     "defines": {}
   },
@@ -131,8 +131,8 @@
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/shadows/cascade_shadow.vert",
-      "shaders/main/shadows/cascade_shadow.geom"
+      "/embed/shaders/main/shadows/cascade_shadow.vert",
+      "/embed/shaders/main/shadows/cascade_shadow.geom"
     ],
     "defines": {}
   },
@@ -144,8 +144,8 @@
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/shadows/shadow_base.vert",
-      "shaders/main/shadows/directional_shadow.geom"
+      "/embed/shaders/main/shadows/shadow_base.vert",
+      "/embed/shaders/main/shadows/directional_shadow.geom"
     ],
     "defines": {}
   },
@@ -157,9 +157,9 @@
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/shadows/shadow_base.vert",
-      "shaders/main/shadows/omni_shadow.geom",
-      "shaders/main/shadows/omni_shadow.frag"
+      "/embed/shaders/main/shadows/shadow_base.vert",
+      "/embed/shaders/main/shadows/omni_shadow.geom",
+      "/embed/shaders/main/shadows/omni_shadow.frag"
     ],
     "defines": {}
   },
@@ -172,8 +172,8 @@
     "depth_test": false,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/screenspace.vert",
-      "shaders/main/pbr/lightning_pass.frag"
+      "/embed/shaders/main/screenspace.vert",
+      "/embed/shaders/main/pbr/lightning_pass.frag"
     ],
     "defines": {}
   },
@@ -185,8 +185,8 @@
     "depth_test": false,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/screenspace.vert",
-      "shaders/main/ssao.frag"
+      "/embed/shaders/main/screenspace.vert",
+      "/embed/shaders/main/ssao.frag"
     ],
     "defines": {}
   },
@@ -194,84 +194,84 @@
   "fxaa": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/fxaa.comp"
+      "/embed/shaders/postprocess/fxaa.comp"
     ],
     "defines": {}
   },
   "brightdetect": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/brightdetect.comp"
+      "/embed/shaders/postprocess/brightdetect.comp"
     ],
     "defines": {}
   },
   "downsample": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/downsample.comp"
+      "/embed/shaders/postprocess/downsample.comp"
     ],
     "defines": {}
   },
   "upsample": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/upsample.comp"
+      "/embed/shaders/postprocess/upsample.comp"
     ],
     "defines": {}
   },
   "applybloom": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/applybloom.comp"
+      "/embed/shaders/postprocess/applybloom.comp"
     ],
     "defines": {}
   },
   "chromatic_aberration": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/chromatic_aberration.comp"
+      "/embed/shaders/postprocess/chromatic_aberration.comp"
     ],
     "defines": {}
   },
   "vignette": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/vignette.comp"
+      "/embed/shaders/postprocess/vignette.comp"
     ],
     "defines": {}
   },
   "dof": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/dof.comp"
+      "/embed/shaders/postprocess/dof.comp"
     ],
     "defines": {}
   },
   "filmgrain": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/filmgrain.comp"
+      "/embed/shaders/postprocess/filmgrain.comp"
     ],
     "defines": {}
   },
   "fog": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/fog.comp"
+      "/embed/shaders/postprocess/fog.comp"
     ],
     "defines": {}
   },
   "ssr_pass": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/ssr.comp"
+      "/embed/shaders/postprocess/ssr.comp"
     ],
     "defines": {}
   },
   "emptypass": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/emptypass.comp"
+      "/embed/shaders/postprocess/emptypass.comp"
     ],
     "defines": {}
   },
@@ -279,13 +279,13 @@
   "bokeh_blur": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/bokeh.comp"
+      "/embed/shaders/postprocess/bokeh.comp"
     ]
   },
   "gaussian_blur": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/gaussianblur.comp"
+      "/embed/shaders/postprocess/gaussianblur.comp"
     ],
     "defines": {
       "BLUR_TYPE": "13"
@@ -294,9 +294,9 @@
   "tonemap": {
     "bind_point": "Compute",
     "stages": [
-      "shaders/postprocess/comp_histogram.comp",
-      "shaders/postprocess/comp_average_brightness.comp",
-      "shaders/postprocess/tonemap.comp"
+      "/embed/shaders/postprocess/comp_histogram.comp",
+      "/embed/shaders/postprocess/comp_average_brightness.comp",
+      "/embed/shaders/postprocess/tonemap.comp"
     ],
     "defines": {}
   },
@@ -310,8 +310,8 @@
     "depth_test": false,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "shaders/main/screenspace.vert",
-      "shaders/postprocess/throughpass.frag"
+      "/embed/shaders/main/screenspace.vert",
+      "/embed/shaders/postprocess/throughpass.frag"
     ],
     "defines": {}
   }

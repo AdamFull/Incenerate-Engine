@@ -123,7 +123,7 @@ namespace engine
 			bool readFile(const std::string& path, std::vector<uint8_t>& data) override;
 
 			bool writeFile(const std::string& path, const std::string& data) override;
-			bool writeFile(const std::string& path, std::vector<uint8_t>& binary) override;
+			bool writeFile(const std::string& path, const std::vector<uint8_t>& binary) override;
 		private:
 			/**
 			 * @brief Retrieves the filesystem implementation for the given path.

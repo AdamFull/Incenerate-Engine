@@ -5,6 +5,8 @@
 #include "game/SceneSerializer.h"
 #include "game/SceneGraph.hpp"
 
+#include "filesystem/native/NativeFileSystem.h"
+
 #include "ecs/components/CameraComponent.h"
 #include "ecs/components/TransformComponent.h"
 
@@ -39,38 +41,44 @@ CEditorProject::CEditorProject(entt::entity& editor_camera)
     this->editor_camera = &editor_camera;
 }
 
-bool CEditorProject::make_new(const std::filesystem::path& path)
+bool CEditorProject::make_new(const std::string& path)
 {
-    //auto parent_path = path.parent_path();
-    //auto assets_path = parent_path / "assets";
-    //fs::set_workdir(assets_path);
-    //std::filesystem::create_directories(assets_path);
-    //
-    //EGSceneManager->make_new(assets_path / "scene.iescene");
-    //EGSceneManager->save();
-    //
-    //project.assets = "assets";
-    //project.last_scene = "scene.iescene";
-    //if (fs::write_bson(path, project, true))
-    //{
-    //    createOrLoadEditorCamera();
-    //    projectpath = path;
-    //    return true;
-    //}
+    auto parent_path = fs::parent_path(path);
+    auto assets_path = fs::path_append(parent_path, "assets");
+    
+    EGFilesystem->mount("/project", std::make_unique<CNativeFileSystem>(parent_path));
+    EGFilesystem->createDirectories(fs::path_append("/project", "assets"));
+
+    EGFilesystem->mount("/assets", std::make_unique<CNativeFileSystem>(assets_path));
+    
+    EGSceneManager->make_new(fs::path_append("/assets", "scene.iescene"));
+    EGSceneManager->save();
+    
+    project.assets = "assets";
+    project.last_scene = "scene.iescene";
+    if (EGFilesystem->writeBson(fs::path_append("/project", fs::get_filename(path)), project))
+    {
+        createOrLoadEditorCamera();
+        projectpath = path;
+        return true;
+    }
 
     return false;
 }
 
-bool CEditorProject::open(const std::filesystem::path& path)
+bool CEditorProject::open(const std::string& path)
 {
-    //if (fs::read_bson(path, project))
-    //{
-    //    fs::set_workdir(path.parent_path() / project.assets);
-    //    createOrLoadEditorCamera();
-    //    EGSceneManager->load(project.last_scene);
-    //    projectpath = path;
-    //    return true;
-    //}
+    // Mount project filesystem
+    EGFilesystem->mount("/project", std::make_unique<CNativeFileSystem>(fs::parent_path(path)));
+    projectpath = fs::path_append("/project", fs::get_filename(path));
+
+    if (EGFilesystem->readBson(projectpath, project))
+    {
+        EGFilesystem->mount("/assets", std::make_unique<CNativeFileSystem>(fs::path_append(fs::parent_path(path), project.assets)));
+        createOrLoadEditorCamera();
+        EGSceneManager->load(fs::path_append("/assets", project.last_scene));
+        return true;
+    }
 
     return false;
 }
@@ -79,17 +87,17 @@ void CEditorProject::save()
 {
     project.camera = CSceneLoader::saveNode(*editor_camera);
 
-    //if (!projectpath.empty())
-    //    fs::write_bson(projectpath, project, true);
+    if (!projectpath.empty())
+        EGFilesystem->writeBson(projectpath, project);
 
     EGSceneManager->save();
 }
 
-void CEditorProject::setScenePath(const std::filesystem::path& path)
+void CEditorProject::setScenePath(const std::string& path)
 {
     if (!path.empty())
     {
-        project.last_scene = path.string();
+        project.last_scene = path;
         save();
     } 
 }
@@ -102,7 +110,7 @@ bool CEditorProject::isProjectOpen()
 void CEditorProject::createOrLoadEditorCamera()
 {
     if (!project.camera.srName.empty())
-        *editor_camera = CSceneLoader::loadNode(project.camera);
+        *editor_camera = CSceneLoader::loadNode("", project.camera);
     else
     {
         auto& registry = EGEngine->getRegistry();

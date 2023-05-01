@@ -1,22 +1,23 @@
 #include "ScriptSource.h"
 
-#include "system/filesystem/filesystem.h"
+#include "Engine.h"
 
-using namespace engine::system;
+#include "filesystem/vfs_helper.h"
+
+using namespace engine::filesystem;
 using namespace engine::scripting;
 
-void CScriptSource::load(const std::filesystem::path& filepath, sol::state& lua)
+void CScriptSource::load(const std::string& filepath, sol::state& lua)
 {
-	auto fullpath = fs::get_workdir() / filepath;
-
-	if (fs::is_file_exists(fullpath))
+	if (EGFilesystem->exists(filepath))
 	{
 		pEnv = std::make_unique<sol::environment>(lua, sol::create, lua.globals());
 
 		if (pEnv)
 		{
-			auto path = fullpath.string();
-			auto res = lua.script_file(path, *pEnv, sol::script_pass_on_error);
+			std::string scriptdata;
+			EGFilesystem->readFile(filepath, scriptdata);
+			auto res = lua.script(scriptdata, *pEnv, sol::script_pass_on_error);
 
 			if (!res.valid())
 			{

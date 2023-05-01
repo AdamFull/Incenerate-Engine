@@ -16,7 +16,7 @@ namespace engine
 			void update();
 			void shutdown();
 
-			size_t addSource(const std::string& name, const std::filesystem::path& filepath);
+			size_t addSource(const std::string& name, const std::string& filepath);
 			size_t addSource(const std::string& name, std::unique_ptr<CAudioSource>&& source);
 			void removeSource(const std::string& name);
 			void removeSource(size_t id);

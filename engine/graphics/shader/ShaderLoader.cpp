@@ -2,12 +2,12 @@
 
 #include "Engine.h"
 #include "graphics/rendering/material/Material.h"
-#include "system/filesystem/filesystem.h"
+#include "filesystem/vfs_helper.h"
 
-constexpr const char* shader_config_path = "shaders.json";
+constexpr const char* shader_config_path = "/embed/shaders.json";
 
 using namespace engine::graphics;
-using namespace engine::system;
+using namespace engine::filesystem;
 
 CShaderLoader::CShaderLoader(CDevice* device)
 {
@@ -23,7 +23,7 @@ CShaderLoader::~CShaderLoader()
 
 void CShaderLoader::create()
 {
-	fs::read_json(shader_config_path, programCI, true);
+	EGFilesystem->readJson(shader_config_path, programCI);
 }
 
 std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size_t mat_id)

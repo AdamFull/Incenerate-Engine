@@ -30,19 +30,19 @@ void CBillboardSystem::__create()
 		auto& device = graphics->getDevice();
 
 		auto image = std::make_unique<CImage>(device.get());
-		image->create("icon/editor/audio.png", vk::Format::eR8G8B8A8Srgb);
+		image->create("/embed/icon/editor/audio.png", vk::Format::eR8G8B8A8Srgb);
 		audio_icon = graphics->addImage("editor_audio_billboard", std::move(image));
 
 		image = std::make_unique<CImage>(device.get());
-		image->create("icon/editor/camera.png", vk::Format::eR8G8B8A8Srgb);
+		image->create("/embed/icon/editor/camera.png", vk::Format::eR8G8B8A8Srgb);
 		camera_icon = graphics->addImage("editor_camera_billboard", std::move(image));
 
 		image = std::make_unique<CImage>(device.get());
-		image->create("icon/editor/environment.png", vk::Format::eR8G8B8A8Srgb);
+		image->create("/embed/icon/editor/environment.png", vk::Format::eR8G8B8A8Srgb);
 		environment_icon = graphics->addImage("editor_environment_billboard", std::move(image));
 
 		image = std::make_unique<CImage>(device.get());
-		image->create("icon/editor/light.png", vk::Format::eR8G8B8A8Srgb);
+		image->create("/embed/icon/editor/light.png", vk::Format::eR8G8B8A8Srgb);
 		light_icon = graphics->addImage("editor_light_billboard", std::move(image));
 	}
 }

@@ -109,6 +109,26 @@ bool CGltfLoader::loadImageDataFuncEmpty(tinygltf::Image* image, const int image
     return true;//tinygltf::LoadImageData(image, imageIndex, error, warning, req_width, req_height, bytes, size, userData);
 }
 
+bool gltfFileSystemFileExists(const std::string& filename, void* userdata)
+{
+    return EGFilesystem->exists(filename);
+}
+
+std::string gltfFileSystemExpandFilePath(const std::string& filename, void* userdata)
+{
+    return fs::normalize(fs::to_posix_path(filename));
+}
+
+bool gltfFileSystemReadFile(std::vector<uint8_t>* u8data, std::string* err, const std::string& filename, void* userdata)
+{
+    return EGFilesystem->readFile(filename, *u8data);
+}
+
+bool gltfFileSystemWriteFile(std::string* err, const std::string& filename, const std::vector<uint8_t>& u8data, void* userdata)
+{
+    return EGFilesystem->writeFile(filename, u8data);
+}
+
 void CGltfLoader::load(const const std::string& source, const entt::entity& root, FSceneComponent* component)
 {
     auto& graphics = EGEngine->getGraphics();
@@ -116,25 +136,25 @@ void CGltfLoader::load(const const std::string& source, const entt::entity& root
 
     tinygltf::Model gltfModel;
     tinygltf::TinyGLTF gltfContext;
+    tinygltf::FsCallbacks gltfFsCallbacks;
+    gltfFsCallbacks.user_data = this;
+    gltfFsCallbacks.FileExists = &gltfFileSystemFileExists;
+    gltfFsCallbacks.ExpandFilePath = &gltfFileSystemExpandFilePath;
+    gltfFsCallbacks.ReadWholeFile = &gltfFileSystemReadFile;
+    gltfFsCallbacks.WriteWholeFile = &gltfFileSystemWriteFile;
+
     std::string error, warning;
     gltfContext.SetImageLoader(&CGltfLoader::loadImageDataFuncEmpty, this);
+    gltfContext.SetFsCallbacks(gltfFsCallbacks);
 
     fsParentPath = fs::parent_path(source);
     auto ext = fs::get_ext(source);
 
     bool fileLoaded{ false };
     if (ext == ".glb")
-    {
-        std::vector<uint8_t> meshdata;
-        EGFilesystem->readFile(source, meshdata);
-        fileLoaded = gltfContext.LoadBinaryFromMemory(&gltfModel, &error, &warning, meshdata.data(), meshdata.size());
-    }
+        fileLoaded = gltfContext.LoadBinaryFromFile(&gltfModel, &error, &warning, source);
     else if (ext == ".gltf")
-    {
-        std::string meshdata;
-        EGFilesystem->readFile(source, meshdata);
-        fileLoaded = gltfContext.LoadASCIIFromString(&gltfModel, &error, &warning, meshdata.c_str(), meshdata.size(), "");
-    }
+        fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, source);
 
     if (!warning.empty())
         log_warning("\nWarnings while loading gltf scene \"{}\": \n{}", source, warning);

@@ -20,16 +20,16 @@ namespace engine
 		{
 		public:
 			CEditorProject(entt::entity& editor_camera);
-			bool make_new(const std::filesystem::path& path);
-			bool open(const std::filesystem::path& path);
+			bool make_new(const std::string& path);
+			bool open(const std::string& path);
 			void save();
-			void setScenePath(const std::filesystem::path& path);
+			void setScenePath(const std::string& path);
 			bool isProjectOpen();
 		private:
 			void createOrLoadEditorCamera();
 			entt::entity* editor_camera{ nullptr };
 			FIncenerateProject project;
-			std::filesystem::path projectpath;
+			std::string projectpath;
 		};
 	}
 }

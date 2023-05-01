@@ -108,7 +108,7 @@ void CMaterialEditorWindow::create()
 	auto& device = graphics->getDevice();
 
 	auto bpBack = std::make_unique<CImage>(device.get());
-	bpBack->create("icon/editor/blueprint_back.png", vk::Format::eR8G8B8A8Unorm);
+	bpBack->create("/embed/icon/editor/blueprint_back.png", vk::Format::eR8G8B8A8Unorm);
 	auto extent = bpBack->getExtent();
 
 	pBuilder = new util::BlueprintNodeBuilder(graphics->addImage("editor_blueprint_img_noise", std::move(bpBack)), extent.width, extent.height);

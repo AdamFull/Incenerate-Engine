@@ -17,7 +17,7 @@ CRemoveEntityOperation::CRemoveEntityOperation(entt::entity entity)
 
 void CRemoveEntityOperation::undo()
 {
-	target = CSceneLoader::loadNode(serialized);
+	target = CSceneLoader::loadNode("", serialized);
 	scenegraph::attach_child(parent, target);
 	EGEditor->selectObject(target);
 }
