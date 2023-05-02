@@ -3,7 +3,6 @@
 #include "Engine.h"
 
 using namespace engine::ecs;
-using namespace engine::system::window;
 
 void CInputSystem::__create()
 {

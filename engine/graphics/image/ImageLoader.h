@@ -4,7 +4,7 @@
 
 namespace engine
 {
-	namespace loaders
+	namespace graphics
 	{
 		enum class EImageFormat
 		{
@@ -43,9 +43,15 @@ namespace engine
         public:
             static void load(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header = false);
         private:
+            static void loadSTB_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
             static void loadSTB(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+
+            static void loadKTX_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
             static void loadKTX(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+
+            static void loadKTX2_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
             static void loadKTX2(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+
             static void loadDDS(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
             static EImageFormat getTextureFormat(const std::string& fsPath);
         };

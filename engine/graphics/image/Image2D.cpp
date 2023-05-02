@@ -3,7 +3,6 @@
 #include "APIHandle.h"
 
 using namespace engine::graphics;
-using namespace engine::loaders;
 
 CImage2D::CImage2D(CDevice* device)
 {

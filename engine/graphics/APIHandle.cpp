@@ -6,6 +6,8 @@
 #include "image/Image2D.h"
 #include "image/ImageCubemap.h"
 
+#include "filesystem/interface/VirtualFileSystemInterface.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace engine::graphics;
@@ -14,7 +16,7 @@ using namespace engine::ecs;
 
 CAPIHandle::CAPIHandle(winhandle_t window)
 {
-    pWindow = window;
+    m_pWindow = window;
 }
 
 CAPIHandle::~CAPIHandle()
@@ -26,41 +28,41 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 {
 	eAPI = createInfo.eAPI;
 
-    pWindow->getWindowSize(const_cast<int32_t*>(&createInfo.window.actualWidth), const_cast<int32_t*>(&createInfo.window.actualHeight));
+    m_pWindow->getWindowSize(const_cast<int32_t*>(&createInfo.window.actualWidth), const_cast<int32_t*>(&createInfo.window.actualHeight));
 
-    pImageManager = std::make_unique<CObjectManager<CImage>>();
-    pShaderManager = std::make_unique<CObjectManager<CShaderObject>>();
-    pMaterialManager = std::make_unique<CObjectManager<CMaterial>>();
-    pVertexBufferManager = std::make_unique<CObjectManager<CVertexBufferObject>>();
-    pRenderStageManager = std::make_unique<CObjectManager<CRenderStage>>();
+    m_pImageManager = std::make_unique<CObjectManager<CImage>>();
+    m_pShaderManager = std::make_unique<CObjectManager<CShaderObject>>();
+    m_pMaterialManager = std::make_unique<CObjectManager<CMaterial>>();
+    m_pVertexBufferManager = std::make_unique<CObjectManager<CVertexBufferObject>>();
+    m_pRenderStageManager = std::make_unique<CObjectManager<CRenderStage>>();
 
-	pDevice = std::make_unique<CDevice>(this);
-	pDevice->create(createInfo, pWindow);
+	m_pDevice = std::make_unique<CDevice>(this);
+	m_pDevice->create(createInfo, m_pWindow);
 
-    pLoader = std::make_unique<CShaderLoader>(pDevice.get());
-    pLoader->create();
+    m_pLoader = std::make_unique<CShaderLoader>(m_pDevice.get(), m_pVFS);
+    m_pLoader->create();
     
-    commandBuffers = std::make_unique<CCommandBuffer>(pDevice.get());
-    commandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, pDevice->getFramesInFlight());
+    m_pCommandBuffers = std::make_unique<CCommandBuffer>(m_pDevice.get());
+    m_pCommandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, m_pDevice->getFramesInFlight());
 
-    pDebugDraw = std::make_unique<CDebugDraw>(this);
-    pQueryPool = std::make_unique<CQueryPool>(pDevice.get());
+    m_pDebugDraw = std::make_unique<CDebugDraw>(this);
+    m_pQueryPool = std::make_unique<CQueryPool>(m_pDevice.get());
 
-    auto empty_image_2d = std::make_unique<CImage2D>(pDevice.get());
+    auto empty_image_2d = std::make_unique<CImage2D>(m_pDevice.get());
     empty_image_2d->create(vk::Extent2D{ 1u, 1u }, vk::Format::eR8G8B8A8Srgb);
     auto empty_image = addImage("empty_image_2d", std::move(empty_image_2d));
 
-    auto depth_format = pDevice->getDepthFormat();
+    auto depth_format = m_pDevice->getDepthFormat();
     
     {
-        mStageInfos["cascade_shadow"].srName = "cascade_shadow";
-        mStageInfos["cascade_shadow"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["cascade_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-        mStageInfos["cascade_shadow"].bIgnoreRecreation = true;
-        mStageInfos["cascade_shadow"].bFlipViewport = false;
-        mStageInfos["cascade_shadow"].vImages.emplace_back("cascade_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, SHADOW_MAP_CASCADE_COUNT);
-        mStageInfos["cascade_shadow"].vDescriptions.emplace_back("cascade_shadowmap_tex");
-        mStageInfos["cascade_shadow"].vDependencies.emplace_back(
+        m_mStageInfos["cascade_shadow"].srName = "cascade_shadow";
+        m_mStageInfos["cascade_shadow"].viewport.offset = vk::Offset2D(0, 0);
+        m_mStageInfos["cascade_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        m_mStageInfos["cascade_shadow"].bIgnoreRecreation = true;
+        m_mStageInfos["cascade_shadow"].bFlipViewport = false;
+        m_mStageInfos["cascade_shadow"].vImages.emplace_back("cascade_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, SHADOW_MAP_CASCADE_COUNT);
+        m_mStageInfos["cascade_shadow"].vDescriptions.emplace_back("cascade_shadowmap_tex");
+        m_mStageInfos["cascade_shadow"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     VK_SUBPASS_EXTERNAL,
@@ -74,7 +76,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
                 )
             )
         );
-        mStageInfos["cascade_shadow"].vDependencies.emplace_back(
+        m_mStageInfos["cascade_shadow"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     0,
@@ -91,18 +93,18 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
         auto stageId = addRenderStage("cascade_shadow");
         auto& pStage = getRenderStage(stageId);
-        pStage->create(mStageInfos["cascade_shadow"]);
+        pStage->create(m_mStageInfos["cascade_shadow"]);
     }
 
     {
-        mStageInfos["direct_shadow"].srName = "direct_shadow";
-        mStageInfos["direct_shadow"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["direct_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-        mStageInfos["direct_shadow"].bIgnoreRecreation = true;
-        mStageInfos["direct_shadow"].bFlipViewport = false;
-        mStageInfos["direct_shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, MAX_SPOT_LIGHT_COUNT);
-        mStageInfos["direct_shadow"].vDescriptions.emplace_back("direct_shadowmap_tex");
-        mStageInfos["direct_shadow"].vDependencies.emplace_back(
+        m_mStageInfos["direct_shadow"].srName = "direct_shadow";
+        m_mStageInfos["direct_shadow"].viewport.offset = vk::Offset2D(0, 0);
+        m_mStageInfos["direct_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        m_mStageInfos["direct_shadow"].bIgnoreRecreation = true;
+        m_mStageInfos["direct_shadow"].bFlipViewport = false;
+        m_mStageInfos["direct_shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, MAX_SPOT_LIGHT_COUNT);
+        m_mStageInfos["direct_shadow"].vDescriptions.emplace_back("direct_shadowmap_tex");
+        m_mStageInfos["direct_shadow"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     VK_SUBPASS_EXTERNAL,
@@ -116,7 +118,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
                 )
             )
         );
-        mStageInfos["direct_shadow"].vDependencies.emplace_back(
+        m_mStageInfos["direct_shadow"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     0,
@@ -133,18 +135,18 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
         auto stageId = addRenderStage("direct_shadow");
         auto& pStage = getRenderStage(stageId);
-        pStage->create(mStageInfos["direct_shadow"]);
+        pStage->create(m_mStageInfos["direct_shadow"]);
     }
 
     {
-        mStageInfos["omni_shadow"].srName = "omni_shadow";
-        mStageInfos["omni_shadow"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["omni_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-        mStageInfos["omni_shadow"].bIgnoreRecreation = true;
-        mStageInfos["omni_shadow"].bFlipViewport = false;
-        mStageInfos["omni_shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArrayCube, MAX_POINT_LIGHT_COUNT);
-        mStageInfos["omni_shadow"].vDescriptions.emplace_back("omni_shadowmap_tex");
-        mStageInfos["omni_shadow"].vDependencies.emplace_back(
+        m_mStageInfos["omni_shadow"].srName = "omni_shadow";
+        m_mStageInfos["omni_shadow"].viewport.offset = vk::Offset2D(0, 0);
+        m_mStageInfos["omni_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        m_mStageInfos["omni_shadow"].bIgnoreRecreation = true;
+        m_mStageInfos["omni_shadow"].bFlipViewport = false;
+        m_mStageInfos["omni_shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArrayCube, MAX_POINT_LIGHT_COUNT);
+        m_mStageInfos["omni_shadow"].vDescriptions.emplace_back("omni_shadowmap_tex");
+        m_mStageInfos["omni_shadow"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     VK_SUBPASS_EXTERNAL,
@@ -158,7 +160,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
                 )
             )
         );
-        mStageInfos["omni_shadow"].vDependencies.emplace_back(
+        m_mStageInfos["omni_shadow"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     0,
@@ -175,34 +177,34 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
         auto stageId = addRenderStage("omni_shadow");
         auto& pStage = getRenderStage(stageId);
-        pStage->create(mStageInfos["omni_shadow"]);
+        pStage->create(m_mStageInfos["omni_shadow"]);
     }
 
 
     {
-        mStageInfos["deferred"].srName = "deferred";
-        mStageInfos["deferred"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["deferred"].viewport.extent = pDevice->getExtent(true);
-        mStageInfos["deferred"].bFlipViewport = true;
-        mStageInfos["deferred"].bViewportDependent = true;
-        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "albedo_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["deferred"].vOutputs.emplace_back("albedo_tex");
-        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "normal_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["deferred"].vOutputs.emplace_back("normal_tex");
-        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "mrah_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["deferred"].vOutputs.emplace_back("mrah_tex");
-        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "emission_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["deferred"].vOutputs.emplace_back("emission_tex");
-        mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["deferred"].vDescriptions.emplace_back("depth_tex");
+        m_mStageInfos["deferred"].srName = "deferred";
+        m_mStageInfos["deferred"].viewport.offset = vk::Offset2D(0, 0);
+        m_mStageInfos["deferred"].viewport.extent = m_pDevice->getExtent(true);
+        m_mStageInfos["deferred"].bFlipViewport = true;
+        m_mStageInfos["deferred"].bViewportDependent = true;
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "albedo_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vOutputs.emplace_back("albedo_tex");
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "normal_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vOutputs.emplace_back("normal_tex");
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "mrah_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vOutputs.emplace_back("mrah_tex");
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "emission_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vOutputs.emplace_back("emission_tex");
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vDescriptions.emplace_back("depth_tex");
         
         if (EGEngine->isEditorMode())
         {
-            mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "picking_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc });
-            mStageInfos["deferred"].vOutputs.emplace_back("picking_tex");
+            m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "picking_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc });
+            m_mStageInfos["deferred"].vOutputs.emplace_back("picking_tex");
         }
         
-        mStageInfos["deferred"].vDependencies.emplace_back(
+        m_mStageInfos["deferred"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     VK_SUBPASS_EXTERNAL,
@@ -216,7 +218,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
                 )
             )
         );
-        mStageInfos["deferred"].vDependencies.emplace_back(
+        m_mStageInfos["deferred"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     0,
@@ -233,18 +235,18 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
         auto stageId = addRenderStage("deferred");
         auto& pStage = getRenderStage(stageId);
-        pStage->create(mStageInfos["deferred"]);
+        pStage->create(m_mStageInfos["deferred"]);
     }
 
     {
-        mStageInfos["composition"].srName = "composition";
-        mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["composition"].viewport.extent = pDevice->getExtent(true);
-        mStageInfos["composition"].bViewportDependent = true;
-        mStageInfos["composition"].vImages.emplace_back(FCIImage{ "composition_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled });
-        mStageInfos["composition"].vOutputs.emplace_back("composition_tex");
-        mStageInfos["composition"].vDescriptions.emplace_back("");
-        mStageInfos["composition"].vDependencies.emplace_back(
+        m_mStageInfos["composition"].srName = "composition";
+        m_mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
+        m_mStageInfos["composition"].viewport.extent = m_pDevice->getExtent(true);
+        m_mStageInfos["composition"].bViewportDependent = true;
+        m_mStageInfos["composition"].vImages.emplace_back(FCIImage{ "composition_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["composition"].vOutputs.emplace_back("composition_tex");
+        m_mStageInfos["composition"].vDescriptions.emplace_back("");
+        m_mStageInfos["composition"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     VK_SUBPASS_EXTERNAL,
@@ -258,7 +260,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
                 )
             )
         );
-        mStageInfos["composition"].vDependencies.emplace_back(
+        m_mStageInfos["composition"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     0,
@@ -275,17 +277,17 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
         auto stageId = addRenderStage("composition");
         auto& pStage = getRenderStage(stageId);
-        pStage->create(mStageInfos["composition"]);
+        pStage->create(m_mStageInfos["composition"]);
     }
     
     {
-        mStageInfos["present"].srName = "present";
-        mStageInfos["present"].viewport.offset = vk::Offset2D(0, 0);
-        mStageInfos["present"].viewport.extent = pDevice->getExtent();
-        mStageInfos["present"].vImages.emplace_back(FCIImage{ "present_khr", pDevice->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
-        mStageInfos["present"].vOutputs.emplace_back("present_khr");
-        mStageInfos["present"].vDescriptions.emplace_back("");
-        mStageInfos["present"].vDependencies.emplace_back(
+        m_mStageInfos["present"].srName = "present";
+        m_mStageInfos["present"].viewport.offset = vk::Offset2D(0, 0);
+        m_mStageInfos["present"].viewport.extent = m_pDevice->getExtent();
+        m_mStageInfos["present"].vImages.emplace_back(FCIImage{ "present_khr", m_pDevice->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });
+        m_mStageInfos["present"].vOutputs.emplace_back("present_khr");
+        m_mStageInfos["present"].vDescriptions.emplace_back("");
+        m_mStageInfos["present"].vDependencies.emplace_back(
             FCIDependency(
                 FCIDependencyDesc(
                     VK_SUBPASS_EXTERNAL,
@@ -302,11 +304,11 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
         auto stageId = addRenderStage("present");
         auto& pStage = getRenderStage(stageId);
-        pStage->create(mStageInfos["present"]);
+        pStage->create(m_mStageInfos["present"]);
     }
 
-    pDebugDraw->create();
-    pQueryPool->create();
+    m_pDebugDraw->create();
+    m_pQueryPool->create();
 
     log_info("Graphics core initialized.");
 }
@@ -316,7 +318,7 @@ void CAPIHandle::update()
     static size_t count_delete{ 0 };
     count_delete++;
 
-    if (count_delete > pDevice->getFramesInFlight() + 1)
+    if (count_delete > m_pDevice->getFramesInFlight() + 1)
     {
         EGEngine->sendEvent(Events::Graphics::AllFramesDone);
         forceReleaseResources();
@@ -326,11 +328,11 @@ void CAPIHandle::update()
 
 void CAPIHandle::forceReleaseResources()
 {
-    pImageManager->performDeletion();
-    pShaderManager->performDeletion();
-    pMaterialManager->performDeletion();
-    pVertexBufferManager->performDeletion();
-    pRenderStageManager->performDeletion();
+    m_pImageManager->performDeletion();
+    m_pShaderManager->performDeletion();
+    m_pMaterialManager->performDeletion();
+    m_pVertexBufferManager->performDeletion();
+    m_pRenderStageManager->performDeletion();
 }
 
 void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
@@ -349,18 +351,18 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
 
     log_debug("ReCreating swapchain.");
 
-    pDevice->GPUWait();
+    m_pDevice->GPUWait();
 
-    while (pWindow->isMinimized())
-        pWindow->processEvents();
+    while (m_pWindow->isMinimized())
+        m_pWindow->processEvents();
 
     if (bSwapchain)
     {
-        pDevice->recreateSwapchain(pWindow->getWidth(), pWindow->getHeight());
-        imageIndex = 0;
+        m_pDevice->recreateSwapchain(m_pWindow->getWidth(), m_pWindow->getHeight());
+        m_imageIndex = 0;
     }
 
-    for (auto& [name, stage] : mStageInfos)
+    for (auto& [name, stage] : m_mStageInfos)
     {
         if (stage.bIgnoreRecreation)
             continue;
@@ -368,8 +370,8 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
         if (bViewport && !bSwapchain && !stage.bViewportDependent)
             continue;
 
-        stage.viewport.extent = pDevice->getExtent(stage.bViewportDependent);
-        auto& pStage = pRenderStageManager->get(name);
+        stage.viewport.extent = m_pDevice->getExtent(stage.bViewportDependent);
+        auto& pStage = m_pRenderStageManager->get(name);
         pStage->reCreate(stage);
     }
 
@@ -378,29 +380,34 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
     if (bViewport)
         EGEngine->sendEvent(Events::Graphics::ViewportReCreate);
 
-    pDevice->nillViewportFlag();
+    m_pDevice->nillViewportFlag();
 }
 
 void CAPIHandle::shutdown()
 {
-    pDevice->GPUWait();
-    pDebugDraw = nullptr;
-    pQueryPool = nullptr;
-    pRenderStageManager = nullptr;
-    pMaterialManager = nullptr;
-    pVertexBufferManager = nullptr;
-    pShaderManager = nullptr;
-    pImageManager = nullptr;
+    m_pDevice->GPUWait();
+    m_pDebugDraw = nullptr;
+    m_pQueryPool = nullptr;
+    m_pRenderStageManager = nullptr;
+    m_pMaterialManager = nullptr;
+    m_pVertexBufferManager = nullptr;
+    m_pShaderManager = nullptr;
+    m_pImageManager = nullptr;
+}
+
+void CAPIHandle::setVirtualFileSystem(filesystem::IVirtualFileSystemInterface* vfs_ptr)
+{
+    m_pVFS = vfs_ptr;
 }
 
 const std::unique_ptr<CDebugDraw>& CAPIHandle::getDebugDraw() const
 {
-    return pDebugDraw;
+    return m_pDebugDraw;
 }
 
 const std::unique_ptr<CQueryPool>& CAPIHandle::getQueryPool() const
 {
-    return pQueryPool;
+    return m_pQueryPool;
 }
 
 vk::CommandBuffer CAPIHandle::begin()
@@ -411,7 +418,7 @@ vk::CommandBuffer CAPIHandle::begin()
     catch (vk::SystemError err) { log_error("Failed to acquire swap chain image!"); }
 
     //if(commandBuffer)
-    //    pQueryPool->clear(commandBuffer);
+    //    m_pQueryPool->clear(commandBuffer);
 
     return commandBuffer;
 }
@@ -423,38 +430,38 @@ void CAPIHandle::end(float fDT)
     catch (vk::OutOfDateKHRError err) { resultPresent = vk::Result::eErrorOutOfDateKHR; }
     catch (vk::SystemError err) { log_error("failed to present swap chain image!"); }
 
-    if (resultPresent == vk::Result::eSuboptimalKHR || resultPresent == vk::Result::eErrorOutOfDateKHR || pWindow->wasResized())
+    if (resultPresent == vk::Result::eSuboptimalKHR || resultPresent == vk::Result::eErrorOutOfDateKHR || m_pWindow->wasResized())
         reCreate(true, true);
 
-    //pQueryPool->takeResult();
-    pDevice->updateCommandPools();
+    //m_pQueryPool->takeResult();
+    m_pDevice->updateCommandPools();
 }
 
 vk::CommandBuffer CAPIHandle::getCommandBuffer()
 {
-    return commandBuffers->getCommandBuffer();
+    return m_pCommandBuffers->getCommandBuffer();
 }
 
 const std::unique_ptr<CDevice>& CAPIHandle::getDevice() const
 {
-    return pDevice;
+    return m_pDevice;
 }
 
 const std::unique_ptr<CShaderLoader>& CAPIHandle::getShaderLoader()
 {
-    return pLoader;
+    return m_pLoader;
 }
 
 size_t CAPIHandle::addImage(const std::string& name, std::unique_ptr<CImage>&& image)
 {
-    return pImageManager->add(name, std::move(image));
+    return m_pImageManager->add(name, std::move(image));
 }
 
 size_t CAPIHandle::addImage(const std::string& name, const std::string& path)
 {
-    std::unique_ptr<CImage> image = std::make_unique<CImage>(pDevice.get());
+    std::unique_ptr<CImage> image = std::make_unique<CImage>(m_pDevice.get());
 
-    if (pImageManager->getId(name) == invalid_index)
+    if (m_pImageManager->getId(name) == invalid_index)
     {
         if (fs::is_ktx_format(path))
             image->create(path);
@@ -469,13 +476,13 @@ size_t CAPIHandle::addImageAsync(const std::string& name, const std::string& pat
 {
     auto& loaderThread = EGEngine->getLoaderThread();
 
-    std::unique_ptr<CImage> image = std::make_unique<CImage>(pDevice.get());
+    std::unique_ptr<CImage> image = std::make_unique<CImage>(m_pDevice.get());
 
     if (loaderThread)
     {
         loaderThread->push([this, image = image.get(), name, path]()
             {
-                if (pImageManager->getId(name) == invalid_index)
+                if (m_pImageManager->getId(name) == invalid_index)
                 {
                     if (fs::is_ktx_format(path))
                         image->create(path);
@@ -486,7 +493,7 @@ size_t CAPIHandle::addImageAsync(const std::string& name, const std::string& pat
     }
     else
     {
-        if (pImageManager->getId(name) == invalid_index)
+        if (m_pImageManager->getId(name) == invalid_index)
         {
             if (fs::is_ktx_format(path))
                 image->create(path);
@@ -500,37 +507,37 @@ size_t CAPIHandle::addImageAsync(const std::string& name, const std::string& pat
 
 void CAPIHandle::incrementImageUsage(const std::string& name)
 {
-    pImageManager->increment(name);
+    m_pImageManager->increment(name);
 }
 
 void CAPIHandle::incrementImageUsage(size_t id)
 {
-    pImageManager->increment(id);
+    m_pImageManager->increment(id);
 }
 
 void CAPIHandle::removeImage(const std::string& name)
 {
-    pImageManager->remove(name);
+    m_pImageManager->remove(name);
 }
 
 void CAPIHandle::removeImage(size_t id)
 {
-    pImageManager->remove(id);
+    m_pImageManager->remove(id);
 }
 
 const std::unique_ptr<CImage>& CAPIHandle::getImage(const std::string& name)
 {
-    return pImageManager->get(name);
+    return m_pImageManager->get(name);
 }
 
 size_t CAPIHandle::getImageID(const std::string& name)
 {
-    return pImageManager->getId(name);
+    return m_pImageManager->getId(name);
 }
 
 const std::unique_ptr<CImage>& CAPIHandle::getImage(size_t id)
 {
-    return pImageManager->get(id);
+    return m_pImageManager->get(id);
 }
 
 void CAPIHandle::copyImage(vk::CommandBuffer& commandBuffer, size_t src, size_t dst)
@@ -562,12 +569,12 @@ void CAPIHandle::copyImage(vk::CommandBuffer& commandBuffer, size_t src, size_t 
 
 size_t CAPIHandle::addShader(const std::string& name, std::unique_ptr<CShaderObject>&& shader)
 {
-    return pShaderManager->add(name, std::move(shader));
+    return m_pShaderManager->add(name, std::move(shader));
 }
 
 size_t CAPIHandle::addShader(const std::string& name, const std::string& shadertype, size_t mat_id)
 {
-    auto shader_id = addShader(name, pLoader->load(shadertype, mat_id));
+    auto shader_id = addShader(name, m_pLoader->load(shadertype, mat_id));
 
     if (mat_id != invalid_index)
     {
@@ -580,122 +587,122 @@ size_t CAPIHandle::addShader(const std::string& name, const std::string& shadert
 
 size_t CAPIHandle::addShader(const std::string& name, const std::string& shadertype, const FShaderSpecials& specials)
 {
-    auto shader_id = addShader(name, pLoader->load(shadertype, specials));
+    auto shader_id = addShader(name, m_pLoader->load(shadertype, specials));
     return shader_id;
 }
 
 void CAPIHandle::removeShader(const std::string& name)
 {
-    pShaderManager->remove(name);
+    m_pShaderManager->remove(name);
 }
 
 void CAPIHandle::removeShader(size_t id)
 {
-    pShaderManager->remove(id);
+    m_pShaderManager->remove(id);
 }
 
 const std::unique_ptr<CShaderObject>& CAPIHandle::getShader(const std::string& name)
 {
-    return pShaderManager->get(name);
+    return m_pShaderManager->get(name);
 }
 
 const std::unique_ptr<CShaderObject>& CAPIHandle::getShader(size_t id)
 {
-    return pShaderManager->get(id);
+    return m_pShaderManager->get(id);
 }
 
 
 size_t CAPIHandle::addMaterial(const std::string& name, std::unique_ptr<CMaterial>&& material)
 {
-    return pMaterialManager->add(name, std::move(material));
+    return m_pMaterialManager->add(name, std::move(material));
 }
 
 void CAPIHandle::removeMaterial(const std::string& name)
 {
-    pMaterialManager->remove(name);
+    m_pMaterialManager->remove(name);
 }
 
 void CAPIHandle::removeMaterial(size_t id)
 {
-    pMaterialManager->remove(id);
+    m_pMaterialManager->remove(id);
 }
 
 const std::unique_ptr<CMaterial>& CAPIHandle::getMaterial(const std::string& name)
 {
-    return pMaterialManager->get(name);
+    return m_pMaterialManager->get(name);
 }
 
 const std::unique_ptr<CMaterial>& CAPIHandle::getMaterial(size_t id)
 {
-    return pMaterialManager->get(id);
+    return m_pMaterialManager->get(id);
 }
 
 
 
 size_t CAPIHandle::addVertexBuffer(const std::string& name)
 {
-    return pVertexBufferManager->add(name, std::make_unique<CVertexBufferObject>(pDevice.get()));
+    return m_pVertexBufferManager->add(name, std::make_unique<CVertexBufferObject>(m_pDevice.get()));
 }
 
 size_t CAPIHandle::addVertexBuffer(const std::string& name, std::unique_ptr<CVertexBufferObject>&& vbo)
 {
-    return pVertexBufferManager->add(name, std::move(vbo));
+    return m_pVertexBufferManager->add(name, std::move(vbo));
 }
 
 void CAPIHandle::removeVertexBuffer(const std::string& name)
 {
-    pVertexBufferManager->remove(name);
+    m_pVertexBufferManager->remove(name);
 }
 
 void CAPIHandle::removeVertexBuffer(size_t id)
 {
-    pVertexBufferManager->remove(id);
+    m_pVertexBufferManager->remove(id);
 }
 
 const std::unique_ptr<CVertexBufferObject>& CAPIHandle::getVertexBuffer(const std::string& name)
 {
-    return pVertexBufferManager->get(name);
+    return m_pVertexBufferManager->get(name);
 }
 
 const std::unique_ptr<CVertexBufferObject>& CAPIHandle::getVertexBuffer(size_t id)
 {
-    return pVertexBufferManager->get(id);
+    return m_pVertexBufferManager->get(id);
 }
 
 
 size_t CAPIHandle::addRenderStage(const std::string& name)
 {
-    return pRenderStageManager->add(name, std::make_unique<CRenderStage>(pDevice.get()));
+    return m_pRenderStageManager->add(name, std::make_unique<CRenderStage>(m_pDevice.get()));
 }
 
 size_t CAPIHandle::addRenderStage(const std::string& name, std::unique_ptr<CRenderStage>&& stage)
 {
-    return pRenderStageManager->add(name, std::move(stage));
+    return m_pRenderStageManager->add(name, std::move(stage));
 }
 
 void CAPIHandle::removeRenderStage(const std::string& name)
 {
-    pRenderStageManager->remove(name);
+    m_pRenderStageManager->remove(name);
 }
 
 void CAPIHandle::removeRenderStage(size_t id)
 {
-    pRenderStageManager->remove(id);
+    m_pRenderStageManager->remove(id);
 }
 
 const std::unique_ptr<CRenderStage>& CAPIHandle::getRenderStage(const std::string& name)
 {
-    return pRenderStageManager->get(name);
+    return m_pRenderStageManager->get(name);
 }
 
 const std::unique_ptr<CRenderStage>& CAPIHandle::getRenderStage(size_t id)
 {
-    return pRenderStageManager->get(id);
+    return m_pRenderStageManager->get(id);
 }
 
 size_t CAPIHandle::getRenderStageID(const std::string& name)
 {
-    return pRenderStageManager->getId(name);
+    return m_pRenderStageManager->getId(name);
 }
 
 const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::string& srName)
@@ -708,7 +715,7 @@ size_t CAPIHandle::computeBRDFLUT(uint32_t size)
     FDispatchParam param;
     param.size = { size, size, 1u };
 
-    auto brdfImage = std::make_unique<CImage2D>(pDevice.get());
+    auto brdfImage = std::make_unique<CImage2D>(m_pDevice.get());
     brdfImage->create(
         vk::Extent2D{ size, size },
         vk::Format::eR16G16Sfloat,
@@ -737,7 +744,7 @@ size_t CAPIHandle::computeIrradiance(size_t origin, uint32_t size)
     param.size = { size, size, 1u };
 
     std::vector<glm::vec3> sizes{ { size, size, 1u } };
-    auto irradianceCubemap = std::make_unique<CImageCubemap>(pDevice.get());
+    auto irradianceCubemap = std::make_unique<CImageCubemap>(m_pDevice.get());
     irradianceCubemap->create(
         vk::Extent2D{ size, size },
         vk::Format::eR32G32B32A32Sfloat,
@@ -766,7 +773,7 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
     param.size = { size, size, 1u };
 
     std::vector<glm::vec3> sizes{ { size, size, 1u } };
-    auto prefilteredCubemap = std::make_unique<CImageCubemap>(pDevice.get());
+    auto prefilteredCubemap = std::make_unique<CImageCubemap>(m_pDevice.get());
     prefilteredCubemap->create(
         vk::Extent2D{ size, size },
         vk::Format::eR16G16B16A16Sfloat,
@@ -786,7 +793,7 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
     auto& pShader = getShader(shader_id);
     auto& pPushConst = pShader->getPushBlock("object");
 
-    auto cmdBuf = CCommandBuffer(pDevice.get());
+    auto cmdBuf = CCommandBuffer(m_pDevice.get());
     cmdBuf.create(false, vk::QueueFlagBits::eCompute);
 
     for (uint32_t i = 0; i < target->getMipLevels(); i++)
@@ -802,7 +809,7 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
         viewInfo.subresourceRange.layerCount = 6;
         viewInfo.image = target->getImage();
 
-        vk::Result res = pDevice->create(viewInfo, &levelView);
+        vk::Result res = m_pDevice->create(viewInfo, &levelView);
         assert(res == vk::Result::eSuccess && "Cannot create image view.");
 
         cmdBuf.begin();
@@ -820,7 +827,7 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
         pShader->dispatch(commandBuffer, param);
         cmdBuf.submitIdle();
 
-        pDevice->destroy(&levelView);
+        m_pDevice->destroy(&levelView);
     }
 
     removeShader(shader_id);
@@ -833,13 +840,13 @@ void CAPIHandle::bindShader(size_t id)
 {
     if (id == invalid_index)
     {
-        pBindedShader = nullptr;
+        m_pBindedShader = nullptr;
         return;
     }
 
     auto& shader = getShader(id);
     if (shader)
-        pBindedShader = shader.get();
+        m_pBindedShader = shader.get();
     else
         log_error("Cannot bind shader, because shader with id {} is not exists!", id);
 }
@@ -848,16 +855,16 @@ void CAPIHandle::bindMaterial(size_t id)
 {
     if (id == invalid_index)
     {
-        pBindedMaterial = nullptr;
-        pBindedShader = nullptr;
+        m_pBindedMaterial = nullptr;
+        m_pBindedShader = nullptr;
         return;
     }
 
     auto& material = getMaterial(id);
     if (material)
     {
-        pBindedMaterial = material.get();
-        bindShader(pBindedMaterial->getShader());
+        m_pBindedMaterial = material.get();
+        bindShader(m_pBindedMaterial->getShader());
     }
     else
         log_error("Cannot bind material, because material with id {} is not exists!", id);
@@ -867,17 +874,17 @@ bool CAPIHandle::bindVertexBuffer(size_t id)
 {
     if (id == invalid_index)
     {
-        pBindedVBO = nullptr;
+        m_pBindedVBO = nullptr;
         return false;
     }
     
     auto& vbo = getVertexBuffer(id);
     if (vbo && vbo->isLoaded())
     {
-        auto& commandBuffer = commandBuffers->getCommandBuffer();
+        auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
 
-        pBindedVBO = vbo.get();
-        pBindedVBO->bind(commandBuffer);
+        m_pBindedVBO = vbo.get();
+        m_pBindedVBO->bind(commandBuffer);
     }
 
     return vbo->isLoaded();
@@ -887,12 +894,12 @@ void CAPIHandle::bindRenderer(size_t id)
 {
     if (id == invalid_index)
     {
-        if (pBindedRenderStage)
+        if (m_pBindedRenderStage)
         {
-            auto& commandBuffer = commandBuffers->getCommandBuffer();
+            auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
 
-            pBindedRenderStage->end(commandBuffer);
-            pBindedRenderStage = nullptr;
+            m_pBindedRenderStage->end(commandBuffer);
+            m_pBindedRenderStage = nullptr;
         }
         // Log here?
 
@@ -902,10 +909,10 @@ void CAPIHandle::bindRenderer(size_t id)
     auto& renderStage = getRenderStage(id);
     if (renderStage)
     {
-        auto& commandBuffer = commandBuffers->getCommandBuffer();
+        auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
 
-        pBindedRenderStage = renderStage.get();
-        pBindedRenderStage->begin(commandBuffer);
+        m_pBindedRenderStage = renderStage.get();
+        m_pBindedRenderStage->begin(commandBuffer);
     }
     else
         log_error("Cannot bind render stage, because stage with id {} is not exists!");
@@ -913,45 +920,45 @@ void CAPIHandle::bindRenderer(size_t id)
 
 void CAPIHandle::bindTexture(const std::string& name, size_t id, uint32_t mip_level)
 {
-    if (pBindedShader)
-        pBindedShader->addTexture(name, id, mip_level);
+    if (m_pBindedShader)
+        m_pBindedShader->addTexture(name, id, mip_level);
     else
         log_error("Cannot bind texture, cause shader was not binded.");
 }
 
 void CAPIHandle::clearQuery()
 {
-    auto& commandBuffer = commandBuffers->getCommandBuffer();
-    pQueryPool->clear(commandBuffer);
+    auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
+    m_pQueryPool->clear(commandBuffer);
 }
 
 void CAPIHandle::beginQuery(uint32_t index)
 {
-    auto& commandBuffer = commandBuffers->getCommandBuffer();
-    pQueryPool->begin(commandBuffer, index);
+    auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
+    m_pQueryPool->begin(commandBuffer, index);
 }
 
 void CAPIHandle::endQuery(uint32_t index)
 {
-    auto& commandBuffer = commandBuffers->getCommandBuffer();
-    pQueryPool->end(commandBuffer, index);
+    auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
+    m_pQueryPool->end(commandBuffer, index);
 }
 
 void CAPIHandle::getQueryResult()
 {
-    pQueryPool->takeResult();
+    m_pQueryPool->takeResult();
 }
 
 bool CAPIHandle::occlusionTest(uint32_t index)
 {
-    return pQueryPool->wasDrawn(index);
+    return m_pQueryPool->wasDrawn(index);
 }
 
 bool CAPIHandle::compareAlphaMode(EAlphaMode mode)
 {
-    if (pBindedMaterial)
+    if (m_pBindedMaterial)
     {
-        auto& params = pBindedMaterial->getParameters();
+        auto& params = m_pBindedMaterial->getParameters();
         return params.alphaMode == mode;
     }
 
@@ -962,16 +969,16 @@ bool CAPIHandle::compareAlphaMode(EAlphaMode mode)
 
 void CAPIHandle::flushConstantRanges(const std::unique_ptr<CPushHandler>& constantRange)
 {
-    auto& commandBuffer = commandBuffers->getCommandBuffer();
+    auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
     constantRange->flush(commandBuffer);
 }
 
 void CAPIHandle::flushShader()
 {
-    auto& commandBuffer = commandBuffers->getCommandBuffer();
+    auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
 
-    if (pBindedShader)
-        pBindedShader->predraw(commandBuffer);
+    if (m_pBindedShader)
+        m_pBindedShader->predraw(commandBuffer);
     else
         log_error("Cannot flush shader data, cause shader is not binded.");
 }
@@ -979,8 +986,8 @@ void CAPIHandle::flushShader()
 const std::unique_ptr<CHandler>& CAPIHandle::getUniformHandle(const std::string& name)
 {
     static std::unique_ptr<CHandler> pEmpty{ nullptr };
-    if (pBindedShader)
-        return pBindedShader->getUniformBuffer(name);
+    if (m_pBindedShader)
+        return m_pBindedShader->getUniformBuffer(name);
 
     return pEmpty;
 }
@@ -988,22 +995,22 @@ const std::unique_ptr<CHandler>& CAPIHandle::getUniformHandle(const std::string&
 const std::unique_ptr<CPushHandler>& CAPIHandle::getPushBlockHandle(const std::string& name)
 {
     static std::unique_ptr<CPushHandler> pEmpty{ nullptr };
-    if (pBindedShader)
-        return pBindedShader->getPushBlock(name);
+    if (m_pBindedShader)
+        return m_pBindedShader->getPushBlock(name);
 
     return pEmpty;
 }
 
 void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_index, size_t index_count, size_t instance_count)
 {
-    auto& commandBuffer = commandBuffers->getCommandBuffer();
+    auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
 
-    if (pBindedMaterial)
+    if (m_pBindedMaterial)
     {
         auto& pSurface = getUniformHandle("UBOMaterial");
         if (pSurface)
         {
-            auto& params = pBindedMaterial->getParameters();
+            auto& params = m_pBindedMaterial->getParameters();
 
             pSurface->set("baseColorFactor", params.baseColorFactor);
             pSurface->set("emissiveFactor", params.emissiveFactor);
@@ -1018,23 +1025,23 @@ void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_ind
             pSurface->set("displacementStrength", params.displacementStrength);
         }
 
-        auto& textures = pBindedMaterial->getTextures();
+        auto& textures = m_pBindedMaterial->getTextures();
         for (auto& [name, id] : textures)
             bindTexture(name, id);
     }
 
-    if (pBindedShader)
+    if (m_pBindedShader)
     {
-        if(!bManualShaderControl)
-            pBindedShader->predraw(commandBuffer);
+        if(!m_bManualShaderControl)
+            m_pBindedShader->predraw(commandBuffer);
     }
     else
         log_error("Shader program is not binded. Before calling draw, you should bind shader!");
 
-    if (pBindedVBO)
+    if (m_pBindedVBO)
     {
-        auto last_index = pBindedVBO->getLastIndex();
-        auto last_vertex = pBindedVBO->getLastIndex();
+        auto last_index = m_pBindedVBO->getLastIndex();
+        auto last_vertex = m_pBindedVBO->getLastIndex();
 
         if (last_index == 0)
         {
@@ -1056,10 +1063,10 @@ void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_ind
 
 void CAPIHandle::dispatch(const std::vector<FDispatchParam>& params)
 {
-    auto& commandBuffer = commandBuffers->getCommandBuffer();
+    auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
 
-    if (pBindedShader)
-        pBindedShader->dispatch(commandBuffer, params);
+    if (m_pBindedShader)
+        m_pBindedShader->dispatch(commandBuffer, params);
     else
         log_error("Cannot dispatch, cause shader was not binded.")
 }
@@ -1183,7 +1190,7 @@ void CAPIHandle::BarrierFromGraphicsToTransfer(vk::CommandBuffer& commandBuffer,
 
 vk::CommandBuffer CAPIHandle::beginFrame()
 {
-    bool bSwapchain{ false }, bViewport{ pDevice->isViewportResized() };
+    bool bSwapchain{ false }, bViewport{ m_pDevice->isViewportResized() };
 
     // Here we able to recreate viewport
     if (bViewport)
@@ -1192,8 +1199,8 @@ vk::CommandBuffer CAPIHandle::beginFrame()
         return nullptr;
     }
 
-    log_cerror(!frameStarted, "Can't call beginFrame while already in progress");
-    vk::Result res = pDevice->acquireNextImage(&imageIndex);
+    log_cerror(!m_bFrameStarted, "Can't call beginFrame while already in progress");
+    vk::Result res = m_pDevice->acquireNextImage(&m_imageIndex);
     if (res == vk::Result::eErrorOutOfDateKHR)
         bSwapchain = true;
     else if (res == vk::Result::eSuboptimalKHR)
@@ -1206,16 +1213,16 @@ vk::CommandBuffer CAPIHandle::beginFrame()
         return nullptr;
     }
 
-    frameStarted = true;
+    m_bFrameStarted = true;
 
-    commandBuffers->begin(vk::CommandBufferUsageFlagBits::eRenderPassContinue, imageIndex);
-    return commandBuffers->getCommandBuffer();
+    m_pCommandBuffers->begin(vk::CommandBufferUsageFlagBits::eRenderPassContinue, m_imageIndex);
+    return m_pCommandBuffers->getCommandBuffer();
 }
 
 vk::Result CAPIHandle::endFrame()
 {
-    log_cerror(frameStarted, "Can't call endFrame while frame is not in progress");
-    commandBuffers->end();
-    frameStarted = false;
-    return commandBuffers->submit(imageIndex);
+    log_cerror(m_bFrameStarted, "Can't call endFrame while frame is not in progress");
+    m_pCommandBuffers->end();
+    m_bFrameStarted = false;
+    return m_pCommandBuffers->submit(m_imageIndex);
 }

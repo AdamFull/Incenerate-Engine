@@ -3,7 +3,6 @@
 #include "Engine.h"
 
 #include "graphics/image/Image.h"
-#include "loaders/ImageLoader.h"
 
 #include "ecs/components/components.h"
 #include "ecs/helper.hpp"
@@ -12,7 +11,6 @@
 
 using namespace engine::ecs;
 using namespace engine::graphics;
-using namespace engine::loaders;
 
 void CBillboardSystem::__create()
 {

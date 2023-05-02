@@ -8,7 +8,6 @@
 
 using namespace engine::graphics;
 using namespace engine::ecs;
-using namespace engine::system::window;
 
 CPostProcessSystem::~CPostProcessSystem()
 {

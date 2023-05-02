@@ -5,6 +5,8 @@
 
 namespace engine
 {
+	namespace filesystem { class IVirtualFileSystemInterface; }
+
 	namespace graphics
 	{
 		struct FShaderSpecials
@@ -19,7 +21,7 @@ namespace engine
 		class CShaderLoader
 		{
 		public:
-			CShaderLoader(CDevice* device);
+			CShaderLoader(CDevice* device, filesystem::IVirtualFileSystemInterface* vfs_ptr);
 			~CShaderLoader();
 
 			void create();
@@ -27,8 +29,10 @@ namespace engine
 			std::unique_ptr<CShaderObject> load(const std::string& name, const FShaderSpecials& specials);
 
 		private:
-			CDevice* pDevice{ nullptr };
-			std::unique_ptr<CShaderCompiler> pCompiler;
+			CDevice* m_pDevice{ nullptr };
+			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
+
+			std::unique_ptr<CShaderCompiler> m_pCompiler;
 			std::unordered_map<std::string, FProgramCreateInfo> programCI;
 		};
 	}

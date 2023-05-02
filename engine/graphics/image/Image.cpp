@@ -4,7 +4,6 @@
 #include "buffers/CommandBuffer.h"
 #include "buffers/Buffer.h"
 
-using namespace engine::loaders;
 using namespace engine::graphics;
 
 CImage::CImage(CDevice* device)

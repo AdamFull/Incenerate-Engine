@@ -6,8 +6,6 @@
 
 using namespace engine;
 using namespace engine::graphics;
-using namespace engine::system::window;
-using namespace engine::graphics;
 
 bool VkHelper::check(vk::Result result)
 {

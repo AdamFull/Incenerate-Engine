@@ -15,7 +15,6 @@
 
 using namespace engine::ecs;
 using namespace engine::editor;
-using namespace engine::system::window;
 using namespace engine::graphics;
 
 static const float identityMatrix[16] =

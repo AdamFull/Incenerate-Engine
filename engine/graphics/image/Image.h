@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vma/vk_mem_alloc.hpp>
-#include "loaders/ImageLoader.h"
+#include "ImageLoader.h"
 
 namespace engine
 {
@@ -14,7 +14,7 @@ namespace engine
 			CImage(CDevice* device);
 			virtual ~CImage();
 
-			void create(std::unique_ptr<loaders::FImageCreateInfo>& info, vk::ImageUsageFlags flags = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+			void create(std::unique_ptr<FImageCreateInfo>& info, vk::ImageUsageFlags flags = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
 				vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor, vk::SamplerAddressMode addressMode = vk::SamplerAddressMode::eRepeat,
 				vk::Filter filter = vk::Filter::eLinear);
 
@@ -32,16 +32,16 @@ namespace engine
 
 			void generateMipmaps(vk::Image& image, uint32_t mipLevels, vk::Format format, uint32_t width, uint32_t height, vk::ImageAspectFlags aspectFlags);
 
-			void initializeTexture(std::unique_ptr<loaders::FImageCreateInfo>& info, vk::Format format, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode,
+			void initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Format format, vk::ImageUsageFlags flags, vk::ImageAspectFlags aspect, vk::SamplerAddressMode addressMode,
 				vk::Filter filter, vk::SampleCountFlagBits samples);
 
-			void writeImageData(std::unique_ptr<loaders::FImageCreateInfo>& info, vk::Format format, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor);
-			void loadFromMemory(std::unique_ptr<loaders::FImageCreateInfo>& info, vk::Format format,
+			void writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format format, vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor);
+			void loadFromMemory(std::unique_ptr<FImageCreateInfo>& info, vk::Format format,
 				vk::ImageUsageFlags flags = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
 				vk::ImageAspectFlags aspect = vk::ImageAspectFlagBits::eColor, vk::SamplerAddressMode addressMode = vk::SamplerAddressMode::eRepeat,
 				vk::Filter filter = vk::Filter::eLinear);
 
-			bool isSupportedDimension(std::unique_ptr<loaders::FImageCreateInfo>& info);
+			bool isSupportedDimension(std::unique_ptr<FImageCreateInfo>& info);
 
 			void blitImage(vk::CommandBuffer& commandBuffer, vk::ImageLayout dstLayout, vk::ImageAspectFlags aspectFlags, uint32_t level, int32_t mipWidth, int32_t mipHeight);
 

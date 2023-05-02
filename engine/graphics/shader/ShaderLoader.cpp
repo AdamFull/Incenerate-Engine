@@ -3,32 +3,34 @@
 #include "Engine.h"
 #include "graphics/rendering/material/Material.h"
 #include "filesystem/vfs_helper.h"
+#include "filesystem/interface/VirtualFileSystemInterface.h"
 
 constexpr const char* shader_config_path = "/embed/shaders.json";
 
 using namespace engine::graphics;
 using namespace engine::filesystem;
 
-CShaderLoader::CShaderLoader(CDevice* device)
+CShaderLoader::CShaderLoader(CDevice* device, IVirtualFileSystemInterface* vfs_ptr)
 {
-	pDevice = device;
-	pCompiler = std::make_unique<CShaderCompiler>();
+	m_pDevice = device;
+	m_pVFS = vfs_ptr;
+	m_pCompiler = std::make_unique<CShaderCompiler>();
 }
 
 CShaderLoader::~CShaderLoader()
 {
-	pCompiler = nullptr;
-	pDevice = nullptr;
+	m_pCompiler = nullptr;
+	m_pDevice = nullptr;
 }
 
 void CShaderLoader::create()
 {
-	EGFilesystem->readJson(shader_config_path, programCI);
+	m_pVFS->readJson(shader_config_path, programCI);
 }
 
 std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size_t mat_id)
 {
-	auto* graphics = pDevice->getAPI();
+	auto* graphics = m_pDevice->getAPI();
 	FShaderSpecials specials;
 
 	if (mat_id != invalid_index)
@@ -55,7 +57,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 		for(auto& [name, value] : specials.defines)
 			defineBlock << "#define " << name << " " << value << '\n';
 
-		auto pShaderObject = std::make_unique<CShaderObject>(pDevice);
+		auto pShaderObject = std::make_unique<CShaderObject>(m_pDevice);
 		pShaderObject->_alphaMode = specials.alphaBlend;
 		auto& pShader = pShaderObject->pShader;
 
@@ -81,11 +83,11 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 		else
 			defineBlock << "#define USE_TESSELLATION" << '\n';
 
-		auto* graphics = pDevice->getAPI();
+		auto* graphics = m_pDevice->getAPI();
 		auto api = graphics->getAPI();
 		for (auto& stage : stages)
 		{
-			if (auto compiled = pCompiler->compile(stage, defineBlock.str(), api))
+			if (auto compiled = m_pCompiler->compile(stage, defineBlock.str(), api))
 				pShader->addStage(compiled->shaderCode, compiled->shaderStage);
 		}
 

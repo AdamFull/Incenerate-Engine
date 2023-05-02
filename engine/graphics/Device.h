@@ -296,7 +296,7 @@ namespace engine
             bool isDeviceSuitable(const vk::PhysicalDevice& device, const std::vector<const char*>& deviceExtensions);
 
         private:
-            CAPIHandle* pAPI{ nullptr };
+            CAPIHandle* m_pAPI{ nullptr };
             vk::DynamicLoader dl;
             vk::Instance vkInstance{ VK_NULL_HANDLE }; // Main vulkan instance
             vk::DebugUtilsMessengerEXT vkDebugUtils{ VK_NULL_HANDLE };

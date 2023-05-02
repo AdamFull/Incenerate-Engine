@@ -14,13 +14,14 @@
 #include "game/SceneGraph.hpp"
 
 #include "loaders/MeshLoader.h"
-#include "loaders/ImageLoader.h"
+#include "graphics/image/ImageLoader.h"
 
 #include "editor/operations/AddComponentOperation.h"
 #include "editor/operations/RemoveComponentOperation.h"
 
 using namespace engine::editor;
 using namespace engine::filesystem;
+using namespace engine::graphics;
 using namespace engine::loaders;
 using namespace engine::game;
 using namespace engine::audio;

@@ -12,13 +12,12 @@
 
 #include "filesystem/vfs_helper.h"
 
-#include "loaders/ImageLoader.h"
+#include "graphics/image/ImageLoader.h"
 
 #include "loaders/mesh/MeshHelper.h"
 
 using namespace engine;
 using namespace engine::loaders;
-using namespace engine::system;
 using namespace engine::graphics;
 using namespace engine::game;
 using namespace engine::ecs;

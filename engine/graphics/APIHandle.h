@@ -17,11 +17,7 @@
 
 namespace engine
 {
-	namespace system {
-		namespace window {
-			class CWindowHandle;
-		}
-	}
+	namespace filesystem { class IVirtualFileSystemInterface; }
 
 	namespace graphics
 	{
@@ -37,6 +33,8 @@ namespace engine
 			void forceReleaseResources();
 			void reCreate(bool bSwapchain, bool bViewport);
 			void shutdown();
+
+			void setVirtualFileSystem(filesystem::IVirtualFileSystemInterface* vfs_ptr);
 
 			const std::unique_ptr<CDebugDraw>& getDebugDraw() const;
 			const std::unique_ptr<CQueryPool>& getQueryPool() const;
@@ -112,7 +110,7 @@ namespace engine
 
 			bool compareAlphaMode(EAlphaMode mode);
 
-			void setManualShaderControlFlag(bool value) { bManualShaderControl = value; }
+			void setManualShaderControlFlag(bool value) { m_bManualShaderControl = value; }
 			void flushConstantRanges(const std::unique_ptr<CPushHandler>& constantRange);
 			void flushShader();
 
@@ -138,30 +136,33 @@ namespace engine
 			vk::Result endFrame();
 
 		protected:
-			winhandle_t pWindow{ nullptr };
+			winhandle_t m_pWindow{ nullptr };
+
+			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
 
 			ERenderApi eAPI;
-			std::unique_ptr<CDevice> pDevice;
-			std::unique_ptr<CShaderLoader> pLoader;
-			std::unique_ptr<CDebugDraw> pDebugDraw;
-			std::unique_ptr<CQueryPool> pQueryPool;
+			std::unique_ptr<CDevice> m_pDevice;
+			std::unique_ptr<CShaderLoader> m_pLoader;
+			std::unique_ptr<CDebugDraw> m_pDebugDraw;
+			std::unique_ptr<CQueryPool> m_pQueryPool;
 
-			std::unordered_map<std::string, FCIStage> mStageInfos;
-			std::unique_ptr<CObjectManager<CImage>> pImageManager;
-			std::unique_ptr<CObjectManager<CShaderObject>> pShaderManager;
-			std::unique_ptr<CObjectManager<CMaterial>> pMaterialManager;
-			std::unique_ptr<CObjectManager<CVertexBufferObject>> pVertexBufferManager;
-			std::unique_ptr<CObjectManager<CRenderStage>> pRenderStageManager;
+			std::unordered_map<std::string, FCIStage> m_mStageInfos;
+			std::unique_ptr<CObjectManager<CImage>> m_pImageManager;
+			std::unique_ptr<CObjectManager<CShaderObject>> m_pShaderManager;
+			std::unique_ptr<CObjectManager<CMaterial>> m_pMaterialManager;
+			std::unique_ptr<CObjectManager<CVertexBufferObject>> m_pVertexBufferManager;
+			std::unique_ptr<CObjectManager<CRenderStage>> m_pRenderStageManager;
 
-			CShaderObject* pBindedShader{ nullptr };
-			CMaterial* pBindedMaterial{ nullptr };
-			CVertexBufferObject* pBindedVBO{ nullptr };
-			CRenderStage* pBindedRenderStage{ nullptr };
-			bool bManualShaderControl{ false };
+			// TODO: make map with thread id - data
+			CShaderObject* m_pBindedShader{ nullptr };
+			CMaterial* m_pBindedMaterial{ nullptr };
+			CVertexBufferObject* m_pBindedVBO{ nullptr };
+			CRenderStage* m_pBindedRenderStage{ nullptr };
+			bool m_bManualShaderControl{ false };
 
-			uint32_t imageIndex{ 0 };
-			bool frameStarted{ false };
-			std::unique_ptr<CCommandBuffer> commandBuffers;
+			uint32_t m_imageIndex{ 0 };
+			bool m_bFrameStarted{ false };
+			std::unique_ptr<CCommandBuffer> m_pCommandBuffers;
 		};
 	}
 }

@@ -63,6 +63,7 @@ void CEngine::create()
 	pWindow->create(createInfo.window);
 
 	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
+	pGraphics->setVirtualFileSystem(pFilesystem.get());
 	pGraphics->create(createInfo);
 
 	//pParticles = std::make_unique<CParticlesCore>();

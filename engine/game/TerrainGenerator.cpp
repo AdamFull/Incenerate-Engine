@@ -2,7 +2,7 @@
 
 #include "Engine.h"
 #include "graphics/APIStructures.h"
-#include "loaders/ImageLoader.h"
+#include "graphics/image/ImageLoader.h"
 
 #include "ecs/components/TerrainComponent.h"
 #include "loaders/mesh/MeshHelper.h"

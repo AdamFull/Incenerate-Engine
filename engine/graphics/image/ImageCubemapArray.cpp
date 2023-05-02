@@ -3,7 +3,6 @@
 #include "APIHandle.h"
 
 using namespace engine::graphics;
-using namespace engine::loaders;
 
 CImageCubemapArray::CImageCubemapArray(CDevice* device)
 {

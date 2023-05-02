@@ -12,7 +12,7 @@
 
 
 using namespace engine::filesystem;
-using namespace engine::loaders;
+using namespace engine::graphics;
 
 void CImageLoader::load(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
@@ -32,11 +32,8 @@ void CImageLoader::load(const std::string& fsPath, std::unique_ptr<FImageCreateI
     }
 }
 
-void CImageLoader::loadSTB(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
+void CImageLoader::loadSTB_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
-    std::vector<uint8_t> imgdata;
-    EGFilesystem->readFile(fsPath, imgdata);
-
     int width{ 0 }, height{ 0 }, channels{ 0 };
     auto data = stbi_loadf_from_memory(imgdata.data(), imgdata.size(), &width, &height, &channels, STBI_rgb_alpha);
 
@@ -50,7 +47,7 @@ void CImageLoader::loadSTB(const std::string& fsPath, std::unique_ptr<FImageCrea
         imageCI->pData = std::make_unique<uint8_t[]>(imageCI->dataSize);
         std::memcpy(imageCI->pData.get(), data, imageCI->dataSize);
     }
-    
+
     imageCI->isArray = false;
     imageCI->isCompressed = false;
     imageCI->isCubemap = false;
@@ -64,11 +61,16 @@ void CImageLoader::loadSTB(const std::string& fsPath, std::unique_ptr<FImageCrea
     stbi_image_free(data);
 }
 
-void CImageLoader::loadKTX(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
+void CImageLoader::loadSTB(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     std::vector<uint8_t> imgdata;
     EGFilesystem->readFile(fsPath, imgdata);
+    loadSTB_memory(imgdata, imageCI, header);
+}
 
+
+void CImageLoader::loadKTX_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
+{
     ktxTexture* kTexture{ nullptr };
     auto ktxresult = ktxTexture_CreateFromMemory(imgdata.data(), imgdata.size(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &kTexture);
     log_cerror(ktxresult == KTX_SUCCESS, "Failed to open ktx texture.");
@@ -92,7 +94,7 @@ void CImageLoader::loadKTX(const std::string& fsPath, std::unique_ptr<FImageCrea
         imageCI->pData = std::make_unique<uint8_t[]>(imageCI->dataSize);
         std::memcpy(imageCI->pData.get(), kTexture->pData, imageCI->dataSize);
     }
-    
+
     imageCI->pixFormat = static_cast<vk::Format>(ktxTexture_GetVkFormat(kTexture));
 
     auto numLayers = imageCI->isCubemap ? imageCI->numFaces : imageCI->numLayers;
@@ -110,11 +112,16 @@ void CImageLoader::loadKTX(const std::string& fsPath, std::unique_ptr<FImageCrea
     ktxTexture_Destroy(kTexture);
 }
 
-void CImageLoader::loadKTX2(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
+void CImageLoader::loadKTX(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     std::vector<uint8_t> imgdata;
     EGFilesystem->readFile(fsPath, imgdata);
+    loadKTX_memory(imgdata, imageCI, header);
+}
 
+
+void CImageLoader::loadKTX2_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
+{
     ktxTexture2* kTexture{ nullptr };
     auto ktxresult = ktxTexture_CreateFromMemory(imgdata.data(), imgdata.size(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, (ktxTexture**)&kTexture);
     log_cerror(ktxresult == KTX_SUCCESS, "Failed to open ktx texture.");
@@ -142,7 +149,7 @@ void CImageLoader::loadKTX2(const std::string& fsPath, std::unique_ptr<FImageCre
         imageCI->dataSize = kTexture->dataSize;
         imageCI->pData = std::make_unique<uint8_t[]>(imageCI->dataSize);
         std::memcpy(imageCI->pData.get(), kTexture->pData, imageCI->dataSize);
-    }    
+    }
 
     imageCI->pixFormat = static_cast<vk::Format>(kTexture->vkFormat);
 
@@ -159,6 +166,13 @@ void CImageLoader::loadKTX2(const std::string& fsPath, std::unique_ptr<FImageCre
     }
 
     ktxTexture_Destroy((ktxTexture*)kTexture);
+}
+
+void CImageLoader::loadKTX2(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
+{
+    std::vector<uint8_t> imgdata;
+    EGFilesystem->readFile(fsPath, imgdata);
+    loadKTX2_memory(imgdata, imageCI, header);
 }
 
 void CImageLoader::loadDDS(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)

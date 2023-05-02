@@ -11,7 +11,6 @@
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 using namespace engine::graphics;
-using namespace engine::system::window;
 
 std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation", "VK_LAYER_KHRONOS_synchronization2" };
 std::vector<const char*> deviceExtensions { 
@@ -75,7 +74,7 @@ static vk::AllocationCallbacks* createPAllocator()
 
 CDevice::CDevice(CAPIHandle* api)
 {
-    pAPI = api;
+    m_pAPI = api;
     pAllocator = createPAllocator();
 }
 
@@ -221,7 +220,7 @@ void CDevice::createDevice()
     queueFamilies.initialize(vkPhysical, vkSurface);
     auto queueCreateInfos = queueFamilies.getCreateInfos();
 
-    auto vkVersion = getVulkanVersion(pAPI->getAPI());
+    auto vkVersion = getVulkanVersion(m_pAPI->getAPI());
 
     // vk 1.0 features
     vk::PhysicalDeviceFeatures deviceFeatures{};
@@ -1100,7 +1099,7 @@ void CDevice::takeScreenshot(const std::filesystem::path& filepath)
 
 void CDevice::readPixel(size_t id, uint32_t x, uint32_t y, void* pixel)
 {
-    auto& image = pAPI->getImage(id);
+    auto& image = m_pAPI->getImage(id);
     auto& srcImage = image->getImage();
 
     // TODO: get pixel size from format here
@@ -1229,7 +1228,7 @@ void CDevice::setViewportExtent(vk::Extent2D extent)
 
 CAPIHandle* CDevice::getAPI()
 {
-    return pAPI;
+    return m_pAPI;
 }
 
 const std::shared_ptr<CCommandPool>& CDevice::getCommandPool(vk::QueueFlags queueFlags, const std::thread::id& threadId)
@@ -1305,7 +1304,7 @@ vk::PhysicalDevice CDevice::getPhysicalDevice(const std::vector<const char*>& de
         auto props = device.getProperties();
 
         auto vapi = props.apiVersion; 
-        switch (pAPI->getAPI())
+        switch (m_pAPI->getAPI())
         {
         case ERenderApi::eVulkan_1_0: bVersionSupport = vapi >= ver10; break;
         case ERenderApi::eVulkan_1_1: bVersionSupport = vapi >= ver11; break;
