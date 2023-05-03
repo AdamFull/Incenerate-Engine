@@ -2,6 +2,7 @@
 #include "Editor.h"
 
 #include "ecs/systems/systems.h"
+#include "EditorRenderSystem.h"
 
 using namespace engine;
 using namespace engine::ecs;
@@ -9,6 +10,7 @@ using namespace engine::editor;
 
 int main()
 {
+	auto& editor = CEditor::getInstance();
 	auto& engine = CEngine::getInstance();
 
 	engine->initialize();
@@ -22,12 +24,12 @@ int main()
 	engine->addSystem<CCameraControlSystem>();
 	engine->addSystem<CAudioSystem>();
 	engine->addSystem<C3DRenderSystem>();
-	engine->addSystem<CPresentRenderSystem>();
+	engine->addSystem<CEditorRenderSystem>();
 
 	engine->create();
-	engine->beginEngineLoop();
+	editor->create();
 
-	//auto editor = std::make_unique<CEditor>();
+	engine->beginEngineLoop();
 
 	return 0;
 }

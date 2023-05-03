@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.18.0)
-project(voxel_engine)
+project(incenerate_engine)
+
+#set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+include(GenerateExportHeader)
 
 set(ENGINE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(EXTERNALS_PATH "${ENGINE_ROOT}/external")
@@ -21,7 +25,7 @@ file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc" "*.h" "*.hpp")
 
 include_directories("external/vulkan/include")
 
-add_library(${PROJECT_NAME} SHARED 
+add_library(${PROJECT_NAME} STATIC 
 ${ENGINE_LOADERS_SOURCE}
 ${ENGINE_PARSE_SOURCE}
 ${ENGINE_PHYSICS_SOURCE}
@@ -39,6 +43,16 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC incenerate_engine_scripting
 )
 
+#target_link_options(${PROJECT_NAME}  PRIVATE "-Wl,--export-all-symbols")
+
+#generate_export_header(${PROJECT_NAME} 
+#              EXPORT_FILE_NAME ie_exports.h
+#              EXPORT_MACRO_NAME INCENERATE_ENGINE_EXPORT
+#              NO_EXPORT_MACRO_NAME INCENERATE_ENGINE_NO_EXPORT
+#              DEPRECATED_MACRO_NAME INCENERATE_ENGINE_DEPRECATED
+#              NO_DEPRECATED_MACRO_NAME INCENERATE_ENGINE_NO_DEPRECATED
+#              )
+
 target_include_directories(${PROJECT_NAME} 
     PUBLIC "${EXTERNALS_PATH}/vulkan/include"
     PRIVATE "${EXTERNALS_PATH}/SDL/include"
@@ -50,9 +64,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${ENGINE_ROOT}/system"
     PUBLIC "${ENGINE_ROOT}/game"
     PUBLIC "${ENGINE_ROOT}/filesystem"
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
-
-target_link_options(${PROJECT_NAME}  PRIVATE "-Wl,--export-all-symbols")
-#set_target_properties(${PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 target_precompile_headers( ${PROJECT_NAME} PUBLIC common.h)

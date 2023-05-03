@@ -4,12 +4,8 @@
 
 using namespace engine::ecs;
 
-// TODO: remove editor init from here
 void CPresentRenderSystem::__create()
 {
-	//if (EGEngine->isEditorMode())
-	//	EGEditor->create();
-
 	shader_id = graphics->addShader("through_pass", "through_pass");
 }
 
@@ -19,9 +15,6 @@ void CPresentRenderSystem::__update(float fDt)
 	auto present_id = graphics->getImageID("postprocess_tex");
 
 	graphics->bindRenderer(stage);
-
-	//if(EGEngine->isEditorMode())
-	//	EGEditor->newFrame(fDt);
 
 	graphics->bindShader(shader_id);
 
