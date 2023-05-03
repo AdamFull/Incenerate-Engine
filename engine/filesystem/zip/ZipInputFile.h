@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/InputFileInterface.h"
 #include <zip.h>
 
@@ -21,7 +23,7 @@ namespace engine
          * CZipInputFile is a derived class from IInputFileInterface and implements its
          * interface for reading files within a ZIP archive.
          */
-        class CZipInputFile final : public IInputFileInterface
+        class INCENERATE_VFS_EXPORT CZipInputFile final : public IInputFileInterface
         {
         public:
             /**

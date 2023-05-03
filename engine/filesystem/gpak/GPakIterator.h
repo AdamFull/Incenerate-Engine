@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/DirectoryIteratorInterface.h"
 
 #include <gpak_data.h>
@@ -15,7 +17,7 @@ namespace engine
          * CGPakIterator is a derived class from IDirectoryIterator and implements its
          * interface for iterating through the files within a gpak archive.
          */
-        class CGPakIterator final : public IDirectoryIterator
+        class INCENERATE_VFS_EXPORT CGPakIterator final : public IDirectoryIterator
         {
         public:
             /**

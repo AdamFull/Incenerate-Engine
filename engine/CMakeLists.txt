@@ -39,7 +39,7 @@ ${ENGINE_SOURCE})
 
 target_link_libraries(${PROJECT_NAME} 
     PUBLIC external_lib
-    PUBLIC incenerate_engine_vfs
+    PUBLIC IncenerateFilesystem
     PUBLIC incenerate_engine_scripting
 )
 

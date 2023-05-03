@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/OutputFileInterface.h"
 
 namespace engine
@@ -13,7 +15,7 @@ namespace engine
          * CNativeOutputFile is a derived class from IOutputFileInterface and provides
          * an implementation for working with output files using native file I/O functions.
          */
-        class CNativeOutputFile final : public IOutputFileInterface
+        class INCENERATE_VFS_EXPORT CNativeOutputFile final : public IOutputFileInterface
         {
         public:
             /**

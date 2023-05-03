@@ -1,0 +1,42 @@
+
+#ifndef INCENERATE_VFS_EXPORT_H
+#define INCENERATE_VFS_EXPORT_H
+
+#ifdef INCENERATEFILESYSTEM_STATIC_DEFINE
+#  define INCENERATE_VFS_EXPORT
+#  define INCENERATE_VFS_NO_EXPORT
+#else
+#  ifndef INCENERATE_VFS_EXPORT
+#    ifdef IncenerateFilesystem_EXPORTS
+/* We are building this library */
+#      define INCENERATE_VFS_EXPORT __declspec(dllexport)
+#    else
+/* We are using this library */
+#      define INCENERATE_VFS_EXPORT __declspec(dllimport)
+#    endif
+#  endif
+
+#  ifndef INCENERATE_VFS_NO_EXPORT
+#    define INCENERATE_VFS_NO_EXPORT 
+#  endif
+#endif
+
+#ifndef INCENERATE_VFS_DEPRECATED
+#  define INCENERATE_VFS_DEPRECATED __declspec(deprecated)
+#endif
+
+#ifndef INCENERATE_VFS_DEPRECATED_EXPORT
+#  define INCENERATE_VFS_DEPRECATED_EXPORT INCENERATE_VFS_EXPORT INCENERATE_VFS_DEPRECATED
+#endif
+
+#ifndef INCENERATE_VFS_DEPRECATED_NO_EXPORT
+#  define INCENERATE_VFS_DEPRECATED_NO_EXPORT INCENERATE_VFS_NO_EXPORT INCENERATE_VFS_DEPRECATED
+#endif
+
+#if 0 /* DEFINE_NO_DEPRECATED */
+#  ifndef INCENERATE_VFS_NO_DEPRECATED
+#    define INCENERATE_VFS_NO_DEPRECATED
+#  endif
+#endif
+
+#endif /* INCENERATE_VFS_EXPORT_H */

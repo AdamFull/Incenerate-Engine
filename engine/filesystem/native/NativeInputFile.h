@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/InputFileInterface.h"
 
 namespace engine
@@ -14,7 +16,7 @@ namespace engine
          * a platform-specific implementation for reading from files using the native
          * file handling functions.
          */
-        class CNativeInputFile final : public IInputFileInterface
+        class INCENERATE_VFS_EXPORT CNativeInputFile final : public IInputFileInterface
         {
         public:
             /**

@@ -1,3 +1,4 @@
+#include "filesystem_pch.h"
 #include "vfs_helper.h"
 
 using namespace engine::filesystem;

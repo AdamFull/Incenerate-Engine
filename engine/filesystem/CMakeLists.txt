@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18.0)
-project(incenerate_engine_vfs LANGUAGES CXX)
+project(IncenerateFilesystem LANGUAGES CXX)
 
 file(GLOB VFS_SOURCES_HEAD "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 set(CPPVFS_SOURCE_FILES ${VFS_SOURCES_HEAD})
@@ -28,7 +28,7 @@ set(CPPVFS_SOURCE_FILES ${CPPVFS_SOURCE_FILES} ${VFS_SOURCES_ZIP})
 file(GLOB VFS_HEADERS_ZIP "${CMAKE_CURRENT_SOURCE_DIR}/zip/*.h")
 set(CPPVFS_HEADER_FILES ${CPPVFS_HEADER_FILES} ${VFS_HEADERS_ZIP})
 
-add_library(${PROJECT_NAME} STATIC ${CPPVFS_SOURCE_FILES} ${CPPVFS_HEADER_FILES})
+add_library(${PROJECT_NAME} SHARED ${CPPVFS_SOURCE_FILES} ${CPPVFS_HEADER_FILES})
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -37,16 +37,17 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/libzip")
-target_link_libraries(${PROJECT_NAME} PUBLIC libzip::zip)
+target_link_libraries(${PROJECT_NAME} PRIVATE libzip::zip)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/pak_archive/lib")
-target_link_libraries(${PROJECT_NAME} PUBLIC libgpak)
+target_link_libraries(${PROJECT_NAME} PRIVATE libgpak)
 
-target_include_directories(${PROJECT_NAME} PUBLIC 
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../external/utility"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/libzip/lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/pak_archive/lib"
+target_include_directories(${PROJECT_NAME}  
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../external/utility"
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib/libzip/lib"
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib/pak_archive/lib"
+    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
 
-target_precompile_headers( ${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/filesystem_pch.h")
+target_precompile_headers( ${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/filesystem_pch.h")

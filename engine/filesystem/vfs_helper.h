@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include <upattern.hpp>
 
 namespace engine
@@ -42,7 +44,7 @@ namespace engine
             constexpr inline uint32_t efkefc = ".efkefc"_utl_hash;
         }
 
-		struct fs
+		struct INCENERATE_VFS_EXPORT fs
 		{
 			static std::string get_mount_point(const std::string& path);
 			static std::string to_posix_path(const std::string& path);

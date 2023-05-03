@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/VFSInterface.h"
 
 namespace engine
@@ -13,7 +15,7 @@ namespace engine
          * CNativeFileSystem is a derived class from IVFSInterface that provides
          * a platform-specific implementation for native file system operations.
          */
-        class CNativeFileSystem final : public IVFSInterface
+        class INCENERATE_VFS_EXPORT CNativeFileSystem final : public IVFSInterface
         {
         public:
             /**

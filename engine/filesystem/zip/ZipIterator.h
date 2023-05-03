@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/DirectoryIteratorInterface.h"
 
 #include <zip.h>
@@ -15,7 +17,7 @@ namespace engine
          * CZipIterator is a derived class from IDirectoryIterator and implements its
          * interface for iterating through the files within a ZIP archive.
          */
-        class CZipIterator final : public IDirectoryIterator
+        class INCENERATE_VFS_EXPORT CZipIterator final : public IDirectoryIterator
         {
         public:
             /**

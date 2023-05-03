@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/DirectoryIteratorInterface.h"
 
 namespace engine
@@ -10,7 +12,7 @@ namespace engine
          * @class CDirectoryIterator
          * @brief This class provides a directory iterator implementation.
          */
-        class CDirectoryIterator : public IDirectoryIteratorInterface
+        class INCENERATE_VFS_EXPORT CDirectoryIterator : public IDirectoryIteratorInterface
         {
         public:
             /**

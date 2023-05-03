@@ -13,6 +13,7 @@ target_link_libraries(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} 
 	PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
 	PRIVATE "${MAIN_PROJECT_DIRECTORY_PATH}/engine"
+	PRIVATE "${MAIN_PROJECT_DIRECTORY_PATH}/engine/filesystem"
 	PRIVATE "${MAIN_PROJECT_DIRECTORY_PATH}/engine/external/SDL/include"
 	PRIVATE "${MAIN_PROJECT_DIRECTORY_PATH}/engine/external/vulkan/include"
 )

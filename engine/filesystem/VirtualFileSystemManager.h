@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/VirtualFileSystemInterface.h"
 
 namespace engine
@@ -13,7 +15,7 @@ namespace engine
 		 * CFilesystemWrapper allows mounting different file systems with IVFSInterface implementations,
 		 * and transparently performing operations on them, such as copy, create, delete, etc.
 		 */
-		class CVirtualFileSystemManager final : public IVirtualFileSystemInterface
+		class INCENERATE_VFS_EXPORT CVirtualFileSystemManager final : public IVirtualFileSystemInterface
 		{
 		public:
 			/**

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/InputFileInterface.h"
 #include <gpak_data.h>
 
@@ -15,7 +17,7 @@ namespace engine
 		 * a implementation for reading from files using the gpak
 		 * file handling functions.
 		 */
-		class CGPakInputFile final : public IInputFileInterface
+		class INCENERATE_VFS_EXPORT CGPakInputFile final : public IInputFileInterface
 		{
 		public:
 			/**

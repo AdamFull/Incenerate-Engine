@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/DirectoryIteratorInterface.h"
 #include "vfs_helper.h"
 
@@ -19,7 +21,7 @@ namespace engine
          * @tparam _Ty The type of native directory iterator to be used.
          */
         template<class _Ty>
-        class CNativeIterator final : public IDirectoryIterator
+        class INCENERATE_VFS_EXPORT CNativeIterator final : public IDirectoryIterator
         {
         public:
             /**

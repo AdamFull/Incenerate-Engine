@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../ie_vfs_exports.h"
+
 namespace engine
 {
 	namespace filesystem
@@ -11,7 +13,7 @@ namespace engine
 		 * It provides a standard interface for operations such as opening and closing files,
 		 * writing to files, checking if a file is open, and manipulating the file pointer.
 		 */
-		class IOutputFileInterface
+		class INCENERATE_VFS_EXPORT IOutputFileInterface
 		{
 		public:
 			/**

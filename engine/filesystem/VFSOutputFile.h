@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/OutputFileInterface.h"
 #include "interface/VFSOutputFileInterface.h"
 
@@ -14,7 +16,7 @@ namespace engine
 		 * CVFSOutFile provides file output operations, such as writing data, seeking positions,
 		 * and flushing the output buffer.
 		 */
-		class CVFSOutFile final : public IVFSOutputFileInterface
+		class INCENERATE_VFS_EXPORT CVFSOutFile final : public IVFSOutputFileInterface
 		{
 		public:
 			/**

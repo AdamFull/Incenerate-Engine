@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../ie_vfs_exports.h"
+
 #include "VFSInterface.h"
 #include "VFSInputFileInterface.h"
 #include "VFSOutputFileInterface.h"
@@ -10,7 +12,7 @@ namespace engine
 {
     namespace filesystem
     {
-        class IVirtualFileSystemInterface
+        class INCENERATE_VFS_EXPORT IVirtualFileSystemInterface
         {
         public:
             virtual ~IVirtualFileSystemInterface() = default;

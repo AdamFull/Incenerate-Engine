@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/VFSInterface.h"
 #include <gpak_data.h>
 
@@ -14,7 +16,7 @@ namespace engine
 		 * CGPakFileSystem is a derived class from IVFSInterface that provides
 		 * a implementation for gpak file system operations.
 		 */
-		class CGPakFileSystem final : public IVFSInterface
+		class INCENERATE_VFS_EXPORT CGPakFileSystem final : public IVFSInterface
 		{
 		public:
 			/**

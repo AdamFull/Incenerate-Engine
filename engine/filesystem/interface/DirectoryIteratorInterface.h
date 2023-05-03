@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../ie_vfs_exports.h"
+
 namespace engine
 {
 	namespace filesystem
@@ -10,7 +12,7 @@ namespace engine
         * @class IDirectoryIterator
         * @brief This class is an interface for iterating over directories.
         */
-        class IDirectoryIterator
+        class INCENERATE_VFS_EXPORT IDirectoryIterator
         {
         public:
             /**
@@ -40,7 +42,7 @@ namespace engine
         };
 
 
-		class IDirectoryIteratorInterface
+		class INCENERATE_VFS_EXPORT IDirectoryIteratorInterface
 		{
 		public:
 			virtual ~IDirectoryIteratorInterface() = default;

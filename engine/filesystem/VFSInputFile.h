@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ie_vfs_exports.h"
+
 #include "interface/InputFileInterface.h"
 #include "interface/VfsInputFileInterface.h"
 
@@ -14,7 +16,7 @@ namespace engine
 		 * CVFSInFile provides file input operations, such as reading data, seeking positions,
 		 * and checking the end of the file.
 		 */
-		class CVFSInFile final : public IVFSInputFileInterface
+		class INCENERATE_VFS_EXPORT CVFSInFile final : public IVFSInputFileInterface
 		{
 		public:
 			/**
