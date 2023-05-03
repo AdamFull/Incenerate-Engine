@@ -5,8 +5,8 @@
 
 #include <tinyfiledialogs/tinyfiledialogs.h>
 
-#include "Engine.h"
-#include "editor/operations/PropertyChangedOperation.h"
+#include "Editor.h"
+#include "operations/PropertyChangedOperation.h"
 
 using namespace engine;
 using namespace engine::editor;

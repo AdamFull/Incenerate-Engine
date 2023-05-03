@@ -21,28 +21,12 @@ void CAudioSystem::__update(float fDt)
 {
 	auto* camera = EGEngine->getActiveCamera();
 
-	if (EGEngine->isEditorEditing())
+	auto view = registry->view<FTransformComponent, FCameraComponent>();
+	for (auto [entity, transform, camera] : view.each())
 	{
-		auto ecamera = EGEditor->getCamera();
-
-		if (registry->valid(ecamera))
-		{
-			auto& transform = registry->get<FTransformComponent>(ecamera);
-			auto& camera = registry->get<FCameraComponent>(ecamera);
-
+		if (camera.active)
 			updateListener(camera, transform);
-		}
 	}
-	else
-	{
-		auto view = registry->view<FTransformComponent, FCameraComponent>();
-		for (auto [entity, transform, camera] : view.each())
-		{
-			if (camera.active)
-				updateListener(camera, transform);
-		}
-	}
-
 	
 	{
 		auto view = registry->view<FTransformComponent, FAudioComponent>();

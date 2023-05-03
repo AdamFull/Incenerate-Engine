@@ -4,10 +4,11 @@
 
 using namespace engine::ecs;
 
+// TODO: remove editor init from here
 void CPresentRenderSystem::__create()
 {
-	if (EGEngine->isEditorMode())
-		EGEditor->create();
+	//if (EGEngine->isEditorMode())
+	//	EGEditor->create();
 
 	shader_id = graphics->addShader("through_pass", "through_pass");
 }
@@ -19,17 +20,15 @@ void CPresentRenderSystem::__update(float fDt)
 
 	graphics->bindRenderer(stage);
 
-	if(EGEngine->isEditorMode())
-		EGEditor->newFrame(fDt);
-	else
-	{
-		graphics->bindShader(shader_id);
+	//if(EGEngine->isEditorMode())
+	//	EGEditor->newFrame(fDt);
 
-		graphics->bindTexture("samplerColor", present_id);;
-		graphics->draw(0, 3, 0, 0, 1);
+	graphics->bindShader(shader_id);
 
-		graphics->bindShader(invalid_index);
-	}
+	graphics->bindTexture("samplerColor", present_id);;
+	graphics->draw(0, 3, 0, 0, 1);
+
+	graphics->bindShader(invalid_index);
 
 	graphics->bindRenderer(invalid_index);
 }

@@ -1,5 +1,6 @@
 #include "CreateEntityOperation.h"
 
+#include "Editor.h"
 #include "Engine.h"
 #include "game/SceneGraph.hpp"
 #include "ecs/components/components.h"

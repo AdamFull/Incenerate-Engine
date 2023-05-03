@@ -1,15 +1,16 @@
 #include "ViewportWindow.h"
 
+#include "Editor.h"
 #include "Engine.h"
 
 #include <imgui/imgui.h>
 #include <imgui/ImGuizmo.h>
-#include <editor/imgui_impl_vulkan.h>
+#include "graphics/imgui_impl/imgui_impl_vulkan.h"
 
 #include "ecs/components/components.h"
 #include "ecs/helper.hpp"
 
-#include "editor/operations/PropertyChangedOperation.h"
+#include "operations/PropertyChangedOperation.h"
 
 #include <Helpers.h>
 

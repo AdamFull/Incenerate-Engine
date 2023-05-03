@@ -8,7 +8,6 @@
 #include "event/EventManager.hpp"
 #include "scripting/ScriptingCore.h"
 //#include "particles/ParticlesCore.h"
-#include "editor/Editor.h"
 
 #include "game/SceneManager.h"
 #include "ecs/systems/BaseSystem.h"
@@ -21,7 +20,6 @@
 #define EGEngine CEngine::getInstance()
 #define EGScripting CEngine::getInstance()->getScripting()
 #define EGFilesystem CEngine::getInstance()->getFilesystem()
-#define EGEditor CEngine::getInstance()->getEditor()
 #define EGAudio CEngine::getInstance()->getAudio()
 #define EGWindow CEngine::getInstance()->getWindow()
 #define EGSceneManager CEngine::getInstance()->getSceneManager()
@@ -35,7 +33,6 @@ namespace engine
 		ePlay
 	};
 
-	using editorptr_t = std::unique_ptr<editor::CEditor>;
 	using winptr_t = std::unique_ptr<graphics::IWindowAdapter>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
 	using audiocore_t = std::unique_ptr<audio::CAudioCore>;
@@ -54,12 +51,13 @@ namespace engine
 
 		~CEngine();
 
+		void initialize();
+
 		void create();
 
 		void beginEngineLoop();
 
 		entt::registry& getRegistry();
-		const editorptr_t& getEditor() const;
 		const winptr_t& getWindow() const;
 		const graphptr_t& getGraphics() const;
 		const audiocore_t& getAudio() const;
@@ -96,6 +94,12 @@ namespace engine
 
 		ecs::FCameraComponent* getActiveCamera();
 
+		template<class _Ty>
+		void addSystem()
+		{
+			vSystems.emplace_back(std::make_unique<_Ty>());
+		}
+
 	private:
 		void destruction();
 		void initEntityComponentSystem();
@@ -105,7 +109,6 @@ namespace engine
 
 		EEngineState eState;
 
-		editorptr_t pEditor;
 		winptr_t pWindow;
 		graphptr_t pGraphics;
 		audiocore_t pAudio;

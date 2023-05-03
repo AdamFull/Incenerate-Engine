@@ -1,12 +1,14 @@
 #include "ImageViewerWindow.h"
 
+#include "Editor.h"
 #include "Engine.h"
+
 #include "filesystem/vfs_helper.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-#include <editor/imgui_impl_vulkan.h>
+#include "graphics/imgui_impl/imgui_impl_vulkan.h"
 
 using namespace engine::graphics;
 using namespace engine::filesystem;

@@ -11,8 +11,9 @@
 # define IMGUI_DEFINE_MATH_OPERATORS
 # include <imgui/imgui_internal.h>
 
-#include <editor/imgui_impl_vulkan.h>
+#include "graphics/imgui_impl/imgui_impl_vulkan.h"
 
+#include "Editor.h"
 #include "Engine.h"
 
 
@@ -21,6 +22,7 @@ namespace ed   = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
 
 using namespace engine;
+using namespace engine::editor;
 
 util::BlueprintNodeBuilder::BlueprintNodeBuilder(size_t texture, int textureWidth, int textureHeight):
     HeaderTextureId(texture),

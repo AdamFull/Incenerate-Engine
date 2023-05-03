@@ -1,7 +1,9 @@
+#include "Editor.h"
+
 #include "Engine.h"
 
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_vulkan.h"
+#include "graphics/imgui_impl/imgui_impl_sdl.h"
+#include "graphics/imgui_impl/imgui_impl_vulkan.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_notify.h>
@@ -33,8 +35,6 @@
 #include "graphics/window/SDL2WindowAdapter.h"
 
 #include "filesystem/native/NativeFileSystem.h"
-
-#include <SDL.h>
 
 constexpr const char* editor_local_data = "/editor/editorloc";
 

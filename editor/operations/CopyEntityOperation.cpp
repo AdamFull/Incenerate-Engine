@@ -1,9 +1,8 @@
 #include "CopyEntityOperation.h"
 
-#include "Engine.h"
+#include "Editor.h"
 #include "game/SceneGraph.hpp"
 
-using namespace engine::ecs;
 using namespace engine::game;
 using namespace engine::editor;
 

@@ -1,9 +1,9 @@
 #include "RenderDebugWindow.h"
 
 #include <imgui/imgui.h>
-#include "editor/CustomControls.h"
+#include "CustomControls.h"
 
-#include "editor/DebugGlobals.h"
+#include "DebugGlobals.h"
 
 using namespace engine::editor;
 

@@ -5,6 +5,12 @@
 #include "EditorProject.h"
 #include "EditorActionBuffer.h"
 
+#include "event/Event.hpp"
+
+#include <vulkan/vulkan.hpp>
+
+#define EGEditor CEditor::getInstance()
+
 struct ImFont;
 
 namespace engine
@@ -53,7 +59,7 @@ namespace engine
 		void to_json(nlohmann::json& json, const FRecentProjects& type);
 		void from_json(const nlohmann::json& json, FRecentProjects& type);
 
-		class CEditor
+		class CEditor : public utl::singleton<CEditor>
 		{
 		public:
 			~CEditor();

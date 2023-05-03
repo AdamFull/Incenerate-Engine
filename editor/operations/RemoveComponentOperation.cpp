@@ -1,5 +1,6 @@
 #include "RemoveComponentOperation.h"
 
+#include "Editor.h"
 #include "Engine.h"
 #include "ecs/components/components.h"
 

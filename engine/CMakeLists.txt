@@ -8,7 +8,6 @@ add_subdirectory("external")
 add_subdirectory("filesystem")
 add_subdirectory("scripting")
 
-file(GLOB_RECURSE ENGINE_EDITOR_SOURCE "editor/*.cpp" "editor/*.c" "editor/*.cc" "editor/*.h" "editor/*.hpp")
 file(GLOB_RECURSE ENGINE_LOADERS_SOURCE "loaders/*.cpp" "loaders/*.c" "loaders/*.cc" "loaders/*.h" "loaders/*.hpp")
 file(GLOB_RECURSE ENGINE_PHYSICS_SOURCE "physics/*.cpp" "physics/*.c" "physics/*.cc" "physics/*.h" "physics/*.hpp")
 file(GLOB_RECURSE ENGINE_PARSE_SOURCE "parse/*.cpp" "parse/*.c" "parse/*.cc" "parse/*.h" "parse/*.hpp")
@@ -22,8 +21,7 @@ file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc" "*.h" "*.hpp")
 
 include_directories("external/vulkan/include")
 
-add_library(${PROJECT_NAME} STATIC 
-${ENGINE_EDITOR_SOURCE}
+add_library(${PROJECT_NAME} SHARED 
 ${ENGINE_LOADERS_SOURCE}
 ${ENGINE_PARSE_SOURCE}
 ${ENGINE_PHYSICS_SOURCE}
@@ -43,7 +41,7 @@ target_link_libraries(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} 
     PUBLIC "${EXTERNALS_PATH}/vulkan/include"
-    PUBLIC "${EXTERNALS_PATH}/SDL/include"
+    PRIVATE "${EXTERNALS_PATH}/SDL/include"
     PUBLIC "${EXTERNALS_PATH}/ktx/include"
     PUBLIC "${EXTERNALS_PATH}/openal-soft/include"
     PUBLIC "${EXTERNALS_PATH}/glmlib"
@@ -53,5 +51,8 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${ENGINE_ROOT}/game"
     PUBLIC "${ENGINE_ROOT}/filesystem"
 )
+
+target_link_options(${PROJECT_NAME}  PRIVATE "-Wl,--export-all-symbols")
+#set_target_properties(${PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 target_precompile_headers( ${PROJECT_NAME} PUBLIC common.h)

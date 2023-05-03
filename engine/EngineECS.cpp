@@ -3,9 +3,6 @@
 // Components
 #include "ecs/components/components.h"
 
-// Systems
-#include "ecs/systems/systems.h"
-
 #include "ecs/helper.hpp"
 
 #include "filesystem/vfs_helper.h"
@@ -253,24 +250,19 @@ void destroy_terrain(entt::registry& reg, entt::entity entity)
 
 FCameraComponent* CEngine::getActiveCamera()
 {
-	if (isEditorEditing())
-		return registry.try_get<FCameraComponent>(pEditor->getCamera());
-	else
+	entt::entity found{ entt::null };
+	auto view = registry.view<FCameraComponent>();
+	for (auto [entity, camera] : view.each())
 	{
-		entt::entity found{ entt::null };
-		auto view = registry.view<FCameraComponent>();
-		for (auto [entity, camera] : view.each())
+		if (camera.active)
 		{
-			if (camera.active)
-			{
-				found = entity;
-				break;
-			}
+			found = entity;
+			break;
 		}
-
-		if(found != entt::null)
-			return registry.try_get<FCameraComponent>(found);
 	}
+
+	if(found != entt::null)
+		return registry.try_get<FCameraComponent>(found);
 
 	return nullptr;
 }
@@ -296,20 +288,6 @@ void CEngine::initEntityComponentSystem()
 	registry.on_construct<FScriptComponent>().connect<&construct_script>();
 	registry.on_destroy<FScriptComponent>().connect<&destroy_script>();
 
-	//registry.on_construct<FParticleComponent>().connect<&construct_particle>();
-	//registry.on_destroy<FParticleComponent>().connect<&destroy_particle>();
-
 	registry.on_construct<FTerrainComponent>().connect<&construct_terrain>();
 	registry.on_destroy<FTerrainComponent>().connect<&destroy_terrain>();
-
-	vSystems.emplace_back(std::make_unique<CAnimationSystem>());
-	vSystems.emplace_back(std::make_unique<CHierarchySystem>());
-	vSystems.emplace_back(std::make_unique<CPhysicsSystem>());
-
-	vSystems.emplace_back(std::make_unique<CInputSystem>());
-	vSystems.emplace_back(std::make_unique<CScriptingSystem>());
-	vSystems.emplace_back(std::make_unique<CCameraControlSystem>());
-	vSystems.emplace_back(std::make_unique<CAudioSystem>());
-	vSystems.emplace_back(std::make_unique<C3DRenderSystem>());
-	vSystems.emplace_back(std::make_unique<CPresentRenderSystem>());
 }

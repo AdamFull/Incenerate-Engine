@@ -1,5 +1,6 @@
 #include "HierarchyWindow.h"
 
+#include "Editor.h"
 #include "Engine.h"
 
 #include "ecs/components/components.h"
@@ -8,11 +9,11 @@
 
 #include "game/SceneGraph.hpp"
 
-#include "editor/operations/CreateEntityOperation.h"
-#include "editor/operations/RemoveEntityOperation.h"
-#include "editor/operations/CopyEntityOperation.h"
-#include "editor/operations/DuplicateEntityOperation.h"
-#include "editor/operations/ExchangeEntityOperation.h"
+#include "operations/CreateEntityOperation.h"
+#include "operations/RemoveEntityOperation.h"
+#include "operations/CopyEntityOperation.h"
+#include "operations/DuplicateEntityOperation.h"
+#include "operations/ExchangeEntityOperation.h"
 
 using namespace engine::editor;
 using namespace engine::game;

@@ -1,7 +1,6 @@
 #include "CompositionSystem.h"
 
 #include "Engine.h"
-#include "editor/DebugGlobals.h"
 #include "graphics/image/ImageCubemap.h"
 
 #include "ecs/components/components.h"
@@ -143,12 +142,18 @@ void CCompositionSystem::__update(float fDt)
 	pUBOLights->set("spotLights", spot_lights);
 	pUBOLights->set("pointLights", point_lights);
 
+	// TODO: get this data from editor
 	auto& pUBODebug = graphics->getUniformHandle("UBODebug");
-	pUBODebug->set("mode", FDebugGlobal::mode);
-	pUBODebug->set("cascadeSplit", FDebugGlobal::cascadeSplit);
-	pUBODebug->set("spotShadowIndex", FDebugGlobal::spotShadowIndex);
-	pUBODebug->set("omniShadowIndex", FDebugGlobal::omniShadowIndex);
-	pUBODebug->set("omniShadowView", FDebugGlobal::omniShadowView);
+	pUBODebug->set("mode", 0);
+	pUBODebug->set("cascadeSplit", 0);
+	pUBODebug->set("spotShadowIndex", 0);
+	pUBODebug->set("omniShadowIndex", 0);
+	pUBODebug->set("omniShadowView", 0);
+	//pUBODebug->set("mode", FDebugGlobal::mode);
+	//pUBODebug->set("cascadeSplit", FDebugGlobal::cascadeSplit);
+	//pUBODebug->set("spotShadowIndex", FDebugGlobal::spotShadowIndex);
+	//pUBODebug->set("omniShadowIndex", FDebugGlobal::omniShadowIndex);
+	//pUBODebug->set("omniShadowView", FDebugGlobal::omniShadowView);
 
 	// Drawing 
 	graphics->bindRenderer(stage);

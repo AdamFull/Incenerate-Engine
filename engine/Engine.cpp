@@ -7,7 +7,6 @@
 #include "filesystem/native/NativeFileSystem.h"
 
 using namespace engine;
-using namespace engine::editor;
 using namespace engine::game;
 using namespace engine::graphics;
 using namespace engine::audio;
@@ -29,11 +28,8 @@ CEngine::~CEngine()
 	
 }
 
-void CEngine::create()
+void CEngine::initialize()
 {
-	utl::stopwatch sw;
-	log_info("Beginning engine initialization.");
-
 	auto local_path = std::filesystem::current_path() / "embed";
 	auto temp_path = std::filesystem::temp_directory_path() / "incenerate-engine";
 
@@ -41,35 +37,34 @@ void CEngine::create()
 	pFilesystem->mount("/embed", std::make_unique<CNativeFileSystem>(local_path.string()));
 	pFilesystem->mount("/temp", std::make_unique<CNativeFileSystem>(temp_path.string()));
 
+	pEventManager = std::make_unique<CEventManager>();
+	pSceneManager = std::make_unique<CSceneManager>();
+	pPhysics = std::make_unique<CPhysicsCore>();
+	pAudio = std::make_unique<CAudioCore>();
+
+	pScripting = std::make_unique<CScriptingCore>(pFilesystem.get());
+	pWindow = std::make_unique<CSDL2WindowAdapter>();
+	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
+}
+
+void CEngine::create()
+{
+	utl::stopwatch sw;
+	log_info("Beginning engine initialization.");
+
 	FEngineCreateInfo createInfo;
 	pFilesystem->readJson("/embed/config.json", createInfo);
 
 	//pLoaderThread = std::make_unique<utl::threadworker>();
 
-	pEventManager = std::make_unique<CEventManager>();
-
-	pSceneManager = std::make_unique<CSceneManager>();
-
-	pPhysics = std::make_unique<CPhysicsCore>();
+	
 	pPhysics->create();
-
-	pAudio = std::make_unique<CAudioCore>();
 	pAudio->create();
-
-	pScripting = std::make_unique<CScriptingCore>(pFilesystem.get());
 	pScripting->create();
-
-	pWindow = std::make_unique<CSDL2WindowAdapter>();
 	pWindow->create(createInfo.window);
 
-	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
 	pGraphics->setVirtualFileSystem(pFilesystem.get());
 	pGraphics->create(createInfo);
-
-	//pParticles = std::make_unique<CParticlesCore>();
-	//pParticles->create();
-
-	pEditor = std::make_unique<CEditor>();
 
 	// Load it from config?
 	if (bEditorMode)
@@ -120,8 +115,6 @@ void CEngine::destruction()
 	pAudio->shutdown();
 	pGraphics->shutdown();
 
-	pEditor = nullptr;
-
 	log_debug("Engine was shutdown.");
 }
 
@@ -138,11 +131,6 @@ const winptr_t& CEngine::getWindow() const
 const graphptr_t& CEngine::getGraphics() const
 {
 	return pGraphics;
-}
-
-const editorptr_t& CEngine::getEditor() const
-{
-	return pEditor;
 }
 
 const audiocore_t& CEngine::getAudio() const

@@ -1,5 +1,6 @@
 #include "ContentBrowserWindow.h"
 
+#include "Editor.h"
 #include "Engine.h"
 
 #include <imgui/imgui.h>

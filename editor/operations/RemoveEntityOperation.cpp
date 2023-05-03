@@ -1,6 +1,8 @@
 #include "RemoveEntityOperation.h"
 
+#include "Editor.h"
 #include "Engine.h"
+
 #include "game/SceneGraph.hpp"
 #include "game/SceneSerializer.h"
 #include "ecs/components/components.h"

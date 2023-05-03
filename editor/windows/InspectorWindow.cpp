@@ -1,9 +1,10 @@
 #include "InspectorWindow.h"
 
+#include "Editor.h"
 #include "Engine.h"
 
 #include <imgui/imgui.h>
-#include "editor/CustomControls.h"
+#include "CustomControls.h"
 
 #include "ecs/components/components.h"
 
@@ -16,8 +17,8 @@
 #include "loaders/MeshLoader.h"
 #include "graphics/image/ImageLoader.h"
 
-#include "editor/operations/AddComponentOperation.h"
-#include "editor/operations/RemoveComponentOperation.h"
+#include "operations/AddComponentOperation.h"
+#include "operations/RemoveComponentOperation.h"
 
 using namespace engine::editor;
 using namespace engine::filesystem;
