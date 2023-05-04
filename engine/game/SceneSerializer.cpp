@@ -104,7 +104,7 @@ entt::entity CSceneLoader::loadNode(const std::string& mountpoint, FSceneObjectR
 	return node;
 }
 
-FSceneObjectRaw CSceneLoader::saveNode(const entt::entity& node)
+FSceneObjectRaw CSceneLoader::saveNode(const entt::entity& node, bool save_all)
 {
 	bool bIgnoreChildren{ false };
 	auto& registry = EGEngine->getRegistry();
@@ -125,7 +125,10 @@ FSceneObjectRaw CSceneLoader::saveNode(const entt::entity& node)
 		bIgnoreChildren = true;
 	}
 	if (auto camera = registry.try_get<FCameraComponent>(node))
-		object.mComponents.emplace("camera", nlohmann::json(*camera));
+	{
+		if(save_all || !hierarchy.hidden)
+			object.mComponents.emplace("camera", nlohmann::json(*camera));
+	}
 
 	if (auto audio = registry.try_get<FAudioComponent>(node))
 	{

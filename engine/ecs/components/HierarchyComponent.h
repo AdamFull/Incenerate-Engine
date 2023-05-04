@@ -12,6 +12,7 @@ namespace engine
 			std::string name;
 			entt::entity parent{ entt::null };
 			std::vector<entt::entity> children;
+			bool hidden{ false };
 		};
 	}
 }

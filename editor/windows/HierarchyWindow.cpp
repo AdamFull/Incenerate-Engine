@@ -125,73 +125,76 @@ void CEditorHierarchy::buildHierarchy(const entt::entity& entity)
 
         auto& hierarchy = registry.get<FHierarchyComponent>(entity);
 
-        //Is object selected
-        auto isSelected = EGEditor->isSelected(entity);
-        if (isSelected)
-            flags |= ImGuiTreeNodeFlags_Selected;
-
-        //Has object childs
-        if (hierarchy.children.empty())
-            flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-        else
-            icon = EGEditor->getIcon(icons::node);
-
-        ImGui::PushID(static_cast<uint32_t>(entity));
-        bool isOpen = ImGui::TreeNodeEx((icon + " " + hierarchy.name).c_str(), flags);
-        ImGui::PopID();
-
-        if(ImGui::IsItemClicked(0) || ImGui::IsItemClicked(1))
-            selected_entity = entity;
-
-        //Mouse double click event
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+        if (!hierarchy.hidden)
         {
-            //TODO: Add object lookAt
-        }
+            //Is object selected
+            auto isSelected = EGEditor->isSelected(entity);
+            if (isSelected)
+                flags |= ImGuiTreeNodeFlags_Selected;
 
-        if (ImGui::IsItemHovered())
-        {
-            // Ctrl + click
-            if (ImGui::IsKeyPressed(ImGuiKey_LeftCtrl) && ImGui::IsItemClicked(0))
+            //Has object childs
+            if (hierarchy.children.empty())
+                flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            else
+                icon = EGEditor->getIcon(icons::node);
+
+            ImGui::PushID(static_cast<uint32_t>(entity));
+            bool isOpen = ImGui::TreeNodeEx((icon + " " + hierarchy.name).c_str(), flags);
+            ImGui::PopID();
+
+            if (ImGui::IsItemClicked(0) || ImGui::IsItemClicked(1))
+                selected_entity = entity;
+
+            //Mouse double click event
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {
-                if (isSelected)
-                    EGEditor->deselectObject();
-                else
+                //TODO: Add object lookAt
+            }
+
+            if (ImGui::IsItemHovered())
+            {
+                // Ctrl + click
+                if (ImGui::IsKeyPressed(ImGuiKey_LeftCtrl) && ImGui::IsItemClicked(0))
+                {
+                    if (isSelected)
+                        EGEditor->deselectObject();
+                    else
+                        EGEditor->selectObject(entity);
+                }
+                //Mouse click event
+                else if (!ImGui::IsKeyPressed(ImGuiKey_LeftCtrl) && ImGui::IsItemClicked(0))
+                {
+                    EGEditor->deselectAll();
                     EGEditor->selectObject(entity);
+                }
             }
-            //Mouse click event
-            else if (!ImGui::IsKeyPressed(ImGuiKey_LeftCtrl) && ImGui::IsItemClicked(0))
+
+            if (isOpen && !hierarchy.children.empty())
             {
-                EGEditor->deselectAll();
-                EGEditor->selectObject(entity);
+                for (auto& child : hierarchy.children)
+                    buildHierarchy(child);
+                ImGui::TreePop();
             }
-        }
 
-        if (isOpen && !hierarchy.children.empty())
-        {
-            for (auto& child : hierarchy.children)
-                buildHierarchy(child);
-            ImGui::TreePop();
-        }
-
-        if (ImGui::BeginDragDropSource())
-        {
-            ImGui::SetDragDropPayload("scene_node", &entity, sizeof(entity));
-            ImGui::Text(hierarchy.name.c_str());
-            ImGui::EndDragDropSource();
-        }
-
-        if (ImGui::BeginDragDropTarget())
-        {
-            auto payload = ImGui::AcceptDragDropPayload("scene_node");
-            if (payload)
+            if (ImGui::BeginDragDropSource())
             {
-                auto node = *static_cast<entt::entity*>(payload->Data);
-                auto& actionBuffer = EGEditor->getActionBuffer();
-                actionBuffer->addOperation(std::make_unique<CExchangeEntityOperation>(node, entity));
+                ImGui::SetDragDropPayload("scene_node", &entity, sizeof(entity));
+                ImGui::Text(hierarchy.name.c_str());
+                ImGui::EndDragDropSource();
             }
 
-            ImGui::EndDragDropTarget();
+            if (ImGui::BeginDragDropTarget())
+            {
+                auto payload = ImGui::AcceptDragDropPayload("scene_node");
+                if (payload)
+                {
+                    auto node = *static_cast<entt::entity*>(payload->Data);
+                    auto& actionBuffer = EGEditor->getActionBuffer();
+                    actionBuffer->addOperation(std::make_unique<CExchangeEntityOperation>(node, entity));
+                }
+
+                ImGui::EndDragDropTarget();
+            }
         }
     }
 }
