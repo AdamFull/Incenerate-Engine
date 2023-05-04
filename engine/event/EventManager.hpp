@@ -7,12 +7,14 @@ namespace engine
 	class CEventManager : public IEventManagerInterface
 	{
 	public:
-		void addListener(EventId eventId, utl::function<void(CEvent&)> const& listener) override;
+		std::unique_ptr<IEvent> makeEvent(EventId type) override;
 
-		void sendEvent(CEvent& event) override;
+		void addListener(EventId eventId, utl::function<void(const std::unique_ptr<IEvent>&)> const& listener) override;
+
+		void sendEvent(const std::unique_ptr<IEvent>& event) override;
 		void sendEvent(EventId eventId) override;
 
 	private:
-		std::unordered_map<EventId, std::vector<utl::function<void(CEvent&)>>> listeners;
+		std::unordered_map<EventId, std::vector<utl::function<void(const std::unique_ptr<IEvent>&)>>> listeners;
 	};
 }

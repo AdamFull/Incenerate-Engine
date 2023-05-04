@@ -1,7 +1,6 @@
 #pragma once
 
 #include <any>
-#include <unordered_map>
 
 namespace engine
 {
@@ -42,31 +41,20 @@ namespace engine
 		constexpr const inline ParamId Axis = "Events::Input::Axis"_utl_hash;
 	}
 
-	class CEvent
+	class IEvent
 	{
 	public:
-		CEvent() = delete;
-
-		explicit CEvent(EventId type) : mType(type) {}
+		virtual ~IEvent() = default;
 
 		template<class _Ty>
-		void setParam(EventId id, _Ty value)
-		{
-			mData[id] = value;
-		}
+		void setParam(EventId id, _Ty value) { setValue(id, value); }
 
 		template<class _Ty>
-		_Ty getParam(EventId id)
-		{
-			return std::any_cast<_Ty>(mData[id]);
-		}
+		_Ty getParam(EventId id) { return std::any_cast<_Ty>(getValue(id)); }
 
-		EventId getType() const
-		{
-			return mType;
-		}
-	private:
-		EventId mType{};
-		std::unordered_map<EventId, std::any> mData{};
+		virtual EventId getType() const = 0;
+	protected:
+		virtual std::any getValue(EventId id) = 0;
+		virtual void setValue(EventId id, const std::any& value) = 0;
 	};
 }

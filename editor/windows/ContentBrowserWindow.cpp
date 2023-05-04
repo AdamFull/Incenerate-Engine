@@ -204,8 +204,8 @@ void CEditorContentBrowser::__draw(float fDt)
 				}
 				else if (fs::is_image_format(path))
 				{
-					CEvent eevent(Events::Editor::OpenImageViewer);
-					eevent.setParam(Events::Editor::OpenImageViewer, path);
+					auto eevent = EGEngine->makeEvent(Events::Editor::OpenImageViewer);
+					eevent->setParam(Events::Editor::OpenImageViewer, path);
 					EGEngine->sendEvent(eevent);
 				}
 				else if (fs::is_scene_format(path))
@@ -229,7 +229,7 @@ void CEditorContentBrowser::__draw(float fDt)
 	}
 }
 
-void CEditorContentBrowser::OnProjectChanged(CEvent& event)
+void CEditorContentBrowser::OnProjectChanged(const std::unique_ptr<IEvent>& event)
 {
 	workdir = "/assets";
 	update_path(workdir);

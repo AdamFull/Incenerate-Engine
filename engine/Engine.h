@@ -82,14 +82,16 @@ namespace engine
 
 		const std::vector<std::unique_ptr<ecs::ISystem>>& getSystems() const;
 
+		std::unique_ptr<IEvent> makeEvent(EventId eventId);
+
 		// Event methods
 		template<class... _Args>
 		void addEventListener(EventId eventId, _Args&& ...args)
 		{
-			pEventManager->addListener(eventId, utl::function<void(CEvent&)>(std::forward<_Args>(args)...));
+			pEventManager->addListener(eventId, utl::function<void(const std::unique_ptr<IEvent>&)>(std::forward<_Args>(args)...));
 		}
 
-		void sendEvent(CEvent& event);
+		void sendEvent(const std::unique_ptr<IEvent>& event);
 		void sendEvent(EventId eventId);
 
 		ecs::FCameraComponent* getActiveCamera();

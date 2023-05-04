@@ -16,7 +16,7 @@ namespace engine
 			void create() override;
 			void __draw(float fDt) override;
 		private:
-			//void onViewportReCreate(CEvent& event);
+			//void onViewportReCreate(const std::unique_ptr<IEvent>& event);
 			void drawViewport();
 			void viewportPicking();
 			void drawManipulator(float offsetx, float offsety, float sizex, float sizey);

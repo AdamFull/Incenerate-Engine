@@ -432,7 +432,7 @@ void CEditor::newFrame(float fDt)
     ImGui_ImplVulkan_RenderDrawData(drawdata, commandBuffer);
 }
 
-void CEditor::onAllFramesDone(CEvent& event)
+void CEditor::onAllFramesDone(const std::unique_ptr<IEvent>& event)
 {
     for (auto& action : vEditorActions)
         action();
@@ -558,9 +558,9 @@ const std::string& CEditor::getIcon(uint32_t id)
     return mEditorIcons[id];
 }
 
-void CEditor::onKeyDown(CEvent& event)
+void CEditor::onKeyDown(const std::unique_ptr<IEvent>& event)
 {
-    auto keys = event.getParam<CKeyDecoder>(Events::Input::Key);
+    auto keys = event->getParam<CKeyDecoder>(Events::Input::Key);
     
     //if (ImGui::MenuItem((mEditorIcons[icons::cut] + " Cut").c_str(), "Ctrl-X")) {}
     //if (ImGui::MenuItem((mEditorIcons[icons::copy] + " Copy").c_str(), "Ctrl-C")) {}

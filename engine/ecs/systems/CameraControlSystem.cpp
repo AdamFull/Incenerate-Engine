@@ -112,9 +112,9 @@ void CCameraControlSystem::up(FCameraComponent& camera, FTransformComponent& tra
 	camera.moved = true;
 }
 
-void CCameraControlSystem::onKeyInput(CEvent& event)
+void CCameraControlSystem::onKeyInput(const std::unique_ptr<IEvent>& event)
 {
-	auto keys = event.getParam<CKeyDecoder>(Events::Input::Key);
+	auto keys = event->getParam<CKeyDecoder>(Events::Input::Key);
 
 	if (keys.test(EKeyCode::eKeyW))
 		moveForward(false);
@@ -132,15 +132,15 @@ void CCameraControlSystem::onKeyInput(CEvent& event)
 		bRotationPass = true;
 }
 
-void CCameraControlSystem::onMouseInput(CEvent& event)
+void CCameraControlSystem::onMouseInput(const std::unique_ptr<IEvent>& event)
 {
 	auto& window = EGEngine->getWindow();
 
 	int32_t wwidth{ 0 }, wheight{ 0 };
 	window->getWindowSize(&wwidth, &wheight);
 
-	auto fx = event.getParam<float>(Events::Input::MouseX);
-	auto fy = event.getParam<float>(Events::Input::MouseY);
+	auto fx = event->getParam<float>(Events::Input::MouseX);
+	auto fy = event->getParam<float>(Events::Input::MouseY);
 
 	float xmax = static_cast<float>(wwidth);
 	float ymax = static_cast<float>(wheight);

@@ -581,10 +581,10 @@ bool CMaterialEditorWindow::canCreateLink(const std::unique_ptr<FMaterialEditorA
 	return true;
 }
 
-void CMaterialEditorWindow::onSetMaterial(CEvent& event)
+void CMaterialEditorWindow::onSetMaterial(const std::unique_ptr<IEvent>& event)
 {
 	bIsOpen = true;
-	selected_material = event.getParam<size_t>(Events::Editor::SelectMaterial);
+	selected_material = event->getParam<size_t>(Events::Editor::SelectMaterial);
 }
 
 void CMaterialEditorWindow::renderAttribute(ax::NodeEditor::PinId attr_id, bool hasInputs)

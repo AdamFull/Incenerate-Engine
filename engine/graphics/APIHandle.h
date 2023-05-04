@@ -11,6 +11,8 @@
 #include "rendering/RenderStage.h"
 #include "rendering/material/Material.h"
 
+#include "event/EventInterface.h"
+
 #include "DebugDraw.h"
 
 #include "shared/ObjectManager.hpp"
@@ -141,6 +143,10 @@ namespace engine
 
 			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
 			std::unique_ptr<CImageLoader> m_pImageLoader;
+
+			std::unique_ptr<IEvent> m_pFrameDoneEvent;
+			std::unique_ptr<IEvent> m_pReCreateEvent;
+			std::unique_ptr<IEvent> m_pViewportReCreateEvent;
 
 			ERenderApi eAPI;
 			std::unique_ptr<CDevice> m_pDevice;

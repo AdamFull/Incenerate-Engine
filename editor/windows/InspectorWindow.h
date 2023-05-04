@@ -1,7 +1,6 @@
 #pragma once
 
 #include "WindowBase.h"
-#include "event/Event.hpp"
 #include "ecs/components/fwd.h"
 
 namespace engine

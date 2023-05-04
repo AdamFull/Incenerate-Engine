@@ -5,7 +5,7 @@
 #include "EditorProject.h"
 #include "EditorActionBuffer.h"
 
-#include "event/Event.hpp"
+#include "event/EventInterface.h"
 
 #include <vulkan/vulkan.hpp>
 
@@ -66,7 +66,7 @@ namespace engine
 			void create();
 			void newFrame(float fDt);
 
-			void onAllFramesDone(CEvent& event);
+			void onAllFramesDone(const std::unique_ptr<IEvent>& event);
 
 			void makeNewProject(const std::string& project_path);
 			void openExistingProject(const std::string& project_path);
@@ -102,7 +102,7 @@ namespace engine
 
 			const std::unique_ptr<CEditorActionBuffer>& getActionBuffer() const { return pActionBuffer; }
 		private:
-			void onKeyDown(CEvent& event);
+			void onKeyDown(const std::unique_ptr<IEvent>& event);
 
 			void load_editor();
 			void save_editor();

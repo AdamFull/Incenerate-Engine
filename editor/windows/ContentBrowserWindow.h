@@ -1,6 +1,6 @@
 #pragma once
 
-#include "event/Event.hpp"
+#include "event/EventInterface.h"
 #include "WindowBase.h"
 
 namespace engine
@@ -16,7 +16,7 @@ namespace engine
 			void create() override;
 			void __draw(float fDt) override;
 		private:
-			void OnProjectChanged(CEvent& event);
+			void OnProjectChanged(const std::unique_ptr<IEvent>& event);
 			void update_path(const std::string& npath);
 		private:
 			std::string currentPath{};

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BaseSystem.h"
-#include "event/Event.hpp"
+#include "event/EventInterface.h"
 
 #include "ecs/components/fwd.h"
 
@@ -28,8 +28,8 @@ namespace engine
 			void right(FCameraComponent& camera, FTransformComponent& transform, float dir);
 			void up(FCameraComponent& camera, FTransformComponent& transform, float dir);
 
-			void onKeyInput(CEvent& event);
-			void onMouseInput(CEvent& event);
+			void onKeyInput(const std::unique_ptr<IEvent>& event);
+			void onMouseInput(const std::unique_ptr<IEvent>& event);
 
 			void moveForward(bool bInv);
 			void moveRight(bool bInv);

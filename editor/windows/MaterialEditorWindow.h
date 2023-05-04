@@ -2,7 +2,7 @@
 
 #include "WindowBase.h"
 #include "materialeditor/MaterialEditorParse.h"
-#include "event/Event.hpp"
+#include "event/EventInterface.h"
 
 #include <imgui/imgui_node_editor.h>
 
@@ -88,7 +88,7 @@ namespace engine
 
 			bool canCreateLink(const std::unique_ptr<FMaterialEditorAttribute>& lhs, const std::unique_ptr<FMaterialEditorAttribute>& rhs);
 
-			void onSetMaterial(CEvent& event);
+			void onSetMaterial(const std::unique_ptr<IEvent>& event);
 			void renderAttribute(ax::NodeEditor::PinId attr_id, bool hasInputs);
 			void makePopupMenuContent(const std::vector<FMaterialEditorGroupCreateInfo>& groups);
 		private:

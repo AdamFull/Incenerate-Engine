@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ecs/systems/BaseSystem.h"
-#include "event/Event.hpp"
+#include "event/EventInterface.h"
 
 namespace engine
 {
@@ -17,7 +17,7 @@ namespace engine
 			virtual void __create() override;
 			virtual void __update(float fDt) override;
 		protected:
-			virtual void onViewportUpdated(CEvent& event);
+			virtual void onViewportUpdated(const std::unique_ptr<IEvent>& event);
 			void addSubresource(const std::string& name);
 			size_t getSubresource(const std::string& name);
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "event/EventInterface.h"
+
 #include "WindowAdapter.h"
 
 #include <SDL.h>
@@ -32,6 +34,9 @@ namespace engine
 		private:
 			SDL_Window* pWindow{ nullptr };
 			std::vector<SDL_Event> vWinEvents;
+
+			std::unique_ptr<IEvent> m_pMouseEvent;
+			std::unique_ptr<IEvent> m_pKeyEvent;
 		};
 	}
 }

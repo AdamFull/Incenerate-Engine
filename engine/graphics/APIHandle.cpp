@@ -30,6 +30,10 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
     m_pWindow->getWindowSize(const_cast<int32_t*>(&createInfo.window.actualWidth), const_cast<int32_t*>(&createInfo.window.actualHeight));
 
+    m_pFrameDoneEvent = EGEngine->makeEvent(Events::Graphics::AllFramesDone);
+    m_pReCreateEvent = EGEngine->makeEvent(Events::Graphics::ReCreate);
+    m_pViewportReCreateEvent = EGEngine->makeEvent(Events::Graphics::ViewportReCreate);
+
     m_pImageManager = std::make_unique<CObjectManager<CImage>>();
     m_pShaderManager = std::make_unique<CObjectManager<CShaderObject>>();
     m_pMaterialManager = std::make_unique<CObjectManager<CMaterial>>();
@@ -322,7 +326,7 @@ void CAPIHandle::update()
 
     if (count_delete > m_pDevice->getFramesInFlight() + 1)
     {
-        EGEngine->sendEvent(Events::Graphics::AllFramesDone);
+        EGEngine->sendEvent(m_pFrameDoneEvent);
         forceReleaseResources();
         count_delete = 0;
     }
@@ -377,10 +381,10 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
         pStage->reCreate(stage);
     }
 
-    EGEngine->sendEvent(Events::Graphics::ReCreate);
+    EGEngine->sendEvent(m_pReCreateEvent);
 
     if (bViewport)
-        EGEngine->sendEvent(Events::Graphics::ViewportReCreate);
+        EGEngine->sendEvent(m_pViewportReCreateEvent);
 
     m_pDevice->nillViewportFlag();
 }

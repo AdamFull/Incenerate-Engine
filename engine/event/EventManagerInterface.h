@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Event.hpp"
+#include "EventInterface.h"
 
 namespace engine
 {
@@ -8,9 +8,12 @@ namespace engine
 	{
 	public:
 		virtual ~IEventManagerInterface() = default;
-		virtual void addListener(EventId eventId, utl::function<void(CEvent&)> const& listener) = 0;
 
-		virtual void sendEvent(CEvent& evt) = 0;
+		virtual std::unique_ptr<IEvent> makeEvent(EventId type) = 0;
+
+		virtual void addListener(EventId eventId, utl::function<void(const std::unique_ptr<IEvent>&)> const& listener) = 0;
+
+		virtual void sendEvent(const std::unique_ptr<IEvent>& evt) = 0;
 		virtual void sendEvent(EventId eventId) = 0;
 	};
 }

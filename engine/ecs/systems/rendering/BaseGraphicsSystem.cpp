@@ -20,7 +20,7 @@ void CBaseGraphicsSystem::__update(float fDt)
 {
 }
 
-void CBaseGraphicsSystem::onViewportUpdated(CEvent& event)
+void CBaseGraphicsSystem::onViewportUpdated(const std::unique_ptr<IEvent>& event)
 {
 	mSubresourceMap.clear();
 	updateSubresources();

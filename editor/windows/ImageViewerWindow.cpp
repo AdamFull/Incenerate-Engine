@@ -71,12 +71,12 @@ void CEditorImageViewer::__draw(float fDt)
 	}
 }
 
-void CEditorImageViewer::OnOpenImage(CEvent& event)
+void CEditorImageViewer::OnOpenImage(const std::unique_ptr<IEvent>& event)
 {
 	if (openned_image != invalid_index)
 		graphics->removeImage(openned_image);
 
-	auto path = event.getParam<std::string>(Events::Editor::OpenImageViewer);
+	auto path = event->getParam<std::string>(Events::Editor::OpenImageViewer);
 	auto name = fs::get_filename(path);
 	openned_image = graphics->addImage(name, path);
 	bIsOpen = true;

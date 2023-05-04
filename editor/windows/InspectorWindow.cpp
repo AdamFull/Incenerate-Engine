@@ -700,8 +700,8 @@ void CEditorInspector::terrainEdit(FTerrainComponent* object)
 
 	if (ImGui::Button("Open material editor"))
 	{
-		CEvent eevent(Events::Editor::SelectMaterial);
-		eevent.setParam(Events::Editor::SelectMaterial, object->material_id);
+		auto eevent = EGEngine->makeEvent(Events::Editor::SelectMaterial);
+		eevent->setParam(Events::Editor::SelectMaterial, object->material_id);
 		EGEngine->sendEvent(eevent);
 	}
 }
@@ -712,8 +712,8 @@ void CEditorInspector::meshEdit(FMeshComponent* object)
 	{
 		if (ImGui::Button("Open material editor"))
 		{
-			CEvent eevent(Events::Editor::SelectMaterial);
-			eevent.setParam(Events::Editor::SelectMaterial, meshlet.material);
+			auto eevent = EGEngine->makeEvent(Events::Editor::SelectMaterial);
+			eevent->setParam(Events::Editor::SelectMaterial, meshlet.material);
 			EGEngine->sendEvent(eevent);
 		}
 	}
