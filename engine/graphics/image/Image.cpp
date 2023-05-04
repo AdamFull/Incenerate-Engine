@@ -38,7 +38,8 @@ void CImage::create(const std::string& srPath, vk::ImageUsageFlags flags, vk::Im
     enableAnisotropy = VK_TRUE;
     std::unique_ptr<FImageCreateInfo> texture;
 
-    CImageLoader::load(srPath, texture);
+    auto& loader = pDevice->getAPI()->getImageLoader();
+    loader->load(srPath, texture);
 
     loadFromMemory(texture, texture->pixFormat, flags, aspect, addressMode, filter);
 }
@@ -48,7 +49,8 @@ void CImage::create(const std::string& srPath, vk::Format format, vk::ImageUsage
     enableAnisotropy = VK_TRUE;
     std::unique_ptr<FImageCreateInfo> texture;
 
-    CImageLoader::load(srPath, texture);
+    auto& loader = pDevice->getAPI()->getImageLoader();
+    loader->load(srPath, texture);
 
     texture->pixFormat = format;
 

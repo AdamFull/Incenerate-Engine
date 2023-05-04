@@ -6,12 +6,13 @@
 
 namespace engine
 {
+	namespace filesystem { class IVirtualFileSystemInterface; }
 	namespace graphics
 	{
 		class CShaderCompiler
 		{
 		public:
-			CShaderCompiler();
+			CShaderCompiler(filesystem::IVirtualFileSystemInterface* vfs_ptr);
 			~CShaderCompiler();
 
 			std::optional<FCachedShader> compile(const std::string& path, const std::string& preamble, ERenderApi eAPI);
@@ -27,6 +28,7 @@ namespace engine
 
 		private:
 			std::unordered_map<std::string, FCachedShader> cache;
+			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
 		};
 	}
 }

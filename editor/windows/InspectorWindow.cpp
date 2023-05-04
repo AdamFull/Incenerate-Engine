@@ -87,6 +87,7 @@ void CEditorInspector::create()
 void CEditorInspector::__draw(float fDt)
 {
 	auto& graphics = EGEngine->getGraphics();
+	auto& imageLoader = graphics->getImageLoader();
 	auto& debug_draw = graphics->getDebugDraw();
 	auto& registry = EGEngine->getRegistry();
 	auto& selected = EGEditor->getLastSelection();
@@ -210,7 +211,7 @@ void CEditorInspector::__draw(float fDt)
 				else if (fs::is_skybox_format(source))
 				{
 					std::unique_ptr<FImageCreateInfo> pImageCI;
-					CImageLoader::load(source, pImageCI);
+					imageLoader->load(source, pImageCI, true);
 					if (!registry.try_get<FEnvironmentComponent>(selected) && pImageCI->isCubemap)
 					{
 						FEnvironmentComponent nskybox{};
@@ -483,6 +484,8 @@ void CEditorInspector::scriptEdit(FScriptComponent* object)
 
 void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 {
+	auto& graphics = EGEngine->getGraphics();
+	auto& imageLoader = graphics->getImageLoader();
 	auto& registry = EGEngine->getRegistry();
 	auto self = EGEditor->getLastSelection();
 
@@ -497,7 +500,7 @@ void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 			if (fs::is_skybox_format(source))
 			{
 				std::unique_ptr<FImageCreateInfo> pImageCI;
-				CImageLoader::load(source, pImageCI);
+				imageLoader->load(source, pImageCI);
 
 				if (object->source != source && pImageCI->isCubemap)
 				{

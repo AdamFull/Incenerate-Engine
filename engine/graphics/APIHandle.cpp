@@ -39,8 +39,10 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 	m_pDevice = std::make_unique<CDevice>(this);
 	m_pDevice->create(createInfo, m_pWindow);
 
-    m_pLoader = std::make_unique<CShaderLoader>(m_pDevice.get(), m_pVFS);
-    m_pLoader->create();
+    m_pShaderLoader = std::make_unique<CShaderLoader>(m_pDevice.get(), m_pVFS);
+    m_pShaderLoader->create();
+
+    m_pImageLoader = std::make_unique<CImageLoader>(m_pVFS);
     
     m_pCommandBuffers = std::make_unique<CCommandBuffer>(m_pDevice.get());
     m_pCommandBuffers->create(false, vk::QueueFlagBits::eGraphics, vk::CommandBufferLevel::ePrimary, m_pDevice->getFramesInFlight());
@@ -449,7 +451,12 @@ const std::unique_ptr<CDevice>& CAPIHandle::getDevice() const
 
 const std::unique_ptr<CShaderLoader>& CAPIHandle::getShaderLoader()
 {
-    return m_pLoader;
+    return m_pShaderLoader;
+}
+
+const std::unique_ptr<CImageLoader>& CAPIHandle::getImageLoader()
+{
+    return m_pImageLoader;
 }
 
 size_t CAPIHandle::addImage(const std::string& name, std::unique_ptr<CImage>&& image)
@@ -574,7 +581,7 @@ size_t CAPIHandle::addShader(const std::string& name, std::unique_ptr<CShaderObj
 
 size_t CAPIHandle::addShader(const std::string& name, const std::string& shadertype, size_t mat_id)
 {
-    auto shader_id = addShader(name, m_pLoader->load(shadertype, mat_id));
+    auto shader_id = addShader(name, m_pShaderLoader->load(shadertype, mat_id));
 
     if (mat_id != invalid_index)
     {
@@ -587,7 +594,7 @@ size_t CAPIHandle::addShader(const std::string& name, const std::string& shadert
 
 size_t CAPIHandle::addShader(const std::string& name, const std::string& shadertype, const FShaderSpecials& specials)
 {
-    auto shader_id = addShader(name, m_pLoader->load(shadertype, specials));
+    auto shader_id = addShader(name, m_pShaderLoader->load(shadertype, specials));
     return shader_id;
 }
 

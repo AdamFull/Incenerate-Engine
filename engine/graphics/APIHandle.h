@@ -45,6 +45,7 @@ namespace engine
 
 			const std::unique_ptr<CDevice>& getDevice() const;
 			const std::unique_ptr<CShaderLoader>& getShaderLoader();
+			const std::unique_ptr<CImageLoader>& getImageLoader();
 
 			ERenderApi getAPI() { return eAPI; }
 
@@ -139,10 +140,11 @@ namespace engine
 			winhandle_t m_pWindow{ nullptr };
 
 			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
+			std::unique_ptr<CImageLoader> m_pImageLoader;
 
 			ERenderApi eAPI;
 			std::unique_ptr<CDevice> m_pDevice;
-			std::unique_ptr<CShaderLoader> m_pLoader;
+			std::unique_ptr<CShaderLoader> m_pShaderLoader;
 			std::unique_ptr<CDebugDraw> m_pDebugDraw;
 			std::unique_ptr<CQueryPool> m_pQueryPool;
 

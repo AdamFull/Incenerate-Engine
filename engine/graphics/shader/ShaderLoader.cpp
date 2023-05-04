@@ -10,11 +10,10 @@ constexpr const char* shader_config_path = "/embed/shaders.json";
 using namespace engine::graphics;
 using namespace engine::filesystem;
 
-CShaderLoader::CShaderLoader(CDevice* device, IVirtualFileSystemInterface* vfs_ptr)
+CShaderLoader::CShaderLoader(CDevice* device, IVirtualFileSystemInterface* vfs_ptr) :
+	m_pDevice(device), m_pVFS(vfs_ptr)
 {
-	m_pDevice = device;
-	m_pVFS = vfs_ptr;
-	m_pCompiler = std::make_unique<CShaderCompiler>();
+	m_pCompiler = std::make_unique<CShaderCompiler>(m_pVFS);
 }
 
 CShaderLoader::~CShaderLoader()

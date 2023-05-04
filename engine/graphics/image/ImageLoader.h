@@ -4,6 +4,7 @@
 
 namespace engine
 {
+    namespace filesystem { class IVirtualFileSystemInterface; }
 	namespace graphics
 	{
 		enum class EImageFormat
@@ -41,19 +42,22 @@ namespace engine
         class CImageLoader
         {
         public:
-            static void load(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header = false);
+            CImageLoader(filesystem::IVirtualFileSystemInterface* vfs_ptr);
+            void load(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header = false);
         private:
-            static void loadSTB_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
-            static void loadSTB(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            void loadSTB_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            void loadSTB(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
 
-            static void loadKTX_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
-            static void loadKTX(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            void loadKTX_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            void loadKTX(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
 
-            static void loadKTX2_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
-            static void loadKTX2(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            void loadKTX2_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            void loadKTX2(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
 
-            static void loadDDS(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
-            static EImageFormat getTextureFormat(const std::string& fsPath);
+            void loadDDS(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header);
+            EImageFormat getTextureFormat(const std::string& fsPath);
+        private:
+            filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
         };
 	}
 }

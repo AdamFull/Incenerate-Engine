@@ -139,8 +139,9 @@ void CTerrainLoader::loadMaterial(ecs::FTerrainComponent* terrain)
 
 void CTerrainLoader::loadHeightmap(FTerrainComponent* terrain)
 {
+	// TODO: add api for image loading
 	std::unique_ptr<FImageCreateInfo> imageCI;
-	CImageLoader::load(terrain->source, imageCI);
+	//CImageLoader::load(terrain->source, imageCI);
 
 	if (imageCI && !terrain->source.empty())
 	{

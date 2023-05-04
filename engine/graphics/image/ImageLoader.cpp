@@ -1,5 +1,5 @@
 #include "ImageLoader.h"
-#include "Engine.h"
+#include "filesystem/interface/VirtualFileSystemInterface.h"
 
 #include <ktx.h>
 #include <ktxvulkan.h>
@@ -14,11 +14,17 @@
 using namespace engine::filesystem;
 using namespace engine::graphics;
 
+CImageLoader::CImageLoader(filesystem::IVirtualFileSystemInterface* vfs_ptr) :
+    m_pVFS(vfs_ptr)
+{
+
+}
+
 void CImageLoader::load(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     imageCI = std::make_unique<FImageCreateInfo>();
 
-    if (!EGFilesystem->exists(fsPath))
+    if (!m_pVFS->exists(fsPath))
         log_error("Image {} was not found.", fsPath);
 
     auto texFormat = getTextureFormat(fsPath);
@@ -64,7 +70,7 @@ void CImageLoader::loadSTB_memory(const std::vector<uint8_t>& imgdata, std::uniq
 void CImageLoader::loadSTB(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     std::vector<uint8_t> imgdata;
-    EGFilesystem->readFile(fsPath, imgdata);
+    m_pVFS->readFile(fsPath, imgdata);
     loadSTB_memory(imgdata, imageCI, header);
 }
 
@@ -115,7 +121,7 @@ void CImageLoader::loadKTX_memory(const std::vector<uint8_t>& imgdata, std::uniq
 void CImageLoader::loadKTX(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     std::vector<uint8_t> imgdata;
-    EGFilesystem->readFile(fsPath, imgdata);
+    m_pVFS->readFile(fsPath, imgdata);
     loadKTX_memory(imgdata, imageCI, header);
 }
 
@@ -171,7 +177,7 @@ void CImageLoader::loadKTX2_memory(const std::vector<uint8_t>& imgdata, std::uni
 void CImageLoader::loadKTX2(const std::string& fsPath, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     std::vector<uint8_t> imgdata;
-    EGFilesystem->readFile(fsPath, imgdata);
+    m_pVFS->readFile(fsPath, imgdata);
     loadKTX2_memory(imgdata, imageCI, header);
 }
 

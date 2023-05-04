@@ -1,6 +1,6 @@
 #include "ShaderCompiler.h"
 
-#include "Engine.h"
+#include "filesystem/interface/VirtualFileSystemInterface.h"
 
 #include "filesystem/vfs_helper.h"
 
@@ -11,29 +11,28 @@ using namespace engine;
 using namespace engine::graphics;
 using namespace engine::filesystem;
 
-constexpr const char* cache_file_name = "spirv.cache";
+constexpr const char* cache_file_name = "/temp/spirv.cache";
 
 class CShaderIncluder : public glslang::TShader::Includer
 {
 public:
+	CShaderIncluder(IVirtualFileSystemInterface* vfs_ptr) :
+		m_pVFS(vfs_ptr)
+	{
+
+	}
+
 	IncludeResult* includeLocal(const char* headerName, const char* includerName, size_t inclusionDepth) override
 	{
-		std::string local_path{};
 		if (inclusionDepth == 1)
-		{
-			directory = fs::parent_path(includerName);
-			local_path = directory;
-		}
+			m_srDirectory = fs::parent_path(includerName);
 		else
-		{
-			directory = fs::path_append(directory, fs::parent_path(includerName));
-			local_path = directory;
-		}
+			m_srDirectory = fs::path_append(m_srDirectory, fs::parent_path(includerName));
 
-		local_path = fs::normalize(fs::path_append(directory, headerName));
+		auto local_path = fs::normalize(fs::path_append(m_srDirectory, headerName));
 
 		std::string fileLoaded;
-		if (!EGFilesystem->readFile(local_path, fileLoaded))
+		if (!m_pVFS->readFile(local_path, fileLoaded))
 		{
 			std::stringstream ss;
 			ss << "In shader file: " << includerName << " Shader Include could not be loaded: " << std::quoted(headerName);
@@ -51,7 +50,7 @@ public:
 		auto header = fs::path_append("shaders", headerName);
 
 		std::string fileLoaded;
-		if (!EGFilesystem->readFile(header, fileLoaded)) 
+		if (!m_pVFS->readFile(header, fileLoaded))
 		{
 			std::stringstream ss;
 			ss << "Shader Include could not be loaded: " << std::quoted(headerName);
@@ -73,7 +72,8 @@ public:
 		}
 	}
 private:
-	std::string directory{ "" };
+	std::string m_srDirectory{ "" };
+	IVirtualFileSystemInterface* m_pVFS{ nullptr };
 };
 
 vk::ShaderStageFlagBits getShaderStage(const std::string& moduleName)
@@ -278,7 +278,8 @@ glslang::EShClient getClient(ERenderApi eAPI)
 	}
 }
 
-CShaderCompiler::CShaderCompiler()
+CShaderCompiler::CShaderCompiler(IVirtualFileSystemInterface* vfs_ptr) :
+	m_pVFS(vfs_ptr)
 {
 	load_cache();
 
@@ -295,7 +296,7 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::string& path, c
 {
 	// TODO: shader caching works wrong
 	std::string data;
-	if (EGFilesystem->readFile(path, data))
+	if (m_pVFS->readFile(path, data))
 	{
 		auto fname = fs::get_filename(path);
 		auto hash = utl::const_hash(data.c_str());
@@ -328,7 +329,7 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::string& path, c
 		// vk1.3 - spirv1.6
 
 		std::string str{};
-		CShaderIncluder includer;
+		CShaderIncluder includer(m_pVFS);
 
 		if (!shader.preprocess(&resources, clientVersion, ENoProfile, false, false, messages, &str, includer))
 		{
@@ -433,11 +434,12 @@ std::optional<FCachedShader> CShaderCompiler::update(const std::string& name, co
 void CShaderCompiler::load_cache()
 {
 	// TODO temporary dir
-	EGFilesystem->readJson(cache_file_name, cache);
+	if(m_pVFS->exists(cache_file_name))
+		m_pVFS->readJson(cache_file_name, cache);
 }
 
 void CShaderCompiler::save_cache()
 {
 	// TODO temporary dir
-	EGFilesystem->writeJson(cache_file_name, cache);
+	m_pVFS->writeJson(cache_file_name, cache);
 }
