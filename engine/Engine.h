@@ -3,9 +3,9 @@
 #include "EngineStructures.h"
 #include "graphics/APIHandle.h"
 #include "graphics/window/WindowAdapter.h"
-#include "audio/AudioCore.h"
+#include "audio/interface/AudioCoreInterface.h"
 #include "physics/PhysicsCore.h"
-#include "event/EventManager.hpp"
+#include "event/interface/EventManagerInterface.h"
 #include "scripting/ScriptingCore.h"
 //#include "particles/ParticlesCore.h"
 
@@ -13,7 +13,7 @@
 #include "ecs/systems/BaseSystem.h"
 #include "ecs/components/fwd.h"
 
-#include "filesystem/VirtualFileSystemManager.h"
+#include "filesystem/interface/VirtualFileSystemInterface.h"
 
 #include <utility/threading.hpp>
 
@@ -35,12 +35,12 @@ namespace engine
 
 	using winptr_t = std::unique_ptr<graphics::IWindowAdapter>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
-	using audiocore_t = std::unique_ptr<audio::CAudioCore>;
+	using audiocore_t = std::unique_ptr<audio::IAudioSystemInterface>;
 	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
 	using scriptcore_t = std::unique_ptr<scripting::CScriptingCore>;
 	using physicscore_t = std::unique_ptr<physics::CPhysicsCore>;
 	//using particlescore_t = std::unique_ptr<particles::CParticlesCore>;
-	using filesystem_t = std::unique_ptr<filesystem::CVirtualFileSystemManager>;
+	using filesystem_t = std::unique_ptr<filesystem::IVirtualFileSystemInterface>;
 
 	class CEngine : public utl::singleton<CEngine>
 	{
@@ -107,7 +107,7 @@ namespace engine
 		void initEntityComponentSystem();
 	private:
 		entt::registry registry;
-		std::unique_ptr<CEventManager> pEventManager;
+		std::unique_ptr<IEventManagerInterface> pEventManager;
 
 		EEngineState eState;
 

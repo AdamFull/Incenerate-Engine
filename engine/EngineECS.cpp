@@ -163,8 +163,7 @@ void construct_audio(entt::registry& reg, entt::entity entity)
 
 	if (!audio.loaded && !audio.source.empty())
 	{
-		auto pAudio = std::make_unique<CAudioSource>(audio.source);
-		audio.asource = EGAudio->addSource(audio.source, std::move(pAudio));
+		audio.asource = EGAudio->addSource(audio.source, audio.source);
 		audio.loaded = true;
 	}
 }

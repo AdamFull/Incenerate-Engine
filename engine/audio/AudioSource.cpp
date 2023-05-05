@@ -1,14 +1,14 @@
 #include "AudioSource.h"
 
-#include "loaders/AudioLoader.h"
 #include "oalhelp.h"
 
-using namespace engine::audio;
-using namespace engine::loaders;
+#include "logger/logger.h"
 
-CAudioSource::CAudioSource(const std::string& filepath)
+using namespace engine::audio;
+
+CAudioSource::CAudioSource(IAudioLoaderInterface* loader) :
+	m_pLoader(loader)
 {
-	create(filepath);
 }
 
 CAudioSource::~CAudioSource()
@@ -20,18 +20,16 @@ CAudioSource::~CAudioSource()
 
 void CAudioSource::create(const std::string& filepath)
 {
-	std::vector<char> vRawBuffer;
-
 	alCall(alGenBuffers, 1, &alBuffer);
 
-	auto loader = CAudioLoader::load(filepath);
-	loader->read(vRawBuffer);
+	std::unique_ptr<FAudioSourceData> pData;
+	auto result = m_pLoader->load(filepath, pData);
 
-	channels = loader->getNumChannels();
-	sampleRate = loader->getSampleRate();
-	bitsPerSample = loader->getBitsPerSample();
-	byteRate = loader->getByteRate();
-	totalSize = vRawBuffer.size();
+	channels = pData->channels_;
+	sampleRate = pData->sample_rate_;
+	bitsPerSample = pData->bits_per_sample_;
+	byteRate = pData->byte_rate_;
+	totalSize = pData->data_size_;
 
 	ALenum format;
 	if (channels == 1 && bitsPerSample == 8)
@@ -48,7 +46,7 @@ void CAudioSource::create(const std::string& filepath)
 		return;
 	}
 
-	alCall(alBufferData, alBuffer, format, vRawBuffer.data(), vRawBuffer.size(), sampleRate);
+	alCall(alBufferData, alBuffer, format, reinterpret_cast<char*>(pData->data_.get()), totalSize, sampleRate);
 
 	alCall(alGenSources, 1, &alSource);
 	alCall(alSourcei, alSource, AL_BUFFER, alBuffer);

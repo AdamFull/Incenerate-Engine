@@ -1,32 +1,42 @@
 #pragma once
 
-#include "AudioSource.h"
+#include "interface/AudioCoreInterface.h"
+#include "interface/AudioLoaderInterface.h"
 #include "shared/ObjectManager.hpp"
+#include "filesystem/interface/VirtualFileSystemInterface.h"
+
+struct ALCdevice_struct;
+struct ALCcontext_struct;
 
 namespace engine
 {
 	namespace audio
 	{
-		class CAudioCore
+		class CAudioCore final : public IAudioSystemInterface
 		{
 		public:
-			~CAudioCore();
+			CAudioCore(filesystem::IVirtualFileSystemInterface* vfs_ptr);
+			~CAudioCore() override;
 
-			void create();
-			void update();
-			void shutdown();
+			void create() override;
+			void update(float fDt) override;
+			void shutdown() override;
 
-			size_t addSource(const std::string& name, const std::string& filepath);
-			size_t addSource(const std::string& name, std::unique_ptr<CAudioSource>&& source);
-			void removeSource(const std::string& name);
-			void removeSource(size_t id);
-			const std::unique_ptr<CAudioSource>& getSource(const std::string& name);
-			const std::unique_ptr<CAudioSource>& getSource(size_t id);
+			void setListenerPosition(const glm::vec3& position, const glm::vec3& forward_vector, const glm::vec3& right_vector) override;
+
+			size_t addSource(const std::string& name, const std::string& filepath) override;
+			size_t addSource(const std::string& name, std::unique_ptr<IAudioSourceInterface>&& source) override;
+			void removeSource(const std::string& name) override;
+			void removeSource(size_t id) override;
+			const std::unique_ptr<IAudioSourceInterface>& getSource(const std::string& name) override;
+			const std::unique_ptr<IAudioSourceInterface>& getSource(size_t id) override;
 		private:
-			ALCdevice* pDevice{ nullptr };
-			ALCcontext* pContext{ nullptr };
+			ALCdevice_struct* pDevice{ nullptr };
+			ALCcontext_struct* pContext{ nullptr };
 			int8_t contextMadeCurrent{ false };
-			std::unique_ptr<CObjectManager<CAudioSource>> pAudioSourceManager;
+			std::unique_ptr<CObjectManager<IAudioSourceInterface>> pAudioSourceManager;
+			std::unique_ptr<IAudioLoaderInterface> m_pLoader;
+			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
 		};
 	}
 }

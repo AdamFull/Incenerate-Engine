@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EventInterface.h"
+#include "interface/EventInterface.h"
 
 #include <unordered_map>
 

@@ -9,10 +9,6 @@
 	path = engine/external/glslanglib
 	url = https://github.com/KhronosGroup/glslang.git
 	branch = sdk-1.3.231
-[submodule "engine/external/openal-soft"]
-	path = engine/external/openal-soft
-	url = https://github.com/kcat/openal-soft.git
-	branch = v1.19
 [submodule "engine/external/glmlib"]
 	path = engine/external/glmlib
 	url = https://github.com/g-truc/glm.git
@@ -40,3 +36,7 @@
 [submodule "engine/filesystem/lib/pak_archive"]
 	path = engine/filesystem/lib/pak_archive
 	url = https://github.com/AdamFull/pak_archive.git
+[submodule "engine/audio/lib/openal-soft"]
+	path = engine/audio/lib/openal-soft
+	url = https://github.com/kcat/openal-soft.git
+	branch = v1.19

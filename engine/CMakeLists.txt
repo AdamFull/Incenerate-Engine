@@ -11,6 +11,7 @@ set(EXTERNALS_PATH "${ENGINE_ROOT}/external")
 add_subdirectory("external")
 add_subdirectory("filesystem")
 add_subdirectory("scripting")
+add_subdirectory("audio")
 
 file(GLOB_RECURSE ENGINE_LOADERS_SOURCE "loaders/*.cpp" "loaders/*.c" "loaders/*.cc" "loaders/*.h" "loaders/*.hpp")
 file(GLOB_RECURSE ENGINE_PHYSICS_SOURCE "physics/*.cpp" "physics/*.c" "physics/*.cc" "physics/*.h" "physics/*.hpp")
@@ -18,7 +19,6 @@ file(GLOB_RECURSE ENGINE_PARSE_SOURCE "parse/*.cpp" "parse/*.c" "parse/*.cc" "pa
 file(GLOB_RECURSE ENGINE_ECS_SOURCE "ecs/*.cpp" "ecs/*.c" "ecs/*.cc" "ecs/*.h" "ecs/*.hpp")
 file(GLOB_RECURSE ENGINE_EVENT_SOURCE "event/*.cpp" "event/*.c" "event/*.cc" "event/*.h" "event/*.event")
 file(GLOB_RECURSE ENGINE_GRAPHICS_SOURCE "graphics/*.cpp" "graphics/*.c" "graphics/*.cc" "graphics/*.h" "graphics/*.hpp")
-file(GLOB_RECURSE ENGINE_AUDIO_SOURCE "audio/*.cpp" "audio/*.c" "audio/*.cc" "audio/*.h" "audio/*.hpp")
 file(GLOB_RECURSE ENGINE_SYSTEM_SOURCE "system/*.cpp" "system/*.c" "system/*.cc" "system/*.h" "system/*.hpp")
 file(GLOB_RECURSE ENGINE_GAME_SOURCE "game/*.cpp" "game/*.c" "game/*.cc" "game/*.h" "game/*.hpp")
 file(GLOB ENGINE_SOURCE "*.cpp" "*.c" "*.cc" "*.h" "*.hpp")
@@ -32,7 +32,6 @@ ${ENGINE_PHYSICS_SOURCE}
 ${ENGINE_ECS_SOURCE}
 ${ENGINE_EVENT_SOURCE}
 ${ENGINE_GRAPHICS_SOURCE} 
-${ENGINE_AUDIO_SOURCE}
 ${ENGINE_SYSTEM_SOURCE}
 ${ENGINE_GAME_SOURCE}
 ${ENGINE_SOURCE})
@@ -40,7 +39,8 @@ ${ENGINE_SOURCE})
 target_link_libraries(${PROJECT_NAME} 
     PUBLIC external_lib
     PUBLIC IncenerateFilesystem
-    PUBLIC incenerate_engine_scripting
+    PUBLIC IncenerateScripting
+    PUBLIC IncenerateAudio
 )
 
 #target_link_options(${PROJECT_NAME}  PRIVATE "-Wl,--export-all-symbols")
@@ -55,7 +55,7 @@ target_link_libraries(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} 
     PUBLIC "${EXTERNALS_PATH}/vulkan/include"
-    PRIVATE "${EXTERNALS_PATH}/SDL/include"
+    PUBLIC "${EXTERNALS_PATH}/SDL/include"
     PUBLIC "${EXTERNALS_PATH}/ktx/include"
     PUBLIC "${EXTERNALS_PATH}/openal-soft/include"
     PUBLIC "${EXTERNALS_PATH}/glmlib"

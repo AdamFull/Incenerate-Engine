@@ -1,6 +1,20 @@
 #include "AudioCore.h"
 
+#include "AudioSource.h"
+#include "AudioLoader.h"
+
+#include "logger/logger.h"
+
+#include "oalhelp.h"
+
 using namespace engine::audio;
+using namespace engine::filesystem;
+
+CAudioCore::CAudioCore(filesystem::IVirtualFileSystemInterface* vfs_ptr) :
+    m_pVFS(vfs_ptr)
+{
+
+}
 
 CAudioCore::~CAudioCore()
 {
@@ -9,7 +23,8 @@ CAudioCore::~CAudioCore()
 
 void CAudioCore::create()
 {
-	pAudioSourceManager = std::make_unique<CObjectManager<CAudioSource>>();
+	pAudioSourceManager = std::make_unique<CObjectManager<IAudioSourceInterface>>();
+    m_pLoader = std::make_unique<CAudioLoader>(m_pVFS);
 
     pDevice = alcOpenDevice(nullptr);
 
@@ -27,7 +42,7 @@ void CAudioCore::create()
         log_error("Could not set Distance Model to AL_INVERSE_DISTANCE_CLAMPED");
 }
 
-void CAudioCore::update()
+void CAudioCore::update(float fDt)
 {
     pAudioSourceManager->performDeletion();
 }
@@ -46,12 +61,21 @@ void CAudioCore::shutdown()
     alcCall(alcCloseDevice, closed, pDevice, pDevice);
 }
 
-size_t CAudioCore::addSource(const std::string& name, const std::string& filepath)
+void CAudioCore::setListenerPosition(const glm::vec3& position, const glm::vec3& forward_vector, const glm::vec3& right_vector)
 {
-    return pAudioSourceManager->add(name, std::make_unique<CAudioSource>(filepath));
+    alCall(alListener3f, AL_POSITION, position.x, position.y, position.z);
+    float orient[6] = { forward_vector.x, forward_vector.y, forward_vector.z, right_vector.x, right_vector.y, right_vector.z };
+    alCall(alListenerfv, AL_ORIENTATION, orient);
 }
 
-size_t CAudioCore::addSource(const std::string& name, std::unique_ptr<CAudioSource>&& source)
+size_t CAudioCore::addSource(const std::string& name, const std::string& filepath)
+{
+    auto file = std::make_unique<CAudioSource>(m_pLoader.get());
+    file->create(filepath);
+    return pAudioSourceManager->add(name, std::move(file));
+}
+
+size_t CAudioCore::addSource(const std::string& name, std::unique_ptr<IAudioSourceInterface>&& source)
 {
     return pAudioSourceManager->add(name, std::move(source));
 }
@@ -66,12 +90,12 @@ void CAudioCore::removeSource(size_t id)
     pAudioSourceManager->remove(id);
 }
 
-const std::unique_ptr<CAudioSource>& CAudioCore::getSource(const std::string& name)
+const std::unique_ptr<IAudioSourceInterface>& CAudioCore::getSource(const std::string& name)
 {
     return pAudioSourceManager->get(name);
 }
 
-const std::unique_ptr<CAudioSource>& CAudioCore::getSource(size_t id)
+const std::unique_ptr<IAudioSourceInterface>& CAudioCore::getSource(size_t id)
 {
     return pAudioSourceManager->get(id);
 }

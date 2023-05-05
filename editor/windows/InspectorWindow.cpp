@@ -256,8 +256,7 @@ void CEditorInspector::audioEdit(FAudioComponent* object)
 					if (object->loaded)
 					{
 						EGAudio->removeSource(object->asource);
-						auto pAudio = std::make_unique<CAudioSource>(object->source);
-						object->asource = EGAudio->addSource(fs::get_filename(source), std::move(pAudio));
+						object->asource = EGAudio->addSource(fs::get_filename(source), object->source);
 					}
 					else
 					{

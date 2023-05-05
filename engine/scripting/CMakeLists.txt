@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18.0)
-project(incenerate_engine_scripting LANGUAGES CXX)
+project(IncenerateScripting LANGUAGES CXX)
 
 file(GLOB SCRIPTING_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB SCRIPTING_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")

@@ -47,9 +47,5 @@ void CAudioSystem::__update(float fDt)
 void CAudioSystem::updateListener(FCameraComponent& camera, FTransformComponent& transform)
 {
 	if (!isnan(camera.forward.x) || !isnan(camera.forward.y) || !isnan(camera.forward.z))
-	{
-		alCall(alListener3f, AL_POSITION, transform.rposition.x, transform.rposition.y, transform.rposition.z);
-		float orient[6] = { camera.forward.x, camera.forward.y, camera.forward.z, camera.right.x, camera.right.y, camera.right.z };
-		alCall(alListenerfv, AL_ORIENTATION, orient);
-	}
+		EGAudio->setListenerPosition(transform.rposition, camera.forward, camera.right);
 }

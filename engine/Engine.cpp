@@ -4,7 +4,15 @@
 #include "game/SceneSerializer.h"
 #include "graphics/window/SDL2WindowAdapter.h"
 
+// VFS
+#include "filesystem/VirtualFileSystemManager.h"
 #include "filesystem/native/NativeFileSystem.h"
+
+// Event manager
+#include "event/EventManager.hpp"
+
+// Audio
+#include "audio/AudioCore.h"
 
 using namespace engine;
 using namespace engine::game;
@@ -40,7 +48,7 @@ void CEngine::initialize()
 	pEventManager = std::make_unique<CEventManager>();
 	pSceneManager = std::make_unique<CSceneManager>();
 	pPhysics = std::make_unique<CPhysicsCore>();
-	pAudio = std::make_unique<CAudioCore>();
+	pAudio = std::make_unique<CAudioCore>(pFilesystem.get());
 
 	pScripting = std::make_unique<CScriptingCore>(pFilesystem.get());
 	pWindow = std::make_unique<CSDL2WindowAdapter>();
@@ -98,7 +106,7 @@ void CEngine::beginEngineLoop()
 		pGraphics->end(dt);
 
 		pScripting->update();
-		pAudio->update();
+		pAudio->update(dt);
 		pGraphics->update();
 
 		dt = sw.stop<float>();

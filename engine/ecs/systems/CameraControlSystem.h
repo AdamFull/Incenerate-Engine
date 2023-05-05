@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BaseSystem.h"
-#include "event/EventInterface.h"
+#include "event/interface/EventInterface.h"
 
 #include "ecs/components/fwd.h"
 

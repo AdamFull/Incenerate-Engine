@@ -1,6 +1,6 @@
 #pragma once
 
-#include "event/EventInterface.h"
+#include "event/interface/EventInterface.h"
 #include "WindowBase.h"
 #include "graphics/descriptors/DescriptorSet.h"
 

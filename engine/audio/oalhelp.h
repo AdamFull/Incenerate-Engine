@@ -3,6 +3,8 @@
 #include "AL/al.h"
 #include "AL/alc.h"
 
+#include "logger/logger.h"
+
 namespace al
 {
     static bool CheckError()

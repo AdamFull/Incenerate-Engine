@@ -51,6 +51,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE libzip::zip)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/pak_archive/lib")
 target_link_libraries(${PROJECT_NAME} PRIVATE libgpak)
 
+target_link_libraries(${PROJECT_NAME} PRIVATE mimalloc)
+
 target_include_directories(${PROJECT_NAME}  
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../external/utility"

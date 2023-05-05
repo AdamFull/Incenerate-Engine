@@ -3,7 +3,7 @@ project(external_lib)
 
 set(EXTERNAL_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(${PROJECT_NAME} external.cpp)
+add_library(${PROJECT_NAME} external.cpp "stb_vorbis.h")
 
 add_subdirectory(utility)
 target_link_libraries(${PROJECT_NAME} PUBLIC utility_lib)
@@ -22,9 +22,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC glslang SPIRV)
 
 add_subdirectory(ktx)
 target_link_libraries(${PROJECT_NAME} PUBLIC ktx)
-
-add_subdirectory(openal-soft)
-target_link_libraries(${PROJECT_NAME} PUBLIC OpenAL)
 
 add_subdirectory(imgui)
 target_link_libraries(${PROJECT_NAME} PUBLIC imgui)

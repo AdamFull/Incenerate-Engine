@@ -2,7 +2,7 @@
 
 #include "WindowBase.h"
 #include "materialeditor/MaterialEditorParse.h"
-#include "event/EventInterface.h"
+#include "event/interface/EventInterface.h"
 
 #include <imgui/imgui_node_editor.h>
 
