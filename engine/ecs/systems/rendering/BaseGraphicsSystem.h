@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ecs/systems/BaseSystem.h"
-#include "event/interface/EventInterface.h"
+#include <interface/event/EventInterface.h>
 
 namespace engine
 {

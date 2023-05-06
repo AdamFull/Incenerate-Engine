@@ -134,7 +134,12 @@ add_compile_definitions(
     MAIN_PROJECT_DIRECTORY_PATH="${MAIN_PROJECT_DIRECTORY_PATH}"
     )
 
-include_directories("${CMAKE_BINARY_DIR}/exports/")
+include_directories(
+    "${CMAKE_BINARY_DIR}/exports/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/engine/shared"
+    "${CMAKE_CURRENT_SOURCE_DIR}/engine/external/utility"
+    "${CMAKE_CURRENT_SOURCE_DIR}/engine/external/glmlib"
+)
 
 add_subdirectory(engine)
 add_subdirectory(project)

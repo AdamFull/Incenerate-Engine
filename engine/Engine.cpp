@@ -4,15 +4,16 @@
 #include "game/SceneSerializer.h"
 #include "graphics/window/SDL2WindowAdapter.h"
 
-// VFS
-#include "filesystem/VirtualFileSystemManager.h"
-#include "filesystem/native/NativeFileSystem.h"
+// Audio
+#include "audio/AudioCore.h"
 
 // Event manager
 #include "event/EventManager.hpp"
 
-// Audio
-#include "audio/AudioCore.h"
+// VFS
+#include "filesystem/VirtualFileSystemManager.h"
+#include "filesystem/native/NativeFileSystem.h"
+
 
 using namespace engine;
 using namespace engine::game;
@@ -65,7 +66,6 @@ void CEngine::create()
 
 	//pLoaderThread = std::make_unique<utl::threadworker>();
 
-	
 	pPhysics->create();
 	pAudio->create();
 	pScripting->create();

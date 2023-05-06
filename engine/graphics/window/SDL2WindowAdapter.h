@@ -1,6 +1,6 @@
 #pragma once
 
-#include "event/interface/EventInterface.h"
+#include <interface/event/EventInterface.h>
 
 #include "WindowAdapter.h"
 

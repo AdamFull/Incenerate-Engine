@@ -2,6 +2,9 @@
 
 #include "EventInterface.h"
 
+#include <memory>
+#include <ufunction.hpp>
+
 namespace engine
 {
 	class IEventManagerInterface

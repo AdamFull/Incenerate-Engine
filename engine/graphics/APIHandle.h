@@ -11,7 +11,7 @@
 #include "rendering/RenderStage.h"
 #include "rendering/material/Material.h"
 
-#include "event/interface/EventInterface.h"
+#include <interface/event/EventInterface.h>
 
 #include "DebugDraw.h"
 

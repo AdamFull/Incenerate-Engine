@@ -4,7 +4,6 @@
 #include "graphics/APIHandle.h"
 #include "graphics/window/WindowAdapter.h"
 #include "physics/PhysicsCore.h"
-#include "event/interface/EventManagerInterface.h"
 #include "scripting/ScriptingCore.h"
 //#include "particles/ParticlesCore.h"
 
@@ -14,6 +13,7 @@
 
 #include <interface/filesystem/VirtualFileSystemInterface.h>
 #include <interface/audio/AudioCoreInterface.h>
+#include <interface/event/EventManagerInterface.h>
 
 #include <utility/threading.hpp>
 
@@ -33,9 +33,11 @@ namespace engine
 		ePlay
 	};
 
+	using audiocore_t = std::unique_ptr<audio::IAudioSystemInterface>;
+	using eventcore_t = std::unique_ptr<IEventManagerInterface>;
 	using winptr_t = std::unique_ptr<graphics::IWindowAdapter>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
-	using audiocore_t = std::unique_ptr<audio::IAudioSystemInterface>;
+	
 	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
 	using scriptcore_t = std::unique_ptr<scripting::CScriptingCore>;
 	using physicscore_t = std::unique_ptr<physics::CPhysicsCore>;
@@ -58,6 +60,7 @@ namespace engine
 		void beginEngineLoop();
 
 		entt::registry& getRegistry();
+
 		const winptr_t& getWindow() const;
 		const graphptr_t& getGraphics() const;
 		const audiocore_t& getAudio() const;
@@ -107,7 +110,7 @@ namespace engine
 		void initEntityComponentSystem();
 	private:
 		entt::registry registry;
-		std::unique_ptr<IEventManagerInterface> pEventManager;
+		eventcore_t pEventManager;
 
 		EEngineState eState;
 

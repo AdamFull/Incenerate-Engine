@@ -63,8 +63,6 @@ generate_export_header(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}  
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../shared"
-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../external/utility"
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib/libzip/lib"
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib/pak_archive/lib"
 )

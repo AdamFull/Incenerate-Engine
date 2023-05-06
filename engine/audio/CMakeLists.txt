@@ -41,11 +41,6 @@ generate_export_header(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../"
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../shared"
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/openal-soft/include"
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../external"
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../external/utility/"
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../external/glmlib/"
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../shared/"
-    PUBLIC "${CMAKE_BINARY_DIR}/exports/"
 )

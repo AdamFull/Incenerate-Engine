@@ -2,7 +2,7 @@
 
 #include "Engine.h"
 
-#include "event/interface/EventInterface.h"
+#include <interface/event/EventInterface.h>
 
 using namespace engine;
 using namespace engine::ecs;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "interface/EventManagerInterface.h"
+#include <interface/event/EventManagerInterface.h>
 
 namespace engine
 {

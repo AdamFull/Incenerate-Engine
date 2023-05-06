@@ -5,7 +5,7 @@
 #include "EditorProject.h"
 #include "EditorActionBuffer.h"
 
-#include "event/interface/EventInterface.h"
+#include <interface/event/EventInterface.h>
 
 #include <vulkan/vulkan.hpp>
 
