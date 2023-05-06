@@ -1,7 +1,6 @@
 #include "AudioCore.h"
 
 #include "AudioSource.h"
-#include "AudioLoader.h"
 
 #include "logger/logger.h"
 
@@ -10,7 +9,7 @@
 using namespace engine::audio;
 using namespace engine::filesystem;
 
-CAudioCore::CAudioCore(filesystem::IVirtualFileSystemInterface* vfs_ptr) :
+CAudioCore::CAudioCore(IVirtualFileSystemInterface* vfs_ptr) :
     m_pVFS(vfs_ptr)
 {
 
@@ -24,7 +23,6 @@ CAudioCore::~CAudioCore()
 void CAudioCore::create()
 {
 	pAudioSourceManager = std::make_unique<CObjectManager<IAudioSourceInterface>>();
-    m_pLoader = std::make_unique<CAudioLoader>(m_pVFS);
 
     pDevice = alcOpenDevice(nullptr);
 
@@ -70,7 +68,7 @@ void CAudioCore::setListenerPosition(const glm::vec3& position, const glm::vec3&
 
 size_t CAudioCore::addSource(const std::string& name, const std::string& filepath)
 {
-    auto file = std::make_unique<CAudioSource>(m_pLoader.get());
+    auto file = std::make_unique<CAudioSource>(m_pVFS);
     file->create(filepath);
     return pAudioSourceManager->add(name, std::move(file));
 }

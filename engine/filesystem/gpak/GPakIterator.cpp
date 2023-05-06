@@ -5,7 +5,7 @@
 
 using namespace engine::filesystem;
 
-CGPakIterator::CGPakIterator(gpak_t* _pak, const std::string& start_path, bool recursive)
+CGPakIterator::CGPakIterator(gpak* _pak, const std::string& start_path, bool recursive)
 {
 	m_bIsRecursive = recursive;
 

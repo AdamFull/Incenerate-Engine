@@ -1,10 +1,12 @@
 #include "GPakInputFile.h"
 
+#include <stdexcept>
+
 #include <gpak.h>
 
 using namespace engine::filesystem;
 
-CGPakInputFile::CGPakInputFile(gpak_t* handle, const std::string& filename)
+CGPakInputFile::CGPakInputFile(gpak* handle, const std::string& filename)
 {
 	if (!handle)
 		return;

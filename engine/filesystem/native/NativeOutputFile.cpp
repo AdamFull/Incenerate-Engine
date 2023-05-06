@@ -1,5 +1,7 @@
 #include "NativeOutputFile.h"
 
+#include <stdexcept>
+
 using namespace engine::filesystem;
 
 CNativeOutputFile::CNativeOutputFile(const std::string& filename)

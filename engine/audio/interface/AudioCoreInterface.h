@@ -2,6 +2,8 @@
 
 #include "AudioSourceInterfsce.h"
 
+#include <memory>
+
 namespace engine
 {
 	namespace audio

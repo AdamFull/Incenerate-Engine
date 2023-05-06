@@ -1,5 +1,7 @@
 #include "NativeInputFile.h"
 
+#include <stdexcept>
+
 using namespace engine::filesystem;
 
 CNativeInputFile::CNativeInputFile(const std::string& filename)

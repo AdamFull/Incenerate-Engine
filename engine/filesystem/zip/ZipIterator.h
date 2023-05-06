@@ -4,7 +4,9 @@
 
 #include "interface/DirectoryIteratorInterface.h"
 
-#include <zip.h>
+#include <vector>
+
+struct zip;
 
 namespace engine
 {

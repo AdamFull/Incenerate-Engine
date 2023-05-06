@@ -1,5 +1,9 @@
 #include "ZipInputFile.h"
 
+#include <stdexcept>
+
+#include <zip.h>
+
 using namespace engine::filesystem;
 
 lzip_file_t* lzip_fopen(zip_t* handle, const char* filename, const char* password)

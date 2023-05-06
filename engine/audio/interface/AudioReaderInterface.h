@@ -1,5 +1,9 @@
 #pragma once
 
+#include <cstdint>
+#include <string>
+#include <memory>
+
 namespace engine
 {
 	namespace audio

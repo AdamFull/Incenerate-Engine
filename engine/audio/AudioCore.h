@@ -1,9 +1,8 @@
 #pragma once
 
 #include "interface/AudioCoreInterface.h"
-#include "interface/AudioLoaderInterface.h"
-#include "shared/ObjectManager.hpp"
-#include "filesystem/interface/VirtualFileSystemInterface.h"
+#include <shared/ObjectManager.hpp>
+#include <filesystem/interface/VirtualFileSystemInterface.h>
 
 struct ALCdevice_struct;
 struct ALCcontext_struct;
@@ -35,7 +34,6 @@ namespace engine
 			ALCcontext_struct* pContext{ nullptr };
 			int8_t contextMadeCurrent{ false };
 			std::unique_ptr<CObjectManager<IAudioSourceInterface>> pAudioSourceManager;
-			std::unique_ptr<IAudioLoaderInterface> m_pLoader;
 			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
 		};
 	}

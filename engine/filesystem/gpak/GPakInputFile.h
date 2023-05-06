@@ -3,7 +3,11 @@
 #include "ie_vfs_exports.h"
 
 #include "interface/InputFileInterface.h"
-#include <gpak_data.h>
+
+#include <string>
+
+struct gpak;
+struct gpak_file;
 
 namespace engine
 {
@@ -26,7 +30,7 @@ namespace engine
 			 * @param handle A pointer to the gpak archive.
 			 * @param filename A string representing the path to the file to be opened.
 			 */
-			CGPakInputFile(gpak_t* handle, const std::string& filename);
+			CGPakInputFile(gpak* handle, const std::string& filename);
 
 			/**
 			 * @brief Destructor that closes the file if it is open.
@@ -93,7 +97,7 @@ namespace engine
 			 */
 			int32_t eof() const override;
 		private:
-			gpak_file_t* m_pFilePtr{ nullptr };
+			gpak_file* m_pFilePtr{ nullptr };
 		};
 	}
 }

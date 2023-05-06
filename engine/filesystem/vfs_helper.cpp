@@ -1,5 +1,8 @@
-#include "filesystem_pch.h"
 #include "vfs_helper.h"
+
+#include <algorithm>
+#include <deque>
+#include <sstream>
 
 using namespace engine::filesystem;
 

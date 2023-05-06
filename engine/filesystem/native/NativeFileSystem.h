@@ -4,6 +4,8 @@
 
 #include "interface/VFSInterface.h"
 
+#include <filesystem>
+
 namespace engine
 {
     namespace filesystem

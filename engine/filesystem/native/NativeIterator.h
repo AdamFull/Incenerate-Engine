@@ -5,6 +5,8 @@
 #include "interface/DirectoryIteratorInterface.h"
 #include "vfs_helper.h"
 
+#include <string>
+
 namespace engine
 {
     namespace filesystem

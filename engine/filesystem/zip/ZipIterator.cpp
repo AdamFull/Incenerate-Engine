@@ -1,5 +1,9 @@
 #include "ZipIterator.h"
 
+#include <stdexcept>
+
+#include <zip.h>
+
 using namespace engine::filesystem;
 
 void get_entries(zip* archive, std::vector<std::string>& outresults, const std::string& start_path, bool recurse)

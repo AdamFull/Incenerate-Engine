@@ -4,7 +4,9 @@
 
 #include "interface/DirectoryIteratorInterface.h"
 
-#include <gpak_data.h>
+struct gpak;
+struct filesystem_tree_iterator;
+struct filesystem_tree_node;
 
 namespace engine
 {
@@ -32,7 +34,7 @@ namespace engine
              * @param start_path A string representing the starting path within the archive.
              * @param recursive A boolean flag indicating if the iterator should recurse into subdirectories.
              */
-            CGPakIterator(gpak_t* _pak, const std::string& start_path, bool recursive);
+            CGPakIterator(gpak* _pak, const std::string& start_path, bool recursive);
 
             /**
              * @brief Virtual destructor.
@@ -59,8 +61,8 @@ namespace engine
              */
             bool _operator_not_equal(const IDirectoryIteratorInterface*) const override;
         protected:
-            filesystem_tree_iterator_t* m_pIterator{ nullptr };
-            filesystem_tree_node_t* m_pCurrentDir{ nullptr };
+            filesystem_tree_iterator* m_pIterator{ nullptr };
+            filesystem_tree_node* m_pCurrentDir{ nullptr };
             std::string m_srCurrentPath{};
             bool m_bIsRecursive{ false };
         };

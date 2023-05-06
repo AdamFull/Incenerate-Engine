@@ -2,6 +2,9 @@
 
 #include <atomic>
 #include <queue>
+#include <unordered_map>
+#include <memory>
+#include <string>
 
 #include "SharedInstances.h"
 

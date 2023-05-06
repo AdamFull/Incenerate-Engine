@@ -3,14 +3,18 @@
 #include "ie_vfs_exports.h"
 
 #include "interface/InputFileInterface.h"
-#include <zip.h>
+
+#include <string>
+
+struct zip;
+struct zip_file;
 
 namespace engine
 {
     namespace filesystem
     {
         typedef struct {
-            zip_file_t* file;
+            zip_file* file;
             char buffer;
             bool buffer_filled;
             bool end_of_file;
@@ -33,7 +37,7 @@ namespace engine
              * @param filename A string representing the filename within the archive.
              * @param password A string representing the password for encrypted files.
              */
-            CZipInputFile(zip_t* handle, const std::string& filename, const std::string& password);
+            CZipInputFile(zip* handle, const std::string& filename, const std::string& password);
 
             /**
              * @brief Destructor.

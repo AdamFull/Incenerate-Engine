@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../ie_vfs_exports.h"
-
 #include "DirectoryIteratorInterface.h"
 #include "InputFileInterface.h"
 #include "OutputFileInterface.h"
@@ -35,7 +33,7 @@ namespace engine
 		 * create, copy, check existence, etc. It must be implemented by any file system
 		 * to be supported by the CFilesystemWrapper.
 		 */
-		class INCENERATE_VFS_EXPORT IVFSInterface
+		class IVFSInterface
 		{
 		public:
 			/**

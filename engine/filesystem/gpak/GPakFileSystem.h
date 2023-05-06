@@ -3,7 +3,8 @@
 #include "ie_vfs_exports.h"
 
 #include "interface/VFSInterface.h"
-#include <gpak_data.h>
+
+struct gpak;
 
 namespace engine
 {
@@ -146,7 +147,7 @@ namespace engine
 			EFilesystemModeFlags getFilesystemMode() const override;
 
 		private:
-			gpak_t* m_pHandle{ nullptr };
+			gpak* m_pHandle{ nullptr };
 		};
 	}
 }

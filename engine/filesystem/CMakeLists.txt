@@ -60,5 +60,3 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib/pak_archive/lib"
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
-
-target_precompile_headers( ${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/filesystem_pch.h")

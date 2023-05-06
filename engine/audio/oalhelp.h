@@ -1,9 +1,9 @@
 #pragma once
 
-#include "AL/al.h"
-#include "AL/alc.h"
+#include <AL/al.h>
+#include <AL/alc.h>
 
-#include "logger/logger.h"
+#include <logger/logger.h>
 
 namespace al
 {

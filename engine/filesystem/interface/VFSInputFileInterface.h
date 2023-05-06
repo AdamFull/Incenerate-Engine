@@ -1,12 +1,14 @@
 #pragma once
 
-#include "../ie_vfs_exports.h"
+#include <string>
+#include <vector>
+#include <ostream>
 
 namespace engine
 {
 	namespace filesystem
 	{
-		class INCENERATE_VFS_EXPORT IVFSInputFileInterface
+		class IVFSInputFileInterface
 		{
 		public:
 			virtual ~IVFSInputFileInterface() = default;

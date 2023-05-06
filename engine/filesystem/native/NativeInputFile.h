@@ -4,6 +4,8 @@
 
 #include "interface/InputFileInterface.h"
 
+#include <string>
+
 namespace engine
 {
     namespace filesystem

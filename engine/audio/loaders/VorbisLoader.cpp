@@ -1,17 +1,21 @@
 #include "VorbisLoader.h"
 
-#include "Engine.h"
-
-#include "stb_vorbis.h"
+#include <stb_vorbis.h>
 
 using namespace engine::audio;
+
+CVorbisReader::CVorbisReader(filesystem::IVirtualFileSystemInterface* vfs_ptr) :
+	m_pVFS(vfs_ptr)
+{
+
+}
 
 EAudioReaderError CVorbisReader::open(const std::string& filepath, std::unique_ptr<FAudioSourceData>& data)
 {
 	data = std::make_unique<FAudioSourceData>();
 
 	std::vector<uint8_t> filedata;
-	if (!EGFilesystem->readFile(filepath, filedata))
+	if (!m_pVFS->readFile(filepath, filedata))
 		return EAudioReaderError::eCannotOpenFile;
 
 	int error{};

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "interface/AudioSourceInterfsce.h"
-#include "interface/AudioLoaderInterface.h"
+#include <filesystem/interface/VirtualFileSystemInterface.h>
 
 namespace engine
 {
@@ -11,7 +11,7 @@ namespace engine
 		{
 		public:
 			CAudioSource() = default;
-			CAudioSource(IAudioLoaderInterface* loader);
+			CAudioSource(filesystem::IVirtualFileSystemInterface* vfs_ptr);
 			~CAudioSource() override;
 
 			void create(const std::string& filepath) override;
@@ -35,7 +35,7 @@ namespace engine
 			uint32_t alBuffer{ 0 }, alSource{ 0 };
 			uint32_t channels{ 0 }, sampleRate{ 0 }, bitsPerSample{ 0 };
 			uint32_t byteRate{ 0 }, totalSize{ 0 };
-			IAudioLoaderInterface* m_pLoader{ nullptr };
+			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
 		};
 	}
 }

@@ -1,13 +1,19 @@
 #include "AudioSource.h"
 
+#include "loaders/WavLoader.h"
+#include "loaders/VorbisLoader.h"
+
 #include "oalhelp.h"
 
-#include "logger/logger.h"
+#include <filesystem/vfs_helper.h>
+
+#include <logger/logger.h>
 
 using namespace engine::audio;
+using namespace engine::filesystem;
 
-CAudioSource::CAudioSource(IAudioLoaderInterface* loader) :
-	m_pLoader(loader)
+CAudioSource::CAudioSource(IVirtualFileSystemInterface* vfs_ptr) :
+	m_pVFS(vfs_ptr)
 {
 }
 
@@ -23,7 +29,15 @@ void CAudioSource::create(const std::string& filepath)
 	alCall(alGenBuffers, 1, &alBuffer);
 
 	std::unique_ptr<FAudioSourceData> pData;
-	auto result = m_pLoader->load(filepath, pData);
+	std::unique_ptr<IAudioReaderInterface> pReader;
+
+	auto ext = fs::get_ext(filepath);
+	if (ext == ".wav")
+		pReader = std::make_unique<CWavReader>(m_pVFS);
+	else if (ext == ".ogg")
+		pReader = std::make_unique<CVorbisReader>(m_pVFS);
+
+	auto result = pReader->open(filepath, pData);
 
 	channels = pData->channels_;
 	sampleRate = pData->sample_rate_;

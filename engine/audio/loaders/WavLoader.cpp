@@ -1,17 +1,21 @@
 #include "WavLoader.h"
 
-#include "Engine.h"
-
 #include "filesystem/vfs_helper.h"
 
 using namespace engine::audio;
 using namespace engine::filesystem;
 
+CWavReader::CWavReader(IVirtualFileSystemInterface* vfs_ptr) :
+	m_pVFS(vfs_ptr)
+{
+
+}
+
 EAudioReaderError CWavReader::open(const std::string& filepath, std::unique_ptr<FAudioSourceData>& data)
 {
 	data = std::make_unique<FAudioSourceData>();
 
-	auto pFile = EGFilesystem->openFile(filepath);
+	auto pFile = m_pVFS->openFile(filepath);
 	if (!pFile->is_open())
 		return EAudioReaderError::eCannotOpenFile;
 
