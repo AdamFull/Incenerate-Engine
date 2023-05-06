@@ -6,6 +6,8 @@
 #include "image/Image2D.h"
 #include "image/ImageCubemap.h"
 
+#include "DebugDraw.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace engine::graphics;
@@ -404,7 +406,7 @@ void CAPIHandle::setVirtualFileSystem(filesystem::IVirtualFileSystemInterface* v
     m_pVFS = vfs_ptr;
 }
 
-const std::unique_ptr<CDebugDraw>& CAPIHandle::getDebugDraw() const
+const std::unique_ptr<IDebugDrawInterface>& CAPIHandle::getDebugDraw() const
 {
     return m_pDebugDraw;
 }

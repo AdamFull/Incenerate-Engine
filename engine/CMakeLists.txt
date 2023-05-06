@@ -55,7 +55,6 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${EXTERNALS_PATH}/vulkan/include"
     PUBLIC "${EXTERNALS_PATH}/SDL/include"
     PUBLIC "${EXTERNALS_PATH}/ktx/include"
-    PUBLIC "${EXTERNALS_PATH}/glmlib"
     PUBLIC "${ENGINE_ROOT}"
     PUBLIC "${ENGINE_ROOT}/graphics"
     PUBLIC "${ENGINE_ROOT}/system"

@@ -13,12 +13,13 @@
 
 #include <interface/event/EventInterface.h>
 
-#include "DebugDraw.h"
+#include <interface/graphics/DebugDrawInterface.h>
 
 #include <ObjectManager.hpp>
 
 namespace engine
 {
+	class IEventManagerInterface;
 	namespace filesystem { class IVirtualFileSystemInterface; }
 
 	namespace graphics
@@ -38,7 +39,7 @@ namespace engine
 
 			void setVirtualFileSystem(filesystem::IVirtualFileSystemInterface* vfs_ptr);
 
-			const std::unique_ptr<CDebugDraw>& getDebugDraw() const;
+			const std::unique_ptr<IDebugDrawInterface>& getDebugDraw() const;
 			const std::unique_ptr<CQueryPool>& getQueryPool() const;
 
 			vk::CommandBuffer begin();
@@ -142,6 +143,7 @@ namespace engine
 			winhandle_t m_pWindow{ nullptr };
 
 			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
+			IEventManagerInterface* m_pEvents{ nullptr };
 			std::unique_ptr<CImageLoader> m_pImageLoader;
 
 			std::unique_ptr<IEvent> m_pFrameDoneEvent;
@@ -151,7 +153,7 @@ namespace engine
 			ERenderApi eAPI;
 			std::unique_ptr<CDevice> m_pDevice;
 			std::unique_ptr<CShaderLoader> m_pShaderLoader;
-			std::unique_ptr<CDebugDraw> m_pDebugDraw;
+			std::unique_ptr<IDebugDrawInterface> m_pDebugDraw;
 			std::unique_ptr<CQueryPool> m_pQueryPool;
 
 			std::unordered_map<std::string, FCIStage> m_mStageInfos;

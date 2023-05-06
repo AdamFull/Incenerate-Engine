@@ -1,4 +1,5 @@
 // Based on: https://github.com/glampert/debug-draw/blob/master/debug_draw.hpp
+#include "DebugDraw.h"
 #include "Engine.h"
 
 #include "ecs/components/CameraComponent.h"
