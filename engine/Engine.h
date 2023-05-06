@@ -3,7 +3,6 @@
 #include "EngineStructures.h"
 #include "graphics/APIHandle.h"
 #include "graphics/window/WindowAdapter.h"
-#include "audio/interface/AudioCoreInterface.h"
 #include "physics/PhysicsCore.h"
 #include "event/interface/EventManagerInterface.h"
 #include "scripting/ScriptingCore.h"
@@ -14,6 +13,7 @@
 #include "ecs/components/fwd.h"
 
 #include <interface/filesystem/VirtualFileSystemInterface.h>
+#include <interface/audio/AudioCoreInterface.h>
 
 #include <utility/threading.hpp>
 

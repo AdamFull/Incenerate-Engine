@@ -2,7 +2,7 @@
 
 #include <ie_audio_exports.h>
 
-#include "interface/AudioReaderInterface.h"
+#include <interface/audio/AudioReaderInterface.h>
 #include <interface/filesystem/VirtualFileSystemInterface.h>
 
 namespace engine

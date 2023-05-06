@@ -2,7 +2,7 @@
 
 #include <ie_audio_exports.h>
 
-#include "interface/AudioCoreInterface.h"
+#include <interface/audio/AudioCoreInterface.h>
 #include <shared/ObjectManager.hpp>
 #include <interface/filesystem/VirtualFileSystemInterface.h>
 
