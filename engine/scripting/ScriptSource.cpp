@@ -1,5 +1,7 @@
 #include "ScriptSource.h"
 
+#include <logger/logger.h>
+
 #include "filesystem/vfs_helper.h"
 
 using namespace engine::filesystem;

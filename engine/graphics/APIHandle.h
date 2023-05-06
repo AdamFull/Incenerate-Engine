@@ -15,7 +15,7 @@
 
 #include "DebugDraw.h"
 
-#include "shared/ObjectManager.hpp"
+#include <ObjectManager.hpp>
 
 namespace engine
 {

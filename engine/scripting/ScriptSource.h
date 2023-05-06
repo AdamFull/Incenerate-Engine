@@ -1,14 +1,14 @@
 #pragma once
 
 #include <lua/sol.hpp>
-#include <logger/logger.h>
 #include <interface/filesystem/VirtualFileSystemInterface.h>
+#include <interface/scripting/ScriptSourceInterface.h>
 
 namespace engine
 {
 	namespace scripting
 	{
-		class CScriptSource
+		class CScriptSource final : public IScriptSourceInterface
 		{
 		public:
 			friend class CScriptingCore;
@@ -18,9 +18,9 @@ namespace engine
 
 			void load(const std::string& filepath, sol::state& lua);
 
-			void callOnCreate();
-			void callOnUpdate(float fDT);
-			void callOnDestroy();
+			void callOnCreate() override;
+			void callOnUpdate(float fDT) override;
+			void callOnDestroy() override;
 		private:
 			std::unique_ptr<sol::environment> m_pEnvironment;
 			std::unique_ptr<sol::protected_function> m_pOnCreate;

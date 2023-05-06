@@ -4,7 +4,6 @@
 #include "graphics/APIHandle.h"
 #include "graphics/window/WindowAdapter.h"
 #include "physics/PhysicsCore.h"
-#include "scripting/ScriptingCore.h"
 //#include "particles/ParticlesCore.h"
 
 #include "game/SceneManager.h"
@@ -14,6 +13,7 @@
 #include <interface/filesystem/VirtualFileSystemInterface.h>
 #include <interface/audio/AudioCoreInterface.h>
 #include <interface/event/EventManagerInterface.h>
+#include <interface/scripting/ScriptingCoreInterface.h>
 
 #include <utility/threading.hpp>
 
@@ -39,7 +39,7 @@ namespace engine
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
 	
 	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
-	using scriptcore_t = std::unique_ptr<scripting::CScriptingCore>;
+	using scriptcore_t = std::unique_ptr<scripting::IScriptingCoreInterface>;
 	using physicscore_t = std::unique_ptr<physics::CPhysicsCore>;
 	//using particlescore_t = std::unique_ptr<particles::CParticlesCore>;
 	using filesystem_t = std::unique_ptr<filesystem::IVirtualFileSystemInterface>;

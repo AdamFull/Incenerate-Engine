@@ -3,7 +3,7 @@
 #include <ie_audio_exports.h>
 
 #include <interface/audio/AudioCoreInterface.h>
-#include <shared/ObjectManager.hpp>
+#include <ObjectManager.hpp>
 #include <interface/filesystem/VirtualFileSystemInterface.h>
 
 struct ALCdevice_struct;

@@ -14,6 +14,9 @@
 #include "filesystem/VirtualFileSystemManager.h"
 #include "filesystem/native/NativeFileSystem.h"
 
+// Scripting
+#include "scripting/ScriptingCore.h"
+
 
 using namespace engine;
 using namespace engine::game;

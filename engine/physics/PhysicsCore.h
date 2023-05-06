@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shared/ObjectManager.hpp"
+#include <ObjectManager.hpp>
 #include "PhysicsObject.h"
 
 class btDefaultCollisionConfiguration;
