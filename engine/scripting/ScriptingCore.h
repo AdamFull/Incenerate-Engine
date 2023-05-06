@@ -13,6 +13,7 @@ namespace engine
 		public:
 			CScriptingCore() = default;
 			CScriptingCore(filesystem::IVirtualFileSystemInterface* vfs_ptr);
+			~CScriptingCore() override = default;
 
 			void create() override;
 			void update() override;

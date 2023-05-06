@@ -1,10 +1,12 @@
 #pragma once
 
+#include <ie_event_exports.h>
+
 #include <interface/event/EventManagerInterface.h>
 
 namespace engine
 {
-	class CEventManager : public IEventManagerInterface
+	class INCENERATE_EVENT_EXPORT CEventManager : public IEventManagerInterface
 	{
 	public:
 		std::unique_ptr<IEvent> makeEvent(EventId type) override;

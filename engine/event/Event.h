@@ -1,12 +1,14 @@
 #pragma once
 
+#include <ie_event_exports.h>
+
 #include <interface/event/EventInterface.h>
 
 #include <unordered_map>
 
 namespace engine
 {
-	class CEvent final : public IEvent
+	class INCENERATE_EVENT_EXPORT CEvent final : public IEvent
 	{
 	public:
 		CEvent() = delete;

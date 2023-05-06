@@ -15,6 +15,7 @@ namespace engine
 
 			CScriptSource() = default;
 			CScriptSource(filesystem::IVirtualFileSystemInterface* vfs_ptr);
+			~CScriptSource() override = default;
 
 			void load(const std::string& filepath, sol::state& lua);
 
