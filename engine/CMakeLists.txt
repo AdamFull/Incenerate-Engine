@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.18.0)
 project(incenerate_engine)
 
-#set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
 include(GenerateExportHeader)
 
 set(ENGINE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -64,8 +62,6 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${ENGINE_ROOT}/system"
     PUBLIC "${ENGINE_ROOT}/game"
     PUBLIC "${ENGINE_ROOT}/filesystem"
-    PUBLIC "${ENGINE_ROOT}/shared"
-    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 
 target_precompile_headers( ${PROJECT_NAME} PUBLIC common.h)

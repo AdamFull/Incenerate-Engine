@@ -134,6 +134,8 @@ add_compile_definitions(
     MAIN_PROJECT_DIRECTORY_PATH="${MAIN_PROJECT_DIRECTORY_PATH}"
     )
 
+include_directories("${CMAKE_BINARY_DIR}/exports/")
+
 add_subdirectory(engine)
 add_subdirectory(project)
 add_subdirectory(editor)

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ie_audio_exports.h>
+
 #include "interface/AudioReaderInterface.h"
 #include <interface/filesystem/VirtualFileSystemInterface.h>
 
@@ -7,7 +9,7 @@ namespace engine
 {
 	namespace audio
 	{
-		class CVorbisReader : public IAudioReaderInterface
+		class INCENERATE_AUDIO_EXPORT CVorbisReader final : public IAudioReaderInterface
 		{
 		public:
 			CVorbisReader(filesystem::IVirtualFileSystemInterface* vfs_ptr);

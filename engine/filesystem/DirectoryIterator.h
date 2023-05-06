@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ie_vfs_exports.h"
+#include <ie_vfs_exports.h>
 
 #include <interface/filesystem/DirectoryIteratorInterface.h>
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ie_audio_exports.h>
+
 #include "interface/AudioCoreInterface.h"
 #include <shared/ObjectManager.hpp>
 #include <interface/filesystem/VirtualFileSystemInterface.h>
@@ -11,7 +13,7 @@ namespace engine
 {
 	namespace audio
 	{
-		class CAudioCore final : public IAudioSystemInterface
+		class INCENERATE_AUDIO_EXPORT CAudioCore final : public IAudioSystemInterface
 		{
 		public:
 			CAudioCore(filesystem::IVirtualFileSystemInterface* vfs_ptr);

@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.18.0)
 project(IncenerateFilesystem LANGUAGES CXX)
 
-option(INCENERATE_FILESYSTEM_BUILD_SHARED "Build as a shared library" ON)
+include(GenerateExportHeader)
+
+option(INCENERATE_FILESYSTEM_BUILD_SHARED "Build incenerate filesystem as a shared library" ON)
 
 file(GLOB VFS_SOURCES_HEAD "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 set(CPPVFS_SOURCE_FILES ${VFS_SOURCES_HEAD})
@@ -51,7 +53,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE libzip::zip)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/pak_archive/lib")
 target_link_libraries(${PROJECT_NAME} PRIVATE libgpak)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE mimalloc)
+generate_export_header(${PROJECT_NAME} 
+              EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/ie_vfs_exports.h
+              EXPORT_MACRO_NAME INCENERATE_VFS_EXPORT
+              NO_EXPORT_MACRO_NAME INCENERATE_VFS_NO_EXPORT
+              DEPRECATED_MACRO_NAME INCENERATE_VFS_DEPRECATED
+              NO_DEPRECATED_MACRO_NAME INCENERATE_VFS_NO_DEPRECATED
+              )
 
 target_include_directories(${PROJECT_NAME}  
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -59,5 +67,4 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../external/utility"
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib/libzip/lib"
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib/pak_archive/lib"
-    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )

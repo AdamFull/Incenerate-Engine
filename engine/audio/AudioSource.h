@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ie_audio_exports.h>
+
 #include "interface/AudioSourceInterfsce.h"
 #include <interface/filesystem/VirtualFileSystemInterface.h>
 
@@ -7,7 +9,7 @@ namespace engine
 {
 	namespace audio
 	{
-		class CAudioSource final : public IAudioSourceInterface
+		class INCENERATE_AUDIO_EXPORT CAudioSource final : public IAudioSourceInterface
 		{
 		public:
 			CAudioSource() = default;
