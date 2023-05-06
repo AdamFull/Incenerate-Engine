@@ -1,5 +1,5 @@
 #include "ImageLoader.h"
-#include "filesystem/interface/VirtualFileSystemInterface.h"
+#include <interface/filesystem/VirtualFileSystemInterface.h>
 
 #include <ktx.h>
 #include <ktxvulkan.h>

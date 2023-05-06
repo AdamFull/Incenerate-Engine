@@ -2,7 +2,7 @@
 
 #include "ie_vfs_exports.h"
 
-#include "interface/InputFileInterface.h"
+#include <interface/filesystem/InputFileInterface.h>
 
 #include <string>
 

@@ -13,7 +13,7 @@
 #include "ecs/systems/BaseSystem.h"
 #include "ecs/components/fwd.h"
 
-#include "filesystem/interface/VirtualFileSystemInterface.h"
+#include <interface/filesystem/VirtualFileSystemInterface.h>
 
 #include <utility/threading.hpp>
 

@@ -6,8 +6,6 @@
 #include "image/Image2D.h"
 #include "image/ImageCubemap.h"
 
-#include "filesystem/interface/VirtualFileSystemInterface.h"
-
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace engine::graphics;

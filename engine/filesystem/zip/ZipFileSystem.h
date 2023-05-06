@@ -2,7 +2,7 @@
 
 #include "ie_vfs_exports.h"
 
-#include "interface/VFSInterface.h"
+#include <interface/filesystem/VFSInterface.h>
 
 struct zip;
 

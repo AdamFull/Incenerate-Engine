@@ -1,7 +1,7 @@
 #pragma once
 
 #include "interface/AudioReaderInterface.h"
-#include <filesystem/interface/VirtualFileSystemInterface.h>
+#include <interface/filesystem/VirtualFileSystemInterface.h>
 
 namespace engine
 {

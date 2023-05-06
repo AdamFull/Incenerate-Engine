@@ -64,6 +64,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${ENGINE_ROOT}/system"
     PUBLIC "${ENGINE_ROOT}/game"
     PUBLIC "${ENGINE_ROOT}/filesystem"
+    PUBLIC "${ENGINE_ROOT}/shared"
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 

@@ -1,6 +1,6 @@
 #include "ShaderCompiler.h"
 
-#include "filesystem/interface/VirtualFileSystemInterface.h"
+#include <interface/filesystem/VirtualFileSystemInterface.h>
 
 #include "filesystem/vfs_helper.h"
 

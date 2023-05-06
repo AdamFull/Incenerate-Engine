@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "graphics/rendering/material/Material.h"
 #include "filesystem/vfs_helper.h"
-#include "filesystem/interface/VirtualFileSystemInterface.h"
+#include <interface/filesystem/VirtualFileSystemInterface.h>
 
 constexpr const char* shader_config_path = "/embed/shaders.json";
 

@@ -2,7 +2,7 @@
 
 #include "ie_vfs_exports.h"
 
-#include "interface/DirectoryIteratorInterface.h"
+#include <interface/filesystem/DirectoryIteratorInterface.h>
 
 #include <vector>
 

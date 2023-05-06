@@ -2,7 +2,7 @@
 
 #include <lua/sol.hpp>
 #include <logger/logger.h>
-#include "filesystem/interface/VirtualFileSystemInterface.h"
+#include <interface/filesystem/VirtualFileSystemInterface.h>
 
 namespace engine
 {

@@ -2,7 +2,7 @@
 
 #include "interface/AudioCoreInterface.h"
 #include <shared/ObjectManager.hpp>
-#include <filesystem/interface/VirtualFileSystemInterface.h>
+#include <interface/filesystem/VirtualFileSystemInterface.h>
 
 struct ALCdevice_struct;
 struct ALCcontext_struct;
