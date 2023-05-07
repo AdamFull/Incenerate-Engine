@@ -3,6 +3,8 @@
 #include "Engine.h"
 #include "ecs/components/components.h"
 
+#include <SessionStorage.hpp>
+
 using namespace engine::ecs;
 
 void CDebugDrawSystem::__create()
@@ -19,7 +21,7 @@ void CDebugDrawSystem::__update(float fDt)
 	if (!camera)
 		return;
 
-	if (EGEngine->isDebugDrawNormals())
+	if (CSessionStorage::getInstance()->get<bool>("display_normals"))
 	{
 		graphics->bindShader(shader_id);
 		graphics->setManualShaderControlFlag(true);

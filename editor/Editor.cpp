@@ -36,6 +36,8 @@
 
 #include "filesystem/native/NativeFileSystem.h"
 
+#include <SessionStorage.hpp>
+
 constexpr const char* editor_local_data = "/editor/editorloc";
 
 namespace engine
@@ -321,12 +323,13 @@ void CEditor::newFrame(float fDt)
         }
         if (ImGui::BeginMenu("Debug"))
         {
-            auto display_normals = EGEngine->isDebugDrawNormals();
+            auto display_normals = CSessionStorage::getInstance()->get<bool>("display_normals");
             if (ImGui::MenuItem("Display normals", "", &display_normals))
-                EGEngine->toggleDebugDrawNormals();
-            auto display_physics = EGEngine->isDebugDrawPhysics();
+                CSessionStorage::getInstance()->set("display_normals", display_normals);
+
+            auto display_physics = CSessionStorage::getInstance()->get<bool>("display_physics");
             if (ImGui::MenuItem("Display physics", "", &display_physics))
-                EGEngine->toggleDebugDrawPhysics();
+                CSessionStorage::getInstance()->set("display_physics", display_physics);
 
             ImGui::EndMenu();
         }

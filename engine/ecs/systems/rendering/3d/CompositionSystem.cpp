@@ -7,6 +7,8 @@
 
 #include "ecs/helper.hpp"
 
+#include <SessionStorage.hpp>
+
 using namespace engine::ecs;
 using namespace engine::graphics;
 
@@ -149,11 +151,11 @@ void CCompositionSystem::__update(float fDt)
 	pUBODebug->set("spotShadowIndex", 0);
 	pUBODebug->set("omniShadowIndex", 0);
 	pUBODebug->set("omniShadowView", 0);
-	//pUBODebug->set("mode", FDebugGlobal::mode);
-	//pUBODebug->set("cascadeSplit", FDebugGlobal::cascadeSplit);
-	//pUBODebug->set("spotShadowIndex", FDebugGlobal::spotShadowIndex);
-	//pUBODebug->set("omniShadowIndex", FDebugGlobal::omniShadowIndex);
-	//pUBODebug->set("omniShadowView", FDebugGlobal::omniShadowView);
+	pUBODebug->set("mode", CSessionStorage::getInstance()->get<int32_t>("render_debug_mode"));
+	pUBODebug->set("cascadeSplit", CSessionStorage::getInstance()->get<int32_t>("render_debug_cascade_split"));
+	pUBODebug->set("spotShadowIndex", CSessionStorage::getInstance()->get<int32_t>("render_debug_spot_shadow_index"));
+	pUBODebug->set("omniShadowIndex", CSessionStorage::getInstance()->get<int32_t>("render_debug_omni_shadow_index"));
+	pUBODebug->set("omniShadowView", CSessionStorage::getInstance()->get<int32_t>("render_debug_omni_shadow_view"));
 
 	// Drawing 
 	graphics->bindRenderer(stage);

@@ -73,11 +73,6 @@ namespace engine
 		const std::unique_ptr<utl::threadworker>& getLoaderThread();
 
 		const bool isEditorEditing() const;
-		const bool isDebugDrawNormals() const;
-		const bool isDebugDrawPhysics() const;
-
-		void toggleDebugDrawNormals();
-		void toggleDebugDrawPhysics();
 
 		void setState(EEngineState state) { eState = state; }
 		EEngineState getState() { return eState; }
@@ -125,8 +120,6 @@ namespace engine
 		std::unique_ptr<utl::threadworker> pLoaderThread;
 
 		bool bEditorMode{ false };
-		bool bDebugDrawNormals{ false };
-		bool bDebugDrawPhysics{ false };
 
 		std::vector<std::unique_ptr<ecs::ISystem>> vSystems;
 	};

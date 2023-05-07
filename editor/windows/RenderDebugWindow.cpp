@@ -3,7 +3,7 @@
 #include <imgui/imgui.h>
 #include "CustomControls.h"
 
-#include "DebugGlobals.h"
+#include <SessionStorage.hpp>
 
 using namespace engine::editor;
 
@@ -16,18 +16,37 @@ void CRenderDebugWindow::create()
 
 void CRenderDebugWindow::__draw(float fDt)
 {
-	ImGui::GCombo("Display", &FDebugGlobal::mode, debug_render_mode.data(), debug_render_mode.size());
+	auto mode = CSessionStorage::getInstance()->get<int32_t>("render_debug_mode");
+	if(ImGui::GCombo("Display", &mode, debug_render_mode.data(), debug_render_mode.size()))
+		CSessionStorage::getInstance()->set("render_debug_mode", mode);
+
+	
 
 	// Cascade shadow map debug
-	if (FDebugGlobal::mode == 10)
-		ImGui::GSliderInt("Split", &FDebugGlobal::cascadeSplit, 0, SHADOW_MAP_CASCADE_COUNT);
-	// Spot shadow map debug
-	else if(FDebugGlobal::mode == 11)
-		ImGui::GSliderInt("Index", &FDebugGlobal::spotShadowIndex, 0, MAX_SPOT_LIGHT_COUNT);
-	// Omni shadow map debug
-	else if (FDebugGlobal::mode == 12)
+	if (mode == 10)
 	{
-		ImGui::GSliderInt("View", &FDebugGlobal::omniShadowView, 0, 6);
-		ImGui::GSliderInt("Index", &FDebugGlobal::omniShadowIndex, 0, MAX_POINT_LIGHT_COUNT);
+		auto split = CSessionStorage::getInstance()->get<int32_t>("render_debug_cascade_split");
+		if (ImGui::GSliderInt("Split", &split, 0, SHADOW_MAP_CASCADE_COUNT))
+			CSessionStorage::getInstance()->set("render_debug_cascade_split", split);
+	}
+		
+	// Spot shadow map debug
+	else if (mode == 11)
+	{
+		auto index = CSessionStorage::getInstance()->get<int32_t>("render_debug_spot_shadow_index");
+		if(ImGui::GSliderInt("Index", &index, 0, MAX_SPOT_LIGHT_COUNT))
+			CSessionStorage::getInstance()->set("render_debug_spot_shadow_index", index);
+	}
+		
+	// Omni shadow map debug
+	else if (mode == 12)
+	{
+		auto view = CSessionStorage::getInstance()->get<int32_t>("render_debug_omni_shadow_view");
+		if(ImGui::GSliderInt("View", &view, 0, 6))
+			CSessionStorage::getInstance()->set("render_debug_omni_shadow_view", view);
+
+		auto index = CSessionStorage::getInstance()->get<int32_t>("render_debug_omni_shadow_index");
+		if(ImGui::GSliderInt("Index", &index, 0, MAX_POINT_LIGHT_COUNT))
+			CSessionStorage::getInstance()->set("render_debug_omni_shadow_index", index);
 	}
 }

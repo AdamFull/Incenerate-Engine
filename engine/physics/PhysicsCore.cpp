@@ -3,6 +3,8 @@
 #include "PhysicsHelper.h"
 #include "PhysicsDebugDraw.h"
 
+#include <SessionStorage.hpp>
+
 using namespace engine::physics;
 
 CPhysicsCore::~CPhysicsCore()
@@ -73,7 +75,7 @@ void CPhysicsCore::simulate(float fDT)
 {
 	pPhysicsObjectManager->performDeletion();
 
-	if (dynamicsWorld->getDebugDrawer() && EGEngine->isDebugDrawPhysics())
+	if (dynamicsWorld->getDebugDrawer() && CSessionStorage::getInstance()->get<bool>("display_physics"))
 		dynamicsWorld->debugDrawWorld();
 
 	dynamicsWorld->stepSimulation(fDT, 10);
