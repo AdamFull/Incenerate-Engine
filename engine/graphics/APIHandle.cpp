@@ -31,7 +31,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 {
 	eAPI = createInfo.eAPI;
 
-    m_pWindow = std::make_unique<CSDL2WindowAdapter>();
+    m_pWindow = std::make_unique<CSDL2WindowAdapter>(m_pEvents);
     m_pWindow->create(createInfo.window);
 
     m_pWindow->getWindowSize(const_cast<int32_t*>(&createInfo.window.actualWidth), const_cast<int32_t*>(&createInfo.window.actualHeight));

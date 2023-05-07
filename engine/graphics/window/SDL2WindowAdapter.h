@@ -1,15 +1,13 @@
 #pragma once
 
-#include <interface/event/EventInterface.h>
-
 #include "WindowAdapter.h"
+
+#include <interface/event/EventManagerInterface.h>
 
 #include <SDL.h>
 
 namespace engine
 {
-	namespace system { namespace window { class CWindowHandle; } }
-
 	namespace graphics
 	{
 		class CSDL2WindowAdapter : public IWindowAdapter
