@@ -8,6 +8,8 @@
 
 #include "DebugDraw.h"
 
+#include <SessionStorage.hpp>
+
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace engine::graphics;
@@ -204,7 +206,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["deferred"].vDescriptions.emplace_back("depth_tex");
         
-        if (EGEngine->isEditorMode())
+        if (CSessionStorage::getInstance()->get<bool>("editor_mode"))
         {
             m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "picking_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc });
             m_mStageInfos["deferred"].vOutputs.emplace_back("picking_tex");

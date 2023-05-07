@@ -8,6 +8,7 @@
 #include "ecs/helper.hpp"
 
 #include <Helpers.h>
+#include <SessionStorage.hpp>
 
 using namespace engine::ecs;
 using namespace engine::graphics;
@@ -23,7 +24,7 @@ void CBillboardSystem::__create()
 	pVBO->addPrimitive(std::make_unique<FQuadPrimitive>());
 	pVBO->setLoaded();
 
-	if (EGEngine->isEditorMode())
+	if (CSessionStorage::getInstance()->get<bool>("editor_mode"))
 	{
 		auto& device = graphics->getDevice();
 

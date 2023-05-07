@@ -5,6 +5,8 @@
 #include "filesystem/vfs_helper.h"
 #include <interface/filesystem/VirtualFileSystemInterface.h>
 
+#include <SessionStorage.hpp>
+
 constexpr const char* shader_config_path = "/embed/shaders.json";
 
 using namespace engine::graphics;
@@ -14,6 +16,8 @@ CShaderLoader::CShaderLoader(CDevice* device, IVirtualFileSystemInterface* vfs_p
 	m_pDevice(device), m_pVFS(vfs_ptr)
 {
 	m_pCompiler = std::make_unique<CShaderCompiler>(m_pVFS);
+
+	bEditorMode = CSessionStorage::getInstance()->get<bool>("editor_mode");
 }
 
 CShaderLoader::~CShaderLoader()
@@ -63,7 +67,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 		for (const auto& [defineName, defineValue] : it->second.defines)
 			defineBlock << "#define " << defineName << " " << defineValue << '\n';
 
-		if (EGEngine->isEditorMode())
+		if (bEditorMode)
 			defineBlock << "#define " << "EDITOR_MODE" << "\n";
 
 		auto stages = it->second.stages;

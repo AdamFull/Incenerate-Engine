@@ -2,6 +2,8 @@
 #include "Editor.h"
 
 #include "ecs/systems/systems.h"
+#include <SessionStorage.hpp>
+
 #include "EditorRenderSystem.h"
 
 using namespace engine;
@@ -10,6 +12,8 @@ using namespace engine::editor;
 
 int main()
 {
+	CSessionStorage::getInstance()->set("editor_mode", true);
+
 	auto& editor = CEditor::getInstance();
 	auto& engine = CEngine::getInstance();
 

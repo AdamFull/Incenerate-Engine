@@ -72,7 +72,6 @@ namespace engine
 
 		const std::unique_ptr<utl::threadworker>& getLoaderThread();
 
-		const bool isEditorMode() const;
 		const bool isEditorEditing() const;
 		const bool isDebugDrawNormals() const;
 		const bool isDebugDrawPhysics() const;
@@ -125,7 +124,7 @@ namespace engine
 
 		std::unique_ptr<utl::threadworker> pLoaderThread;
 
-		bool bEditorMode{ true };
+		bool bEditorMode{ false };
 		bool bDebugDrawNormals{ false };
 		bool bDebugDrawPhysics{ false };
 

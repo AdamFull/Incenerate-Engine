@@ -37,7 +37,7 @@ namespace engine
 			glm::vec3 right{ 0.f };
 
 			bool moved{ true };
-			bool active{ false };
+			bool active{ true };
 			bool controllable{ true };
 		};
 

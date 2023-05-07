@@ -3,11 +3,15 @@
 
 #include "ecs/systems/systems.h"
 
+#include <SessionStorage.hpp>
+
 using namespace engine;
 using namespace engine::ecs;
 
 int main()
 {
+	CSessionStorage::getInstance()->set("editor_mode", false);
+
 	auto& engine = CEngine::getInstance();
 
 	engine->initialize();

@@ -245,6 +245,8 @@ void CEditor::create()
     for (auto& overlay : vEditorWindows)
         overlay->create();
 
+    activateEditorCamera();
+
     ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Engine loading success!" });
 }
 
@@ -546,6 +548,26 @@ void CEditor::restoreSceneState()
     auto view = registry.view<FTransformComponent>();
     for (auto [entity, transform] : view.each())
         CSceneLoader::applyComponents(mCaptureStates[entity], entity);
+}
+
+void CEditor::activateEditorCamera()
+{
+    auto& registry = EGEngine->getRegistry();
+    auto view = registry.view<FCameraComponent>();
+    for (auto [entity, camera] : view.each()) { camera.active = false; }
+
+    auto& editor_camera = registry.get<FCameraComponent>(camera);
+    editor_camera.active = true;
+}
+
+void CEditor::activateSceneCamera()
+{
+    auto& registry = EGEngine->getRegistry();
+    auto view = registry.view<FCameraComponent>();
+    for (auto [entity, camera] : view.each()) { camera.active = true; }
+
+    auto& editor_camera = registry.get<FCameraComponent>(camera);
+    editor_camera.active = false;
 }
 
 vk::DescriptorPool& CEditor::getDescriptorPool()

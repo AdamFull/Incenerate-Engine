@@ -3,6 +3,8 @@
 
 #include <set>
 
+#include <SessionStorage.hpp>
+
 #include <vulkan/vulkan_to_string.hpp>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -104,6 +106,8 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
+
+    bEditorMode = CSessionStorage::getInstance()->get<bool>("editor_mode");
 
 #ifdef _DEBUG
     bValidation = true;
@@ -1212,7 +1216,7 @@ float CDevice::getAspect(bool automatic)
 
 vk::Extent2D CDevice::getExtent(bool automatic)
 {
-    if (automatic && EGEngine->isEditorMode())
+    if (automatic && bEditorMode)
         return viewportExtent;
     return swapchainExtent;
 }

@@ -90,6 +90,9 @@ namespace engine
 			void captureSceneState();
 			void restoreSceneState();
 
+			void activateEditorCamera();
+			void activateSceneCamera();
+
 			vk::DescriptorPool& getDescriptorPool();
 
 			template<class _Ty>

@@ -333,6 +333,8 @@ namespace engine
             std::vector<vk::Fence> vInFlightFences;
             uint32_t framesInFlight{ 2 };
             uint32_t currentFrame{ 0 };
+
+            bool bEditorMode{ false };
 		};
 	}
 }

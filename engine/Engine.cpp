@@ -17,6 +17,8 @@
 // Scripting
 #include "scripting/ScriptingCore.h"
 
+#include <SessionStorage.hpp>
+
 
 using namespace engine;
 using namespace engine::game;
@@ -78,6 +80,7 @@ void CEngine::create()
 	pGraphics->create(createInfo);
 
 	// Load it from config?
+	bEditorMode = CSessionStorage::getInstance()->get<bool>("editor_mode");
 	if (bEditorMode)
 		eState = EEngineState::eEditing;
 
@@ -177,11 +180,6 @@ const filesystem_t& CEngine::getFilesystem() const
 const std::unique_ptr<utl::threadworker>& CEngine::getLoaderThread()
 {
 	return pLoaderThread;
-}
-
-const bool CEngine::isEditorMode() const
-{
-	return bEditorMode;
 }
 
 const bool CEngine::isEditorEditing() const

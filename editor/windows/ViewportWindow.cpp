@@ -266,6 +266,7 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 	auto disableStop = state == EEngineState::eEditing;
 	auto disablePlay = state == EEngineState::ePlay;
 
+	// TODO: should pause any simulation
 	ImGui::BeginDisabled(disablePause);
 	if (ImGui::Button(pause_icon.c_str()))
 		EGEngine->setState(EEngineState::ePause);
@@ -280,6 +281,7 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 		physics->reset();
 
 		EGEditor->captureSceneState();
+		EGEditor->activateSceneCamera();
 		EGEngine->setState(EEngineState::ePlay);
 	}
 	ImGui::EndDisabled();
@@ -290,6 +292,7 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 	if (ImGui::Button(stop_icon.c_str()))
 	{
 		EGEditor->restoreSceneState();
+		EGEditor->activateEditorCamera();
 		EGEngine->setState(EEngineState::eEditing);
 	}
 	ImGui::EndDisabled();

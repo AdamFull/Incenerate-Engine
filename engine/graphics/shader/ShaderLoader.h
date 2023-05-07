@@ -34,6 +34,8 @@ namespace engine
 
 			std::unique_ptr<CShaderCompiler> m_pCompiler;
 			std::unordered_map<std::string, FProgramCreateInfo> programCI;
+
+			bool bEditorMode{ false };
 		};
 	}
 }
