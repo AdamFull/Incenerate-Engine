@@ -134,7 +134,8 @@ void CCameraControlSystem::onKeyInput(const std::unique_ptr<IEvent>& event)
 
 void CCameraControlSystem::onMouseInput(const std::unique_ptr<IEvent>& event)
 {
-	auto& window = EGEngine->getWindow();
+	auto& graphics = EGEngine->getGraphics();
+	auto& window = graphics->getWindow();
 
 	int32_t wwidth{ 0 }, wheight{ 0 };
 	window->getWindowSize(&wwidth, &wheight);

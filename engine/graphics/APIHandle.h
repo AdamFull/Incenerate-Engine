@@ -24,11 +24,10 @@ namespace engine
 
 	namespace graphics
 	{
-		using winhandle_t = IWindowAdapter*;
 		class CAPIHandle
 		{
 		public:
-			CAPIHandle(winhandle_t window);
+			CAPIHandle();
 			~CAPIHandle();
 
 			void create(const FEngineCreateInfo& createInfo);
@@ -42,10 +41,11 @@ namespace engine
 			const std::unique_ptr<IDebugDrawInterface>& getDebugDraw() const;
 			const std::unique_ptr<CQueryPool>& getQueryPool() const;
 
-			vk::CommandBuffer begin();
+			vk::CommandBuffer begin(bool& bRunning);
 			void end(float fDT);
 			vk::CommandBuffer getCommandBuffer();
 
+			const std::unique_ptr<IWindowAdapter>& getWindow() const;
 			const std::unique_ptr<CDevice>& getDevice() const;
 			const std::unique_ptr<CShaderLoader>& getShaderLoader();
 			const std::unique_ptr<CImageLoader>& getImageLoader();
@@ -140,7 +140,7 @@ namespace engine
 			vk::Result endFrame();
 
 		protected:
-			winhandle_t m_pWindow{ nullptr };
+			std::unique_ptr<IWindowAdapter> m_pWindow;
 
 			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
 			IEventManagerInterface* m_pEvents{ nullptr };

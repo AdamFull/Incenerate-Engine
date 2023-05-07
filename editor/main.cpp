@@ -22,12 +22,6 @@ int main()
 	CSessionStorage::getInstance()->set("render_debug_omni_shadow_index", 0);
 	CSessionStorage::getInstance()->set("render_debug_omni_shadow_view", 0);
 
-	static int32_t mode;
-	static int32_t cascadeSplit;
-	static int32_t spotShadowIndex;
-	static int32_t omniShadowIndex;
-	static int32_t omniShadowView;
-
 	auto& editor = CEditor::getInstance();
 	auto& engine = CEngine::getInstance();
 

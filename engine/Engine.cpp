@@ -2,7 +2,6 @@
 #include "filesystem/vfs_helper.h"
 
 #include "game/SceneSerializer.h"
-#include "graphics/window/SDL2WindowAdapter.h"
 
 // Audio
 #include "audio/AudioCore.h"
@@ -57,8 +56,7 @@ void CEngine::initialize()
 	pAudio = std::make_unique<CAudioCore>(pFilesystem.get());
 
 	pScripting = std::make_unique<CScriptingCore>(pFilesystem.get());
-	pWindow = std::make_unique<CSDL2WindowAdapter>();
-	pGraphics = std::make_unique<CAPIHandle>(pWindow.get());
+	pGraphics = std::make_unique<CAPIHandle>();
 }
 
 void CEngine::create()
@@ -74,7 +72,6 @@ void CEngine::create()
 	pPhysics->create();
 	pAudio->create();
 	pScripting->create();
-	pWindow->create(createInfo.window);
 
 	pGraphics->setVirtualFileSystem(pFilesystem.get());
 	pGraphics->create(createInfo);
@@ -99,9 +96,10 @@ void CEngine::beginEngineLoop()
 	float dt{ 0.f };
 
 	//pLoaderThread->wait();
-	while (pWindow->processEvents())
+	bool bRunning{ true };
+	while (bRunning)
 	{
-		auto commandBuffer = pGraphics->begin();
+		auto commandBuffer = pGraphics->begin(bRunning);
 		
 		if (!commandBuffer)
 			continue;
@@ -135,11 +133,6 @@ void CEngine::destruction()
 entt::registry& CEngine::getRegistry()
 {
 	return registry;
-}
-
-const winptr_t& CEngine::getWindow() const
-{
-	return pWindow;
 }
 
 const graphptr_t& CEngine::getGraphics() const

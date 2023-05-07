@@ -111,7 +111,7 @@ void CEditor::create()
 
     ImGui::CreateContext();
 
-    auto& window = EGEngine->getWindow();
+    auto& window = graphics->getWindow();
 
     int32_t wwidth{ 0 }, wheight{ 0 };
     window->getWindowSize(&wwidth, &wheight);
@@ -159,7 +159,7 @@ void CEditor::create()
     vEditorWindows.emplace_back(std::make_unique<CRenderDebugWindow>("Render Debug Window"));
     vEditorWindows.emplace_back(std::make_unique<CMaterialEditorWindow>("Material editor"));
 
-    ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window*>(EGWindow->getHandle()));
+    ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window*>(window->getHandle()));
     ImGui_ImplVulkan_InitInfo init_info = {};
     init_info.Instance = device->getVkInstance();
     init_info.PhysicalDevice = device->getPhysical();
@@ -259,7 +259,7 @@ void CEditor::newFrame(float fDt)
     ImGui::NewFrame();
     ImGuizmo::BeginFrame();
 
-    auto window = static_cast<CSDL2WindowAdapter*>(EGWindow.get());
+    auto window = static_cast<CSDL2WindowAdapter*>(graphics->getWindow().get());
 
     auto& events = window->getWinEvents();
     for (auto& sevent : events)

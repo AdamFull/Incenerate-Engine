@@ -6,6 +6,8 @@
 #include "image/Image2D.h"
 #include "image/ImageCubemap.h"
 
+#include "window/SDL2WindowAdapter.h"
+
 #include "DebugDraw.h"
 
 #include <SessionStorage.hpp>
@@ -16,9 +18,8 @@ using namespace engine::graphics;
 using namespace engine::filesystem;
 using namespace engine::ecs;
 
-CAPIHandle::CAPIHandle(winhandle_t window)
+CAPIHandle::CAPIHandle()
 {
-    m_pWindow = window;
 }
 
 CAPIHandle::~CAPIHandle()
@@ -29,6 +30,9 @@ CAPIHandle::~CAPIHandle()
 void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 {
 	eAPI = createInfo.eAPI;
+
+    m_pWindow = std::make_unique<CSDL2WindowAdapter>();
+    m_pWindow->create(createInfo.window);
 
     m_pWindow->getWindowSize(const_cast<int32_t*>(&createInfo.window.actualWidth), const_cast<int32_t*>(&createInfo.window.actualHeight));
 
@@ -43,7 +47,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     m_pRenderStageManager = std::make_unique<CObjectManager<CRenderStage>>();
 
 	m_pDevice = std::make_unique<CDevice>(this);
-	m_pDevice->create(createInfo, m_pWindow);
+	m_pDevice->create(createInfo, m_pWindow.get());
 
     m_pShaderLoader = std::make_unique<CShaderLoader>(m_pDevice.get(), m_pVFS);
     m_pShaderLoader->create();
@@ -418,8 +422,10 @@ const std::unique_ptr<CQueryPool>& CAPIHandle::getQueryPool() const
     return m_pQueryPool;
 }
 
-vk::CommandBuffer CAPIHandle::begin()
+vk::CommandBuffer CAPIHandle::begin(bool& bRunning)
 {
+    bRunning = m_pWindow->processEvents();
+
     vk::CommandBuffer commandBuffer{};
     try { commandBuffer = beginFrame(); }
     catch (vk::OutOfDateKHRError err) { reCreate(true, true); }
@@ -448,6 +454,11 @@ void CAPIHandle::end(float fDT)
 vk::CommandBuffer CAPIHandle::getCommandBuffer()
 {
     return m_pCommandBuffers->getCommandBuffer();
+}
+
+const std::unique_ptr<IWindowAdapter>& CAPIHandle::getWindow() const
+{
+    return m_pWindow;
 }
 
 const std::unique_ptr<CDevice>& CAPIHandle::getDevice() const

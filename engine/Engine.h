@@ -2,7 +2,6 @@
 
 #include "EngineStructures.h"
 #include "graphics/APIHandle.h"
-#include "graphics/window/WindowAdapter.h"
 #include "physics/PhysicsCore.h"
 //#include "particles/ParticlesCore.h"
 
@@ -21,7 +20,6 @@
 #define EGScripting CEngine::getInstance()->getScripting()
 #define EGFilesystem CEngine::getInstance()->getFilesystem()
 #define EGAudio CEngine::getInstance()->getAudio()
-#define EGWindow CEngine::getInstance()->getWindow()
 #define EGSceneManager CEngine::getInstance()->getSceneManager()
 
 namespace engine
@@ -35,7 +33,6 @@ namespace engine
 
 	using audiocore_t = std::unique_ptr<audio::IAudioSystemInterface>;
 	using eventcore_t = std::unique_ptr<IEventManagerInterface>;
-	using winptr_t = std::unique_ptr<graphics::IWindowAdapter>;
 	using graphptr_t = std::unique_ptr<graphics::CAPIHandle>;
 	
 	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
@@ -61,7 +58,6 @@ namespace engine
 
 		entt::registry& getRegistry();
 
-		const winptr_t& getWindow() const;
 		const graphptr_t& getGraphics() const;
 		const audiocore_t& getAudio() const;
 		const scenemgr_t& getSceneManager() const;
@@ -108,7 +104,6 @@ namespace engine
 
 		EEngineState eState;
 
-		winptr_t pWindow;
 		graphptr_t pGraphics;
 		audiocore_t pAudio;
 		scenemgr_t pSceneManager;
