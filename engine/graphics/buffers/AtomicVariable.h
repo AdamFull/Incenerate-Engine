@@ -43,6 +43,11 @@ namespace engine
 				return result;
 			}
 
+			CDevice* getDevice()
+			{
+				return pDevice;
+			}
+
 		private:
 			CDevice* pDevice{ nullptr };
 			std::unique_ptr<CBuffer> pBuffer;

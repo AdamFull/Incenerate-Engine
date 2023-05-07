@@ -73,3 +73,8 @@ void CDescriptorHandler::set(const std::string& srUniformName, vk::WriteDescript
 {
 	vWriteDescriptorSets.emplace_back(std::move(writeInfo));
 }
+
+CDevice* CDescriptorHandler::getDevice()
+{
+	return pDevice;
+}

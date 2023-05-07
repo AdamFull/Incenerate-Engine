@@ -47,6 +47,8 @@ namespace engine
 
 			static vk::DeviceSize getAlignment(vk::DeviceSize instanceSize, vk::DeviceSize minOffsetAlignment);
 
+			CDevice* getDevice();
+
 		protected:
 			CDevice* pDevice{ nullptr };
 			void* mappedMemory{ nullptr };

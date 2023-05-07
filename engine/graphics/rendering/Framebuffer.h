@@ -72,6 +72,8 @@ namespace engine
 			static bool isTransferSrc(vk::ImageUsageFlags usageFlags) { return static_cast<bool>(usageFlags & vk::ImageUsageFlagBits::eTransferSrc); }
 			static bool isStorage(vk::ImageUsageFlags usageFlags) { return static_cast<bool>(usageFlags & vk::ImageUsageFlagBits::eStorage); }
 			static bool isInputAttachment(vk::ImageUsageFlags usageFlags) { return static_cast<bool>(usageFlags & vk::ImageUsageFlagBits::eInputAttachment); }
+
+			CDevice* getDevice();
 		private:
 			void clearImages();
 		private:

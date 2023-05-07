@@ -9,6 +9,12 @@
 using namespace engine::graphics;
 using namespace engine::ecs;
 
+CSDL2WindowAdapter::CSDL2WindowAdapter(IEventManagerInterface* evt_ptr) :
+    m_pEvents(evt_ptr)
+{
+
+}
+
 CSDL2WindowAdapter::~CSDL2WindowAdapter()
 {
 	destroy();
@@ -26,8 +32,8 @@ void CSDL2WindowAdapter::create(const FWindowCreateInfo& createInfo)
     log_cerror((pWindow != nullptr), "Could not create window.");
     log_info("Created window: [name: {}, extent: {}x{}, aspect: {}]", createInfo.srName, iWidth, iHeight, getAspect());
 
-    m_pMouseEvent = EGEngine->makeEvent(Events::Input::Mouse);
-    m_pKeyEvent = EGEngine->makeEvent(Events::Input::Key);
+    m_pMouseEvent = m_pEvents->makeEvent(Events::Input::Mouse);
+    m_pKeyEvent = m_pEvents->makeEvent(Events::Input::Key);
 }
 
 void CSDL2WindowAdapter::destroy()
@@ -112,7 +118,7 @@ bool CSDL2WindowAdapter::processEvents()
         {
             m_pMouseEvent->setParam(Events::Input::MouseX, static_cast<float>(event.motion.x));
             m_pMouseEvent->setParam(Events::Input::MouseY, static_cast<float>(event.motion.y));
-            EGEngine->sendEvent(m_pMouseEvent);
+            m_pEvents->sendEvent(m_pMouseEvent);
         } break;
 
         case SDL_FINGERDOWN:
@@ -149,7 +155,7 @@ bool CSDL2WindowAdapter::processEvents()
     //if (bKeyStateChange)
     {
         m_pKeyEvent->setParam(Events::Input::Key, mKeys);
-        EGEngine->sendEvent(m_pKeyEvent);
+        m_pEvents->sendEvent(m_pKeyEvent);
     }
 
     return bRunning;

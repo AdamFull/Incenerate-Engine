@@ -74,6 +74,7 @@ void CEngine::create()
 	pScripting->create();
 
 	pGraphics->setVirtualFileSystem(pFilesystem.get());
+	pGraphics->setEventSystem(pEventManager.get());
 	pGraphics->create(createInfo);
 
 	// Load it from config?

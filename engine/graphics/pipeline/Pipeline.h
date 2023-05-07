@@ -27,6 +27,8 @@ namespace engine
 
 			virtual vk::PipelineBindPoint getBindPoint() { return vk::PipelineBindPoint::eCompute; }
 
+			CDevice* getDevice();
+
 		protected:
 			void createDescriptorSetLayout(CShaderObject* pShader);
 			void createDescriptorPool(CShaderObject* pShader);

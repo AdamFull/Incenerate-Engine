@@ -63,6 +63,8 @@ namespace engine
 			const vk::ImageAspectFlags& getAspectMask() const { return _aspectMask; }
 			const bool isLoaded() const { return loaded; }
 
+			CDevice* getDevice();
+
 		protected:
 			CDevice* pDevice{ nullptr };
 

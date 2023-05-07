@@ -130,15 +130,6 @@ namespace engine
 
 using namespace engine::graphics;
 
-CMaterial::~CMaterial()
-{
-	auto& graphics = EGEngine->getGraphics();
-	graphics->removeShader(shader_id);
-
-	for (auto& [name, id] : mTextures)
-		graphics->removeImage(id);
-}
-
 void CMaterial::setParameters(FMaterialParameters&& mat)
 {
 	parameters = std::move(mat);

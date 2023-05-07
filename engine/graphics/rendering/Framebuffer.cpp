@@ -405,3 +405,8 @@ void CFramebuffer::clearImages()
 
     mFramebufferImages.clear();
 }
+
+CDevice* CFramebuffer::getDevice()
+{
+    return pDevice;
+}

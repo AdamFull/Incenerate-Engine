@@ -37,6 +37,7 @@ namespace engine
 			void shutdown();
 
 			void setVirtualFileSystem(filesystem::IVirtualFileSystemInterface* vfs_ptr);
+			void setEventSystem(IEventManagerInterface* evt_ptr);
 
 			const std::unique_ptr<IDebugDrawInterface>& getDebugDraw() const;
 			const std::unique_ptr<CQueryPool>& getQueryPool() const;

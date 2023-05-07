@@ -50,6 +50,11 @@ void CPipeline::bind(vk::CommandBuffer& commandBuffer, uint32_t index)
     commandBuffer.bindPipeline(getBindPoint(), vPipelines[index]);
 }
 
+CDevice* CPipeline::getDevice()
+{
+    return pDevice;
+}
+
 void CPipeline::createDescriptorSetLayout(CShaderObject* pShader)
 {
     auto& shader = pShader->getShader();

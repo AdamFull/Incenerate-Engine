@@ -36,9 +36,9 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
     m_pWindow->getWindowSize(const_cast<int32_t*>(&createInfo.window.actualWidth), const_cast<int32_t*>(&createInfo.window.actualHeight));
 
-    m_pFrameDoneEvent = EGEngine->makeEvent(Events::Graphics::AllFramesDone);
-    m_pReCreateEvent = EGEngine->makeEvent(Events::Graphics::ReCreate);
-    m_pViewportReCreateEvent = EGEngine->makeEvent(Events::Graphics::ViewportReCreate);
+    m_pFrameDoneEvent = m_pEvents->makeEvent(Events::Graphics::AllFramesDone);
+    m_pReCreateEvent = m_pEvents->makeEvent(Events::Graphics::ReCreate);
+    m_pViewportReCreateEvent = m_pEvents->makeEvent(Events::Graphics::ViewportReCreate);
 
     m_pImageManager = std::make_unique<CObjectManager<CImage>>();
     m_pShaderManager = std::make_unique<CObjectManager<CShaderObject>>();
@@ -331,7 +331,7 @@ void CAPIHandle::update()
 
     if (count_delete > m_pDevice->getFramesInFlight() + 1)
     {
-        EGEngine->sendEvent(m_pFrameDoneEvent);
+        m_pEvents->sendEvent(m_pFrameDoneEvent);
         forceReleaseResources();
         count_delete = 0;
     }
@@ -386,10 +386,10 @@ void CAPIHandle::reCreate(bool bSwapchain, bool bViewport)
         pStage->reCreate(stage);
     }
 
-    EGEngine->sendEvent(m_pReCreateEvent);
+    m_pEvents->sendEvent(m_pReCreateEvent);
 
     if (bViewport)
-        EGEngine->sendEvent(m_pViewportReCreateEvent);
+        m_pEvents->sendEvent(m_pViewportReCreateEvent);
 
     m_pDevice->nillViewportFlag();
 }
@@ -409,6 +409,11 @@ void CAPIHandle::shutdown()
 void CAPIHandle::setVirtualFileSystem(filesystem::IVirtualFileSystemInterface* vfs_ptr)
 {
     m_pVFS = vfs_ptr;
+}
+
+void CAPIHandle::setEventSystem(IEventManagerInterface* evt_ptr)
+{
+    m_pEvents = evt_ptr;
 }
 
 const std::unique_ptr<IDebugDrawInterface>& CAPIHandle::getDebugDraw() const
@@ -624,11 +629,27 @@ size_t CAPIHandle::addMaterial(const std::string& name, std::unique_ptr<CMateria
 
 void CAPIHandle::removeMaterial(const std::string& name)
 {
+    auto& material = getMaterial(name);
+    if (material)
+    {
+        removeShader(material->getShader());
+        for (auto& [name, tex_id] : material->getTextures())
+            removeImage(tex_id);
+    }
+
     m_pMaterialManager->remove(name);
 }
 
 void CAPIHandle::removeMaterial(size_t id)
 {
+    auto& material = getMaterial(id);
+    if (material)
+    {
+        removeShader(material->getShader());
+        for (auto& [name, tex_id] : material->getTextures())
+            removeImage(tex_id);
+    }
+
     m_pMaterialManager->remove(id);
 }
 

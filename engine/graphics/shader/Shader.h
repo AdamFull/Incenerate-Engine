@@ -20,6 +20,8 @@ namespace engine
 			const std::vector<vk::PipelineShaderStageCreateInfo>& getStageCreateInfo() const { return vShaderModules; }
 			std::vector<vk::PushConstantRange> getPushConstantRanges() const;
 
+			CDevice* getDevice();
+
 		private:
 			void createShaderModule(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stage);
 		private:

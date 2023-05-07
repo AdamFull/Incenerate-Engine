@@ -68,3 +68,8 @@ ERenderStageAvaliableFlagBits CRenderStage::getStageFlag()
 {
 	return stageCI.eFlag;
 }
+
+CDevice* CRenderStage::getDevice()
+{
+	return pDevice;
+}

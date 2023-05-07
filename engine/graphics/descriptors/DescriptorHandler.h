@@ -19,6 +19,8 @@ namespace engine
 			void set(const std::string& srUniformName, vk::DescriptorBufferInfo& bufferInfo);
 			void set(const std::string& srUniformName, vk::DescriptorImageInfo& imageInfo);
 			void set(const std::string& srUniformName, vk::WriteDescriptorSet& writeInfo);
+
+			CDevice* getDevice();
 		private:
 			CDevice* pDevice{ nullptr };
 			CShader* pShader{ nullptr };

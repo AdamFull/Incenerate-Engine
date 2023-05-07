@@ -442,3 +442,8 @@ vk::DescriptorImageInfo& CImage::getDescriptor(uint32_t mip_level)
 
     return _descriptor;
 }
+
+CDevice* CImage::getDevice()
+{
+    return pDevice;
+}

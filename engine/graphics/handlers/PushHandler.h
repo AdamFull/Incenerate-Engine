@@ -45,6 +45,7 @@ namespace engine
 			uint32_t getCurrentFrameProxy();
 		private:
 			CPipeline* pPipeline{ nullptr };
+			CDevice* pDevice{ nullptr };
 
 			std::optional<CPushConstBlock> pushBlock;
 			std::vector<std::unique_ptr<char[]>> vData;

@@ -130,7 +130,7 @@ void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector
 {
 	auto& pInstance = vInstances.at(currentUsage);
 	// TODO: add graphics pointer inside shader object
-	auto& graphics = EGEngine->getGraphics();
+	auto graphics = pDevice->getAPI();
 
 	bindDescriptor(commandBuffer);
 

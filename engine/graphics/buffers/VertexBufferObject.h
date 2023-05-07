@@ -124,6 +124,8 @@ namespace engine
 			void setLoaded() { bLoaded = true; }
 			const bool isLoaded() const { return bLoaded; }
 
+			CDevice* getDevice();
+
 		private:
 			void copy_buffer_to_buffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, size_t size, size_t srcOffset, size_t dstOffset);
 			std::unique_ptr<CBuffer> allocate_buffer(size_t instance_size, size_t instances, uint32_t buffer_type);

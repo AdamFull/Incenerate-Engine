@@ -96,3 +96,8 @@ vk::Result CCommandBuffer::submit(uint32_t& imageIndex)
     auto commandBuffer = getCommandBuffer();
     return pDevice->submitCommandBuffers(&commandBuffer, &imageIndex, queueFlags);
 }
+
+CDevice* CCommandBuffer::getDevice()
+{
+    return pDevice;
+}

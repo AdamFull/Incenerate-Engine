@@ -83,6 +83,11 @@ std::vector<vk::PushConstantRange> CShader::getPushConstantRanges() const
     return pushConstantRanges;
 }
 
+CDevice* CShader::getDevice()
+{
+    return pDevice;
+}
+
 void CShader::createShaderModule(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stage)
 {
     try

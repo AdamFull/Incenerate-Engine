@@ -21,6 +21,8 @@ namespace engine
 			void takeResult();
 
 			bool wasDrawn(uint32_t index);
+
+			CDevice* getDevice();
 		private:
 			CDevice* pDevice{ nullptr };
 			vk::QueryPool queryPool;

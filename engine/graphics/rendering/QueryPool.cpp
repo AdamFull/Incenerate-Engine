@@ -65,3 +65,8 @@ bool CQueryPool::wasDrawn(uint32_t index)
 	
 	return false;
 }
+
+CDevice* CQueryPool::getDevice()
+{
+	return pDevice;
+}

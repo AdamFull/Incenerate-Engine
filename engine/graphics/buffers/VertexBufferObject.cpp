@@ -56,6 +56,11 @@ void CVertexBufferObject::addMeshData(const std::vector<FVertex>& vertices, cons
 	addIndices(indices);
 }
 
+CDevice* CVertexBufferObject::getDevice()
+{
+	return pDevice;
+}
+
 void CVertexBufferObject::copy_buffer_to_buffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, size_t size, size_t srcOffset, size_t dstOffset)
 {
 	pDevice->copyOnDeviceBuffer(srcBuffer, dstBuffer, size, srcOffset, dstOffset);

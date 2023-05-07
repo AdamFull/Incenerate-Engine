@@ -84,6 +84,8 @@ namespace engine
 
 			const std::unique_ptr<CFramebuffer>& getFramebuffer() const;
 			ERenderStageAvaliableFlagBits getStageFlag();
+
+			CDevice* getDevice();
 		private:
 			CDevice* pDevice{ nullptr };
 			FCIStage stageCI;

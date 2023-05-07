@@ -19,6 +19,8 @@ namespace engine
 
 			vk::DescriptorSet& get();
 
+			CDevice* getDevice();
+
 		private:
 			CDevice* pDevice{ nullptr };
 			std::vector<vk::DescriptorSet> vDescriptorSets;

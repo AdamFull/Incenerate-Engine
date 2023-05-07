@@ -193,3 +193,8 @@ vk::DeviceSize CBuffer::getAlignment(vk::DeviceSize instanceSize, vk::DeviceSize
     }
     return instanceSize;
 }
+
+CDevice* CBuffer::getDevice()
+{
+    return pDevice;
+}

@@ -7,6 +7,7 @@ using namespace engine::graphics;
 CPushHandler::CPushHandler(CPipeline* pipe)
 {
 	pPipeline = pipe;
+	pDevice = pPipeline->getDevice();
 }
 
 CPushHandler::~CPushHandler()
@@ -16,9 +17,7 @@ CPushHandler::~CPushHandler()
 
 void CPushHandler::create(const CPushConstBlock& pushBlock)
 {
-	auto& graphics = EGEngine->getGraphics();
-
-	auto images = graphics->getDevice()->getFramesInFlight();
+	auto images = pDevice->getFramesInFlight();
 
 	for(auto i = 0; i < images; i++)
 		vData.emplace_back(std::make_unique<char[]>(pushBlock.getSize()));
@@ -36,7 +35,5 @@ void CPushHandler::flush(vk::CommandBuffer& commandBuffer)
 
 uint32_t CPushHandler::getCurrentFrameProxy()
 {
-	auto& graphics = EGEngine->getGraphics();
-	auto& device = graphics->getDevice();
-	return device->getCurrentFrame();
+	return pDevice->getCurrentFrame();
 }

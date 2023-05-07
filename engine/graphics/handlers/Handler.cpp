@@ -49,3 +49,8 @@ uint32_t CHandler::getCurrentFrameProxy()
 {
     return pDevice->getCurrentFrame();
 }
+
+CDevice* CHandler::getDevice()
+{
+    return pDevice;
+}

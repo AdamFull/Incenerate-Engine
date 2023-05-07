@@ -32,3 +32,8 @@ CCommandPool::~CCommandPool()
     pDevice->destroy(&commandPool);
     pDevice = nullptr;
 }
+
+CDevice* CCommandPool::getDevice()
+{
+    return pDevice;
+}

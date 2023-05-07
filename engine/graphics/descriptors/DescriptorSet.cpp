@@ -64,3 +64,8 @@ vk::DescriptorSet& CDescriptorSet::get()
     auto currentFrame = pDevice->getCurrentFrame();
     return vDescriptorSets.at(currentFrame);
 }
+
+CDevice* CDescriptorSet::getDevice()
+{
+    return pDevice;
+}

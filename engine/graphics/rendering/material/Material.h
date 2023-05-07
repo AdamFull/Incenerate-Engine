@@ -77,8 +77,6 @@ namespace engine
 		class CMaterial
 		{
 		public:
-			~CMaterial();
-
 			void setParameters(FMaterialParameters&& mat);
 			FMaterialParameters& getParameters() { return parameters; }
 

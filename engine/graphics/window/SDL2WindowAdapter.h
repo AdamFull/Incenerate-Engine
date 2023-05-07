@@ -15,6 +15,7 @@ namespace engine
 		class CSDL2WindowAdapter : public IWindowAdapter
 		{
 		public:
+			CSDL2WindowAdapter(IEventManagerInterface* evt_ptr);
 			~CSDL2WindowAdapter() override;
 
 			void create(const FWindowCreateInfo& createInfo) override;
@@ -33,6 +34,8 @@ namespace engine
 			const std::vector<SDL_Event>& getWinEvents();
 		private:
 			SDL_Window* pWindow{ nullptr };
+			IEventManagerInterface* m_pEvents{ nullptr };
+
 			std::vector<SDL_Event> vWinEvents;
 
 			std::unique_ptr<IEvent> m_pMouseEvent;

@@ -93,6 +93,8 @@ namespace engine
 				set(object, uniform->getOffset(), realSize);
 			}
 
+			CDevice* getDevice();
+
 		protected:
 			CDevice* pDevice{ nullptr };
 			std::optional<CUniformBlock> uniformBlock;

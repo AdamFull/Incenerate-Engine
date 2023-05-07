@@ -26,6 +26,8 @@ namespace engine
             vk::CommandBuffer& getCommandBuffer() { return vCommandBuffers.at(frameIndex); }
             bool isRunning() const { return running; }
 
+            CDevice* getDevice();
+
         private:
             CDevice* pDevice{ nullptr };
 
