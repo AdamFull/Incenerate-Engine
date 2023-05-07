@@ -11,8 +11,8 @@ namespace engine
 		public:
 			virtual ~IDebugDrawInterface() = default;
 
-			virtual void create() = 0;
-			virtual void draw() = 0;
+			virtual const std::vector<FSimpleVertex>& getDrawList() const = 0;
+			virtual void clear() = 0;
 
 			virtual void drawDebugPoint(const glm::vec3& pos, const float size = 1.f, const glm::vec3& color = glm::vec3(1.f)) = 0;
 			virtual void drawDebugLine(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color = glm::vec3(1.f)) = 0;

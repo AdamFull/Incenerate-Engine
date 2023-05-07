@@ -6,8 +6,6 @@
 
 using namespace engine::graphics;
 
-#define DEBUG_DRAW_MAX_VERTICES 16384
-
 CDebugDraw::CDebugDraw(CAPIHandle* gapi)
 {
 	graphics = gapi;
@@ -15,62 +13,14 @@ CDebugDraw::CDebugDraw(CAPIHandle* gapi)
 
 #if !defined(INCENERATE_RELEASE_APP)
 
-void CDebugDraw::create()
+const std::vector<FSimpleVertex>& CDebugDraw::getDrawList() const
 {
-	vbo_id = graphics->addVertexBuffer("debug_draw_vbo");
-
-	auto& vbo = graphics->getVertexBuffer(vbo_id);
-	vbo->reserve(sizeof(FSimpleVertex), DEBUG_DRAW_MAX_VERTICES, sizeof(uint32_t), 0);
-
-	shader_id = graphics->addShader("debug_draw_shader", "debugdraw");
+	return vDrawData;
 }
 
-void CDebugDraw::draw()
+void CDebugDraw::clear()
 {
-	auto& loaderThread = EGEngine->getLoaderThread();
-	auto* camera = EGEngine->getActiveCamera();
-	auto& pVBO = graphics->getVertexBuffer(vbo_id);
-
-	if (!camera)
-		return;
-
-	if (!vDrawData.empty())
-	{
-		if (loaderThread)
-		{
-			loaderThread->wait();
-			loaderThread->push([vbo = pVBO.get(), drawData = std::move(vDrawData)]()
-				{
-					vbo->clear();
-					vbo->addVertices(drawData);
-					vbo->setLoaded();
-				});
-		}
-		else
-		{
-			pVBO->clear();
-			pVBO->addVertices(vDrawData);
-			pVBO->setLoaded();
-		}
-	
-		graphics->bindShader(shader_id);
-		if (!graphics->bindVertexBuffer(vbo_id))
-		{
-			graphics->bindShader(invalid_index);
-			return;
-		}
-	
-		auto& pUniform = graphics->getUniformHandle("UBODebugDraw");
-		pUniform->set("projection", camera->projection);
-		pUniform->set("view", camera->view);
-	
-		graphics->draw(0, pVBO->getLastVertex(), 0, 0, 1);
-	
-		graphics->bindVertexBuffer(invalid_index);
-		graphics->bindShader(invalid_index);
-	
-		vDrawData.clear();
-	}
+	vDrawData.clear();
 }
 
 void CDebugDraw::drawDebugPoint(const glm::vec3& pos, const float size, const glm::vec3& color)

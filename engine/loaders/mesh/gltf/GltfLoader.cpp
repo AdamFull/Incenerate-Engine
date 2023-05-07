@@ -182,22 +182,9 @@ void CGltfLoader::load(const const std::string& source, const entt::entity& root
             loadAnimations(gltfModel, component);
         loadSkins(gltfModel, component);
 
-        auto& loaderThread = EGEngine->getLoaderThread();
-        if (loaderThread)
-        {
-            loaderThread->push([vbo_id = vbo_id, graphics = graphics.get(), vertexBuffer = std::move(vVertexBuffer), indexBuffer = std::move(vIndexBuffer)]()
-                {
-                    auto& vbo = graphics->getVertexBuffer(vbo_id);
-            vbo->addMeshData(vertexBuffer, indexBuffer);
-            vbo->setLoaded();
-                });
-        }
-        else
-        {
-            auto& vbo = graphics->getVertexBuffer(vbo_id);
-            vbo->addMeshData(vVertexBuffer, vIndexBuffer);
-            vbo->setLoaded();
-        }
+        auto& vbo = graphics->getVertexBuffer(vbo_id);
+        vbo->addMeshData(vVertexBuffer, vIndexBuffer);
+        vbo->setLoaded();
     }
 }
 
@@ -964,7 +951,6 @@ void CGltfLoader::loadSkins(const tinygltf::Model& model, FSceneComponent* compo
 
 size_t CGltfLoader::loadTexture(const std::pair<std::string, bool>& texpair, vk::Format oformat)
 {
-    auto& loaderThread = EGEngine->getLoaderThread();
     auto& graphics = EGEngine->getGraphics();
     auto& device = graphics->getDevice();
 
@@ -979,27 +965,11 @@ size_t CGltfLoader::loadTexture(const std::pair<std::string, bool>& texpair, vk:
 
     auto index = graphics->addImage(name, std::make_unique<CImage>(device.get()));
 
-    if (loaderThread)
-    {
-        loaderThread->push([this, index, name, path = texpair.first, oformat, isktx = texpair.second]()
-            {
-                auto& graphics = EGEngine->getGraphics();
-                auto& image = graphics->getImage(index);
-
-                if (isktx)
-                    image->create(path);
-                else
-                    image->create(path, oformat);
-            });
-    }
+    auto& image = graphics->getImage(index);
+    if (texpair.second)
+        image->create(texpair.first);
     else
-    {
-        auto& image = graphics->getImage(index);
-        if (texpair.second)
-            image->create(texpair.first);
-        else
-            image->create(texpair.first, oformat);
-    }
+        image->create(texpair.first, oformat);
     
     return index;
 }

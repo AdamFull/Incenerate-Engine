@@ -319,7 +319,6 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         pStage->create(m_mStageInfos["present"]);
     }
 
-    m_pDebugDraw->create();
     m_pQueryPool->create();
 
     log_info("Graphics core initialized.");
@@ -498,32 +497,14 @@ size_t CAPIHandle::addImage(const std::string& name, const std::string& path)
 
 size_t CAPIHandle::addImageAsync(const std::string& name, const std::string& path)
 {
-    auto& loaderThread = EGEngine->getLoaderThread();
-
     std::unique_ptr<CImage> image = std::make_unique<CImage>(m_pDevice.get());
 
-    if (loaderThread)
+    if (m_pImageManager->getId(name) == invalid_index)
     {
-        loaderThread->push([this, image = image.get(), name, path]()
-            {
-                if (m_pImageManager->getId(name) == invalid_index)
-                {
-                    if (fs::is_ktx_format(path))
-                        image->create(path);
-                    else
-                        image->create(path, vk::Format::eR8G8B8A8Unorm);
-                }
-            });
-    }
-    else
-    {
-        if (m_pImageManager->getId(name) == invalid_index)
-        {
-            if (fs::is_ktx_format(path))
-                image->create(path);
-            else
-                image->create(path, vk::Format::eR8G8B8A8Unorm);
-        }
+        if (fs::is_ktx_format(path))
+            image->create(path);
+        else
+            image->create(path, vk::Format::eR8G8B8A8Unorm);
     }
 
     return addImage(name, std::move(image));

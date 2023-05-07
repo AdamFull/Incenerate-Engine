@@ -129,7 +129,7 @@ void CShaderObject::dispatch(const std::vector<FDispatchParam>& params)
 void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector<FDispatchParam>& params)
 {
 	auto& pInstance = vInstances.at(currentUsage);
-	// TODO: bad
+	// TODO: add graphics pointer inside shader object
 	auto& graphics = EGEngine->getGraphics();
 
 	bindDescriptor(commandBuffer);
