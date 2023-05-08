@@ -47,8 +47,10 @@ void CEditorViewport::create()
 	auto& device = graphics->getDevice();
 
 	auto pBackend = (ImGui_ImplVulkan_Data*)ImGui::GetIO().BackendRendererUserData;
+	std::unordered_map<uint32_t, vk::DescriptorSetLayout> descriptorSetLayouts{ {0, pBackend->DescriptorSetLayout} };
+
 	pDescriptorSet = std::make_unique<CDescriptorSet>(device.get());
-	pDescriptorSet->create(EGEditor->getDescriptorPool(), pBackend->DescriptorSetLayout);
+	pDescriptorSet->create(EGEditor->getDescriptorPool(), descriptorSetLayouts);
 }
 
 void CEditorViewport::__draw(float fDt)

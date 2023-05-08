@@ -24,7 +24,7 @@ namespace engine
 		private:
 			CDevice* pDevice{ nullptr };
 			CShaderObject* pShaderObject{ nullptr };
-			std::unordered_map<uint32_t, std::unique_ptr<CDescriptorSet>> mDescriptorSets;
+			std::unique_ptr<CDescriptorSet> pDescriptorSet;
 			std::vector<vk::WriteDescriptorSet> vWriteDescriptorSets;
 		};
 	}

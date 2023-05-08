@@ -18,12 +18,8 @@ void CDescriptorHandler::create(CShaderObject* pso)
 	auto& descriptorPool = pipeline->getDescriptorPool();
 	auto& mDescriptorSetLayouts = pipeline->getDescriptorSetLayouts();
 	
-	for (auto& [set, descriptorSetLayout] : mDescriptorSetLayouts)
-	{
-		auto pDescriptorSet = std::make_unique<CDescriptorSet>(pDevice);
-		pDescriptorSet->create(descriptorPool, descriptorSetLayout);
-		mDescriptorSets.emplace(set, std::move(pDescriptorSet));
-	}
+	pDescriptorSet = std::make_unique<CDescriptorSet>(pDevice);
+	pDescriptorSet->create(descriptorPool, mDescriptorSetLayouts);
 }
 
 void CDescriptorHandler::update()
@@ -39,11 +35,7 @@ void CDescriptorHandler::bind(const vk::CommandBuffer& commandBuffer) const
 	auto& pipeline = pShaderObject->getPipeline();
 	auto& pipelineLayout = pipeline->getPipelineLayout();
 
-	std::vector<vk::DescriptorSet> vDescriptorSets;
-	for (auto& [set, descriptorSet] : mDescriptorSets)
-		vDescriptorSets.emplace_back(descriptorSet->get());
-
-	commandBuffer.bindDescriptorSets(bindPoint, pipelineLayout, 0, vDescriptorSets.size(), vDescriptorSets.data(), 0, nullptr);
+	pDescriptorSet->bind(commandBuffer, bindPoint, pipelineLayout);
 }
 
 void CDescriptorHandler::reset()
@@ -58,14 +50,11 @@ void CDescriptorHandler::set(const std::string& srUniformName, vk::DescriptorBuf
 	auto uniformBlock = pShader->getUniformBlock(srUniformName);
 	if (!uniformBlock)
 		return;
-
-	if (mDescriptorSets.count(uniformBlock->getSet()) == 0)
-		return;
 	
 	vk::WriteDescriptorSet write{};
 	write.descriptorType = uniformBlock->getDescriptorType();
 	write.dstBinding = uniformBlock->getBinding();
-	write.dstSet = mDescriptorSets[uniformBlock->getSet()]->get();
+	write.dstSet = pDescriptorSet->get(uniformBlock->getSet());
 	write.pBufferInfo = &bufferInfo;
 	write.descriptorCount = 1;
 	vWriteDescriptorSets.emplace_back(std::move(write));
@@ -78,14 +67,11 @@ void CDescriptorHandler::set(const std::string& srUniformName, vk::DescriptorIma
 	auto uniform = pShader->getUniform(srUniformName);
 	if (!uniform)
 		return;
-
-	if (mDescriptorSets.count(uniform->getSet()) == 0)
-		return;
 	
 	vk::WriteDescriptorSet write{};
 	write.descriptorType = uniform->getDescriptorType();
 	write.dstBinding = uniform->getBinding();
-	write.dstSet = mDescriptorSets[uniform->getSet()]->get();
+	write.dstSet = pDescriptorSet->get(uniform->getSet());
 	write.pImageInfo = &imageInfo;
 	write.descriptorCount = 1;
 	vWriteDescriptorSets.emplace_back(std::move(write));
@@ -99,11 +85,7 @@ void CDescriptorHandler::set(const std::string& srUniformName, vk::WriteDescript
 	if (!uniformBlock)
 		return;
 
-	if (mDescriptorSets.count(uniformBlock->getSet()) == 0)
-		return;
-
-	writeInfo.dstSet = mDescriptorSets[uniformBlock->getSet()]->get();
-
+	writeInfo.dstSet = pDescriptorSet->get(uniformBlock->getSet());
 	vWriteDescriptorSets.emplace_back(writeInfo);
 }
 
