@@ -35,7 +35,7 @@ void CShader::buildReflection()
         descriptorSetLayoutBinding.descriptorCount = 1;
         descriptorSetLayoutBinding.stageFlags = uniformBlock.getStageFlags();
         descriptorSetLayoutBinding.pImmutableSamplers = nullptr;
-        vDescriptorSetLayouts.emplace_back(descriptorSetLayoutBinding);
+        mDescriptorSetLayouts[uniformBlock.getSet()].emplace_back(descriptorSetLayoutBinding);
         mDescriptorCounter[uniformBlock.getDescriptorType()]++;
     }
 
@@ -47,7 +47,7 @@ void CShader::buildReflection()
         descriptorSetLayoutBinding.descriptorCount = 1;
         descriptorSetLayoutBinding.stageFlags = uniform.getStageFlags();
         descriptorSetLayoutBinding.pImmutableSamplers = nullptr;
-        vDescriptorSetLayouts.emplace_back(descriptorSetLayoutBinding);
+        mDescriptorSetLayouts[uniform.getSet()].emplace_back(descriptorSetLayoutBinding);
         mDescriptorCounter[uniform.getDescriptorType()]++;
     }
 
@@ -55,15 +55,15 @@ void CShader::buildReflection()
         vDescriptorPools.emplace_back(vk::DescriptorPoolSize{ descriptorType, count * descriptorMultiplier });
 
     // Sort descriptors by binding.
-    std::sort(vDescriptorSetLayouts.begin(), vDescriptorSetLayouts.end(),
-        [](const vk::DescriptorSetLayoutBinding& l, const vk::DescriptorSetLayoutBinding& r)
-        {
-            return l.binding < r.binding;
-        });
+    for (auto& [set, descriptors]:mDescriptorSetLayouts)
+    {
+        std::sort(descriptors.begin(), descriptors.end(),
+            [](const vk::DescriptorSetLayoutBinding& l, const vk::DescriptorSetLayoutBinding& r) { return l.binding < r.binding; });
+    }
 
     // Gets the last descriptors binding.
-    if (!vDescriptorSetLayouts.empty())
-        lastDescriptorBinding = vDescriptorSetLayouts.back().binding;
+    //if (!vDescriptorSetLayouts.empty())
+    //    lastDescriptorBinding = vDescriptorSetLayouts.back().binding;
 }
 
 std::vector<vk::PushConstantRange> CShader::getPushConstantRanges() const

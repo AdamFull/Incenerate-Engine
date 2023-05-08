@@ -18,7 +18,7 @@ layout(location = 3) out mat3 outTBN;
 
 #include "../../shader_util.glsl"
 
-layout(std140, binding = 0) uniform FUniformData 
+layout(set = 0, std140, binding = 0) uniform FUniformData 
 {
   	mat4 model;
   	mat4 view;

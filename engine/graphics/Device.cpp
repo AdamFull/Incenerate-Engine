@@ -123,6 +123,11 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
     createPipelineCache();
     createSwapchain(createInfo.window.actualWidth, createInfo.window.actualHeight);
 
+    //vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures;
+    //vk::PhysicalDeviceFeatures2 features2;
+    //features2.pNext = &indexingFeatures;
+    //auto features = vkPhysical.getFeatures2(features2);
+
     viewportExtent = swapchainExtent;
 }
 
@@ -249,11 +254,19 @@ void CDevice::createDevice()
     vk::PhysicalDeviceVulkan12Features vk12features{};
     vk12features.shaderOutputLayer = true;
     vk12features.shaderOutputViewportIndex = true;
+    vk12features.descriptorBindingPartiallyBound = true;
+    vk12features.runtimeDescriptorArray = true;
     vk12features.pNext = vkVersion > VK_API_VERSION_1_2 ? &vk13features : nullptr;
 
     vk::PhysicalDeviceSynchronization2FeaturesKHR synchronizationFeatures{};
     synchronizationFeatures.synchronization2 = true;
     synchronizationFeatures.pNext = vkVersion > VK_API_VERSION_1_1 ? &vk12features : nullptr;
+
+    // TODO: check for indexing support
+    vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
+    indexingFeatures.descriptorBindingPartiallyBound = true;
+    indexingFeatures.runtimeDescriptorArray = true;
+    indexingFeatures.pNext = &synchronizationFeatures;
 
     auto createInfo = vk::DeviceCreateInfo{};
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
@@ -263,7 +276,7 @@ void CDevice::createDevice()
     if (vkVersion > VK_API_VERSION_1_2)
         createInfo.pNext = &vk12features;
     else
-        createInfo.pNext = &synchronizationFeatures;
+        createInfo.pNext = &indexingFeatures;
 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();

@@ -2,84 +2,36 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
 #extension GL_GOOGLE_include_directive : require
+#extension GL_EXT_nonuniform_qualifier : enable
+
+//layout (set = 1, binding = 10) uniform sampler2D textures[];
 
 #ifdef HAS_BASECOLORMAP
-layout(binding = 2) uniform sampler2D color_tex;
+layout(set = 1, binding = 0) uniform sampler2D color_tex;
 #endif
 
 #ifdef HAS_METALLIC_ROUGHNESS
-layout(binding = 3) uniform sampler2D rmah_tex;
+layout(set = 1, binding = 1) uniform sampler2D rmah_tex;
 #endif
 
 #ifdef HAS_NORMALMAP
-layout(binding = 4) uniform sampler2D normal_tex;
+layout(set = 1, binding = 2) uniform sampler2D normal_tex;
 #endif
 
 #ifdef HAS_OCCLUSIONMAP
-layout(binding = 5) uniform sampler2D occlusion_tex;
+layout(set = 1, binding = 3) uniform sampler2D occlusion_tex;
 #endif
 
 #ifdef HAS_EMISSIVEMAP
-layout(binding = 6) uniform sampler2D emissive_tex;
+layout(set = 1, binding = 4) uniform sampler2D emissive_tex;
 #endif
 
 #ifdef HAS_HEIGHTMAP
-layout(binding = 7) uniform sampler2D height_tex;
+layout(set = 1, binding = 5) uniform sampler2D height_tex;
 #endif
 
 
-// KHR_materials_clearcoat
-#ifdef HAS_CLEARCOAT_TEX
-layout(binding = 8) uniform sampler2D clearcoat_tex;
-#endif
-
-#ifdef HAS_CLEARCOAT_ROUGH_TEX
-layout(binding = 9) uniform sampler2D clearcoat_rough_tex;
-#endif
-
-#ifdef HAS_CLEARCOAT_NORMAL_TEX
-layout(binding = 10) uniform sampler2D clearcoat_normal_tex;
-#endif
-
-// KHR_materials_iridescence
-#ifdef HAS_IRIDESCENCE_TEX
-layout(binding = 11) uniform sampler2D iridescence_tex;
-#endif
-
-#ifdef HAS_IRIDESCENCE_THICKNESS_TEX
-layout(binding = 12) uniform sampler2D iridescence_thickness_tex;
-#endif
-
-// KHR_materials_sheen
-#ifdef HAS_SHEEN_TEX
-layout(binding = 13) uniform sampler2D sheen_tex;
-#endif
-
-#ifdef HAS_SHEEN_ROUGH_TEX
-layout(binding = 14) uniform sampler2D sheen_rough_tex;
-#endif
-
-// KHR_materials_specular
-#ifdef HAS_SPECULAR_TEX
-layout(binding = 15) uniform sampler2D specular_tex;
-#endif
-
-#ifdef HAS_SPECULAR_COLOR_TEX
-layout(binding = 16) uniform sampler2D specular_color_tex;
-#endif
-
-// KHR_materials_transmission
-#ifdef HAS_TRANSMISSION_TEX
-layout(binding = 17) uniform sampler2D transmission_tex;
-#endif
-
-// KHR_materials_volume
-#ifdef HAS_THICKNESS_TEX
-layout(binding = 18) uniform sampler2D thickness_tex;
-#endif
-
-
-layout(std140, binding = 0) uniform FUniformData 
+layout(std140, set = 0, binding = 0) uniform FUniformData 
 {
   	mat4 model;
   	mat4 view;
@@ -91,7 +43,7 @@ layout(std140, binding = 0) uniform FUniformData
 	vec4 object_id;
 } data;
 
-layout(std140, binding = 19) uniform UBOMaterial
+layout(std140, set = 0, binding = 2) uniform UBOMaterial
 {
 	vec4 baseColorFactor;
 	vec3 emissiveFactor;
@@ -127,6 +79,8 @@ const float minRoughness = 0.04;
 void main() 
 {
 	vec2 texCoord = inUV;
+
+	//vec4 alb = texture(textures[0], texCoord);
 
 //BASECOLOR
 	vec4 albedo_map = vec4(0.0);

@@ -17,18 +17,17 @@ CDescriptorSet::~CDescriptorSet()
     vDescriptorSets.clear();
 }
 
-void CDescriptorSet::create(vk::PipelineBindPoint bindPoint, vk::PipelineLayout& layout, vk::DescriptorPool& pool, vk::DescriptorSetLayout& setLayout)
+void CDescriptorSet::create(const vk::DescriptorPool& pool, const vk::DescriptorSetLayout& descriptorSetLayout)
 {
-    pipelineBindPoint = bindPoint;
-    pipelineLayout = layout;
     descriptorPool = pool;
 
     auto framesInFlight = pDevice->getFramesInFlight();
-    std::vector<vk::DescriptorSetLayout> vSetLayouts(framesInFlight, setLayout);
+    std::vector<vk::DescriptorSetLayout> vDescriptorSetLayouts(framesInFlight, descriptorSetLayout);
+    
     vk::DescriptorSetAllocateInfo allocInfo{};
     allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = framesInFlight;
-    allocInfo.pSetLayouts = vSetLayouts.data();
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(vDescriptorSetLayouts.size());
+    allocInfo.pSetLayouts = vDescriptorSetLayouts.data();
     vDescriptorSets.resize(framesInFlight);
 
     vk::Result res = pDevice->create(allocInfo, vDescriptorSets.data());
@@ -53,7 +52,7 @@ void CDescriptorSet::update(vk::WriteDescriptorSet& writes)
     vkDevice.updateDescriptorSets(1, &writes, 0, nullptr);
 }
 
-void CDescriptorSet::bind(const vk::CommandBuffer& commandBuffer) const
+void CDescriptorSet::bind(const vk::CommandBuffer& commandBuffer, const vk::PipelineBindPoint pipelineBindPoint, const vk::PipelineLayout& pipelineLayout) const
 {
     auto currentFrame = pDevice->getCurrentFrame();
     commandBuffer.bindDescriptorSets(pipelineBindPoint, pipelineLayout, 0, 1, &vDescriptorSets.at(currentFrame), 0, nullptr);

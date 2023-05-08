@@ -21,7 +21,7 @@ namespace engine
 			const size_t count() const { return vPipelines.size(); }
 
 			vk::Pipeline& getPSO(uint32_t index) { return vPipelines[index]; }
-			vk::DescriptorSetLayout& getDescriptorSetLayout() { return descriptorSetLayout; }
+			const std::unordered_map<uint32_t, vk::DescriptorSetLayout>& getDescriptorSetLayouts() { return mDescriptorSetLayouts; }
 			vk::DescriptorPool& getDescriptorPool() { return descriptorPool; }
 			vk::PipelineLayout& getPipelineLayout() { return pipelineLayout; }
 
@@ -40,7 +40,7 @@ namespace engine
 			CDevice* pDevice{ nullptr };
 
 			std::vector<vk::Pipeline> vPipelines;
-			vk::DescriptorSetLayout descriptorSetLayout{ nullptr };
+			std::unordered_map<uint32_t, vk::DescriptorSetLayout> mDescriptorSetLayouts;
 			vk::DescriptorPool descriptorPool{ nullptr };
 			vk::PipelineLayout pipelineLayout{ nullptr };
 

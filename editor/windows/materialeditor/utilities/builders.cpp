@@ -37,7 +37,7 @@ util::BlueprintNodeBuilder::BlueprintNodeBuilder(size_t texture, int textureWidt
 
     auto pBackend = (ImGui_ImplVulkan_Data*)ImGui::GetIO().BackendRendererUserData;
     pDescriptorSet = std::make_unique<graphics::CDescriptorSet>(device.get());
-    pDescriptorSet->create(vk::PipelineBindPoint::eGraphics, pBackend->PipelineLayout, EGEditor->getDescriptorPool(), pBackend->DescriptorSetLayout);
+    pDescriptorSet->create(EGEditor->getDescriptorPool(), pBackend->DescriptorSetLayout);
 }
 
 void util::BlueprintNodeBuilder::Begin(ed::NodeId id)

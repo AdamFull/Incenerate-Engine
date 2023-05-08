@@ -1,7 +1,7 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
 
-layout(std140, binding = 0) uniform FUniformData 
+layout(std140, set = 0, binding = 0) uniform FUniformData 
 {
   	mat4 model;
   	mat4 view;
@@ -13,7 +13,7 @@ layout(std140, binding = 0) uniform FUniformData
 	vec4 object_id;
 } data;
 
-layout(std140, binding = 19) uniform UBOMaterial
+layout(std140, set = 0, binding = 2) uniform UBOMaterial
 {
 	vec4 baseColorFactor;
 	vec3 emissiveFactor;
@@ -27,7 +27,7 @@ layout(std140, binding = 19) uniform UBOMaterial
 } material;
 
 #ifdef HAS_HEIGHTMAP
-layout(binding = 7) uniform sampler2D height_tex;
+layout(set = 1, binding = 5) uniform sampler2D height_tex;
 #endif
 
 #define VERTICES_COUNT 3

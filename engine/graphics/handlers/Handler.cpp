@@ -12,13 +12,13 @@ CHandler::CHandler(CDevice* device)
 void CHandler::create(const CUniformBlock& uniformBlock)
 {
 	auto framesInFlight = pDevice->getFramesInFlight();
-	this->uniformBlock = uniformBlock;
+    m_uniformBlock = uniformBlock;
 	vMapped.resize(framesInFlight);
 }
 
 void CHandler::reCreate()
 {
-	create(uniformBlock.value());
+	create(m_uniformBlock.value());
 }
 
 void CHandler::flush()

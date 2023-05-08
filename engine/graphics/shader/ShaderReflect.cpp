@@ -87,7 +87,7 @@ void CShaderReflect::processReflection(const std::vector<uint32_t>& spirv, vk::S
         else
             mPushBlocks.emplace(res.name, buildPushBlock(&compiler, res, stageFlag));
     }
-
+    
     for (const auto& res : resources.sampled_images)
     {
         auto it = mUniforms.find(res.name);

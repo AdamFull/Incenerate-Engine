@@ -12,8 +12,8 @@ CPipeline::CPipeline(CDevice* device)
 
 CPipeline::~CPipeline()
 {
-    if (descriptorSetLayout)
-        pDevice->destroy(&descriptorSetLayout);
+    for(auto& [set, layout] : mDescriptorSetLayouts)
+        pDevice->destroy(&layout);
     if (descriptorPool)
         pDevice->destroy(&descriptorPool);
     for(auto& pipeline : vPipelines)
@@ -59,14 +59,20 @@ void CPipeline::createDescriptorSetLayout(CShaderObject* pShader)
 {
     auto& shader = pShader->getShader();
 
-    auto& descriptorSetLayouts = shader->getDescriptorSetLayouts();
+    auto& mDescriptorSetLayoutsCI = shader->getDescriptorSetLayouts();
 
-    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
-    descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-    descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayouts.data();
+    for (auto& [set, descriptorSetLayouts] : mDescriptorSetLayoutsCI)
+    {
+        vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+        descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+        descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayouts.data();
 
-    vk::Result res = pDevice->create(descriptorSetLayoutCreateInfo, &descriptorSetLayout);
-    log_cerror(VkHelper::check(res), "Cannot create descriptor set layout.");
+        vk::DescriptorSetLayout descriptorSetLayout;
+        vk::Result res = pDevice->create(descriptorSetLayoutCreateInfo, &descriptorSetLayout);
+        log_cerror(VkHelper::check(res), "Cannot create descriptor set layout.");
+
+        mDescriptorSetLayouts.emplace(set, descriptorSetLayout);
+    }
 }
 
 void CPipeline::createDescriptorPool(CShaderObject* pShader)
@@ -88,9 +94,13 @@ void CPipeline::createPipelineLayout(CShaderObject* pShader)
     auto& shader = pShader->getShader();
     auto pushConstantRanges = shader->getPushConstantRanges();
 
+    std::vector<vk::DescriptorSetLayout> vLayouts{};
+    for (auto& [set, layout] : mDescriptorSetLayouts)
+        vLayouts.emplace_back(layout);
+
     vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
-    pipelineLayoutCreateInfo.setLayoutCount = 1;
-    pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+    pipelineLayoutCreateInfo.setLayoutCount = vLayouts.size();
+    pipelineLayoutCreateInfo.pSetLayouts = vLayouts.data();
     pipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
     pipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
     vk::Result res = pDevice->create(pipelineLayoutCreateInfo, &pipelineLayout);

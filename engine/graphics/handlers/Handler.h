@@ -32,7 +32,7 @@ namespace engine
 			template<class _Ty>
 			void write(_Ty& object)
 			{
-				if (!uniformBlock || vBuffers.empty())
+				if (!m_uniformBlock || vBuffers.empty())
 					return;
 
 				auto index = getCurrentFrameProxy();
@@ -57,7 +57,7 @@ namespace engine
 			template<class _Ty>
 			void set(_Ty& object, std::size_t offset, std::size_t size)
 			{
-				if (!uniformBlock || vBuffers.empty())
+				if (!m_uniformBlock || vBuffers.empty())
 					return;
 
 				auto index = getCurrentFrameProxy();
@@ -79,10 +79,10 @@ namespace engine
 			template<class _Ty>
 			void set(const std::string& uniformName, const _Ty& object, std::size_t size = 0)
 			{
-				if (!uniformBlock)
+				if (!m_uniformBlock)
 					return;
 
-				auto uniform = uniformBlock->getUniform(uniformName);
+				auto uniform = m_uniformBlock->getUniform(uniformName);
 				if (!uniform)
 					return;
 
@@ -97,7 +97,7 @@ namespace engine
 
 		protected:
 			CDevice* pDevice{ nullptr };
-			std::optional<CUniformBlock> uniformBlock;
+			std::optional<CUniformBlock> m_uniformBlock;
 			std::vector<std::unique_ptr<CBuffer>> vBuffers;
 			std::vector<bool> vMapped;
 			EHandlerStatus status{ EHandlerStatus::eNone };

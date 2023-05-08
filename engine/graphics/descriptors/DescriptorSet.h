@@ -12,10 +12,10 @@ namespace engine
 			CDescriptorSet(CDevice* device);
 			~CDescriptorSet();
 
-			void create(vk::PipelineBindPoint bindPoint, vk::PipelineLayout& layout, vk::DescriptorPool& pool, vk::DescriptorSetLayout& setLayout);
+			void create(const vk::DescriptorPool& pool, const vk::DescriptorSetLayout& descriptorSetLayout);
 			void update(std::vector<vk::WriteDescriptorSet>& vWrites);
 			void update(vk::WriteDescriptorSet& writes);
-			void bind(const vk::CommandBuffer& commandBuffer) const;
+			void bind(const vk::CommandBuffer& commandBuffer, const vk::PipelineBindPoint pipelineBindPoint, const vk::PipelineLayout& pipelineLayout) const;
 
 			vk::DescriptorSet& get();
 
@@ -24,8 +24,6 @@ namespace engine
 		private:
 			CDevice* pDevice{ nullptr };
 			std::vector<vk::DescriptorSet> vDescriptorSets;
-			vk::PipelineBindPoint pipelineBindPoint;
-			vk::PipelineLayout pipelineLayout{ nullptr };
 			vk::DescriptorPool descriptorPool{ nullptr };
 		};
 	}
