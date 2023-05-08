@@ -45,11 +45,11 @@ namespace engine
 				}
 
 				auto size = sizeof(object);
-				if (status == EHandlerStatus::eChanged || pBuffer->compare((void*)&object, size, 0))
-				{
+				//if (status == EHandlerStatus::eChanged || pBuffer->compare((void*)&object, size, 0))
+				//{
 					pBuffer->write((void*)&object, size, 0);
 					status = EHandlerStatus::eChanged;
-				}
+				//}
 
 				flush();
 			}
@@ -69,11 +69,11 @@ namespace engine
 					vMapped.at(index) = true;
 				}
 
-				if (status == EHandlerStatus::eChanged || pBuffer->compare((void*)&object, size, offset))
-				{
+				//if (status == EHandlerStatus::eChanged || pBuffer->compare((void*)&object, size, offset))
+				//{
 					pBuffer->write((void*)&object, size, offset);
 					status = EHandlerStatus::eChanged;
-				}
+				//}
 			}
 
 			template<class _Ty>

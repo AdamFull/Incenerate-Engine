@@ -99,9 +99,9 @@ namespace engine
 			void setDescriptorMultiplier(uint32_t multiplier) { descriptorMultiplier = multiplier; }
 
 			//Getters
-			std::optional<CUniform> getUniform(const std::string& name) const;
-			std::optional<CUniformBlock> getUniformBlock(const std::string& name) const;
-			std::optional<CPushConstBlock> getPushBlock(const std::string& name) const;
+			const CUniform* getUniform(const std::string& name) const;
+			const CUniformBlock* getUniformBlock(const std::string& name) const;
+			const CPushConstBlock* getPushBlock(const std::string& name) const;
 
 			const std::array<std::optional<uint32_t>, 3>& getLocalSizes(uint32_t index = 0) const { return localSizes[index]; }
 			const uint32_t getControlPoints() const { return executionModeOutputVertices; }

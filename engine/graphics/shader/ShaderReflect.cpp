@@ -7,25 +7,25 @@ void CShaderReflect::addStage(const std::vector<uint32_t>& spirv, vk::ShaderStag
 	processReflection(spirv, stage);
 }
 
-std::optional<CUniform> CShaderReflect::getUniform(const std::string& name) const
+const CUniform* CShaderReflect::getUniform(const std::string& name) const
 {
 	if (auto it = mUniforms.find(name); it != mUniforms.end())
-		return it->second;
-	return std::nullopt;
+		return &it->second;
+    return nullptr;
 }
 
-std::optional<CUniformBlock> CShaderReflect::getUniformBlock(const std::string& name) const
+const CUniformBlock* CShaderReflect::getUniformBlock(const std::string& name) const
 {
 	if (auto it = mUniformBlocks.find(name); it != mUniformBlocks.end())
-		return it->second;
-	return std::nullopt;
+        return &it->second;
+    return nullptr;
 }
 
-std::optional<CPushConstBlock> CShaderReflect::getPushBlock(const std::string& name) const
+const CPushConstBlock* CShaderReflect::getPushBlock(const std::string& name) const
 {
 	if (auto it = mPushBlocks.find(name); it != mPushBlocks.end())
-		return it->second;
-	return std::nullopt;
+        return &it->second;
+	return nullptr;
 }
 
 void CShaderReflect::processReflection(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stageFlag)
