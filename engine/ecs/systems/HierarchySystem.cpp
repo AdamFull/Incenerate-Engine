@@ -80,7 +80,9 @@ void CHierarchySystem::calculate_matrices(entt::registry* registry, entt::entity
 		auto& transform = registry->get<FTransformComponent>(current);
 		auto& hierarchy = registry->get<FHierarchyComponent>(current);
 		transform.update();
-		transform.normal = glm::transpose(glm::inverse(transform.model));
+
+		if(transform.model != transform.model_old)
+			transform.normal = glm::transpose(glm::inverse(transform.model));
 
 		for (auto& child : hierarchy.children)
 		{
@@ -93,7 +95,10 @@ void CHierarchySystem::calculate_matrices(entt::registry* registry, entt::entity
 			if (!chierarchy.children.empty())
 				nextparent.push(child);
 			else
-				ctransform.normal = glm::transpose(glm::inverse(ctransform.model));
+			{
+				if(ctransform.model != ctransform.model_old)
+					ctransform.normal = glm::transpose(glm::inverse(ctransform.model));
+			}
 		}
 		nextparent.pop();
 	}
