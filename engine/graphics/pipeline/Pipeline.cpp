@@ -3,6 +3,8 @@
 #include "APIHandle.h"
 #include "shader/ShaderObject.h"
 
+#include <SessionStorage.hpp>
+
 using namespace engine::graphics;
 
 CPipeline::CPipeline(CDevice* device)
@@ -26,6 +28,8 @@ CPipeline::~CPipeline()
 
 void CPipeline::create(CShaderObject* pShader)
 {
+    bBindlessFeature = CSessionStorage::getInstance()->get<bool>("graphics_bindless_feature");
+    bCanBeBindless = pShader->isUsesBindlessTextures();
     createDescriptorPool(pShader);
     createDescriptorSetLayout(pShader);
     createPipelineLayout(pShader);
@@ -97,6 +101,14 @@ void CPipeline::createPipelineLayout(CShaderObject* pShader)
     std::vector<vk::DescriptorSetLayout> vLayouts{};
     for (auto& [set, layout] : mDescriptorSetLayouts)
         vLayouts.emplace_back(layout);
+
+    // TODO: bad practice
+    if (bBindlessFeature && bCanBeBindless)
+    {
+        auto graphics = pDevice->getAPI();
+        auto& bindlessDescriptor = graphics->getBindlessDescriptor();
+        vLayouts.emplace_back(bindlessDescriptor->getDescriptorSetLayout());
+    }
 
     vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
     pipelineLayoutCreateInfo.setLayoutCount = vLayouts.size();

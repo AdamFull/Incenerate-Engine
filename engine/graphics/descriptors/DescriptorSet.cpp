@@ -12,7 +12,7 @@ CDescriptorSet::CDescriptorSet(CDevice* device)
 CDescriptorSet::~CDescriptorSet()
 {
     auto& vkDevice = pDevice->getLogical();
-    if (!descriptorPool)
+    if (descriptorPool)
     {
         for(auto& [set, descriptorSets] : mDescriptorSets)
             vkDevice.freeDescriptorSets(descriptorPool, descriptorSets);

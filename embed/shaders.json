@@ -27,6 +27,7 @@
     "front_face": "ccw",
     "depth_test": true,
     "tesselation": false,
+    "uses_bindless_textures": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
       "/embed/shaders/main/default/default.vert",

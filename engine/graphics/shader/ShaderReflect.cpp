@@ -9,21 +9,21 @@ void CShaderReflect::addStage(const std::vector<uint32_t>& spirv, vk::ShaderStag
 
 const CUniform* CShaderReflect::getUniform(const std::string& name) const
 {
-	if (auto it = mUniforms.find(name); it != mUniforms.end())
-		return &it->second;
+    if (const auto& it = mUniforms.find(name); it != mUniforms.end())
+        return &it->second;
     return nullptr;
 }
 
 const CUniformBlock* CShaderReflect::getUniformBlock(const std::string& name) const
 {
-	if (auto it = mUniformBlocks.find(name); it != mUniformBlocks.end())
+	if (const auto& it = mUniformBlocks.find(name); it != mUniformBlocks.end())
         return &it->second;
     return nullptr;
 }
 
 const CPushConstBlock* CShaderReflect::getPushBlock(const std::string& name) const
 {
-	if (auto it = mPushBlocks.find(name); it != mPushBlocks.end())
+	if (const auto& it = mPushBlocks.find(name); it != mPushBlocks.end())
         return &it->second;
 	return nullptr;
 }
@@ -94,7 +94,11 @@ void CShaderReflect::processReflection(const std::vector<uint32_t>& spirv, vk::S
         if (it != mUniforms.end())
             it->second.stageFlags |= stageFlag;
         else
-            mUniforms.emplace(res.name, buildUnifrom(&compiler, res, stageFlag, vk::DescriptorType::eCombinedImageSampler));
+        {
+            // TODO: bad code. Here i should ignore "set = 2"
+            if(res.name != "textures")
+                mUniforms.emplace(res.name, buildUnifrom(&compiler, res, stageFlag, vk::DescriptorType::eCombinedImageSampler));
+        }
     }
 
     for (const auto& res : resources.separate_images)

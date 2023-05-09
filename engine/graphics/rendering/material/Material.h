@@ -81,7 +81,7 @@ namespace engine
 			FMaterialParameters& getParameters() { return parameters; }
 
 			void addTexture(const std::string& srTexture, size_t index = invalid_index);
-			const std::unordered_map<std::string, size_t> getTextures() const { return mTextures; }
+			const std::unordered_map<std::string, size_t>& getTextures() const { return mTextures; }
 			const size_t getTexture(const std::string& srTexture) const;
 
 			void setShader(size_t index);

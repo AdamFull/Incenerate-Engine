@@ -63,6 +63,7 @@ namespace engine
 			const std::string& getStage() const { return programCI.srStage; }
 			const EAlphaMode alphaMode() const { return _alphaMode; }
 			const bool isDoubleSided() const { return bDoubleSided; }
+			const bool isUsesBindlessTextures() const { return programCI.usesBindlessTextures; }
 
 			const std::unique_ptr<CShader>& getShader();
 		private:

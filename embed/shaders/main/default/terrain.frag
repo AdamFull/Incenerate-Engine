@@ -131,7 +131,7 @@ void main()
 #endif
 
 #ifdef HAS_NORMALMAP
-    normal_map = getTangentSpaceNormalMap(normal_tex, tbn, texCoord, material.normalScale);
+    normal_map = getTangentSpaceNormalMap(texture(normal_tex, texCoord).rgb, tbn, material.normalScale);
 #else
     // The tbn matrix is linearly interpolated, so we need to re-normalize
     normal_map = normalize(tbn[2].xyz);

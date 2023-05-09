@@ -43,14 +43,12 @@ namespace engine
 			vk::DescriptorType getDescriptorType() const { return descriptorType; }
 			const std::unordered_map<std::string, CUniform>& GetUniforms() const { return mUniforms; }
 
-			std::optional<CUniform> getUniform(const std::string& name) const
+			const CUniform* getUniform(const std::string& name) const
 			{
-				auto it = mUniforms.find(name);
+				if (const auto& it = mUniforms.find(name); it != mUniforms.end())
+					return &it->second; 
 
-				if (it == mUniforms.end())
-					return std::nullopt;
-
-				return it->second;
+				return nullptr;
 			}
 
 		private:
@@ -71,14 +69,12 @@ namespace engine
 			std::size_t getSize() const { return size; }
 			vk::ShaderStageFlags getStageFlags() const { return stageFlags; }
 			const std::unordered_map<std::string, CUniform>& GetUniforms() const { return mUniforms; }
-			std::optional<CUniform> getUniform(const std::string& name) const
+			const CUniform* getUniform(const std::string& name) const
 			{
-				auto it = mUniforms.find(name);
+				if (const auto& it = mUniforms.find(name); it != mUniforms.end())
+					return &it->second; 
 
-				if (it == mUniforms.end())
-					return std::nullopt;
-
-				return it->second;
+				return nullptr;
 			}
 
 		private:

@@ -63,6 +63,8 @@ namespace engine
 			const vk::ImageAspectFlags& getAspectMask() const { return _aspectMask; }
 			const bool isLoaded() const { return loaded; }
 
+			const vk::ImageUsageFlags& getUsage() const { return _usage; }
+
 			CDevice* getDevice();
 
 		protected:
@@ -71,7 +73,6 @@ namespace engine
 			vk::Image _image{ VK_NULL_HANDLE };
 			std::vector<vk::ImageView> _views;
 			vk::Sampler _sampler{ VK_NULL_HANDLE };
-			vk::DescriptorSet descriptorSet{ VK_NULL_HANDLE };
 			vma::Allocation allocation{ VK_NULL_HANDLE };
 
 			vk::DescriptorImageInfo _descriptor;

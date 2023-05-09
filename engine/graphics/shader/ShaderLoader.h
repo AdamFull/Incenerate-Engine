@@ -36,6 +36,7 @@ namespace engine
 			std::unordered_map<std::string, FProgramCreateInfo> programCI;
 
 			bool bEditorMode{ false };
+			bool bBindlessFeature{ false };
 		};
 	}
 }

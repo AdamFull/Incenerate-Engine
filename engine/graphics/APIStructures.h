@@ -31,6 +31,7 @@ namespace engine
 			bool depthTest{ false };
 			std::vector<vk::DynamicState> dynamicStates;
 			bool tesselation{ false };
+			bool usesBindlessTextures{ false };
 
 			std::vector<std::string> stages;
 			std::unordered_map<std::string, std::string> defines;

@@ -18,6 +18,7 @@ CShaderLoader::CShaderLoader(CDevice* device, IVirtualFileSystemInterface* vfs_p
 	m_pCompiler = std::make_unique<CShaderCompiler>(m_pVFS);
 
 	bEditorMode = CSessionStorage::getInstance()->get<bool>("editor_mode");
+	bBindlessFeature = CSessionStorage::getInstance()->get<bool>("graphics_bindless_feature");
 }
 
 CShaderLoader::~CShaderLoader()
@@ -69,6 +70,9 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 
 		if (bEditorMode)
 			defineBlock << "#define " << "EDITOR_MODE" << "\n";
+
+		if(bBindlessFeature)
+			defineBlock << "#define " << "BINDLESS_TEXTURES" << "\n";
 
 		auto stages = it->second.stages;
 		if (!it->second.tesselation)

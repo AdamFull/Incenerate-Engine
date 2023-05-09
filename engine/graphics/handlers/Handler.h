@@ -82,15 +82,14 @@ namespace engine
 				if (!m_uniformBlock)
 					return;
 
-				auto uniform = m_uniformBlock->getUniform(uniformName);
+				const auto* uniform = m_uniformBlock->getUniform(uniformName);
 				if (!uniform)
 					return;
 
-				auto realSize = size;
-				if (realSize == 0)
-					realSize = std::min(sizeof(object), uniform->getSize());
+				if (size == 0)
+					size = std::min(sizeof(object), uniform->getSize());
 
-				set(object, uniform->getOffset(), realSize);
+				set(object, uniform->getOffset(), size);
 			}
 
 			CDevice* getDevice();

@@ -223,7 +223,8 @@ namespace engine
 				{"front_face", type.srStage},
 				{"depth_test", type.srStage},
 				{"dynamic_states", type.srStage},
-				{"tesselation", type.srStage},
+				{"tesselation", type.tesselation},
+				{"uses_bindless_textures", type.usesBindlessTextures},
 				{"stages", type.srStage},
 				{"defines", type.srStage}
 			};
@@ -241,6 +242,7 @@ namespace engine
 			utl::parse_to("depth_test", json, type.depthTest);
 			utl::parse_to("dynamic_states", json, type.dynamicStates);
 			utl::parse_to("tesselation", json, type.tesselation);
+			utl::parse_to("uses_bindless_textures", json, type.usesBindlessTextures);
 			utl::parse_to("stages", json, type.stages);
 			utl::parse_to("defines", json, type.defines);
 		}

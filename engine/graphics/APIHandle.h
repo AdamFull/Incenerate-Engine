@@ -8,6 +8,7 @@
 #include "shader/ShaderLoader.h"
 #include "graphics/window/WindowAdapter.h"
 #include "graphics/image/Image.h"
+#include "descriptors/BindlessDescriptor.h"
 #include "rendering/RenderStage.h"
 #include "rendering/material/Material.h"
 
@@ -51,10 +52,12 @@ namespace engine
 			const std::unique_ptr<CShaderLoader>& getShaderLoader();
 			const std::unique_ptr<CImageLoader>& getImageLoader();
 
+			const std::unique_ptr<CBindlessDescriptor>& getBindlessDescriptor() const;
+
 			ERenderApi getAPI() { return eAPI; }
 
 			size_t addImage(const std::string& name, std::unique_ptr<CImage>&& image);
-			size_t addImage(const std::string& name, const std::string& path);
+			size_t addImage(const std::string& name, const std::string& path, vk::Format overrideFormat = vk::Format::eR8G8B8A8Unorm);
 			size_t addImageAsync(const std::string& name, const std::string& path);
 			void incrementImageUsage(const std::string& name);
 			void incrementImageUsage(size_t id);
@@ -156,6 +159,7 @@ namespace engine
 			std::unique_ptr<CShaderLoader> m_pShaderLoader;
 			std::unique_ptr<IDebugDrawInterface> m_pDebugDraw;
 			std::unique_ptr<CQueryPool> m_pQueryPool;
+			std::unique_ptr<CBindlessDescriptor> m_pBindlessTextures;
 
 			std::unordered_map<std::string, FCIStage> m_mStageInfos;
 			std::unique_ptr<CObjectManager<CImage>> m_pImageManager;
@@ -174,6 +178,8 @@ namespace engine
 			uint32_t m_imageIndex{ 0 };
 			bool m_bFrameStarted{ false };
 			std::unique_ptr<CCommandBuffer> m_pCommandBuffers;
+
+			bool m_bBindlessFeature{ false };
 		};
 	}
 }

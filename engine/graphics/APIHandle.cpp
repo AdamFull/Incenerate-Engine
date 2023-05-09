@@ -20,6 +20,8 @@ using namespace engine::ecs;
 
 CAPIHandle::CAPIHandle()
 {
+    //CSessionStorage::getInstance()->set("graphics_bindless_feature", true);
+    CSessionStorage::getInstance()->set("graphics_bindless_feature", false);
 }
 
 CAPIHandle::~CAPIHandle()
@@ -59,6 +61,13 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
     m_pDebugDraw = std::make_unique<CDebugDraw>(this);
     m_pQueryPool = std::make_unique<CQueryPool>(m_pDevice.get());
+
+    m_bBindlessFeature = CSessionStorage::getInstance()->get<bool>("graphics_bindless_feature");
+    if (m_bBindlessFeature)
+    {
+        m_pBindlessTextures = std::make_unique<CBindlessDescriptor>(m_pDevice.get());
+        m_pBindlessTextures->create();
+    }
 
     auto empty_image_2d = std::make_unique<CImage2D>(m_pDevice.get());
     empty_image_2d->create(vk::Extent2D{ 1u, 1u }, vk::Format::eR8G8B8A8Srgb);
@@ -329,6 +338,9 @@ void CAPIHandle::update()
     static size_t count_delete{ 0 };
     count_delete++;
 
+    if(m_pBindlessTextures)
+        m_pBindlessTextures->update();
+
     if (count_delete > m_pDevice->getFramesInFlight() + 1)
     {
         m_pEvents->sendEvent(m_pFrameDoneEvent);
@@ -480,12 +492,28 @@ const std::unique_ptr<CImageLoader>& CAPIHandle::getImageLoader()
     return m_pImageLoader;
 }
 
-size_t CAPIHandle::addImage(const std::string& name, std::unique_ptr<CImage>&& image)
+const std::unique_ptr<CBindlessDescriptor>& CAPIHandle::getBindlessDescriptor() const
 {
-    return m_pImageManager->add(name, std::move(image));
+    return m_pBindlessTextures;
 }
 
-size_t CAPIHandle::addImage(const std::string& name, const std::string& path)
+size_t CAPIHandle::addImage(const std::string& name, std::unique_ptr<CImage>&& image)
+{
+    auto usageFlags = image->getUsage();
+    auto imageLayout = image->getLayout();
+    auto img_id = m_pImageManager->add(name, std::move(image));
+
+    if(m_pBindlessTextures && 
+        (usageFlags & vk::ImageUsageFlagBits::eSampled) && 
+        !(usageFlags & vk::ImageUsageFlagBits::eColorAttachment) &&
+        (usageFlags & vk::ImageUsageFlagBits::eTransferSrc) &&
+        (usageFlags & vk::ImageUsageFlagBits::eTransferDst))
+        m_pBindlessTextures->addTexture(img_id);
+
+    return img_id;
+}
+
+size_t CAPIHandle::addImage(const std::string& name, const std::string& path, vk::Format overrideFormat)
 {
     std::unique_ptr<CImage> image = std::make_unique<CImage>(m_pDevice.get());
 
@@ -494,9 +522,9 @@ size_t CAPIHandle::addImage(const std::string& name, const std::string& path)
         if (fs::is_ktx_format(path))
             image->create(path);
         else
-            image->create(path, vk::Format::eR8G8B8A8Unorm);
+            image->create(path, overrideFormat);
     }
-    
+
     return addImage(name, std::move(image));
 }
 
@@ -1051,9 +1079,26 @@ void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_ind
             pSurface->set("displacementStrength", params.displacementStrength);
         }
 
-        auto& textures = m_pBindedMaterial->getTextures();
-        for (auto& [name, id] : textures)
-            bindTexture(name, id);
+        if (m_pBindlessTextures)
+        {
+            auto& pBindlessTextures = getUniformHandle("UBOMaterialTextures");
+            if (pBindlessTextures)
+            {
+                auto& textures = m_pBindedMaterial->getTextures();
+
+                for (auto& [name, id] : textures)
+                    pBindlessTextures->set(name, id);
+            }
+
+            auto& pipeline = m_pBindedShader->getPipeline();
+            m_pBindlessTextures->bind(commandBuffer, pipeline->getBindPoint(), pipeline->getPipelineLayout());
+        }
+        else
+        {
+            auto& textures = m_pBindedMaterial->getTextures();
+            for (auto& [name, id] : textures)
+                bindTexture(name, id);
+        }
     }
 
     if (m_pBindedShader)

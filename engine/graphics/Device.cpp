@@ -20,7 +20,8 @@ std::vector<const char*> deviceExtensions {
     VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
     VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
     VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
-    VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME
+    VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
+    //VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
 };
 
 VKAPI_ATTR VkBool32 VKAPI_CALL CDevice::validationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -110,7 +111,7 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
     bEditorMode = CSessionStorage::getInstance()->get<bool>("editor_mode");
 
 #ifdef _DEBUG
-    bValidation = true;
+    bValidation = false;
 #endif
 
     log_debug("Validation state: {}", bValidation);
@@ -256,6 +257,9 @@ void CDevice::createDevice()
     vk12features.shaderOutputViewportIndex = true;
     vk12features.descriptorBindingPartiallyBound = true;
     vk12features.runtimeDescriptorArray = true;
+    vk12features.descriptorBindingSampledImageUpdateAfterBind = true;
+    vk12features.descriptorBindingVariableDescriptorCount = true;
+    //vk12features.descriptorIndexing = true;
     vk12features.pNext = vkVersion > VK_API_VERSION_1_2 ? &vk13features : nullptr;
 
     vk::PhysicalDeviceSynchronization2FeaturesKHR synchronizationFeatures{};

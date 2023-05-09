@@ -963,13 +963,5 @@ size_t CGltfLoader::loadTexture(const std::pair<std::string, bool>& texpair, vk:
         return image_id;
     }
 
-    auto index = graphics->addImage(name, std::make_unique<CImage>(device.get()));
-
-    auto& image = graphics->getImage(index);
-    if (texpair.second)
-        image->create(texpair.first);
-    else
-        image->create(texpair.first, oformat);
-    
-    return index;
+    return graphics->addImage(name, texpair.first, oformat);
 }

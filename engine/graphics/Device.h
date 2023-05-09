@@ -331,7 +331,7 @@ namespace engine
             std::vector<vk::Semaphore> vImageAvailableSemaphores;
             std::vector<vk::Semaphore> vRenderFinishedSemaphores;
             std::vector<vk::Fence> vInFlightFences;
-            uint32_t framesInFlight{ 2 };
+            uint32_t framesInFlight{ 4 };
             uint32_t currentFrame{ 0 };
 
             bool bEditorMode{ false };
