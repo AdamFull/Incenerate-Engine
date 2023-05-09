@@ -1,131 +1,51 @@
 #include "APICompatibility.h"
 
+#include "Device.h"
+
 using namespace engine::graphics;
 
-CAPICompatibility::CAPICompatibility(uint32_t vkVersion) :
-	m_vkVersion(vkVersion)
+bool CAPICompatibility::checkExtensionSupport(const vk::PhysicalDevice& physicalDevice, const char* extensionName)
 {
-
+	std::vector<vk::ExtensionProperties> availableExtensions = physicalDevice.enumerateDeviceExtensionProperties();
+	auto foundExtension = std::find_if(availableExtensions.begin(), availableExtensions.end(),
+		[&](const vk::ExtensionProperties& extension) {
+			return strcmp(extension.extensionName, extensionName) == 0;
+		});
+	return foundExtension != availableExtensions.end();
 }
 
-void CAPICompatibility::applyPhysicalDevice(const vk::PhysicalDevice& physicalDevice)
+void CAPICompatibility::memoryBarrierCompat(vk::CommandBuffer& commandBuffer, const vk::MemoryBarrier2KHR& barrier2KHR)
 {
-	m_vDeviceExtensions = physicalDevice.enumerateDeviceExtensionProperties();
+	vk::DependencyInfoKHR dependencyInfo{};
+	dependencyInfo.memoryBarrierCount = 1;
+	dependencyInfo.pMemoryBarriers = &barrier2KHR;
+
+	commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
 }
 
-bool CAPICompatibility::checkDeviceExtensionSupport(const char* extensionName)
+void CAPICompatibility::imageMemoryBarrierCompat(vk::CommandBuffer& commandBuffer, const vk::ImageMemoryBarrier2KHR& imageBarrier2KHR)
 {
-	auto foundExtension = std::find_if(m_vDeviceExtensions.begin(), m_vDeviceExtensions.end(),
-		[&](const vk::ExtensionProperties& extension) { return strcmp(extension.extensionName, extensionName) == 0; });
+	vk::DependencyInfoKHR dependencyInfo{};
+	dependencyInfo.imageMemoryBarrierCount = 1;
+	dependencyInfo.pImageMemoryBarriers = &imageBarrier2KHR;
 
-	return foundExtension != m_vDeviceExtensions.end();
+	commandBuffer.pipelineBarrier2KHR(dependencyInfo);
 }
 
-void CAPICompatibility::MemoryBarrierCompat(vk::CommandBuffer& commandBuffer, const vk::MemoryBarrier2KHR& barrier2KHR)
-{
-	if (m_vkVersion >= VK_API_VERSION_1_1)
-	{
-		vk::DependencyInfoKHR dependencyInfo{};
-		dependencyInfo.memoryBarrierCount = 1;
-		dependencyInfo.pMemoryBarriers = &barrier2KHR;
-
-		commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
-	}
-	else
-	{
-		vk::PipelineStageFlagBits srcStageMask;
-		vk::PipelineStageFlagBits dstStageMask;
-		auto barrier = convertMemoryBarrier2toMemoryBarrier(barrier2KHR, srcStageMask, dstStageMask);
-
-		commandBuffer.pipelineBarrier(
-			srcStageMask,
-			dstStageMask, 
-			vk::DependencyFlags(),
-			1,
-			&barrier,
-			0,
-			nullptr,
-			0, 
-			nullptr
-		);
-	}
-}
-
-void CAPICompatibility::ImageMemoryBarrierCompat(vk::CommandBuffer& commandBuffer, const vk::ImageMemoryBarrier2KHR& imageBarrier2KHR)
-{
-	if (m_vkVersion >= VK_API_VERSION_1_1)
-	{
-		vk::DependencyInfoKHR dependencyInfo{};
-		dependencyInfo.imageMemoryBarrierCount = 1;
-		dependencyInfo.pImageMemoryBarriers = &imageBarrier2KHR;
-
-		commandBuffer.pipelineBarrier2KHR(dependencyInfo);
-	}
-	else
-	{
-		vk::PipelineStageFlagBits srcStageMask;
-		vk::PipelineStageFlagBits dstStageMask;
-		auto imageBarrier = convertImageMemoryBarrier2toImageMemoryBarrier(imageBarrier2KHR, srcStageMask, dstStageMask);
-
-		commandBuffer.pipelineBarrier(
-			srcStageMask,
-			dstStageMask,
-			vk::DependencyFlags(), 
-			0, 
-			nullptr, 
-			0, 
-			nullptr, 
-			1, 
-			&imageBarrier
-		);
-	}
-}
-
-void CAPICompatibility::TransitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
+void CAPICompatibility::transitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
 {
 	if (!setTransferImageLayoutFlags(barrier))
 		log_error("Unsupported layout transition!");
 
-	ImageMemoryBarrierCompat(commandBuffer, barrier);
+	imageMemoryBarrierCompat(commandBuffer, barrier);
 }
 
-void CAPICompatibility::TransitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
+void CAPICompatibility::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
 {
 	if (!setGraphicsImageLayoutFlags(barrier))
 		log_error("Unsupported layout transition!");
 
-	ImageMemoryBarrierCompat(commandBuffer, barrier);
-}
-
-vk::MemoryBarrier CAPICompatibility::convertMemoryBarrier2toMemoryBarrier(const vk::MemoryBarrier2KHR& barrier2KHR, vk::PipelineStageFlagBits& srcStageMask, vk::PipelineStageFlagBits& dstStageMask)
-{
-	vk::MemoryBarrier barrier{};
-	barrier.srcAccessMask = static_cast<vk::AccessFlagBits>(static_cast<uint64_t>(barrier2KHR.srcAccessMask));
-	barrier.dstAccessMask = static_cast<vk::AccessFlagBits>(static_cast<uint64_t>(barrier2KHR.dstAccessMask));
-
-	srcStageMask = static_cast<vk::PipelineStageFlagBits>(static_cast<uint64_t>(barrier2KHR.srcStageMask));
-	dstStageMask = static_cast<vk::PipelineStageFlagBits>(static_cast<uint64_t>(barrier2KHR.dstStageMask));
-
-	return barrier;
-}
-
-vk::ImageMemoryBarrier CAPICompatibility::convertImageMemoryBarrier2toImageMemoryBarrier(const vk::ImageMemoryBarrier2KHR& imageBarrier2KHR, vk::PipelineStageFlagBits& srcStageMask, vk::PipelineStageFlagBits& dstStageMask)
-{
-	vk::ImageMemoryBarrier barrier{};
-
-	barrier.srcAccessMask = static_cast<vk::AccessFlagBits>(static_cast<uint64_t>(imageBarrier2KHR.srcAccessMask));
-	barrier.dstAccessMask = static_cast<vk::AccessFlagBits>(static_cast<uint64_t>(imageBarrier2KHR.dstAccessMask));
-	barrier.oldLayout = imageBarrier2KHR.oldLayout;
-	barrier.newLayout = imageBarrier2KHR.newLayout;
-	barrier.srcQueueFamilyIndex = imageBarrier2KHR.srcQueueFamilyIndex;
-	barrier.dstQueueFamilyIndex = imageBarrier2KHR.dstQueueFamilyIndex;
-	barrier.image = imageBarrier2KHR.image;
-	barrier.subresourceRange = imageBarrier2KHR.subresourceRange;
-
-	srcStageMask = static_cast<vk::PipelineStageFlagBits>(static_cast<uint64_t>(imageBarrier2KHR.srcStageMask));
-	dstStageMask = static_cast<vk::PipelineStageFlagBits>(static_cast<uint64_t>(imageBarrier2KHR.dstStageMask));
-
-	return barrier;
+	imageMemoryBarrierCompat(commandBuffer, barrier);
 }
 
 bool CAPICompatibility::setTransferImageLayoutFlags(vk::ImageMemoryBarrier2KHR& barrier)

@@ -278,6 +278,19 @@ glslang::EShClient getClient(ERenderApi eAPI)
 	}
 }
 
+glslang::EShTargetLanguageVersion getSPIRVersion(ERenderApi eAPI)
+{
+	switch (eAPI)
+	{
+	case ERenderApi::eVulkan_1_0: return glslang::EShTargetSpv_1_0; break;
+	case ERenderApi::eVulkan_1_1: return glslang::EShTargetSpv_1_3; break;
+	case ERenderApi::eVulkan_1_2: return glslang::EShTargetSpv_1_5; break;
+	case ERenderApi::eVulkan_1_3: return glslang::EShTargetSpv_1_6; break;
+	default:
+		return glslang::EShTargetSpv_1_0;
+	}
+}
+
 CShaderCompiler::CShaderCompiler(IVirtualFileSystemInterface* vfs_ptr) :
 	m_pVFS(vfs_ptr)
 {
@@ -323,7 +336,7 @@ std::optional<FCachedShader> CShaderCompiler::compile(const std::string& path, c
 		auto client = getClient(eAPI);
 		shader.setEnvInput(glslang::EShSourceGlsl, language, client, 110);
 		shader.setEnvClient(client, clientVersion);
-		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3); //glslang::EShTargetSpv_1_3
+		shader.setEnvTarget(glslang::EShTargetSpv, getSPIRVersion(eAPI)); //glslang::EShTargetSpv_1_3
 		// vk1.1 - spirv1.3
 		// vk1.2 - spirv1.5
 		// vk1.3 - spirv1.6

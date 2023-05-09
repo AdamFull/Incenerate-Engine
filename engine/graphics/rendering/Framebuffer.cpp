@@ -52,6 +52,8 @@ void CFramebuffer::begin(vk::CommandBuffer& commandBuffer)
     renderPassBeginInfo.renderArea = renderArea;
     renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(vClearValues.size());
     renderPassBeginInfo.pClearValues = vClearValues.data();
+
+    auto graphics = pDevice->getAPI();
     commandBuffer.beginRenderPass2(renderPassBeginInfo, vk::SubpassContents::eInline);
 
     vk::Viewport viewport{};
@@ -272,13 +274,14 @@ std::unordered_map<std::string, size_t>& CFramebuffer::getCurrentImages()
 
 void CFramebuffer::createRenderPass()
 {
-    vk::RenderPassCreateInfo2 renderPassCI{};
+    vk::RenderPassCreateInfo2KHR renderPassCI{};
     renderPassCI.attachmentCount = static_cast<uint32_t>(vAttachDesc.size());
     renderPassCI.pAttachments = vAttachDesc.data();
     renderPassCI.subpassCount = static_cast<uint32_t>(vSubpassDesc.size());
     renderPassCI.pSubpasses = vSubpassDesc.data();
     renderPassCI.dependencyCount = static_cast<uint32_t>(vSubpassDep.size());
     renderPassCI.pDependencies = vSubpassDep.data();
+
     vk::Result res = pDevice->create(renderPassCI, &renderPass);
     log_cerror(VkHelper::check(res), "Cannot create render pass.");
 }

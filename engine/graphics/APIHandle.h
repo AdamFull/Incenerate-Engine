@@ -12,8 +12,6 @@
 #include "rendering/RenderStage.h"
 #include "rendering/material/Material.h"
 
-#include "APICompatibility.h"
-
 #include <interface/event/EventInterface.h>
 
 #include <interface/graphics/DebugDrawInterface.h>
@@ -50,7 +48,6 @@ namespace engine
 			vk::CommandBuffer getCommandBuffer();
 
 			const std::unique_ptr<IWindowAdapter>& getWindow() const;
-			const std::unique_ptr<CAPICompatibility>& getCompat() const;
 			const std::unique_ptr<CDevice>& getDevice() const;
 			const std::unique_ptr<CShaderLoader>& getShaderLoader();
 			const std::unique_ptr<CImageLoader>& getImageLoader();
@@ -148,7 +145,6 @@ namespace engine
 
 		protected:
 			std::unique_ptr<IWindowAdapter> m_pWindow;
-			std::unique_ptr<CAPICompatibility> m_pCompat;
 
 			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
 			IEventManagerInterface* m_pEvents{ nullptr };

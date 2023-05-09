@@ -5,6 +5,8 @@
 
 #include <SessionStorage.hpp>
 
+#include "APICompatibility.h"
+
 #include <vulkan/vulkan_to_string.hpp>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -107,6 +109,11 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
         deviceExtensions.emplace_back(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
         deviceExtensions.emplace_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
         deviceExtensions.emplace_back(VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME);
+    }
+    else
+    {
+        log_cerror(false, "Vulkan version 1.0 is not supported.");
+        return;
     }
 
     bEditorMode = CSessionStorage::getInstance()->get<bool>("editor_mode");
@@ -222,7 +229,7 @@ void CDevice::createDevice()
     vkPhysical = getPhysicalDevice(deviceExtensions);
     log_cerror(vkPhysical, "No avaliable physical devices. Check device dependencies.");
 
-    m_pAPI->getCompat()->applyPhysicalDevice(vkPhysical);
+    CSessionStorage::getInstance()->set("graphics_bindless_feature", CAPICompatibility::checkExtensionSupport(vkPhysical, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME));
 
     auto props = vkPhysical.getProperties();
     log_debug("Selected device: [ID: {}, NAME: {}, VENDOR ID: {}, API: {}]", props.deviceID, props.deviceName, props.vendorID, props.apiVersion);
@@ -269,7 +276,6 @@ void CDevice::createDevice()
     synchronizationFeatures.synchronization2 = true;
     synchronizationFeatures.pNext = vkVersion > VK_API_VERSION_1_1 ? &vk12features : nullptr;
 
-    // TODO: check for indexing support
     vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
     indexingFeatures.descriptorBindingPartiallyBound = true;
     indexingFeatures.runtimeDescriptorArray = true;
@@ -550,6 +556,24 @@ void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma:
     log_cerror(VkHelper::check(res), "Image was not created");
 }
 
+void CDevice::makeMemoryBarrier(vk::CommandBuffer& commandBuffer, const vk::MemoryBarrier2KHR& barrier2KHR)
+{
+    vk::DependencyInfoKHR dependencyInfo{};
+    dependencyInfo.memoryBarrierCount = 1;
+    dependencyInfo.pMemoryBarriers = &barrier2KHR;
+
+    commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
+}
+
+void CDevice::makeImageMemoryBarrier(vk::CommandBuffer& commandBuffer, const vk::ImageMemoryBarrier2KHR& imageBarrier2KHR)
+{
+    vk::DependencyInfoKHR dependencyInfo{};
+    dependencyInfo.imageMemoryBarrierCount = 1;
+    dependencyInfo.pImageMemoryBarriers = &imageBarrier2KHR;
+
+    commandBuffer.pipelineBarrier2KHR(dependencyInfo);
+}
+
 void CDevice::transitionImageLayoutTransfer(vk::ImageMemoryBarrier2& barrier)
 {
     auto cmdBuf = CCommandBuffer(this);
@@ -574,12 +598,12 @@ void CDevice::transitionImageLayoutGraphics(vk::ImageMemoryBarrier2& barrier)
 
 void CDevice::transitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
 {
-    m_pAPI->getCompat()->TransitionImageLayoutTransfer(commandBuffer, barrier);
+    CAPICompatibility::transitionImageLayoutTransfer(commandBuffer, barrier);
 }
 
 void CDevice::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
 {
-    m_pAPI->getCompat()->TransitionImageLayoutGraphics(commandBuffer, barrier);
+    CAPICompatibility::transitionImageLayoutGraphics(commandBuffer, barrier);
 }
 
 void CDevice::copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions)
