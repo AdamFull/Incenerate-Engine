@@ -20,8 +20,6 @@ using namespace engine::ecs;
 
 CAPIHandle::CAPIHandle()
 {
-    //CSessionStorage::getInstance()->set("graphics_bindless_feature", true);
-    CSessionStorage::getInstance()->set("graphics_bindless_feature", false);
 }
 
 CAPIHandle::~CAPIHandle()
@@ -32,6 +30,8 @@ CAPIHandle::~CAPIHandle()
 void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 {
 	eAPI = createInfo.eAPI;
+
+    m_pCompat = std::make_unique<CAPICompatibility>(VkHelper::getVulkanVersion(eAPI));
 
     m_pWindow = std::make_unique<CSDL2WindowAdapter>(m_pEvents);
     m_pWindow->create(createInfo.window);
@@ -50,6 +50,9 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
 	m_pDevice = std::make_unique<CDevice>(this);
 	m_pDevice->create(createInfo, m_pWindow.get());
+
+    //CSessionStorage::getInstance()->set("graphics_bindless_feature", m_pCompat->checkDeviceExtensionSupport(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME));
+    CSessionStorage::getInstance()->set("graphics_bindless_feature", true);
 
     m_pShaderLoader = std::make_unique<CShaderLoader>(m_pDevice.get(), m_pVFS);
     m_pShaderLoader->create();
@@ -475,6 +478,11 @@ vk::CommandBuffer CAPIHandle::getCommandBuffer()
 const std::unique_ptr<IWindowAdapter>& CAPIHandle::getWindow() const
 {
     return m_pWindow;
+}
+
+const std::unique_ptr<CAPICompatibility>& CAPIHandle::getCompat() const
+{
+    return m_pCompat;
 }
 
 const std::unique_ptr<CDevice>& CAPIHandle::getDevice() const
@@ -1163,11 +1171,7 @@ void CAPIHandle::BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer)
     barrier.dstStageMask = vk::PipelineStageFlagBits2::eComputeShader;
     barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
 
-    vk::DependencyInfoKHR dependencyInfo{};
-    dependencyInfo.memoryBarrierCount = 1;
-    dependencyInfo.pMemoryBarriers = &barrier;
-
-    commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
+    m_pCompat->MemoryBarrierCompat(commandBuffer, barrier);
 }
 
 void CAPIHandle::BarrierFromComputeToGraphics()
@@ -1184,11 +1188,7 @@ void CAPIHandle::BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer)
     barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
     barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
 
-    vk::DependencyInfoKHR dependencyInfo{};
-    dependencyInfo.memoryBarrierCount = 1;
-    dependencyInfo.pMemoryBarriers = &barrier;
-
-    commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
+    m_pCompat->MemoryBarrierCompat(commandBuffer, barrier);
 }
 
 void CAPIHandle::BarrierFromGraphicsToCompute(size_t image_id)
@@ -1216,11 +1216,7 @@ void CAPIHandle::BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, 
         imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
         imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
 
-        vk::DependencyInfoKHR dependencyInfo{};
-        dependencyInfo.imageMemoryBarrierCount = 1;
-        dependencyInfo.pImageMemoryBarriers = &imageMemoryBarrier;
-
-        commandBuffer.pipelineBarrier2KHR(dependencyInfo);
+        m_pCompat->ImageMemoryBarrierCompat(commandBuffer, imageMemoryBarrier);
     }
 }
 
@@ -1249,11 +1245,7 @@ void CAPIHandle::BarrierFromGraphicsToTransfer(vk::CommandBuffer& commandBuffer,
         imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
         imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
 
-        vk::DependencyInfoKHR dependencyInfo{};
-        dependencyInfo.imageMemoryBarrierCount = 1;
-        dependencyInfo.pImageMemoryBarriers = &imageMemoryBarrier;
-
-        commandBuffer.pipelineBarrier2KHR(dependencyInfo);
+        m_pCompat->ImageMemoryBarrierCompat(commandBuffer, imageMemoryBarrier);
     }
 }
 

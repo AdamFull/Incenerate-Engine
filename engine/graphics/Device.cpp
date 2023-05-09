@@ -15,14 +15,6 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 using namespace engine::graphics;
 
 std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation", "VK_LAYER_KHRONOS_synchronization2" };
-std::vector<const char*> deviceExtensions { 
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME, 
-    VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
-    VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
-    VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
-    VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
-    //VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
-};
 
 VKAPI_ATTR VkBool32 VKAPI_CALL CDevice::validationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
@@ -108,10 +100,19 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
+    if (VkHelper::getVulkanVersion(createInfo.eAPI) > VK_API_VERSION_1_0)
+    {
+        deviceExtensions.emplace_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+        deviceExtensions.emplace_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
+        deviceExtensions.emplace_back(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
+        deviceExtensions.emplace_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
+        deviceExtensions.emplace_back(VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME);
+    }
+
     bEditorMode = CSessionStorage::getInstance()->get<bool>("editor_mode");
 
 #ifdef _DEBUG
-    bValidation = false;
+    bValidation = true;
 #endif
 
     log_debug("Validation state: {}", bValidation);
@@ -143,7 +144,7 @@ void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
     createInfo.physicalDevice = vkPhysical;
     createInfo.device = vkDevice;
     createInfo.pAllocationCallbacks = pAllocator;
-    createInfo.vulkanApiVersion = getVulkanVersion(eci.eAPI);
+    createInfo.vulkanApiVersion = VkHelper::getVulkanVersion(eci.eAPI);
     createInfo.pVulkanFunctions = &vk_funcs;
     
     vmaAlloc = vma::createAllocator(createInfo);
@@ -156,7 +157,7 @@ void CDevice::createInstance(const FEngineCreateInfo& createInfo, IWindowAdapter
 
     auto extensions = window->getWindowExtensions(bValidation);
 
-    auto vkVersion = getVulkanVersion(createInfo.eAPI);
+    auto vkVersion = VkHelper::getVulkanVersion(createInfo.eAPI);
 
     vk::ApplicationInfo appInfo{};
     appInfo.pApplicationName = "vkcore";
@@ -221,6 +222,8 @@ void CDevice::createDevice()
     vkPhysical = getPhysicalDevice(deviceExtensions);
     log_cerror(vkPhysical, "No avaliable physical devices. Check device dependencies.");
 
+    m_pAPI->getCompat()->applyPhysicalDevice(vkPhysical);
+
     auto props = vkPhysical.getProperties();
     log_debug("Selected device: [ID: {}, NAME: {}, VENDOR ID: {}, API: {}]", props.deviceID, props.deviceName, props.vendorID, props.apiVersion);
 
@@ -230,7 +233,7 @@ void CDevice::createDevice()
     queueFamilies.initialize(vkPhysical, vkSurface);
     auto queueCreateInfos = queueFamilies.getCreateInfos();
 
-    auto vkVersion = getVulkanVersion(m_pAPI->getAPI());
+    auto vkVersion = VkHelper::getVulkanVersion(m_pAPI->getAPI());
 
     // vk 1.0 features
     vk::PhysicalDeviceFeatures deviceFeatures{};
@@ -270,6 +273,8 @@ void CDevice::createDevice()
     vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
     indexingFeatures.descriptorBindingPartiallyBound = true;
     indexingFeatures.runtimeDescriptorArray = true;
+    indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = true;
+    indexingFeatures.descriptorBindingVariableDescriptorCount = true;
     indexingFeatures.pNext = &synchronizationFeatures;
 
     auto createInfo = vk::DeviceCreateInfo{};
@@ -277,10 +282,12 @@ void CDevice::createDevice()
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
 
-    if (vkVersion > VK_API_VERSION_1_2)
+    if (vkVersion > VK_API_VERSION_1_1)
         createInfo.pNext = &vk12features;
-    else
+    else if (vkVersion == VK_API_VERSION_1_1)
         createInfo.pNext = &indexingFeatures;
+    else
+        createInfo.pNext = nullptr;
 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
@@ -478,23 +485,6 @@ void CDevice::nillViewportFlag()
     bViewportRebuild = false;
 }
 
-uint32_t CDevice::getVulkanVersion(ERenderApi eAPI)
-{
-    switch (eAPI)
-    {
-    case ERenderApi::eVulkan_1_0:
-        return VK_API_VERSION_1_0;
-    case ERenderApi::eVulkan_1_1:
-        return VK_API_VERSION_1_1;
-    case ERenderApi::eVulkan_1_2:
-        return VK_API_VERSION_1_2;
-    case ERenderApi::eVulkan_1_3:
-        return VK_API_VERSION_1_3;
-    }
-
-    return 0;
-}
-
 FSwapChainSupportDetails CDevice::querySwapChainSupport()
 {
     return querySwapChainSupport(vkPhysical);
@@ -560,174 +550,6 @@ void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma:
     log_cerror(VkHelper::check(res), "Image was not created");
 }
 
-bool CDevice::prepareTransferImageLayoutBarrier(vk::ImageMemoryBarrier2& barrier)
-{
-    if (barrier.oldLayout == vk::ImageLayout::eUndefined && barrier.newLayout == vk::ImageLayout::eGeneral)
-    {
-        barrier.srcAccessMask = (vk::AccessFlagBits2)0;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eUndefined && barrier.newLayout == vk::ImageLayout::eTransferDstOptimal)
-    {
-        barrier.srcAccessMask = (vk::AccessFlagBits2)0;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eTransferDstOptimal && barrier.newLayout == vk::ImageLayout::eTransferSrcOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferRead;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eTransferDstOptimal && barrier.newLayout == vk::ImageLayout::eTransferDstOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eTransferSrcOptimal && barrier.newLayout == vk::ImageLayout::eTransferDstOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferRead;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eTransferDstOptimal && barrier.newLayout == vk::ImageLayout::eGeneral)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite | vk::AccessFlagBits2::eTransferRead;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eGeneral && barrier.newLayout == vk::ImageLayout::eTransferDstOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite | vk::AccessFlagBits2::eTransferRead;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eTransferSrcOptimal && barrier.newLayout == vk::ImageLayout::eGeneral)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferRead;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite | vk::AccessFlagBits2::eTransferRead;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eGeneral && barrier.newLayout == vk::ImageLayout::eTransferSrcOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite | vk::AccessFlagBits2::eTransferRead;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferRead;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else
-        return false;
-
-    return true;
-}
-
-bool CDevice::prepareGraphicsImageLayoutBarrier(vk::ImageMemoryBarrier2& barrier)
-{
-    if (barrier.oldLayout == vk::ImageLayout::eUndefined && barrier.newLayout == vk::ImageLayout::eGeneral)
-    {
-        barrier.srcAccessMask = (vk::AccessFlagBits2)0;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eUndefined && barrier.newLayout == vk::ImageLayout::eColorAttachmentOptimal)
-    {
-        barrier.srcAccessMask = (vk::AccessFlagBits2)0;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eUndefined && barrier.newLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
-    {
-        barrier.srcAccessMask = (vk::AccessFlagBits2)0;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eDepthStencilAttachmentRead | vk::AccessFlagBits2::eDepthStencilAttachmentWrite;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eEarlyFragmentTests;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eUndefined && barrier.newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
-    {
-        barrier.srcAccessMask = (vk::AccessFlagBits2)0;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eTransferSrcOptimal && barrier.newLayout == vk::ImageLayout::eColorAttachmentOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eTransferDstOptimal && barrier.newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eTransferSrcOptimal && barrier.newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eGeneral && barrier.newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::ePresentSrcKHR && barrier.newLayout == vk::ImageLayout::eTransferSrcOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eMemoryRead;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eTransferRead;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else if (barrier.oldLayout == vk::ImageLayout::eTransferSrcOptimal && barrier.newLayout == vk::ImageLayout::ePresentSrcKHR)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits2::eTransferRead;
-        barrier.dstAccessMask = vk::AccessFlagBits2::eMemoryRead;
-
-        barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-        barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    }
-    else
-        return false;
-
-    return true;
-}
-
 void CDevice::transitionImageLayoutTransfer(vk::ImageMemoryBarrier2& barrier)
 {
     auto cmdBuf = CCommandBuffer(this);
@@ -752,32 +574,12 @@ void CDevice::transitionImageLayoutGraphics(vk::ImageMemoryBarrier2& barrier)
 
 void CDevice::transitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
 {
-    if (!prepareTransferImageLayoutBarrier(barrier))
-        log_error("Unsupported layout transition!");
-    
-    vk::DependencyInfo depInfo{};
-    depInfo.imageMemoryBarrierCount = 1;
-    depInfo.pImageMemoryBarriers = &barrier;
-    depInfo.memoryBarrierCount = 0;
-    depInfo.pBufferMemoryBarriers = nullptr;
-    depInfo.dependencyFlags = vk::DependencyFlagBits::eByRegion;
-
-    commandBuffer.pipelineBarrier2(depInfo);
+    m_pAPI->getCompat()->TransitionImageLayoutTransfer(commandBuffer, barrier);
 }
 
 void CDevice::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
 {
-    if (!prepareGraphicsImageLayoutBarrier(barrier))
-        log_error("Unsupported layout transition!");
-
-    vk::DependencyInfo depInfo{};
-    depInfo.imageMemoryBarrierCount = 1;
-    depInfo.pImageMemoryBarriers = &barrier;
-    depInfo.memoryBarrierCount = 0;
-    depInfo.pBufferMemoryBarriers = nullptr;
-    depInfo.dependencyFlags = vk::DependencyFlagBits::eByRegion;
-
-    commandBuffer.pipelineBarrier2(depInfo);
+    m_pAPI->getCompat()->TransitionImageLayoutGraphics(commandBuffer, barrier);
 }
 
 void CDevice::copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions)

@@ -29,7 +29,6 @@ namespace engine
 
             inline void GPUWait() { vkDevice.waitIdle(); }
 
-            uint32_t getVulkanVersion(ERenderApi pAPI);
             /***************************************************Helpers***************************************************/
             FSwapChainSupportDetails querySwapChainSupport();
             std::vector<vk::SampleCountFlagBits> getAvaliableSampleCount();
@@ -47,8 +46,6 @@ namespace engine
             void copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size, vk::DeviceSize srcOffset = 0, vk::DeviceSize dstOffset = 0);
             void createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation, vma::MemoryUsage usage = vma::MemoryUsage::eUnknown);
 
-            bool prepareTransferImageLayoutBarrier(vk::ImageMemoryBarrier2& barrier);
-            bool prepareGraphicsImageLayoutBarrier(vk::ImageMemoryBarrier2& barrier);
             void transitionImageLayoutTransfer(vk::ImageMemoryBarrier2& barrier);
             void transitionImageLayoutGraphics(vk::ImageMemoryBarrier2& barrier);
             void transitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier);
@@ -296,6 +293,8 @@ namespace engine
             bool isDeviceSuitable(const vk::PhysicalDevice& device, const std::vector<const char*>& deviceExtensions);
 
         private:
+            std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
             CAPIHandle* m_pAPI{ nullptr };
             vk::DynamicLoader dl;
             vk::Instance vkInstance{ VK_NULL_HANDLE }; // Main vulkan instance

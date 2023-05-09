@@ -27,6 +27,8 @@ namespace engine
 			static vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>);
 
 			static bool hasStencilComponent(vk::Format format);
+
+			static uint32_t getVulkanVersion(ERenderApi eAPI);
 		};
 	}
 }

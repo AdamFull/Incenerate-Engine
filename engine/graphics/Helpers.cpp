@@ -87,3 +87,20 @@ bool VkHelper::hasStencilComponent(vk::Format format)
 {
     return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
 }
+
+uint32_t VkHelper::getVulkanVersion(ERenderApi eAPI)
+{
+    switch (eAPI)
+    {
+    case ERenderApi::eVulkan_1_0:
+        return VK_API_VERSION_1_0;
+    case ERenderApi::eVulkan_1_1:
+        return VK_API_VERSION_1_1;
+    case ERenderApi::eVulkan_1_2:
+        return VK_API_VERSION_1_2;
+    case ERenderApi::eVulkan_1_3:
+        return VK_API_VERSION_1_3;
+    }
+
+    return 0;
+}
