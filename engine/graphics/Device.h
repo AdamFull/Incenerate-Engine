@@ -2,9 +2,9 @@
 
 #include <vma/vk_mem_alloc.hpp>
 
-#include "Helpers.h"
 #include "buffers/CommandPool.h"
 #include "QueueFamily.h"
+#include "EngineStructures.h"
 
 #include <mutex>
 
@@ -12,6 +12,13 @@ namespace engine
 {
 	namespace graphics
 	{
+        struct FSwapChainSupportDetails
+        {
+            vk::SurfaceCapabilitiesKHR capabilities;
+            std::vector<vk::SurfaceFormatKHR> formats;
+            std::vector<vk::PresentModeKHR> presentModes;
+        };
+
 		class CDevice
 		{
 		public:
@@ -282,6 +289,7 @@ namespace engine
             void createInstance(const FEngineCreateInfo& createInfo, IWindowAdapter* window);
             void createDebugCallback();
             void createSurface(IWindowAdapter* window);
+            void selectPhysicalDeviceAndExtensions();
             void createDevice();
             void createPipelineCache();
             void createSwapchain(int32_t width, int32_t height);
@@ -291,12 +299,8 @@ namespace engine
             FSwapChainSupportDetails querySwapChainSupport(const vk::PhysicalDevice& device);
             vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surfaceCapabilities, int32_t width, int32_t height);
 
-            vk::PhysicalDevice getPhysicalDevice(const std::vector<const char*>& deviceExtensions);
-            std::vector<vk::PhysicalDevice> getAvaliablePhysicalDevices(const std::vector<const char*>& deviceExtensions);
-            bool isDeviceSuitable(const vk::PhysicalDevice& device, const std::vector<const char*>& deviceExtensions);
-
         private:
-            std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+            uint32_t vkVersion{ 0u };
 
             CAPIHandle* m_pAPI{ nullptr };
             vk::DynamicLoader dl;

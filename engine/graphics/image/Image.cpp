@@ -1,6 +1,7 @@
 #include "Image.h"
 
 #include "APIHandle.h"
+#include "APICompatibility.h"
 #include "buffers/CommandBuffer.h"
 #include "buffers/Buffer.h"
 
@@ -235,7 +236,7 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
     viewInfo.image = _image;
 
     vk::Result res = pDevice->create(viewInfo, &imageView);
-    log_cerror(VkHelper::check(res), "Cannot create image view");
+    log_cerror(APICompatibility::check(res), "Cannot create image view");
     _views.emplace_back(imageView);
 
     viewInfo.subresourceRange.levelCount = 1;
@@ -244,7 +245,7 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
     {
         viewInfo.subresourceRange.baseMipLevel = mip;
         vk::Result res = pDevice->create(viewInfo, &imageView);
-        log_cerror(VkHelper::check(res), "Cannot create image view");
+        log_cerror(APICompatibility::check(res), "Cannot create image view");
         _views.emplace_back(imageView);
     }
 

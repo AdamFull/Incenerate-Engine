@@ -1,6 +1,7 @@
 #include "Pipeline.h"
 
 #include "APIHandle.h"
+#include "APICompatibility.h"
 #include "shader/ShaderObject.h"
 
 #include <SessionStorage.hpp>
@@ -28,7 +29,7 @@ CPipeline::~CPipeline()
 
 void CPipeline::create(CShaderObject* pShader)
 {
-    bBindlessFeature = CSessionStorage::getInstance()->get<bool>("graphics_bindless_feature");
+    bBindlessFeature = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
     bCanBeBindless = pShader->isUsesBindlessTextures();
     createDescriptorPool(pShader);
     createDescriptorSetLayout(pShader);
@@ -73,7 +74,7 @@ void CPipeline::createDescriptorSetLayout(CShaderObject* pShader)
 
         vk::DescriptorSetLayout descriptorSetLayout;
         vk::Result res = pDevice->create(descriptorSetLayoutCreateInfo, &descriptorSetLayout);
-        log_cerror(VkHelper::check(res), "Cannot create descriptor set layout.");
+        log_cerror(APICompatibility::check(res), "Cannot create descriptor set layout.");
 
         mDescriptorSetLayouts.emplace(set, descriptorSetLayout);
     }
@@ -90,7 +91,7 @@ void CPipeline::createDescriptorPool(CShaderObject* pShader)
     descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPools.size());
     descriptorPoolCreateInfo.pPoolSizes = descriptorPools.data();
     vk::Result res = pDevice->create(descriptorPoolCreateInfo, &descriptorPool);
-    log_cerror(VkHelper::check(res), "Cannot create descriptor pool.");
+    log_cerror(APICompatibility::check(res), "Cannot create descriptor pool.");
 }
 
 void CPipeline::createPipelineLayout(CShaderObject* pShader)
@@ -116,5 +117,5 @@ void CPipeline::createPipelineLayout(CShaderObject* pShader)
     pipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
     pipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
     vk::Result res = pDevice->create(pipelineLayoutCreateInfo, &pipelineLayout);
-    log_cerror(VkHelper::check(res), "Cannot create pipeline layout.");
+    log_cerror(APICompatibility::check(res), "Cannot create pipeline layout.");
 }

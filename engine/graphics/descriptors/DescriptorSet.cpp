@@ -1,6 +1,7 @@
 #include "DescriptorSet.h"
 
 #include "APIHandle.h"
+#include "APICompatibility.h"
 
 using namespace engine::graphics;
 
@@ -38,7 +39,7 @@ void CDescriptorSet::create(const vk::DescriptorPool& pool, const std::unordered
         mDescriptorSets[set].resize(framesInFlight);
 
         vk::Result res = pDevice->create(allocInfo, mDescriptorSets[set].data());
-        log_cerror(VkHelper::check(res), "Cannot create descriptor sets.");
+        log_cerror(APICompatibility::check(res), "Cannot create descriptor sets.");
     }
 }
 

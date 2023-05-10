@@ -62,7 +62,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     m_pDebugDraw = std::make_unique<CDebugDraw>(this);
     m_pQueryPool = std::make_unique<CQueryPool>(m_pDevice.get());
 
-    m_bBindlessFeature = CSessionStorage::getInstance()->get<bool>("graphics_bindless_feature");
+    m_bBindlessFeature = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
     if (m_bBindlessFeature)
     {
         m_pBindlessTextures = std::make_unique<CBindlessDescriptor>(m_pDevice.get());
@@ -1163,7 +1163,7 @@ void CAPIHandle::BarrierFromComputeToCompute(vk::CommandBuffer& commandBuffer)
     barrier.dstStageMask = vk::PipelineStageFlagBits2::eComputeShader;
     barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
 
-    CAPICompatibility::memoryBarrierCompat(commandBuffer, barrier);
+    APICompatibility::memoryBarrierCompat(commandBuffer, barrier);
 }
 
 void CAPIHandle::BarrierFromComputeToGraphics()
@@ -1180,7 +1180,7 @@ void CAPIHandle::BarrierFromComputeToGraphics(vk::CommandBuffer& commandBuffer)
     barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
     barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
 
-    CAPICompatibility::memoryBarrierCompat(commandBuffer, barrier);
+    APICompatibility::memoryBarrierCompat(commandBuffer, barrier);
 }
 
 void CAPIHandle::BarrierFromGraphicsToCompute(size_t image_id)
@@ -1208,7 +1208,7 @@ void CAPIHandle::BarrierFromGraphicsToCompute(vk::CommandBuffer& commandBuffer, 
         imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
         imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
 
-        CAPICompatibility::imageMemoryBarrierCompat(commandBuffer, imageMemoryBarrier);
+        APICompatibility::imageMemoryBarrierCompat(commandBuffer, imageMemoryBarrier);
     }
 }
 
@@ -1237,7 +1237,7 @@ void CAPIHandle::BarrierFromGraphicsToTransfer(vk::CommandBuffer& commandBuffer,
         imageMemoryBarrier.subresourceRange.layerCount = image->getLayers();
         imageMemoryBarrier.subresourceRange.levelCount = image->getMipLevels();
 
-        CAPICompatibility::imageMemoryBarrierCompat(commandBuffer, imageMemoryBarrier);
+        APICompatibility::imageMemoryBarrierCompat(commandBuffer, imageMemoryBarrier);
     }
 }
 

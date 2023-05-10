@@ -2,6 +2,8 @@
 
 #include "Engine.h"
 #include "APIHandle.h"
+#include "APICompatibility.h"
+
 #include "image/Image2D.h"
 #include "image/Image2DArray.h"
 #include "image/ImageCubemap.h"
@@ -283,7 +285,7 @@ void CFramebuffer::createRenderPass()
     renderPassCI.pDependencies = vSubpassDep.data();
 
     vk::Result res = pDevice->create(renderPassCI, &renderPass);
-    log_cerror(VkHelper::check(res), "Cannot create render pass.");
+    log_cerror(APICompatibility::check(res), "Cannot create render pass.");
 }
 
 void CFramebuffer::createFramebuffer()
@@ -335,7 +337,7 @@ void CFramebuffer::createFramebuffer()
 
         vk::Framebuffer framebuffer{ VK_NULL_HANDLE };
         vk::Result res = pDevice->create(framebufferCI, &framebuffer);
-        log_cerror(VkHelper::check(res), "Cannot create framebuffer.");
+        log_cerror(APICompatibility::check(res), "Cannot create framebuffer.");
         vFramebuffers.emplace_back(framebuffer);
     }
 }

@@ -4,7 +4,51 @@
 
 using namespace engine::graphics;
 
-bool CAPICompatibility::checkExtensionSupport(const vk::PhysicalDevice& physicalDevice, const char* extensionName)
+uint32_t APICompatibility::getVulkanVersion(ERenderApi eAPI)
+{
+	switch (eAPI)
+	{
+	case ERenderApi::eVulkan_1_0:
+		return VK_API_VERSION_1_0;
+	case ERenderApi::eVulkan_1_1:
+		return VK_API_VERSION_1_1;
+	case ERenderApi::eVulkan_1_2:
+		return VK_API_VERSION_1_2;
+	case ERenderApi::eVulkan_1_3:
+		return VK_API_VERSION_1_3;
+	}
+
+	return 0;
+}
+
+bool APICompatibility::check(vk::Result result)
+{
+	return result == vk::Result::eSuccess;
+}
+
+bool APICompatibility::checkValidationLayerSupport(const std::vector<const char*>& validationLayers)
+{
+	auto availableLayers = vk::enumerateInstanceLayerProperties();
+
+	log_debug("Enabled validation layers:");
+	bool layerFound{ false };
+	for (auto& layerName : validationLayers)
+	{
+		for (const auto& layerProperties : availableLayers)
+		{
+			if (strcmp(layerName, layerProperties.layerName) == 0)
+			{
+				log_debug(layerProperties.layerName);
+				layerFound = true;
+				break;
+			}
+		}
+	}
+
+	return layerFound;
+}
+
+bool APICompatibility::checkExtensionSupport(const vk::PhysicalDevice& physicalDevice, const char* extensionName)
 {
 	std::vector<vk::ExtensionProperties> availableExtensions = physicalDevice.enumerateDeviceExtensionProperties();
 	auto foundExtension = std::find_if(availableExtensions.begin(), availableExtensions.end(),
@@ -14,7 +58,87 @@ bool CAPICompatibility::checkExtensionSupport(const vk::PhysicalDevice& physical
 	return foundExtension != availableExtensions.end();
 }
 
-void CAPICompatibility::memoryBarrierCompat(vk::CommandBuffer& commandBuffer, const vk::MemoryBarrier2KHR& barrier2KHR)
+vk::SurfaceFormatKHR APICompatibility::chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
+{
+	if (availableFormats.size() == 1 && availableFormats[0].format == vk::Format::eUndefined)
+	{
+		return { vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear };
+	}
+
+	for (const auto& availableFormat : availableFormats)
+	{
+		if (availableFormat.format == vk::Format::eB8G8R8A8Unorm && availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+		{
+			return availableFormat;
+		}
+	}
+
+	return availableFormats[0];
+}
+
+vk::PresentModeKHR APICompatibility::chooseSwapPresentMode(const std::vector<vk::PresentModeKHR> availablePresentModes)
+{
+	vk::PresentModeKHR bestMode = vk::PresentModeKHR::eFifo;
+
+	for (const auto& availablePresentMode : availablePresentModes)
+	{
+		if (availablePresentMode == vk::PresentModeKHR::eMailbox)
+		{
+			return availablePresentMode;
+		}
+		else if (availablePresentMode == vk::PresentModeKHR::eImmediate)
+		{
+			bestMode = availablePresentMode;
+		}
+	}
+
+	return bestMode;
+}
+
+const std::vector<const char*>& APICompatibility::getRequiredDeviceExtensions()
+{
+	static const std::vector<const char*> requiredExtensions{
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
+		VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+		VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
+		VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME
+	};
+	
+	return requiredExtensions;
+}
+
+const std::vector<const char*>& APICompatibility::getOptionalDeviceExtensions()
+{
+	static const std::vector<const char*> optionalExtensions{
+		VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
+	};
+
+	return optionalExtensions;
+}
+
+std::vector<const char*> APICompatibility::getDeviceAvaliableExtensions(const vk::PhysicalDevice& physicalDevice)
+{
+	std::vector<const char*> allExtensions{};
+
+	auto& requiredExtensions = getRequiredDeviceExtensions();
+	for (auto& extension : requiredExtensions)
+	{
+		if (checkExtensionSupport(physicalDevice, extension))
+			allExtensions.emplace_back(extension);
+	}
+
+	auto& optionalExtensions = getOptionalDeviceExtensions();
+	for (auto& extension : optionalExtensions)
+	{
+		if (checkExtensionSupport(physicalDevice, extension))
+			allExtensions.emplace_back(extension);
+	}
+
+	return allExtensions;
+}
+
+void APICompatibility::memoryBarrierCompat(vk::CommandBuffer& commandBuffer, const vk::MemoryBarrier2KHR& barrier2KHR)
 {
 	vk::DependencyInfoKHR dependencyInfo{};
 	dependencyInfo.memoryBarrierCount = 1;
@@ -23,7 +147,7 @@ void CAPICompatibility::memoryBarrierCompat(vk::CommandBuffer& commandBuffer, co
 	commandBuffer.pipelineBarrier2KHR(&dependencyInfo);
 }
 
-void CAPICompatibility::imageMemoryBarrierCompat(vk::CommandBuffer& commandBuffer, const vk::ImageMemoryBarrier2KHR& imageBarrier2KHR)
+void APICompatibility::imageMemoryBarrierCompat(vk::CommandBuffer& commandBuffer, const vk::ImageMemoryBarrier2KHR& imageBarrier2KHR)
 {
 	vk::DependencyInfoKHR dependencyInfo{};
 	dependencyInfo.imageMemoryBarrierCount = 1;
@@ -32,7 +156,7 @@ void CAPICompatibility::imageMemoryBarrierCompat(vk::CommandBuffer& commandBuffe
 	commandBuffer.pipelineBarrier2KHR(dependencyInfo);
 }
 
-void CAPICompatibility::transitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
+void APICompatibility::transitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
 {
 	if (!setTransferImageLayoutFlags(barrier))
 		log_error("Unsupported layout transition!");
@@ -40,7 +164,7 @@ void CAPICompatibility::transitionImageLayoutTransfer(vk::CommandBuffer& command
 	imageMemoryBarrierCompat(commandBuffer, barrier);
 }
 
-void CAPICompatibility::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
+void APICompatibility::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
 {
 	if (!setGraphicsImageLayoutFlags(barrier))
 		log_error("Unsupported layout transition!");
@@ -48,7 +172,7 @@ void CAPICompatibility::transitionImageLayoutGraphics(vk::CommandBuffer& command
 	imageMemoryBarrierCompat(commandBuffer, barrier);
 }
 
-bool CAPICompatibility::setTransferImageLayoutFlags(vk::ImageMemoryBarrier2KHR& barrier)
+bool APICompatibility::setTransferImageLayoutFlags(vk::ImageMemoryBarrier2KHR& barrier)
 {
 	if (barrier.oldLayout == vk::ImageLayout::eUndefined && barrier.newLayout == vk::ImageLayout::eGeneral)
 	{
@@ -128,7 +252,7 @@ bool CAPICompatibility::setTransferImageLayoutFlags(vk::ImageMemoryBarrier2KHR& 
 	return true;
 }
 
-bool CAPICompatibility::setGraphicsImageLayoutFlags(vk::ImageMemoryBarrier2KHR& barrier)
+bool APICompatibility::setGraphicsImageLayoutFlags(vk::ImageMemoryBarrier2KHR& barrier)
 {
 	if (barrier.oldLayout == vk::ImageLayout::eUndefined && barrier.newLayout == vk::ImageLayout::eGeneral)
 	{

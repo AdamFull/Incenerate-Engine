@@ -18,7 +18,7 @@ CShaderLoader::CShaderLoader(CDevice* device, IVirtualFileSystemInterface* vfs_p
 	m_pCompiler = std::make_unique<CShaderCompiler>(m_pVFS);
 
 	bEditorMode = CSessionStorage::getInstance()->get<bool>("editor_mode");
-	bBindlessFeature = CSessionStorage::getInstance()->get<bool>("graphics_bindless_feature");
+	bBindlessFeature = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
 }
 
 CShaderLoader::~CShaderLoader()

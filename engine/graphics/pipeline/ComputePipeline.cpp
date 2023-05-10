@@ -1,6 +1,7 @@
 #include "ComputePipeline.h"
 
 #include "APIHandle.h"
+#include "APICompatibility.h"
 #include "shader/ShaderObject.h"
 
 using namespace engine::graphics;
@@ -33,7 +34,7 @@ void CComputePipeline::createPipeline(CShaderObject* pShader)
         pipelineInfo.basePipelineIndex = -1;
 
         vk::Result res = pDevice->create(pipelineInfo, &pipeline);
-        log_cerror(VkHelper::check(res), "Failed creating compute pipeline.");
+        log_cerror(APICompatibility::check(res), "Failed creating compute pipeline.");
         vPipelines.emplace_back(pipeline);
     }
 }

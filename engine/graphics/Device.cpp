@@ -102,15 +102,9 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
-    if (VkHelper::getVulkanVersion(createInfo.eAPI) > VK_API_VERSION_1_0)
-    {
-        deviceExtensions.emplace_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
-        deviceExtensions.emplace_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
-        deviceExtensions.emplace_back(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
-        deviceExtensions.emplace_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
-        deviceExtensions.emplace_back(VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME);
-    }
-    else
+    vkVersion = APICompatibility::getVulkanVersion(createInfo.eAPI);
+
+    if (vkVersion < VK_API_VERSION_1_1)
     {
         log_cerror(false, "Vulkan version 1.0 is not supported.");
         return;
@@ -127,6 +121,7 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
     createInstance(createInfo, window);
     createDebugCallback();
     createSurface(window);
+    selectPhysicalDeviceAndExtensions();
     createDevice();
     createMemoryAllocator(createInfo);
     createPipelineCache();
@@ -151,7 +146,7 @@ void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
     createInfo.physicalDevice = vkPhysical;
     createInfo.device = vkDevice;
     createInfo.pAllocationCallbacks = pAllocator;
-    createInfo.vulkanApiVersion = VkHelper::getVulkanVersion(eci.eAPI);
+    createInfo.vulkanApiVersion = vkVersion;
     createInfo.pVulkanFunctions = &vk_funcs;
     
     vmaAlloc = vma::createAllocator(createInfo);
@@ -159,12 +154,10 @@ void CDevice::createMemoryAllocator(const FEngineCreateInfo& eci)
 
 void CDevice::createInstance(const FEngineCreateInfo& createInfo, IWindowAdapter* window)
 {
-    if (bValidation && !VkHelper::checkValidationLayerSupport(validationLayers))
+    if (bValidation && !APICompatibility::checkValidationLayerSupport(validationLayers))
         log_error("Validation layers requested, but not available!");
 
     auto extensions = window->getWindowExtensions(bValidation);
-
-    auto vkVersion = VkHelper::getVulkanVersion(createInfo.eAPI);
 
     vk::ApplicationInfo appInfo{};
     appInfo.pApplicationName = "vkcore";
@@ -195,7 +188,7 @@ void CDevice::createInstance(const FEngineCreateInfo& createInfo, IWindowAdapter
     }
 
     vk::Result res = create(instanceCI, &vkInstance);
-    log_cerror(VkHelper::check(res), "Cannot create vulkan instance.");
+    log_cerror(APICompatibility::check(res), "Cannot create vulkan instance.");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkInstance);
 }
 
@@ -223,13 +216,58 @@ void CDevice::createSurface(IWindowAdapter* window)
     log_cerror(vkSurface, "Surface creation failed");
 }
 
+void CDevice::selectPhysicalDeviceAndExtensions()
+{
+    auto avaliableDevices = vkInstance.enumeratePhysicalDevices();
+
+    vk::PhysicalDevice fallbackDevice{ nullptr };
+    for (auto& physicalDevice : avaliableDevices)
+    {
+        auto deviceProperties = physicalDevice.getProperties();
+
+        if (deviceProperties.apiVersion < vkVersion)
+            continue;
+
+        // Check all required device extensions
+        auto& requiredExtensions = APICompatibility::getRequiredDeviceExtensions();
+        for (auto& extensionName : requiredExtensions)
+        {
+            if (!APICompatibility::checkExtensionSupport(physicalDevice, extensionName))
+                continue;
+        }
+
+        // Check all required device queue family indicies
+        queueFamilies.initialize(physicalDevice, vkSurface);
+        if (!queueFamilies.isValid())
+            continue;
+
+        // Check is device type is discrete gpu
+        if (deviceProperties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu)
+        {
+            fallbackDevice = physicalDevice;
+            continue;
+        }
+
+        vkPhysical = physicalDevice;
+        break;
+    }
+
+    if (!vkPhysical)
+    {
+        if(!fallbackDevice)
+            throw std::runtime_error("Not found any avaliable physical device.");
+        vkPhysical = fallbackDevice;
+    }
+
+    // After we found target device, we can check optional extension support
+    auto& optionalExtensions = APICompatibility::getOptionalDeviceExtensions();
+    for (auto& extensionName : optionalExtensions)
+        CSessionStorage::getInstance()->set(extensionName, APICompatibility::checkExtensionSupport(vkPhysical, extensionName));
+}
+
 void CDevice::createDevice()
 {
     log_cerror(vkInstance, "Unable to create ligical device, cause vulkan instance is not valid");
-    vkPhysical = getPhysicalDevice(deviceExtensions);
-    log_cerror(vkPhysical, "No avaliable physical devices. Check device dependencies.");
-
-    CSessionStorage::getInstance()->set("graphics_bindless_feature", CAPICompatibility::checkExtensionSupport(vkPhysical, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME));
 
     auto props = vkPhysical.getProperties();
     log_debug("Selected device: [ID: {}, NAME: {}, VENDOR ID: {}, API: {}]", props.deviceID, props.deviceName, props.vendorID, props.apiVersion);
@@ -240,7 +278,7 @@ void CDevice::createDevice()
     queueFamilies.initialize(vkPhysical, vkSurface);
     auto queueCreateInfos = queueFamilies.getCreateInfos();
 
-    auto vkVersion = VkHelper::getVulkanVersion(m_pAPI->getAPI());
+    auto bIndexingExtension = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
 
     // vk 1.0 features
     vk::PhysicalDeviceFeatures deviceFeatures{};
@@ -265,11 +303,10 @@ void CDevice::createDevice()
     vk::PhysicalDeviceVulkan12Features vk12features{};
     vk12features.shaderOutputLayer = true;
     vk12features.shaderOutputViewportIndex = true;
-    vk12features.descriptorBindingPartiallyBound = true;
-    vk12features.runtimeDescriptorArray = true;
-    vk12features.descriptorBindingSampledImageUpdateAfterBind = true;
-    vk12features.descriptorBindingVariableDescriptorCount = true;
-    //vk12features.descriptorIndexing = true;
+    vk12features.descriptorBindingPartiallyBound = bIndexingExtension;
+    vk12features.runtimeDescriptorArray = bIndexingExtension;
+    vk12features.descriptorBindingSampledImageUpdateAfterBind = bIndexingExtension;
+    vk12features.descriptorBindingVariableDescriptorCount = bIndexingExtension;
     vk12features.pNext = vkVersion > VK_API_VERSION_1_2 ? &vk13features : nullptr;
 
     vk::PhysicalDeviceSynchronization2FeaturesKHR synchronizationFeatures{};
@@ -277,10 +314,10 @@ void CDevice::createDevice()
     synchronizationFeatures.pNext = vkVersion > VK_API_VERSION_1_1 ? &vk12features : nullptr;
 
     vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
-    indexingFeatures.descriptorBindingPartiallyBound = true;
-    indexingFeatures.runtimeDescriptorArray = true;
-    indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = true;
-    indexingFeatures.descriptorBindingVariableDescriptorCount = true;
+    indexingFeatures.descriptorBindingPartiallyBound = bIndexingExtension;
+    indexingFeatures.runtimeDescriptorArray = bIndexingExtension;
+    indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = bIndexingExtension;
+    indexingFeatures.descriptorBindingVariableDescriptorCount = bIndexingExtension;
     indexingFeatures.pNext = &synchronizationFeatures;
 
     auto createInfo = vk::DeviceCreateInfo{};
@@ -295,8 +332,9 @@ void CDevice::createDevice()
     else
         createInfo.pNext = nullptr;
 
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+    auto avaliableExtensions = APICompatibility::getDeviceAvaliableExtensions(vkPhysical);
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(avaliableExtensions.size());
+    createInfo.ppEnabledExtensionNames = avaliableExtensions.data();
 
     if (bValidation)
     {
@@ -305,7 +343,7 @@ void CDevice::createDevice()
     }
 
     vk::Result res = create(createInfo, &vkDevice);
-    log_cerror(VkHelper::check(res), "Failed to create logical device.");
+    log_cerror(APICompatibility::check(res), "Failed to create logical device.");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkDevice);
 
     queueFamilies.clearCreateInfo();
@@ -324,7 +362,7 @@ void CDevice::createPipelineCache()
 {
     vk::PipelineCacheCreateInfo pipelineCacheCreateInfo = {};
     vk::Result res = create(pipelineCacheCreateInfo, &pipelineCache);
-    log_cerror(VkHelper::check(res), "Cannot create pipeline cache.");
+    log_cerror(APICompatibility::check(res), "Cannot create pipeline cache.");
 }
 
 void CDevice::createSwapchain(int32_t width, int32_t height)
@@ -335,8 +373,8 @@ void CDevice::createSwapchain(int32_t width, int32_t height)
 
     auto swapChainSupport = querySwapChainSupport();
     auto surfaceCaps = vkPhysical.getSurfaceCapabilitiesKHR(vkSurface);
-    vk::SurfaceFormatKHR surfaceFormat = VkHelper::chooseSwapSurfaceFormat(swapChainSupport.formats);
-    vk::PresentModeKHR presentMode = VkHelper::chooseSwapPresentMode(swapChainSupport.presentModes);
+    vk::SurfaceFormatKHR surfaceFormat = APICompatibility::chooseSwapSurfaceFormat(swapChainSupport.formats);
+    vk::PresentModeKHR presentMode = APICompatibility::chooseSwapPresentMode(swapChainSupport.presentModes);
     swapchainExtent = chooseSwapExtent(swapChainSupport.capabilities, width, height);
 
     uint32_t imageCount = framesInFlight;
@@ -379,11 +417,11 @@ void CDevice::createSwapchain(int32_t width, int32_t height)
     createInfo.oldSwapchain = oldSwapchain;
 
     res = create(createInfo, &swapChain);
-    log_cerror(VkHelper::check(res), "Swap chain was not created");
+    log_cerror(APICompatibility::check(res), "Swap chain was not created");
 
     vImages.resize(imageCount);
     res = vkDevice.getSwapchainImagesKHR(swapChain, &imageCount, vImages.data());
-    log_cerror(VkHelper::check(res), "Swap chain images was not created");
+    log_cerror(APICompatibility::check(res), "Swap chain images was not created");
 
     imageFormat = surfaceFormat.format;
 
@@ -410,7 +448,7 @@ void CDevice::createSwapchain(int32_t width, int32_t height)
         {
             viewInfo.image = vImages[i];
             res = create(viewInfo, &vImageViews[i]);
-            log_cerror(VkHelper::check(res), "Cannot create image view");
+            log_cerror(APICompatibility::check(res), "Cannot create image view");
         }
     }
 
@@ -428,11 +466,11 @@ void CDevice::createSwapchain(int32_t width, int32_t height)
             for (size_t i = 0; i < imageCount; i++)
             {
                 res = create(semaphoreCI, &vImageAvailableSemaphores[i]);
-                log_cerror(VkHelper::check(res), "Cannot create semaphore");
+                log_cerror(APICompatibility::check(res), "Cannot create semaphore");
                 res = create(semaphoreCI, &vRenderFinishedSemaphores[i]);
-                log_cerror(VkHelper::check(res), "Cannot create semaphore");
+                log_cerror(APICompatibility::check(res), "Cannot create semaphore");
                 res = create(fenceCI, &vInFlightFences[i]);
-                log_cerror(VkHelper::check(res), "Cannot create fence");
+                log_cerror(APICompatibility::check(res), "Cannot create fence");
             }
         }
         catch (vk::SystemError err)
@@ -553,7 +591,7 @@ void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma:
     alloc_create_info.usage = usage;
 
     auto res = vmaAlloc.createImage(&createInfo, &alloc_create_info, &image, &allocation, nullptr);
-    log_cerror(VkHelper::check(res), "Image was not created");
+    log_cerror(APICompatibility::check(res), "Image was not created");
 }
 
 void CDevice::makeMemoryBarrier(vk::CommandBuffer& commandBuffer, const vk::MemoryBarrier2KHR& barrier2KHR)
@@ -598,12 +636,12 @@ void CDevice::transitionImageLayoutGraphics(vk::ImageMemoryBarrier2& barrier)
 
 void CDevice::transitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
 {
-    CAPICompatibility::transitionImageLayoutTransfer(commandBuffer, barrier);
+    APICompatibility::transitionImageLayoutTransfer(commandBuffer, barrier);
 }
 
 void CDevice::transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier)
 {
-    CAPICompatibility::transitionImageLayoutGraphics(commandBuffer, barrier);
+    APICompatibility::transitionImageLayoutGraphics(commandBuffer, barrier);
 }
 
 void CDevice::copyBufferToImage(vk::Buffer& buffer, vk::Image& image, std::vector<vk::BufferImageCopy> vRegions)
@@ -651,7 +689,7 @@ void CDevice::createSampler(vk::Sampler& sampler, vk::Filter magFilter, vk::Samp
 
     // TODO: Result handle
     vk::Result res = create(samplerInfo, &sampler);
-    log_cerror(VkHelper::check(res), "Texture sampler was not created");
+    log_cerror(APICompatibility::check(res), "Texture sampler was not created");
 }
 
 vk::Format CDevice::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
@@ -996,7 +1034,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
     vk::Result res;
 
     res = vkDevice.resetFences(1, &vInFlightFences[currentFrame]);
-    log_cerror(VkHelper::check(res), "Cannot reset fences.");
+    log_cerror(APICompatibility::check(res), "Cannot reset fences.");
 
     try
     {
@@ -1044,7 +1082,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
     res = present.presentKHR(presentInfo);
 
     res = vkDevice.waitForFences(1, &vInFlightFences[currentFrame], VK_TRUE, (std::numeric_limits<uint64_t>::max)());
-    log_cerror(VkHelper::check(res), "Waiting for fences error.");
+    log_cerror(APICompatibility::check(res), "Waiting for fences error.");
 
     currentFrame = (currentFrame + 1) % framesInFlight;
 
@@ -1134,89 +1172,4 @@ vk::Extent2D CDevice::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabil
 
         return actualExtent;
     }
-}
-
-vk::PhysicalDevice CDevice::getPhysicalDevice(const std::vector<const char*>& deviceExtensions)
-{
-    vk::PhysicalDevice selected_device{nullptr};
-    auto devices = getAvaliablePhysicalDevices(deviceExtensions);
-    constexpr auto ver10 = VK_API_VERSION_1_0;
-    constexpr auto ver11 = VK_API_VERSION_1_1;
-    constexpr auto ver12 = VK_API_VERSION_1_2;
-    constexpr auto ver13 = VK_API_VERSION_1_3;
-
-    bool bVersionSupport{ false };
-    for (auto& device : devices)
-    {
-        auto props = device.getProperties();
-
-        auto vapi = props.apiVersion; 
-        switch (m_pAPI->getAPI())
-        {
-        case ERenderApi::eVulkan_1_0: bVersionSupport = vapi >= ver10; break;
-        case ERenderApi::eVulkan_1_1: bVersionSupport = vapi >= ver11; break;
-        case ERenderApi::eVulkan_1_2: bVersionSupport = vapi >= ver12; break;
-        case ERenderApi::eVulkan_1_3: bVersionSupport = vapi >= ver13; break;
-        default: bVersionSupport = false; break;
-        }
-        
-        if (!selected_device)
-        {
-            if(props.deviceType == vk::PhysicalDeviceType::eDiscreteGpu && bVersionSupport)
-                selected_device = device;
-        }
-            
-    }
-
-    if (!selected_device)
-    {
-        for (auto& device : devices)
-        {
-            auto props = device.getProperties();
-            if(props.deviceType == vk::PhysicalDeviceType::eIntegratedGpu)
-                selected_device = device;
-        }
-    }
-
-    if (selected_device)
-        return selected_device;
-
-    return nullptr;
-}
-
-std::vector<vk::PhysicalDevice> CDevice::getAvaliablePhysicalDevices(const std::vector<const char*>& deviceExtensions)
-{
-    auto devices = vkInstance.enumeratePhysicalDevices();
-    std::vector<vk::PhysicalDevice> output_devices;
-    if (devices.size() == 0)
-        log_error("Failed to find GPUs with Vulkan support!");
-
-    for (const auto& device : devices)
-    {
-        if (isDeviceSuitable(device, deviceExtensions))
-            output_devices.emplace_back(device);
-    }
-
-    if (output_devices.size() == 0)
-        log_error("Failed to find a suitable GPU!");
-
-    return output_devices;
-}
-
-bool CDevice::isDeviceSuitable(const vk::PhysicalDevice& device, const std::vector<const char*>& deviceExtensions)
-{
-    queueFamilies.initialize(device, vkSurface);
-
-    bool extensionsSupported = VkHelper::checkDeviceExtensionSupport(device, deviceExtensions);
-
-    bool swapChainAdequate = false;
-    if (extensionsSupported)
-    {
-        FSwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
-        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-    }
-
-    vk::PhysicalDeviceFeatures supportedFeatures = device.getFeatures();
-
-    return queueFamilies.isValid() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy && supportedFeatures.sampleRateShading;
 }

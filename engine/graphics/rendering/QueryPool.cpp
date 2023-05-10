@@ -1,5 +1,6 @@
 #include "QueryPool.h"
 
+#include "APICompatibility.h"
 #include "graphics/Device.h"
 
 using namespace engine::graphics;
@@ -20,7 +21,7 @@ void CQueryPool::create()
 	createInfo.queryType = vk::QueryType::eOcclusion;
 	createInfo.queryCount = 10000u;
 	auto res = pDevice->create(createInfo, &queryPool);
-	log_cerror(VkHelper::check(res), "Cannot create query pool.");
+	log_cerror(APICompatibility::check(res), "Cannot create query pool.");
 }
 
 void CQueryPool::clear(vk::CommandBuffer& commandBuffer)
@@ -50,7 +51,7 @@ void CQueryPool::takeResult()
 	vk::QueryResultFlags flags = vk::QueryResultFlagBits::e64 | vk::QueryResultFlagBits::eWait;
 
 	auto result = device.getQueryPoolResults<uint64_t>(queryPool, 0u, elements, dataSize, static_cast<vk::DeviceSize>(elementSize), flags);
-	log_cerror(VkHelper::check(result.result), "Cannot create query pool.");
+	log_cerror(APICompatibility::check(result.result), "Cannot create query pool.");
 	vPixelDrawn = result.value;
 }
 

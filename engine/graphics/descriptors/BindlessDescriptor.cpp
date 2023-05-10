@@ -2,6 +2,7 @@
 
 #include "Device.h"
 #include "APIHandle.h"
+#include "APICompatibility.h"
 
 using namespace engine::graphics;
 
@@ -108,7 +109,7 @@ void CBindlessDescriptor::createDescriptorPool()
     descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
     descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
     vk::Result res = pDevice->create(descriptorPoolCreateInfo, &m_pDescriptorPool);
-    log_cerror(VkHelper::check(res), "Cannot create descriptor pool.");
+    log_cerror(APICompatibility::check(res), "Cannot create descriptor pool.");
 }
 
 void CBindlessDescriptor::createDescriptorSetLayout()
@@ -133,7 +134,7 @@ void CBindlessDescriptor::createDescriptorSetLayout()
     descriptorSetLayoutCI.pNext = &descriptorSetLayoutBindingFlagsCIEXT;
 
     vk::Result res = pDevice->create(descriptorSetLayoutCI, &m_pDescriptorSetLayout);
-    log_cerror(VkHelper::check(res), "Cannot create descriptor set layout.");
+    log_cerror(APICompatibility::check(res), "Cannot create descriptor set layout.");
 }
 
 void CBindlessDescriptor::createDescriptorSet()
@@ -157,5 +158,5 @@ void CBindlessDescriptor::createDescriptorSet()
     descriptorSetAI.pNext = &descriptorSetVariableDescriptorCountAIEXT;
 
     vk::Result res = pDevice->create(descriptorSetAI, m_vDescriptorSets.data());
-    log_cerror(VkHelper::check(res), "Cannot create descriptor sets.");
+    log_cerror(APICompatibility::check(res), "Cannot create descriptor sets.");
 }

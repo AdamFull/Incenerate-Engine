@@ -1,6 +1,7 @@
 #include "CommandBuffer.h"
 
 #include "APIHandle.h"
+#include "APICompatibility.h"
 #include "CommandPool.h"
 
 using namespace engine::graphics;
@@ -30,7 +31,7 @@ void CCommandBuffer::create(bool _begin, vk::QueueFlags queueFlags, vk::CommandB
 
     vCommandBuffers.resize(count);
     vk::Result res = pDevice->create(allocInfo, vCommandBuffers.data());
-    log_cerror(VkHelper::check(res), "Cannot create bommand buffers");
+    log_cerror(APICompatibility::check(res), "Cannot create bommand buffers");
 
     if (_begin)
         begin();
@@ -76,14 +77,14 @@ vk::Result CCommandBuffer::submitIdle()
     vk::FenceCreateInfo fenceCreateInfo{};
     vk::Fence fence;
     res = pDevice->create(fenceCreateInfo, &fence);
-    log_cerror(VkHelper::check(res), "Cannot create fence.");
+    log_cerror(APICompatibility::check(res), "Cannot create fence.");
     res = vkDevice.resetFences(1, &fence);
-    log_cerror(VkHelper::check(res), "Cannot reset fence.");
+    log_cerror(APICompatibility::check(res), "Cannot reset fence.");
 
     auto& queue = pDevice->getQueue(queueFlags);
     queue.submit(submitInfo, fence);
     res = vkDevice.waitForFences(1, &fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
-    log_cerror(VkHelper::check(res), "Wait for fences error.");
+    log_cerror(APICompatibility::check(res), "Wait for fences error.");
     pDevice->destroy(&fence);
     return res;
 }

@@ -1,6 +1,7 @@
 #include "Shader.h"
 
 #include "APIHandle.h"
+#include "APICompatibility.h"
 
 using namespace engine::graphics;
 
@@ -98,7 +99,7 @@ void CShader::createShaderModule(const std::vector<uint32_t>& spirv, vk::ShaderS
 
         vk::ShaderModule shaderModule{ VK_NULL_HANDLE };
         vk::Result res = pDevice->create(shaderCI, &shaderModule);
-        log_cerror(VkHelper::check(res), "Cannot create shader module.");
+        log_cerror(APICompatibility::check(res), "Cannot create shader module.");
 
         vk::PipelineShaderStageCreateInfo shaderStageCI{};
         shaderStageCI.stage = stage;

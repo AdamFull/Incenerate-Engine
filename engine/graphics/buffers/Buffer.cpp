@@ -1,6 +1,7 @@
 #include "Buffer.h"
 
 #include "APIHandle.h"
+#include "APICompatibility.h"
 
 using namespace engine::graphics;
 
@@ -93,7 +94,7 @@ void CBuffer::create(vk::DeviceSize instanceSize, vk::DeviceSize instanceCount, 
     auto& vmalloc = pDevice->getVMAAllocator();
 
     auto res = vmalloc.createBuffer(&bufferInfo, &alloc_create_info, &buffer, &allocation, nullptr);
-    log_cerror(VkHelper::check(res), "Cannot allocate memory for buffer.");
+    log_cerror(APICompatibility::check(res), "Cannot allocate memory for buffer.");
 }
 
 void CBuffer::reCreate(vk::DeviceSize instanceSize, uint32_t instanceCount, vma::MemoryUsage memory_usage, vk::BufferUsageFlags usageFlags,
@@ -129,7 +130,7 @@ void CBuffer::map()
     auto allocator = pDevice->getVMAAllocator();
     
     auto res = allocator.mapMemory(allocation, &mappedMemory);
-    log_cerror(VkHelper::check(res), "Can't map memory.");
+    log_cerror(APICompatibility::check(res), "Can't map memory.");
 }
 
 void CBuffer::unmap()

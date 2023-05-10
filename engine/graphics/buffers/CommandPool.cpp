@@ -1,6 +1,7 @@
 #include "CommandPool.h"
 
 #include "APIHandle.h"
+#include "APICompatibility.h"
 
 using namespace engine::graphics;
 
@@ -24,7 +25,7 @@ void CCommandPool::create(vk::QueueFlags queueFlags, const std::thread::id& thre
         poolInfo.queueFamilyIndex = pDevice->getQueueFamilyIndex(family::transfer);
 
     vk::Result res = pDevice->create(poolInfo, &commandPool);
-    log_cerror(VkHelper::check(res), "Cannot create command pool.");
+    log_cerror(APICompatibility::check(res), "Cannot create command pool.");
 }
 
 CCommandPool::~CCommandPool()
