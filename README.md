@@ -26,23 +26,24 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [x] bmp
 - [x] pic
 - [x] gif
-- [ ] dds
 
 ### Supported mesh formats
 - [x] gltf
 - [x] gltf2.0
-- [x] obj
-- [ ] fbx
 
 ### Supported audio formats
 - [x] wav/wave
-- [ ] ogg (in future)
+- [x] ogg
 
 ### Supported scripting languages
 - [ ] lua (sol2 in future)
 
-### Graphics features
+### Vulkan support
 - [x] Vulkan 1.3
+- [x] Vulkan 1.2
+- [x] Vulkan 1.1
+
+### Graphics features
 - [x] Deferred shading
 - [x] HDR
 - [x] IBL
