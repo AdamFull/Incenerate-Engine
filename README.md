@@ -26,17 +26,14 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [x] bmp
 - [x] pic
 - [x] gif
-- [ ] dds
 
 ### Supported mesh formats
 - [x] gltf
 - [x] gltf2.0
-- [-] obj - deprecatid
-- [ ] fbx
 
 ### Supported audio formats
 - [x] wav/wave
-- [x] ogg (in future)
+- [x] ogg
 
 ### Supported scripting languages
 - [ ] lua (sol2 in future)
@@ -45,7 +42,6 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [x] Vulkan 1.3
 - [x] Vulkan 1.2
 - [x] Vulkan 1.1
-- [-] Vulkan 1.0 - deprecated
 
 ### Graphics features
 - [x] Deferred shading
