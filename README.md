@@ -41,8 +41,13 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 ### Supported scripting languages
 - [ ] lua (sol2 in future)
 
-### Graphics features
+### Vulkan support
 - [x] Vulkan 1.3
+- [x] Vulkan 1.2
+- [x] Vulkan 1.1
+- [ ] Vulkan 1.0 - deprecated
+
+### Graphics features
 - [x] Deferred shading
 - [x] HDR
 - [x] IBL
