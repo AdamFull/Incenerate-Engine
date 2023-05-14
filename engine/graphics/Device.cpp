@@ -279,6 +279,7 @@ void CDevice::createDevice()
     auto queueCreateInfos = queueFamilies.getCreateInfos();
 
     auto bIndexingExtension = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+    auto bShaderObjectExtension = CSessionStorage::getInstance()->get<bool>(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
 
     // vk 1.0 features
     vk::PhysicalDeviceFeatures deviceFeatures{};
@@ -309,9 +310,14 @@ void CDevice::createDevice()
     vk12features.descriptorBindingVariableDescriptorCount = bIndexingExtension;
     vk12features.pNext = vkVersion > VK_API_VERSION_1_2 ? &vk13features : nullptr;
 
+    // vk 1.1 features
     vk::PhysicalDeviceSynchronization2FeaturesKHR synchronizationFeatures{};
     synchronizationFeatures.synchronization2 = true;
     synchronizationFeatures.pNext = vkVersion > VK_API_VERSION_1_1 ? &vk12features : nullptr;
+
+    //vk::PhysicalDeviceShaderObjectFeaturesEXT shaderObjectFeatures{};
+    //shaderObjectFeatures.shaderObject = bShaderObjectExtension;
+    //shaderObjectFeatures.pNext = &synchronizationFeatures;
 
     vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
     indexingFeatures.descriptorBindingPartiallyBound = bIndexingExtension;

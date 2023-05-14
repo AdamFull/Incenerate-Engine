@@ -111,7 +111,8 @@ const std::vector<const char*>& APICompatibility::getRequiredDeviceExtensions()
 const std::vector<const char*>& APICompatibility::getOptionalDeviceExtensions()
 {
 	static const std::vector<const char*> optionalExtensions{
-		VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
+		VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+		VK_EXT_SHADER_OBJECT_EXTENSION_NAME
 	};
 
 	return optionalExtensions;
