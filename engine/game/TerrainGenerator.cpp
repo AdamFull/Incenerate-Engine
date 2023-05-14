@@ -58,7 +58,7 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 {
 	auto& graphics = EGEngine->getGraphics();
 
-	terrain->source = "textures\\terrain\\terrain_height.ktx2";
+	terrain->source = "/assets/textures/terrain/terrain_height.ktx2";
 	loadHeightmap(terrain);
 	loadMaterial(terrain);
 
@@ -128,7 +128,7 @@ void CTerrainLoader::loadMaterial(ecs::FTerrainComponent* terrain)
 	}
 
 	params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP");
-	material->addTexture("color_tex", graphics->addImage("terrain_texture", "textures\\terrain\\terrain_diffuse.ktx2"));
+	material->addTexture("color_tex", graphics->addImage("terrain_texture", "/assets/textures/terrain/terrain_diffuse.ktx2"));
 
 	material->setParameters(std::move(params));
 	material->incrementUsageCount();

@@ -3,57 +3,6 @@
 #extension GL_ARB_shading_language_420pack : enable
 #extension GL_GOOGLE_include_directive : require
 
-#ifdef HAS_BASECOLORMAP
-layout(binding = 2) uniform sampler2D color_tex;
-#endif
-
-#ifdef HAS_METALLIC_ROUGHNESS
-layout(binding = 3) uniform sampler2D rmah_tex;
-#endif
-
-#ifdef HAS_NORMALMAP
-layout(binding = 4) uniform sampler2D normal_tex;
-#endif
-
-#ifdef HAS_OCCLUSIONMAP
-layout(binding = 5) uniform sampler2D occlusion_tex;
-#endif
-
-#ifdef HAS_EMISSIVEMAP
-layout(binding = 6) uniform sampler2D emissive_tex;
-#endif
-
-#ifdef HAS_HEIGHTMAP
-layout(binding = 7) uniform sampler2D height_tex;
-#endif
-
-layout(std140, binding = 0) uniform FUniformData 
-{
-  	mat4 model;
-  	mat4 view;
-  	mat4 projection;
-  	mat4 normal;
-	vec3 viewDir;
-	vec2 viewportDim;
-	vec4 frustumPlanes[6];
-	vec4 object_id;
-} data;
-
-layout(std140, binding = 19) uniform UBOMaterial
-{
-	vec4 baseColorFactor;
-	vec3 emissiveFactor;
-	float emissiveStrength;
-	int alphaMode;
-	float alphaCutoff;
-	float normalScale;
-	float occlusionStrenth;
-	float metallicFactor;
-	float roughnessFactor;
-	float tessellationFactor;
-	float displacementStrength;
-} material;
-
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec4 inPosition;
@@ -68,6 +17,7 @@ layout(location = 4) out vec4 outObjectID;
 #endif
 
 #include "../../shader_util.glsl"
+#include "shader_inputs.glsl"
 
 #define HAS_NORMALS
 
@@ -79,7 +29,7 @@ void main()
 //BASECOLOR
 	vec4 albedo_map = vec4(1.0);
 #ifdef HAS_BASECOLORMAP
-	albedo_map = texture(color_tex, inUV) * material.baseColorFactor;
+	albedo_map = sample_texture(color_tex, inUV) * material.baseColorFactor;
 #else
 	albedo_map = material.baseColorFactor;
 #endif
@@ -102,7 +52,7 @@ void main()
 	float roughness = material.roughnessFactor;
 	float metallic = material.metallicFactor;
 #ifdef HAS_METALLIC_ROUGHNESS
-	vec4 metalRough = texture(rmah_tex, texCoord);
+	vec4 metalRough = sample_texture(rmah_tex, texCoord);
 	roughness = roughness * metalRough.g;
 	metallic = metallic * metalRough.b;
 #endif
@@ -131,7 +81,7 @@ void main()
 #endif
 
 #ifdef HAS_NORMALMAP
-    normal_map = getTangentSpaceNormalMap(texture(normal_tex, texCoord).rgb, tbn, material.normalScale);
+    normal_map = getTangentSpaceNormalMap(sample_texture(normal_tex, texCoord).rgb, tbn, material.normalScale);
 #else
     // The tbn matrix is linearly interpolated, so we need to re-normalize
     normal_map = normalize(tbn[2].xyz);
@@ -141,7 +91,7 @@ void main()
 
 //AMBIENT OCCLUSION
 #ifdef HAS_OCCLUSIONMAP
-	pbr_map.b = texture(occlusion_tex, texCoord).r;
+	pbr_map.b = sample_texture(occlusion_tex, texCoord).r;
 	pbr_map.a = material.occlusionStrenth;
 #else
 	pbr_map.b = 1.0;
@@ -151,7 +101,7 @@ void main()
 //EMISSION
 	vec4 emission = vec4(0.0);
 #ifdef HAS_EMISSIVEMAP
-    emission = vec4(texture(emissive_tex, texCoord).rgb * material.emissiveFactor, 1.0) * material.emissiveStrength;
+    emission = vec4(sample_texture(emissive_tex, texCoord).rgb * material.emissiveFactor, 1.0) * material.emissiveStrength;
 #else
 	emission = vec4(material.emissiveFactor, 1.0) * material.emissiveStrength;
 #endif

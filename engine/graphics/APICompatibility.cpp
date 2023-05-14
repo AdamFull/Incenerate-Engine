@@ -102,7 +102,9 @@ const std::vector<const char*>& APICompatibility::getRequiredDeviceExtensions()
 		VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
 		VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
 		VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
-		VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME
+		VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
+		VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
+		VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME
 	};
 	
 	return requiredExtensions;
@@ -111,7 +113,7 @@ const std::vector<const char*>& APICompatibility::getRequiredDeviceExtensions()
 const std::vector<const char*>& APICompatibility::getOptionalDeviceExtensions()
 {
 	static const std::vector<const char*> optionalExtensions{
-		VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+		//VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
 		VK_EXT_SHADER_OBJECT_EXTENSION_NAME
 	};
 

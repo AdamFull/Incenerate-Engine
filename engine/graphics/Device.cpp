@@ -319,12 +319,16 @@ void CDevice::createDevice()
     //shaderObjectFeatures.shaderObject = bShaderObjectExtension;
     //shaderObjectFeatures.pNext = &synchronizationFeatures;
 
+    vk::PhysicalDeviceGraphicsPipelineLibraryFeaturesEXT pipelineLibraryFeatures{};
+    pipelineLibraryFeatures.graphicsPipelineLibrary = true;
+    pipelineLibraryFeatures.pNext = &synchronizationFeatures;
+
     vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
     indexingFeatures.descriptorBindingPartiallyBound = bIndexingExtension;
     indexingFeatures.runtimeDescriptorArray = bIndexingExtension;
     indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = bIndexingExtension;
     indexingFeatures.descriptorBindingVariableDescriptorCount = bIndexingExtension;
-    indexingFeatures.pNext = &synchronizationFeatures;
+    indexingFeatures.pNext = &pipelineLibraryFeatures;
 
     auto createInfo = vk::DeviceCreateInfo{};
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());

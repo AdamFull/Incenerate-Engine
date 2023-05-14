@@ -44,6 +44,7 @@
     "front_face": "ccw",
     "depth_test": true,
     "tesselation": true,
+    "uses_bindless_textures": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
       "/embed/shaders/main/default/terrain.vert",
@@ -60,6 +61,7 @@
     "front_face": "ccw",
     "depth_test": true,
     "tesselation": false,
+    "uses_bindless_textures": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
       "/embed/shaders/main/default/terrain.vert",

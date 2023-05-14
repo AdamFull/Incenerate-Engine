@@ -17,25 +17,7 @@ layout(location = 2) out vec4 outPosition;
 layout(location = 3) out mat3 outTBN;
 
 #include "../../shader_util.glsl"
-
-layout(set = 0, std140, binding = 0) uniform FUniformData 
-{
-  	mat4 model;
-  	mat4 view;
-  	mat4 projection;
-  	mat4 normal;
-	vec3 viewDir;
-	vec2 viewportDim;
-	vec4 frustumPlanes[6];
-	vec4 object_id;
-} data;
-
-#ifdef HAS_SKIN
-layout(std140, set = 0, binding = 1) uniform FSkinning 
-{
-	mat4 jointMatrices[128];
-};
-#endif
+#include "shader_inputs.glsl"
 
 void main() 
 {

@@ -1,37 +1,6 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
 
-layout(std140, binding = 0) uniform FUniformData 
-{
-  	mat4 model;
-  	mat4 view;
-  	mat4 projection;
-  	mat4 normal;
-	vec3 viewDir;
-	vec2 viewportDim;
-	vec4 frustumPlanes[6];
-	vec4 object_id;
-} data;
-
-layout(std140, binding = 19) uniform UBOMaterial
-{
-	vec4 baseColorFactor;
-	vec3 emissiveFactor;
-	float emissiveStrength;
-	int alphaMode;
-	float alphaCutoff;
-	float normalScale;
-	float occlusionStrenth;
-	float metallicFactor;
-	float roughnessFactor;
-	float tessellationFactor;
-	float displacementStrength;
-} material;
-
-#ifdef HAS_HEIGHTMAP
-layout(binding = 7) uniform sampler2D height_tex;
-#endif
-
 #define VERTICES_COUNT 4
  
 layout (vertices = VERTICES_COUNT) out;
@@ -43,6 +12,8 @@ layout (location = 2) in vec3 inNormal[];
 layout (location = 0) out vec2 outUV[VERTICES_COUNT];
 layout (location = 1) out vec3 outColor[VERTICES_COUNT];
 layout (location = 2) out vec3 outNormal[VERTICES_COUNT];
+
+#include "shader_inputs.glsl"
 
 // Calculate the tessellation factor based on screen space
 // dimensions of the edge
@@ -83,7 +54,7 @@ bool frustumCheck()
 	vec4 pos = gl_in[gl_InvocationID].gl_Position;
 
 #ifdef HAS_HEIGHTMAP
-	pos.y += texture(height_tex, inUV[0]).r * material.displacementStrength;
+	pos.y += sample_texture(height_tex, inUV[0]).r * material.displacementStrength;
 #endif
 
 	// Check sphere against frustum planes

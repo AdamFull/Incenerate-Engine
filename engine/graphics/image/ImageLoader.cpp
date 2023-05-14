@@ -41,7 +41,7 @@ void CImageLoader::load(const std::string& fsPath, std::unique_ptr<FImageCreateI
 void CImageLoader::loadSTB_memory(const std::vector<uint8_t>& imgdata, std::unique_ptr<FImageCreateInfo>& imageCI, bool header)
 {
     int width{ 0 }, height{ 0 }, channels{ 0 };
-    auto data = stbi_loadf_from_memory(imgdata.data(), imgdata.size(), &width, &height, &channels, STBI_rgb_alpha);
+    auto data = stbi_load_from_memory(imgdata.data(), imgdata.size(), &width, &height, &channels, STBI_rgb_alpha);
 
     imageCI->baseWidth = width;
     imageCI->baseHeight = height;

@@ -17,11 +17,11 @@ namespace engine
 		}
 
 		template<typename T>
-		T get(const std::string& key) const 
+		T get(const std::string& key, T defaultValue = T()) const 
 		{
 			auto it = storage.find(key);
 			if (it == storage.end())
-				throw std::runtime_error("Key not found: " + key);
+				return defaultValue;
 
 			const std::any& value = it->second;
 			if (typeid(T) != value.type())

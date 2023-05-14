@@ -50,7 +50,7 @@ namespace engine
             {
                 ++it_;
                 if (it_ != _Ty())
-                    path_ = fs::to_posix_path(std::filesystem::relative(it_->path(), root_).string());
+                    path_ = fs::to_posix_path(fs::from_unicode(std::filesystem::relative(it_->path(), root_).u16string()));
             }
 
             /**

@@ -16,18 +16,7 @@ layout(location = 1) out vec3 outColor;
 layout(location = 2) out vec3 outNormal;
 
 #include "../../shader_util.glsl"
-
-layout(std140, binding = 0) uniform FUniformData 
-{
-  	mat4 model;
-  	mat4 view;
-  	mat4 projection;
-  	mat4 normal;
-	vec3 viewDir;
-	vec2 viewportDim;
-	vec4 frustumPlanes[6];
-	vec4 object_id;
-} data;
+#include "shader_inputs.glsl"
 
 void main() 
 {

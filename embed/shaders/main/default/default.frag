@@ -3,83 +3,6 @@
 #extension GL_ARB_shading_language_420pack : enable
 #extension GL_GOOGLE_include_directive : require
 
-//#define BINDLESS_TEXTURES
-//#define HAS_BASECOLORMAP
-//#define HAS_METALLIC_ROUGHNESS
-//#define HAS_NORMALMAP
-//#define HAS_OCCLUSIONMAP
-//#define HAS_EMISSIVEMAP
-//#define HAS_HEIGHTMAP
-
-#ifdef BINDLESS_TEXTURES
-#extension GL_EXT_nonuniform_qualifier : enable
-layout (set = 1, binding = 0) uniform sampler2D textures[];
-#else
-	#ifdef HAS_BASECOLORMAP
-	layout(set = 1, binding = 0) uniform sampler2D color_tex;
-	#endif // HAS_BASECOLORMAP
-	
-	#ifdef HAS_METALLIC_ROUGHNESS
-	layout(set = 1, binding = 1) uniform sampler2D rmah_tex;
-	#endif // HAS_METALLIC_ROUGHNESS
-	
-	#ifdef HAS_NORMALMAP
-	layout(set = 1, binding = 2) uniform sampler2D normal_tex;
-	#endif // HAS_NORMALMAP
-	
-	#ifdef HAS_OCCLUSIONMAP
-	layout(set = 1, binding = 3) uniform sampler2D occlusion_tex;
-	#endif // HAS_OCCLUSIONMAP
-	
-	#ifdef HAS_EMISSIVEMAP
-	layout(set = 1, binding = 4) uniform sampler2D emissive_tex;
-	#endif // HAS_OCCLUSIONMAP
-	
-	#ifdef HAS_HEIGHTMAP
-	layout(set = 1, binding = 5) uniform sampler2D height_tex;
-	#endif // HAS_HEIGHTMAP
-#endif // BINDLESS_TEXTURES
-
-
-layout(std140, set = 0, binding = 0) uniform FUniformData 
-{
-  	mat4 model;
-  	mat4 view;
-  	mat4 projection;
-  	mat4 normal;
-	vec3 viewDir;
-	vec2 viewportDim;
-	vec4 frustumPlanes[6];
-	vec4 object_id;
-} data;
-
-layout(std140, set = 0, binding = 2) uniform UBOMaterial
-{
-	vec4 baseColorFactor;
-	vec3 emissiveFactor;
-	float emissiveStrength;
-	int alphaMode;
-	float alphaCutoff;
-	float normalScale;
-	float occlusionStrenth;
-	float metallicFactor;
-	float roughnessFactor;
-	float tessellationFactor;
-	float displacementStrength;
-} material;
-
-#ifdef BINDLESS_TEXTURES
-layout(std140, set = 0, binding = 3) uniform UBOMaterialTextures
-{
-	uint color_tex;
-	uint rmah_tex;
-	uint normal_tex;
-	uint occlusion_tex;
-	uint emissive_tex;
-	uint height_tex;
-} texture_ids;
-#endif
-
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec4 inPosition;
@@ -94,12 +17,7 @@ layout(location = 4) out vec4 outObjectID;
 #endif
 
 #include "../../shader_util.glsl"
-
-#ifdef BINDLESS_TEXTURES
-#define sample_texture(samplerName, texCoord) texture(textures[texture_ids.samplerName], texCoord)
-#else
-#define sample_texture(samplerName, texCoord) texture(samplerName, texCoord)
-#endif
+#include "shader_inputs.glsl"
 
 const float minRoughness = 0.04;
 

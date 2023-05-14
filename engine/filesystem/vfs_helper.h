@@ -46,6 +46,7 @@ namespace engine
 
 		struct INCENERATE_VFS_EXPORT fs
 		{
+            static std::string from_unicode(const std::u16string& data);
 			static std::string get_mount_point(const std::string& path);
 			static std::string to_posix_path(const std::string& path);
 			static std::string get_local_path(const std::string& path);

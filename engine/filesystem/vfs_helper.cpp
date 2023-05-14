@@ -3,8 +3,15 @@
 #include <algorithm>
 #include <deque>
 #include <sstream>
+#include <codecvt>
 
 using namespace engine::filesystem;
+
+std::string fs::from_unicode(const std::u16string& data)
+{
+	std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+	return convert.to_bytes(data);
+}
 
 std::string fs::get_mount_point(const std::string& path)
 {
