@@ -24,16 +24,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
 {
     auto graphics = pDevice->getAPI();
     auto& shader = pShader->getShader();
-    auto vertexfree = pShader->isVertexFree();
-    auto vertexType = pShader->getVertexType();
-    auto culling = pShader->getCullMode();
-    auto frontface = pShader->getFrontFace();
-    auto depthTest = pShader->getDepthTestFlag();
-    auto dynamicStateEnables = pShader->getDynamicStateEnables();
-    auto enableTesselation = pShader->getTesselationFlag();
-    auto topology = pShader->getPrimitiveTopology();
-    auto alphaMode = pShader->alphaMode();
-    auto doubleSided = pShader->isDoubleSided();
+    auto& pipelineParams = pShader->getPipelineParams();
 
     vk::PipelineVertexInputStateCreateInfo vertexInputCI{};
     vertexInputCI.vertexBindingDescriptionCount = 0;
@@ -42,14 +33,14 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     std::vector<vk::VertexInputAttributeDescription> attributeDescription;
     vk::VertexInputBindingDescription bindingDescription;
 
-    if (!vertexfree)
+    if (!pipelineParams.vertexFree)
     {
-        if (vertexType == EVertexType::eDefault)
+        if (pipelineParams.vertexType == EVertexType::eDefault)
         {
             attributeDescription = FVertex::getAttributeDescriptions();
             bindingDescription = FVertex::getBindingDescription();
         }
-        else if (vertexType == EVertexType::eSmall)
+        else if (pipelineParams.vertexType == EVertexType::eSmall)
         {
             attributeDescription = FSimpleVertex::getAttributeDescriptions();
             bindingDescription = FSimpleVertex::getBindingDescription();
@@ -72,7 +63,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
         if (desc.format == depthformat)
             continue;
 
-        bool hasAlpha = alphaMode == EAlphaMode::EBLEND;
+        bool hasAlpha = pipelineParams.alphaMode == EAlphaMode::EBLEND;
 
         vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
@@ -92,7 +83,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     bool isDepthOnly = colorAttachmentCount == 0;
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
-    inputAssembly.topology = enableTesselation ? vk::PrimitiveTopology::ePatchList : topology;
+    inputAssembly.topology = pipelineParams.enableTesselation ? vk::PrimitiveTopology::ePatchList : pipelineParams.primitiveTopology;
     inputAssembly.flags = vk::PipelineInputAssemblyStateCreateFlags{};
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 
@@ -101,8 +92,8 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = vk::PolygonMode::eFill;
     rasterizer.lineWidth = 1.0f;
-    rasterizer.cullMode = doubleSided ? vk::CullModeFlagBits::eNone : culling;
-    rasterizer.frontFace = frontface;
+    rasterizer.cullMode = pipelineParams.doubleSided ? vk::CullModeFlagBits::eNone : pipelineParams.cullMode;
+    rasterizer.frontFace = pipelineParams.frontFace;
     rasterizer.depthBiasEnable = VK_FALSE;
 
     vk::PipelineMultisampleStateCreateInfo multisampling{};
@@ -115,16 +106,16 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     colorBlending.pAttachments = colorBlendAttachments.data();
 
     vk::PipelineDepthStencilStateCreateInfo depthStencil{};
-    depthStencil.depthTestEnable = depthTest;
-    depthStencil.depthWriteEnable = depthTest;
+    depthStencil.depthTestEnable = pipelineParams.depthTest;
+    depthStencil.depthWriteEnable = pipelineParams.depthTest;
     depthStencil.depthCompareOp = vk::CompareOp::eLessOrEqual;
     depthStencil.back.compareOp = vk::CompareOp::eAlways;
     depthStencil.depthBoundsTestEnable = VK_FALSE;
     depthStencil.stencilTestEnable = VK_FALSE;
 
     vk::PipelineDynamicStateCreateInfo dynamicStateInfo{};
-    dynamicStateInfo.pDynamicStates = dynamicStateEnables.data();
-    dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+    dynamicStateInfo.pDynamicStates = pipelineParams.dynamicStates.data();
+    dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(pipelineParams.dynamicStates.size());
     dynamicStateInfo.flags = vk::PipelineDynamicStateCreateFlags{};
 
     vk::PipelineViewportStateCreateInfo viewportState{};
@@ -132,7 +123,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     viewportState.scissorCount = 1;
 
     vk::PipelineTessellationStateCreateInfo tessellationState{};
-    tessellationState.patchControlPoints = enableTesselation ? shader->getControlPoints() : 0;
+    tessellationState.patchControlPoints = pipelineParams.enableTesselation ? shader->getControlPoints() : 0;
 
     auto shaderStages = shader->getStageCreateInfo();
 
@@ -152,7 +143,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     pipelineInfo.basePipelineHandle = nullptr;
     pipelineInfo.pDynamicState = &dynamicStateInfo;
 
-    if (enableTesselation)
+    if (pipelineParams.enableTesselation)
         pipelineInfo.pTessellationState = &tessellationState;
 
     vk::Pipeline pipeline{ nullptr };

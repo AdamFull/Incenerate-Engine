@@ -25,6 +25,23 @@ namespace engine
 			std::unordered_map<std::string, std::unique_ptr<CHandler>> mBuffers;
 		};
 
+		struct FPipelineParams
+		{
+			vk::PipelineBindPoint bindPoint{};
+			vk::CullModeFlagBits cullMode{};
+			vk::FrontFace frontFace{};
+			vk::PrimitiveTopology primitiveTopology{};
+			std::vector<vk::DynamicState> dynamicStates{};
+			bool depthTest{ false };
+			bool enableTesselation{ false };
+			bool vertexFree{ false };
+			bool doubleSided{ false };
+			bool useBindlessTextures{ false };
+			EVertexType vertexType{};
+			EAlphaMode alphaMode{};
+			std::string renderStage{};
+		};
+
 		class CShaderObject
 		{
 		public:
@@ -33,7 +50,7 @@ namespace engine
 			CShaderObject(CDevice* device);
 			~CShaderObject();
 
-			void create(uint32_t subpass = 0, size_t usages = 1);
+			void create(size_t usages = 1);
 			void bindDescriptor(vk::CommandBuffer& commandBuffer);
 			void predraw(vk::CommandBuffer& commandBuffer);
 			void dispatch(const std::vector<FDispatchParam>& params);
@@ -49,21 +66,14 @@ namespace engine
 			const std::unique_ptr<CHandler>& getUniformBuffer(const std::string& name);
 			const std::unique_ptr<CPushHandler>& getPushBlock(const std::string& name);
 
-			std::unique_ptr<CPipeline>& getPipeline() { return pPipeline; }
+			size_t getPipeline() { return pipeline_id; }
 
-			vk::PipelineBindPoint getBindPoint() const { return programCI.bindPoint; }
-			vk::CullModeFlagBits getCullMode() const { return programCI.cullMode; }
-			vk::FrontFace getFrontFace() const { return programCI.frontFace; }
-			bool getDepthTestFlag() const { return programCI.depthTest; }
-			const std::vector<vk::DynamicState>& getDynamicStateEnables() const { return programCI.dynamicStates; }
-			vk::PrimitiveTopology getPrimitiveTopology() const { return programCI.topology; }
-			bool getTesselationFlag() const { return programCI.tesselation; }
-			bool isVertexFree() const { return programCI.vertexfree; }
-			EVertexType getVertexType() const { return programCI.vertexType; }
-			const std::string& getStage() const { return programCI.srStage; }
-			const EAlphaMode alphaMode() const { return _alphaMode; }
-			const bool isDoubleSided() const { return bDoubleSided; }
-			const bool isUsesBindlessTextures() const { return programCI.usesBindlessTextures; }
+			const FPipelineParams& getPipelineParams() const { return pipelineParams; }
+
+			vk::PipelineBindPoint getBindPoint() const { return pipelineParams.bindPoint; }
+			bool getTesselationFlag() const { return pipelineParams.enableTesselation; }
+			const std::string& getStage() const { return pipelineParams.renderStage; }
+			const bool isUsesBindlessTextures() const { return pipelineParams.useBindlessTextures; }
 
 			const std::unique_ptr<CShader>& getShader();
 		private:
@@ -72,15 +82,14 @@ namespace engine
 			size_t currentUsage{ 0 };
 
 			std::unique_ptr<CShader> pShader;
-			std::unique_ptr<CPipeline> pPipeline;
+			size_t pipeline_id{ invalid_index };
+			//std::unique_ptr<CPipeline> pPipeline;
 			std::unordered_map<std::string, vk::DescriptorImageInfo> mTextures;
 			std::vector<std::unique_ptr<FShaderInstance>> vInstances;
 			
 			std::unordered_map<std::string, std::unique_ptr<CPushHandler>> mPushBlocks;
 
-			FProgramCreateInfo programCI;
-			EAlphaMode _alphaMode;
-			bool bDoubleSided{ false };
+			FPipelineParams pipelineParams{};
 		};
 	}
 }

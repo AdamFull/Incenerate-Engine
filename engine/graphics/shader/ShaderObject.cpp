@@ -1,6 +1,6 @@
 #include "ShaderObject.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 #include "image/Image.h"
 #include "buffers/CommandBuffer.h"
 #include "pipeline/GraphicsPipeline.h"
@@ -22,7 +22,8 @@ CShaderObject::CShaderObject(CDevice* device)
 
 CShaderObject::~CShaderObject()
 {
-
+	auto* graphics = pDevice->getAPI();
+	graphics->removePipeline(pipeline_id);
 }
 
 const std::unique_ptr<CShader>& CShaderObject::getShader()
@@ -30,29 +31,17 @@ const std::unique_ptr<CShader>& CShaderObject::getShader()
 	return pShader;
 }
 
-void CShaderObject::create(uint32_t subpass, size_t usages)
+void CShaderObject::create(size_t usages)
 {
 	auto graphics = pDevice->getAPI();
+	auto& pipeline = graphics->getPipeline(pipeline_id);
 	usageCount = usages;
-
-	//Creating pipeline
-	switch (programCI.bindPoint)
-	{
-	case vk::PipelineBindPoint::eGraphics: {
-		pPipeline = std::make_unique<CGraphicsPipeline>(pDevice);
-		pPipeline->create(this, graphics->getFramebuffer(programCI.srStage)->getRenderPass(), subpass);
-	} break;
-	case vk::PipelineBindPoint::eCompute: {
-		pPipeline = std::make_unique<CComputePipeline>(pDevice);
-		pPipeline->create(this);
-	} break;
-	}
 
 	for (size_t usage = 0; usage < usageCount; usage++)
 	{
 		auto pInstance = std::make_unique<FShaderInstance>();
-		pInstance->pDescriptorSet = std::make_unique<CDescriptorHandler>(pDevice);
-		pInstance->pDescriptorSet->create(this);
+		pInstance->pDescriptorSet = std::make_unique<CDescriptorHandler>(pDevice, pShader.get());
+		pInstance->pDescriptorSet->create(pipeline->getDescriptorPool(), pipeline->getDescriptorSetLayouts());
 
 		for (auto& [name, uniform] : pShader->getUniformBlocks())
 		{
@@ -73,11 +62,10 @@ void CShaderObject::create(uint32_t subpass, size_t usages)
 		}
 		vInstances.emplace_back(std::move(pInstance));
 	}
-	
 
 	for (auto& [name, push] : pShader->getPushBlocks())
 	{
-		auto pBlock = std::make_unique<CPushHandler>(pPipeline.get());
+		auto pBlock = std::make_unique<CPushHandler>(pipeline.get());
 		pBlock->create(push);
 		mPushBlocks.emplace(name, std::move(pBlock));
 	}
@@ -85,6 +73,8 @@ void CShaderObject::create(uint32_t subpass, size_t usages)
 
 void CShaderObject::bindDescriptor(vk::CommandBuffer& commandBuffer)
 {
+	auto graphics = pDevice->getAPI();
+	auto& pipeline = graphics->getPipeline(pipeline_id);
 	auto& pInstance = vInstances.at(currentUsage);
 
 	pInstance->pDescriptorSet->reset();
@@ -104,7 +94,7 @@ void CShaderObject::bindDescriptor(vk::CommandBuffer& commandBuffer)
 	pInstance->pDescriptorSet->update();
 	mTextures.clear();
 
-	pInstance->pDescriptorSet->bind(commandBuffer);
+	pInstance->pDescriptorSet->bind(commandBuffer, pipeline->getBindPoint(), pipeline->getPipelineLayout());
 
 	currentUsage = (currentUsage + 1) % usageCount;
 }
@@ -112,7 +102,11 @@ void CShaderObject::bindDescriptor(vk::CommandBuffer& commandBuffer)
 void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
 {
 	bindDescriptor(commandBuffer);
-	pPipeline->bind(commandBuffer);
+
+	auto graphics = pDevice->getAPI();
+	auto& pipeline = graphics->getPipeline(pipeline_id);
+	if(pipeline)
+		pipeline->bind(commandBuffer);
 }
 
 void CShaderObject::dispatch(const std::vector<FDispatchParam>& params)
@@ -134,10 +128,11 @@ void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector
 
 	bindDescriptor(commandBuffer);
 
-	auto pipelines = pPipeline->count();
+	auto& pipeline = graphics->getPipeline(pipeline_id);
+	auto pipelineCount = pipeline->count();
 
 	// Dispatch all compute shaders with same descriptor
-	for (size_t idx = 0; idx < pipelines; ++idx)
+	for (size_t idx = 0; idx < pipelineCount; ++idx)
 	{
 		// Synchronize dispatches
 		if (idx > 0)
@@ -146,7 +141,7 @@ void CShaderObject::dispatch(vk::CommandBuffer& commandBuffer, const std::vector
 		auto& localSizes = pShader->getLocalSizes(idx);
 		auto& param = params[idx];
 
-		pPipeline->bind(commandBuffer, idx);
+		pipeline->bind(commandBuffer, idx);
 
 		
 		uint32_t groupCountX{ 0 }, groupCountY{ 0 }, groupCountZ{ 0 };

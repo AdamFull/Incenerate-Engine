@@ -19,8 +19,6 @@ layout(location = 4) out vec4 outObjectID;
 #include "../../shader_util.glsl"
 #include "shader_inputs.glsl"
 
-#define HAS_NORMALS
-
 const float minRoughness = 0.04;
 
 //https://github.com/bwasty/gltf-viewer/blob/master/src/shaders/pbr-frag.glsl
@@ -78,6 +76,8 @@ void main()
     t = normalize(t - ng * dot(ng, t));
     vec3 b = normalize(cross(ng, t));
     mat3 tbn = mat3(t, b, ng);
+#else // HAS_TANGENTS
+    mat3 tbn = inTBN;
 #endif
 
 #ifdef HAS_NORMALMAP

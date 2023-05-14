@@ -28,7 +28,6 @@ namespace engine
 			CDevice* pDevice{ nullptr };
 
 			std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> mDescriptorSetLayouts;
-			//uint32_t lastDescriptorBinding = 0;
 			std::vector<vk::DescriptorPoolSize> vDescriptorPools;
 
 			std::vector<vk::PipelineShaderStageCreateInfo> vShaderModules;

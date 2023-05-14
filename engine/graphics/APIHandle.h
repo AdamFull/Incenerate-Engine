@@ -76,6 +76,15 @@ namespace engine
 			const std::unique_ptr<CShaderObject>& getShader(const std::string& name);
 			const std::unique_ptr<CShaderObject>& getShader(size_t id);
 
+			size_t addPipeline(const std::string& name, std::unique_ptr<CPipeline>&& pipeline);
+			void incrementPipelineUsage(const std::string& name);
+			void incrementPipelineUsage(size_t id);
+			void removePipeline(const std::string& name);
+			void removePipeline(size_t id);
+			const std::unique_ptr<CPipeline>& getPipeline(const std::string& name);
+			size_t getPipelineID(const std::string& name);
+			const std::unique_ptr<CPipeline>& getPipeline(size_t id);
+
 			size_t addMaterial(const std::string& name, std::unique_ptr<CMaterial>&& material);
 			void removeMaterial(const std::string& name);
 			void removeMaterial(size_t id);
@@ -163,6 +172,7 @@ namespace engine
 
 			std::unordered_map<std::string, FCIStage> m_mStageInfos;
 			std::unique_ptr<CObjectManager<CImage>> m_pImageManager;
+			std::unique_ptr<CObjectManager<CPipeline>> m_pPipelineManager;
 			std::unique_ptr<CObjectManager<CShaderObject>> m_pShaderManager;
 			std::unique_ptr<CObjectManager<CMaterial>> m_pMaterialManager;
 			std::unique_ptr<CObjectManager<CVertexBufferObject>> m_pVertexBufferManager;

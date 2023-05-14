@@ -1,25 +1,19 @@
 #include "DescriptorHandler.h"
 
-#include "Device.h"
+#include "APIHandle.h"
 #include "shader/ShaderObject.h"
 
 using namespace engine::graphics;
 
-CDescriptorHandler::CDescriptorHandler(CDevice* device)
+CDescriptorHandler::CDescriptorHandler(CDevice* device, CShader* shader) :
+	pDevice{device}, pShader{shader}
 {
-	pDevice = device;
 }
 
-void CDescriptorHandler::create(CShaderObject* pso)
-{	
-	pShaderObject = pso;
-
-	auto& pipeline = pShaderObject->getPipeline();
-	auto& descriptorPool = pipeline->getDescriptorPool();
-	auto& mDescriptorSetLayouts = pipeline->getDescriptorSetLayouts();
-	
+void CDescriptorHandler::create(const vk::DescriptorPool& descriptorPool, const std::unordered_map<uint32_t, vk::DescriptorSetLayout>& descriptorSetLayouts)
+{
 	pDescriptorSet = std::make_unique<CDescriptorSet>(pDevice);
-	pDescriptorSet->create(descriptorPool, mDescriptorSetLayouts);
+	pDescriptorSet->create(descriptorPool, descriptorSetLayouts);
 }
 
 void CDescriptorHandler::update()
@@ -29,12 +23,9 @@ void CDescriptorHandler::update()
 	vkDevice.updateDescriptorSets(static_cast<uint32_t>(vWriteDescriptorSets.size()), vWriteDescriptorSets.data(), 0, nullptr);
 }
 
-void CDescriptorHandler::bind(const vk::CommandBuffer& commandBuffer) const
+void CDescriptorHandler::bind(const vk::CommandBuffer& commandBuffer, vk::PipelineBindPoint bindPoint, const vk::PipelineLayout& pipelineLayout) const
 {
-	auto bindPoint = pShaderObject->getBindPoint();
-	auto& pipeline = pShaderObject->getPipeline();
-	auto& pipelineLayout = pipeline->getPipelineLayout();
-
+	auto graphics = pDevice->getAPI();
 	pDescriptorSet->bind(commandBuffer, bindPoint, pipelineLayout);
 }
 
@@ -45,8 +36,6 @@ void CDescriptorHandler::reset()
 
 void CDescriptorHandler::set(const std::string& srUniformName, vk::DescriptorBufferInfo& bufferInfo)
 {
-	auto& pShader = pShaderObject->getShader();
-
 	auto uniformBlock = pShader->getUniformBlock(srUniformName);
 	if (!uniformBlock)
 		return;
@@ -62,8 +51,6 @@ void CDescriptorHandler::set(const std::string& srUniformName, vk::DescriptorBuf
 
 void CDescriptorHandler::set(const std::string& srUniformName, vk::DescriptorImageInfo& imageInfo)
 {
-	auto& pShader = pShaderObject->getShader();
-
 	auto uniform = pShader->getUniform(srUniformName);
 	if (!uniform)
 		return;
@@ -79,8 +66,6 @@ void CDescriptorHandler::set(const std::string& srUniformName, vk::DescriptorIma
 
 void CDescriptorHandler::set(const std::string& srUniformName, vk::WriteDescriptorSet& writeInfo)
 {
-	auto& pShader = pShaderObject->getShader();
-
 	auto uniformBlock = pShader->getUniformBlock(srUniformName);
 	if (!uniformBlock)
 		return;

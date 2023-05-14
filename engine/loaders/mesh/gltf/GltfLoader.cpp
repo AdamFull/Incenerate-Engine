@@ -437,11 +437,11 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             }
         }
 
-        if (!bHasNormals)
-            calculate_normals(vertexBuffer, indexBuffer, vertexStart);
-
-        if (!bHasTangents)
-            calculate_tangents(vertexBuffer, indexBuffer, vertexStart);
+        //if (!bHasNormals)
+        //    calculate_normals(vertexBuffer, indexBuffer, vertexStart);
+        //
+        //if (!bHasTangents)
+        //    calculate_tangents(vertexBuffer, indexBuffer, vertexStart);
 
         FMeshlet meshlet;
         meshlet.begin_index = indexStart;
@@ -457,6 +457,8 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             pMaterial->incrementUsageCount();
             auto& params = pMaterial->getParameters();
             if (bHasSkin) params.vCompileDefinitions.emplace_back("HAS_SKIN");
+            if (bHasNormals) params.vCompileDefinitions.emplace_back("HAS_NORMALS");
+            if (bHasTangents) params.vCompileDefinitions.emplace_back("HAS_TANGENTS");
             meshlet.material = material;
         }
 

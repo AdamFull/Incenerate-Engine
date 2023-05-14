@@ -59,14 +59,34 @@ void main()
 	roughness = clamp(roughness, minRoughness, 1.0);
     metallic = clamp(metallic, 0.01, 1.0);
 	pbr_map = vec4(roughness, metallic, 0.0, 0.0);
+	
+
+#ifndef HAS_TANGENTS
+    vec3 pos_dx = dFdx(inPosition.xyz);
+    vec3 pos_dy = dFdy(inPosition.xyz);
+    vec3 tex_dx = dFdx(vec3(inUV, 0.0));
+    vec3 tex_dy = dFdy(vec3(inUV, 0.0));
+    vec3 t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);
+
+#ifdef HAS_NORMALS
+    vec3 ng = normalize(inTBN[2]);
+#else
+    vec3 ng = cross(pos_dx, pos_dy);
+#endif
+
+    t = normalize(t - ng * dot(ng, t));
+    vec3 b = normalize(cross(ng, t));
+    mat3 tbn = mat3(t, b, ng);
+#else // HAS_TANGENTS
+    mat3 tbn = inTBN;
+#endif
 
 //NORMALS
-
 	vec3 normal_map = vec3(0.0);
 #ifdef HAS_NORMALMAP // HAS_NORMALMAP
-	normal_map = getTangentSpaceNormalMap(sample_texture(normal_tex, texCoord).rgb, inTBN, material.normalScale);
+	normal_map = getTangentSpaceNormalMap(sample_texture(normal_tex, texCoord).rgb, tbn, material.normalScale);
 #else // HAS_NORMALMAP
-	normal_map = inTBN[2].xyz;
+	normal_map = tbn[2].xyz;
 #endif
 
 //AMBIENT OCCLUSION

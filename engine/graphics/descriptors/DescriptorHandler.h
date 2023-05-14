@@ -9,11 +9,11 @@ namespace engine
 		class CDescriptorHandler
 		{
 		public:
-			CDescriptorHandler(CDevice* device);
+			CDescriptorHandler(CDevice* device, CShader* shader);
 
-			void create(CShaderObject* pPipeline);
+			void create(const vk::DescriptorPool& descriptorPool, const std::unordered_map<uint32_t, vk::DescriptorSetLayout>& descriptorSetLayouts);
 			void update();
-			void bind(const vk::CommandBuffer& commandBuffer) const;
+			void bind(const vk::CommandBuffer& commandBuffer, vk::PipelineBindPoint bindPoint, const vk::PipelineLayout& pipelineLayout) const;
 			void reset();
 
 			void set(const std::string& srUniformName, vk::DescriptorBufferInfo& bufferInfo);
@@ -23,7 +23,7 @@ namespace engine
 			CDevice* getDevice();
 		private:
 			CDevice* pDevice{ nullptr };
-			CShaderObject* pShaderObject{ nullptr };
+			CShader* pShader{ nullptr };
 			std::unique_ptr<CDescriptorSet> pDescriptorSet;
 			std::vector<vk::WriteDescriptorSet> vWriteDescriptorSets;
 		};

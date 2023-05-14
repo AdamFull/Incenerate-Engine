@@ -44,6 +44,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
     m_pImageManager = std::make_unique<CObjectManager<CImage>>();
     m_pShaderManager = std::make_unique<CObjectManager<CShaderObject>>();
+    m_pPipelineManager = std::make_unique<CObjectManager<CPipeline>>();
     m_pMaterialManager = std::make_unique<CObjectManager<CMaterial>>();
     m_pVertexBufferManager = std::make_unique<CObjectManager<CVertexBufferObject>>();
     m_pRenderStageManager = std::make_unique<CObjectManager<CRenderStage>>();
@@ -353,6 +354,7 @@ void CAPIHandle::forceReleaseResources()
 {
     m_pImageManager->performDeletion();
     m_pShaderManager->performDeletion();
+    m_pPipelineManager->performDeletion();
     m_pMaterialManager->performDeletion();
     m_pVertexBufferManager->performDeletion();
     m_pRenderStageManager->performDeletion();
@@ -415,6 +417,7 @@ void CAPIHandle::shutdown()
     m_pMaterialManager = nullptr;
     m_pVertexBufferManager = nullptr;
     m_pShaderManager = nullptr;
+    m_pPipelineManager = nullptr;
     m_pImageManager = nullptr;
 }
 
@@ -647,6 +650,47 @@ const std::unique_ptr<CShaderObject>& CAPIHandle::getShader(const std::string& n
 const std::unique_ptr<CShaderObject>& CAPIHandle::getShader(size_t id)
 {
     return m_pShaderManager->get(id);
+}
+
+
+size_t CAPIHandle::addPipeline(const std::string& name, std::unique_ptr<CPipeline>&& pipeline)
+{
+    return m_pPipelineManager->add(name, std::move(pipeline));
+}
+
+void CAPIHandle::incrementPipelineUsage(const std::string& name)
+{
+    m_pPipelineManager->increment(name);
+}
+
+void CAPIHandle::incrementPipelineUsage(size_t id)
+{
+    m_pPipelineManager->increment(id);
+}
+
+void CAPIHandle::removePipeline(const std::string& name)
+{
+    m_pPipelineManager->remove(name);
+}
+
+void CAPIHandle::removePipeline(size_t id)
+{
+    m_pPipelineManager->remove(id);
+}
+
+const std::unique_ptr<CPipeline>& CAPIHandle::getPipeline(const std::string& name)
+{
+    return m_pPipelineManager->get(name);
+}
+
+size_t CAPIHandle::getPipelineID(const std::string& name)
+{
+    return m_pPipelineManager->getId(name);
+}
+
+const std::unique_ptr<CPipeline>& CAPIHandle::getPipeline(size_t id)
+{
+    return m_pPipelineManager->get(id);
 }
 
 
@@ -1090,7 +1134,7 @@ void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_ind
                     pBindlessTextures->set(name, id);
             }
 
-            auto& pipeline = m_pBindedShader->getPipeline();
+            auto& pipeline = getPipeline(m_pBindedShader->getPipeline());
             m_pBindlessTextures->bind(commandBuffer, pipeline->getBindPoint(), pipeline->getPipelineLayout());
         }
         else
