@@ -134,7 +134,7 @@ void CTerrainLoader::loadMaterial(ecs::FTerrainComponent* terrain)
 	material->incrementUsageCount();
 	terrain->material_id = graphics->addMaterial("terrain:" + terrain->source, std::move(material));
 
-	graphics->addShader("terrain_tessellation", "terrain_tessellation", terrain->material_id);
+	graphics->addShader("terrain_tessellation", terrain->material_id);
 }
 
 void CTerrainLoader::loadHeightmap(FTerrainComponent* terrain)

@@ -13,7 +13,7 @@ void CCascadeShadowSystem::__create()
 {
 	FShaderSpecials specials;
 	specials.defines = { {"INVOCATION_COUNT", std::to_string(SHADOW_MAP_CASCADE_COUNT)} };
-	shader_id = graphics->addShader("cascade_shadow_pass", "cascade_shadow_pass", specials);
+	shader_id = graphics->addShader("cascade_shadow_pass", specials);
 
 	CBaseGraphicsSystem::__create();
 }

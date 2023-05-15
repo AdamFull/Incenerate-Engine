@@ -44,7 +44,6 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
 
     m_pImageManager = std::make_unique<CObjectManager<CImage>>();
     m_pShaderManager = std::make_unique<CObjectManager<CShaderObject>>();
-    m_pPipelineManager = std::make_unique<CObjectManager<CPipeline>>();
     m_pMaterialManager = std::make_unique<CObjectManager<CMaterial>>();
     m_pVertexBufferManager = std::make_unique<CObjectManager<CVertexBufferObject>>();
     m_pRenderStageManager = std::make_unique<CObjectManager<CRenderStage>>();
@@ -354,7 +353,6 @@ void CAPIHandle::forceReleaseResources()
 {
     m_pImageManager->performDeletion();
     m_pShaderManager->performDeletion();
-    m_pPipelineManager->performDeletion();
     m_pMaterialManager->performDeletion();
     m_pVertexBufferManager->performDeletion();
     m_pRenderStageManager->performDeletion();
@@ -417,7 +415,6 @@ void CAPIHandle::shutdown()
     m_pMaterialManager = nullptr;
     m_pVertexBufferManager = nullptr;
     m_pShaderManager = nullptr;
-    m_pPipelineManager = nullptr;
     m_pImageManager = nullptr;
 }
 
@@ -613,22 +610,49 @@ size_t CAPIHandle::addShader(const std::string& name, std::unique_ptr<CShaderObj
     return m_pShaderManager->add(name, std::move(shader));
 }
 
-size_t CAPIHandle::addShader(const std::string& name, const std::string& shadertype, size_t mat_id)
+size_t CAPIHandle::addShader(const std::string& shadertype, size_t mat_id)
 {
-    auto shader_id = addShader(name, m_pShaderLoader->load(shadertype, mat_id));
+    std::vector<std::optional<FCachedShader>> compiledShaders;
+    FPipelineParams pipelineParams{};
+
+    auto shader_id_name = m_pShaderLoader->getShaderCreateInfo(shadertype, mat_id, compiledShaders, pipelineParams);
+
+    size_t shader_id{ invalid_index };
+    if (auto& shader = getShader(shader_id_name))
+    {
+        shader_id = getShaderID(shader_id_name);
+        shader->increaseUsage(pipelineParams.usages);
+        m_pShaderManager->increment(shader_id);
+    }
+    else
+        shader_id = addShader(shader_id_name, m_pShaderLoader->load(compiledShaders, pipelineParams));
 
     if (mat_id != invalid_index)
     {
         auto& pMaterial = getMaterial(mat_id);
         pMaterial->setShader(shader_id);
     }
-
+        
     return shader_id;
 }
 
-size_t CAPIHandle::addShader(const std::string& name, const std::string& shadertype, const FShaderSpecials& specials)
+size_t CAPIHandle::addShader(const std::string& shadertype, const FShaderSpecials& specials)
 {
-    auto shader_id = addShader(name, m_pShaderLoader->load(shadertype, specials));
+    std::vector<std::optional<FCachedShader>> compiledShaders;
+    FPipelineParams pipelineParams{};
+
+    auto shader_id_name = m_pShaderLoader->getShaderCreateInfo(shadertype, specials, compiledShaders, pipelineParams);
+
+    size_t shader_id{ invalid_index };
+    if (auto& shader = getShader(shader_id_name))
+    {
+        shader_id = getShaderID(shader_id_name);
+        shader->increaseUsage(pipelineParams.usages);
+        m_pShaderManager->increment(shader_id);
+    }
+    else
+        shader_id = addShader(shader_id_name, m_pShaderLoader->load(compiledShaders, pipelineParams));
+
     return shader_id;
 }
 
@@ -647,50 +671,14 @@ const std::unique_ptr<CShaderObject>& CAPIHandle::getShader(const std::string& n
     return m_pShaderManager->get(name);
 }
 
+size_t CAPIHandle::getShaderID(const std::string& name)
+{
+    return m_pShaderManager->getId(name);
+}
+
 const std::unique_ptr<CShaderObject>& CAPIHandle::getShader(size_t id)
 {
     return m_pShaderManager->get(id);
-}
-
-
-size_t CAPIHandle::addPipeline(const std::string& name, std::unique_ptr<CPipeline>&& pipeline)
-{
-    return m_pPipelineManager->add(name, std::move(pipeline));
-}
-
-void CAPIHandle::incrementPipelineUsage(const std::string& name)
-{
-    m_pPipelineManager->increment(name);
-}
-
-void CAPIHandle::incrementPipelineUsage(size_t id)
-{
-    m_pPipelineManager->increment(id);
-}
-
-void CAPIHandle::removePipeline(const std::string& name)
-{
-    m_pPipelineManager->remove(name);
-}
-
-void CAPIHandle::removePipeline(size_t id)
-{
-    m_pPipelineManager->remove(id);
-}
-
-const std::unique_ptr<CPipeline>& CAPIHandle::getPipeline(const std::string& name)
-{
-    return m_pPipelineManager->get(name);
-}
-
-size_t CAPIHandle::getPipelineID(const std::string& name)
-{
-    return m_pPipelineManager->getId(name);
-}
-
-const std::unique_ptr<CPipeline>& CAPIHandle::getPipeline(size_t id)
-{
-    return m_pPipelineManager->get(id);
 }
 
 
@@ -824,7 +812,7 @@ size_t CAPIHandle::computeBRDFLUT(uint32_t size)
 
     auto output_id = addImage("brdflut", std::move(brdfImage));
 
-    auto shader_id = addShader("brdflut_generator", "brdflut_generator");
+    auto shader_id = addShader("brdflut_generator");
     auto& pShader = getShader(shader_id);
 
     pShader->addTexture("outColour", output_id);
@@ -853,7 +841,7 @@ size_t CAPIHandle::computeIrradiance(size_t origin, uint32_t size)
 
     auto output_id = addImage("irradiance", std::move(irradianceCubemap));
 
-    auto shader_id = addShader("irradiancecube_generator", "irradiancecube_generator");
+    auto shader_id = addShader("irradiancecube_generator");
     auto& pShader = getShader(shader_id);
     pShader->addTexture("outColour", output_id);
     pShader->addTexture("samplerColor", origin);
@@ -887,7 +875,7 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
     auto output_id = addImage("prefiltered", std::move(prefilteredCubemap));
     auto& target = getImage(output_id);
 
-    auto shader_id = addShader("prefilteredmap_generator", "prefilteredmap_generator");
+    auto shader_id = addShader("prefilteredmap_generator");
     auto& pShader = getShader(shader_id);
     auto& pPushConst = pShader->getPushBlock("object");
 
@@ -1134,7 +1122,8 @@ void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_ind
                     pBindlessTextures->set(name, id);
             }
 
-            auto& pipeline = getPipeline(m_pBindedShader->getPipeline());
+            // TODO: move inside shader object
+            auto& pipeline = m_pBindedShader->getPipeline();
             m_pBindlessTextures->bind(commandBuffer, pipeline->getBindPoint(), pipeline->getPipelineLayout());
         }
         else

@@ -176,7 +176,7 @@ void CGltfLoader::load(const const std::string& source, const entt::entity& root
         }
 
         for (auto& mat_id : vMaterials)
-            graphics->addShader("default_" + std::to_string(mat_id), "default", mat_id);
+            graphics->addShader("default", mat_id);
 
         if (gltfModel.animations.size() > 0)
             loadAnimations(gltfModel, component);

@@ -76,7 +76,7 @@ void CShaderLoader::create()
 	m_pVFS->readJson(shader_config_path, programCI);
 }
 
-std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size_t mat_id)
+std::string CShaderLoader::getShaderCreateInfo(const std::string& shaderName, size_t mat_id, std::vector<std::optional<FCachedShader>>& shaderCode, FPipelineParams& pipelineParams)
 {
 	auto* graphics = m_pDevice->getAPI();
 	FShaderSpecials specials;
@@ -93,20 +93,21 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, size
 			specials.defines.emplace(definition, "");
 	}
 
-	return load(name, specials);
+	return getShaderCreateInfo(shaderName, specials, shaderCode, pipelineParams);
 }
 
-std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, const FShaderSpecials& specials)
+std::string CShaderLoader::getShaderCreateInfo(const std::string& shaderName, const FShaderSpecials& specials, std::vector<std::optional<FCachedShader>>& shaderCode, FPipelineParams& pipelineParams)
 {
-	auto it = programCI.find(name);
+	auto* graphics = m_pDevice->getAPI();
+
+	auto it = programCI.find(shaderName);
 	if (it != programCI.end())
 	{
-		std::vector<std::optional<FCachedShader>> vCompiledShaderStages{};
 		std::vector<uint32_t> vShaderCode{};
 
 		std::stringstream defineBlock;
-		for(auto& [name, value] : specials.defines)
-			defineBlock << "#define " << name << " " << value << '\n';
+		for (auto& [dname, value] : specials.defines)
+			defineBlock << "#define " << dname << " " << value << '\n';
 
 		for (const auto& [defineName, defineValue] : it->second.defines)
 			defineBlock << "#define " << defineName << " " << defineValue << '\n';
@@ -114,7 +115,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 		if (bEditorMode)
 			defineBlock << "#define " << "EDITOR_MODE" << "\n";
 
-		if(bBindlessFeature)
+		if (bBindlessFeature)
 			defineBlock << "#define " << "BINDLESS_TEXTURES" << "\n";
 
 		auto stages = it->second.stages;
@@ -124,7 +125,7 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 				[](const std::string& stage)
 				{
 					auto ext = fs::get_ext(stage);
-					return ext == ".tesc" || ext == ".tese";
+			return ext == ".tesc" || ext == ".tese";
 				});
 
 			if (remit != stages.end())
@@ -133,19 +134,16 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 		else
 			defineBlock << "#define USE_TESSELLATION" << '\n';
 
-		auto* graphics = m_pDevice->getAPI();
 		auto api = graphics->getAPI();
 		for (auto& stage : stages)
 		{
 			if (auto compiled = m_pCompiler->compile(stage, defineBlock.str(), api))
 			{
 				vShaderCode.insert(vShaderCode.end(), compiled->shaderCode.begin(), compiled->shaderCode.end());
-				vCompiledShaderStages.emplace_back(compiled);
+				shaderCode.emplace_back(compiled);
 			}
 		}
 
-		// Check here is shader already exists
-		FPipelineParams pipelineParams{};
 		pipelineParams.alphaMode = specials.alphaBlend;
 		pipelineParams.bindPoint = it->second.bindPoint;
 		pipelineParams.cullMode = specials.doubleSided ? vk::CullModeFlagBits::eNone : it->second.cullMode;
@@ -159,46 +157,30 @@ std::unique_ptr<CShaderObject> CShaderLoader::load(const std::string& name, cons
 		pipelineParams.useBindlessTextures = it->second.usesBindlessTextures;
 		pipelineParams.vertexFree = it->second.vertexfree;
 		pipelineParams.vertexType = it->second.vertexType;
+		pipelineParams.subpass = specials.subpass;
+		pipelineParams.usages = specials.usages;
 
-		auto pipeline_name = shader_object_hash(vShaderCode, pipelineParams);
-
-		auto pShaderObject = std::make_unique<CShaderObject>(m_pDevice);
-		auto& pShader = pShaderObject->pShader;
-
-		for (auto& shader : vCompiledShaderStages)
-			pShader->addStage(shader->shaderCode, shader->shaderStage);
-
-		pShader->buildReflection();
-
-		pShaderObject->pipelineParams = pipelineParams;
-
-		if (graphics->getPipeline(pipeline_name))
-		{
-			pShaderObject->pipeline_id = graphics->getPipelineID(pipeline_name);
-			graphics->incrementPipelineUsage(pShaderObject->pipeline_id);
-		}
-		else
-		{
-			std::unique_ptr<CPipeline> pPipeline{};
-			switch (pipelineParams.bindPoint)
-			{
-			case vk::PipelineBindPoint::eGraphics: {
-				pPipeline = std::make_unique<CGraphicsPipeline>(m_pDevice);
-				pPipeline->create(pShaderObject.get(), graphics->getFramebuffer(pipelineParams.renderStage)->getRenderPass(), specials.subpass);
-			} break;
-			case vk::PipelineBindPoint::eCompute: {
-				pPipeline = std::make_unique<CComputePipeline>(m_pDevice);
-				pPipeline->create(pShaderObject.get());
-			} break;
-			}
-
-			pShaderObject->pipeline_id = graphics->addPipeline(pipeline_name, std::move(pPipeline));
-		}		
-
-		pShaderObject->create(specials.usages);
-
-		return pShaderObject;
+		return shader_object_hash(vShaderCode, pipelineParams);
 	}
 
-	return nullptr;
+	return {};
+}
+
+std::unique_ptr<CShaderObject> CShaderLoader::load(const std::vector<std::optional<FCachedShader>>& shaderCode, const FPipelineParams& pipelineParams)
+{
+	auto* graphics = m_pDevice->getAPI();
+
+	auto pShaderObject = std::make_unique<CShaderObject>(m_pDevice);
+	auto& pShader = pShaderObject->pShader;
+	pShaderObject->pipelineParams = pipelineParams;
+
+	for (auto& shader : shaderCode)
+		pShader->addStage(shader->shaderCode, shader->shaderStage);
+
+	pShader->buildReflection();
+
+	pShaderObject->create(pipelineParams.subpass);
+	pShaderObject->increaseUsage(pipelineParams.usages);
+
+	return pShaderObject;
 }

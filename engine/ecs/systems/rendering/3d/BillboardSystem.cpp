@@ -17,7 +17,7 @@ void CBillboardSystem::__create()
 {
 	FShaderSpecials specials;
 	specials.usages = 4;
-	shader_id = graphics->addShader("billboard", "billboard", specials);
+	shader_id = graphics->addShader("billboard", specials);
 	vbo_id = graphics->addVertexBuffer("billboard");
 
 	auto& pVBO = graphics->getVertexBuffer(vbo_id);

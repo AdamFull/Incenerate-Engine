@@ -10,7 +10,7 @@ using namespace engine::ecs;
 void CChromaticAberrationEffect::create()
 {
 	graphics = EGEngine->getGraphics().get();
-	shader_aberr = graphics->addShader("chromatic_aberration", "chromatic_aberration");
+	shader_aberr = graphics->addShader("chromatic_aberration");
 }
 
 size_t CChromaticAberrationEffect::render(FCameraComponent* camera, size_t in_source, size_t out_source)

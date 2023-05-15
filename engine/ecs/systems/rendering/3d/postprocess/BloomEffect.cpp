@@ -27,10 +27,10 @@ void CBloomEffect::create()
 
 	FShaderSpecials specials;
 	specials.usages = mipLevels;
-	shader_downsample = graphics->addShader("downsample", "downsample", specials);
-	shader_upsample = graphics->addShader("upsample", "upsample", specials);
-	shader_brightdetect = graphics->addShader("brightdetect", "brightdetect");
-	shader_applybloom = graphics->addShader("applybloom", "applybloom");
+	shader_downsample = graphics->addShader("downsample", specials);
+	shader_upsample = graphics->addShader("upsample", specials);
+	shader_brightdetect = graphics->addShader("brightdetect");
+	shader_applybloom = graphics->addShader("applybloom");
 }
 
 void CBloomEffect::update()

@@ -10,7 +10,7 @@ using namespace engine::ecs;
 void CVignetteEffect::create()
 {
 	graphics = EGEngine->getGraphics().get();
-	shader_vignette = graphics->addShader("vignette", "vignette");
+	shader_vignette = graphics->addShader("vignette");
 }
 
 size_t CVignetteEffect::render(FCameraComponent* camera, size_t in_source, size_t out_source)

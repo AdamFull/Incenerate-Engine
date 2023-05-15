@@ -111,7 +111,7 @@ void construct_skybox(entt::registry& reg, entt::entity entity)
 		skybox.irradiance = graphics->computeIrradiance(skybox.origin, 64);
 		skybox.prefiltred = graphics->computePrefiltered(skybox.origin, 512);
 		skybox.vbo_id = graphics->addVertexBuffer(skybox.source);
-		skybox.shader_id = graphics->addShader(skybox.source, "skybox");
+		skybox.shader_id = graphics->addShader("skybox");
 		skybox.loaded = true;
 
 		auto& pVBO = graphics->getVertexBuffer(skybox.vbo_id);

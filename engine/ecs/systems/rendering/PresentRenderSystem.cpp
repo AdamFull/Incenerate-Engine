@@ -6,7 +6,7 @@ using namespace engine::ecs;
 
 void CPresentRenderSystem::__create()
 {
-	shader_id = graphics->addShader("through_pass", "through_pass");
+	shader_id = graphics->addShader("through_pass");
 }
 
 void CPresentRenderSystem::__update(float fDt)

@@ -28,7 +28,7 @@ void CPostProcessSystem::__create()
 	final_image = effectshared::createImage("postprocess_tex", vk::Format::eR32G32B32A32Sfloat);
 	auto& image = graphics->getImage(final_image);
 
-	shader_id = graphics->addShader("emptypass", "emptypass");
+	shader_id = graphics->addShader("emptypass");
 
 	addSubresource("composition_tex");
 	addSubresource("depth_tex");

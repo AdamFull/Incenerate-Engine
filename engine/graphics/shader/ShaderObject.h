@@ -40,6 +40,10 @@ namespace engine
 			EVertexType vertexType{};
 			EAlphaMode alphaMode{};
 			std::string renderStage{};
+
+			// init data
+			uint32_t subpass{0};
+			uint32_t usages{1};
 		};
 
 		class CShaderObject
@@ -50,7 +54,9 @@ namespace engine
 			CShaderObject(CDevice* device);
 			~CShaderObject();
 
-			void create(size_t usages = 1);
+			void create(uint32_t subpass = 0);
+			void increaseUsage(size_t usages);
+
 			void bindDescriptor(vk::CommandBuffer& commandBuffer);
 			void predraw(vk::CommandBuffer& commandBuffer);
 			void dispatch(const std::vector<FDispatchParam>& params);
@@ -66,7 +72,7 @@ namespace engine
 			const std::unique_ptr<CHandler>& getUniformBuffer(const std::string& name);
 			const std::unique_ptr<CPushHandler>& getPushBlock(const std::string& name);
 
-			size_t getPipeline() { return pipeline_id; }
+			const std::unique_ptr<CPipeline>& getPipeline() { return pPipeline; }
 
 			const FPipelineParams& getPipelineParams() const { return pipelineParams; }
 
@@ -78,12 +84,11 @@ namespace engine
 			const std::unique_ptr<CShader>& getShader();
 		private:
 			CDevice* pDevice{ nullptr };
-			size_t usageCount{ 1 };
+			size_t usageCount{ 0 };
 			size_t currentUsage{ 0 };
 
 			std::unique_ptr<CShader> pShader;
-			size_t pipeline_id{ invalid_index };
-			//std::unique_ptr<CPipeline> pPipeline;
+			std::unique_ptr<CPipeline> pPipeline;
 			std::unordered_map<std::string, vk::DescriptorImageInfo> mTextures;
 			std::vector<std::unique_ptr<FShaderInstance>> vInstances;
 			

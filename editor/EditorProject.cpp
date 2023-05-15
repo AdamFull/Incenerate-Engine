@@ -86,7 +86,7 @@ bool CEditorProject::open(const std::string& path)
 
 void CEditorProject::save()
 {
-    project.camera = CSceneLoader::saveNode(*editor_camera, true);
+    //project.camera = CSceneLoader::saveNode(*editor_camera, true);
 
     if (!projectpath.empty())
         EGFilesystem->writeBson(projectpath, project);
@@ -112,9 +112,9 @@ void CEditorProject::createOrLoadEditorCamera()
 {
     auto& registry = EGEngine->getRegistry();
 
-    if (!project.camera.srName.empty())
-        *editor_camera = CSceneLoader::loadNode("", project.camera);
-    else
+    //if (!project.camera.srName.empty())
+    //    *editor_camera = CSceneLoader::loadNode("", project.camera);
+    //else
     {
         *editor_camera = scenegraph::create_node("editor_camera");
         registry.emplace<FCameraComponent>(*editor_camera, FCameraComponent{});

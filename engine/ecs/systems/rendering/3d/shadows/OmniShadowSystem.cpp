@@ -11,7 +11,7 @@ void COmniShadowSystem::__create()
 {
 	FShaderSpecials specials;
 	specials.usages = MAX_POINT_LIGHT_COUNT * 6;
-	shader_id = graphics->addShader("omni_shadow_pass", "omni_shadow_pass", specials);
+	shader_id = graphics->addShader("omni_shadow_pass", specials);
 
 	CBaseGraphicsSystem::__create();
 }

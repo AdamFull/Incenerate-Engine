@@ -11,7 +11,7 @@ void CFilmGrainEffect::create()
 {
 	graphics = EGEngine->getGraphics().get();
 
-	shader_grain = graphics->addShader("filmgrain", "filmgrain");
+	shader_grain = graphics->addShader("filmgrain");
 }
 
 size_t CFilmGrainEffect::render(FCameraComponent* camera, float time, size_t in_source, size_t out_source)

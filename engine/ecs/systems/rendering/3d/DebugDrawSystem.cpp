@@ -12,14 +12,14 @@ using namespace engine::graphics;
 
 void CDebugDrawSystem::__create()
 {
-	normals_shader_id = graphics->addShader("displaynormal", "displaynormal");
+	normals_shader_id = graphics->addShader("displaynormal");
 
 	debug_vbo_id = graphics->addVertexBuffer("debug_draw_vbo");
 
 	auto& vbo = graphics->getVertexBuffer(debug_vbo_id);
 	vbo->reserve(sizeof(FSimpleVertex), DEBUG_DRAW_MAX_VERTICES, sizeof(uint32_t), 0);
 
-	debug_shader_id = graphics->addShader("debug_draw_shader", "debugdraw");
+	debug_shader_id = graphics->addShader("debugdraw");
 }
 
 void CDebugDrawSystem::__update(float fDt)

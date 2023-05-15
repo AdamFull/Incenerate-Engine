@@ -12,7 +12,7 @@ void CDirectionalShadowSystem::__create()
 	FShaderSpecials specials;
 	specials.usages = MAX_SPOT_LIGHT_COUNT;
 	//specials.defines = { {"INVOCATION_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)} };
-	shader_id = graphics->addShader("directional_shadow_pass", "directional_shadow_pass", specials);
+	shader_id = graphics->addShader("directional_shadow_pass", specials);
 
 	CBaseGraphicsSystem::__create();
 }

@@ -25,8 +25,9 @@ namespace engine
 			~CShaderLoader();
 
 			void create();
-			std::unique_ptr<CShaderObject> load(const std::string& name, size_t mat_id);
-			std::unique_ptr<CShaderObject> load(const std::string& name, const FShaderSpecials& specials);
+			std::string getShaderCreateInfo(const std::string& shaderName, size_t mat_id, std::vector<std::optional<FCachedShader>>& shaderCode, FPipelineParams& pipelineParams);
+			std::string getShaderCreateInfo(const std::string& shaderName, const FShaderSpecials& specials, std::vector<std::optional<FCachedShader>>& shaderCode, FPipelineParams& pipelineParams);
+			std::unique_ptr<CShaderObject> load(const std::vector<std::optional<FCachedShader>>& shaderCode, const FPipelineParams& pipelineParams);
 
 		private:
 			CDevice* m_pDevice{ nullptr };

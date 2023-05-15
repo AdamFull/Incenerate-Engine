@@ -11,7 +11,7 @@ using namespace engine::ecs;
 void CTonemapEffect::create()
 {
 	graphics = EGEngine->getGraphics().get();
-	shader_tonemap = graphics->addShader("tonemap", "tonemap");
+	shader_tonemap = graphics->addShader("tonemap");
 	brightness_image = effectshared::createImage("brightness_image", vk::Format::eR32Sfloat);
 }
 

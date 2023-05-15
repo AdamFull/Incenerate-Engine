@@ -15,7 +15,7 @@ using namespace engine::graphics;
 void CCompositionSystem::__create()
 {
 	auto& device = graphics->getDevice();
-	shader_id = graphics->addShader("pbr_composition", "pbr_composition");
+	shader_id = graphics->addShader("pbr_composition");
 	brdflut_id = graphics->computeBRDFLUT(512);
 
 	addSubresource("albedo_tex");
