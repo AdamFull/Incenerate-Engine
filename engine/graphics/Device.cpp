@@ -263,6 +263,10 @@ void CDevice::selectPhysicalDeviceAndExtensions()
     auto& optionalExtensions = APICompatibility::getOptionalDeviceExtensions();
     for (auto& extensionName : optionalExtensions)
         CSessionStorage::getInstance()->set(extensionName, APICompatibility::checkExtensionSupport(vkPhysical, extensionName));
+
+    APICompatibility::bindlessSupport = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+    APICompatibility::shaderObjectSupport = CSessionStorage::getInstance()->get<bool>(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
+    APICompatibility::timelineSemaphoreSupport = CSessionStorage::getInstance()->get<bool>(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
 }
 
 void CDevice::createDevice()
@@ -277,9 +281,6 @@ void CDevice::createDevice()
 
     queueFamilies.initialize(vkPhysical, vkSurface);
     auto queueCreateInfos = queueFamilies.getCreateInfos();
-
-    auto bIndexingExtension = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
-    auto bShaderObjectExtension = CSessionStorage::getInstance()->get<bool>(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
 
     // vk 1.0 features
     vk::PhysicalDeviceFeatures deviceFeatures{};
@@ -304,10 +305,8 @@ void CDevice::createDevice()
     vk::PhysicalDeviceVulkan12Features vk12features{};
     vk12features.shaderOutputLayer = true;
     vk12features.shaderOutputViewportIndex = true;
-    vk12features.descriptorBindingPartiallyBound = bIndexingExtension;
-    vk12features.runtimeDescriptorArray = bIndexingExtension;
-    vk12features.descriptorBindingSampledImageUpdateAfterBind = bIndexingExtension;
-    vk12features.descriptorBindingVariableDescriptorCount = bIndexingExtension;
+    APICompatibility::applyDescriptorIndexingFeatures(vk12features);
+    APICompatibility::applyTimelineSemaphoreFeatures(vk12features);
     vk12features.pNext = vkVersion > VK_API_VERSION_1_2 ? &vk13features : nullptr;
 
     // vk 1.1 features
@@ -319,15 +318,16 @@ void CDevice::createDevice()
     //shaderObjectFeatures.shaderObject = bShaderObjectExtension;
     //shaderObjectFeatures.pNext = &synchronizationFeatures;
 
+    vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR timelineSemaphoreFeatures{};
+    APICompatibility::applyTimelineSemaphoreFeatures(timelineSemaphoreFeatures);
+    timelineSemaphoreFeatures.pNext = &synchronizationFeatures;
+
     vk::PhysicalDeviceGraphicsPipelineLibraryFeaturesEXT pipelineLibraryFeatures{};
     pipelineLibraryFeatures.graphicsPipelineLibrary = true;
-    pipelineLibraryFeatures.pNext = &synchronizationFeatures;
+    pipelineLibraryFeatures.pNext = &timelineSemaphoreFeatures;
 
     vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
-    indexingFeatures.descriptorBindingPartiallyBound = bIndexingExtension;
-    indexingFeatures.runtimeDescriptorArray = bIndexingExtension;
-    indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = bIndexingExtension;
-    indexingFeatures.descriptorBindingVariableDescriptorCount = bIndexingExtension;
+    APICompatibility::applyDescriptorIndexingFeatures(indexingFeatures);
     indexingFeatures.pNext = &pipelineLibraryFeatures;
 
     auto createInfo = vk::DeviceCreateInfo{};

@@ -179,8 +179,6 @@ namespace engine
 			uint32_t m_imageIndex{ 0 };
 			bool m_bFrameStarted{ false };
 			std::unique_ptr<CCommandBuffer> m_pCommandBuffers;
-
-			bool m_bBindlessFeature{ false };
 		};
 	}
 }

@@ -29,8 +29,6 @@ CPipeline::~CPipeline()
 
 void CPipeline::create(CShaderObject* pShader)
 {
-    bBindlessFeature = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
-    bCanBeBindless = pShader->isUsesBindlessTextures();
     createDescriptorPool(pShader);
     createDescriptorSetLayout(pShader);
     createPipelineLayout(pShader);
@@ -104,7 +102,7 @@ void CPipeline::createPipelineLayout(CShaderObject* pShader)
         vLayouts.emplace_back(layout);
 
     // TODO: bad practice
-    if (bBindlessFeature && bCanBeBindless)
+    if (APICompatibility::bindlessSupport && pShader->isUsesBindlessTextures())
     {
         auto graphics = pDevice->getAPI();
         auto& bindlessDescriptor = graphics->getBindlessDescriptor();

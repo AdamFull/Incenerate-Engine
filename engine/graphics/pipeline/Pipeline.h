@@ -43,8 +43,6 @@ namespace engine
 			std::unordered_map<uint32_t, vk::DescriptorSetLayout> mDescriptorSetLayouts;
 			vk::DescriptorPool descriptorPool{ nullptr };
 			vk::PipelineLayout pipelineLayout{ nullptr };
-			bool bCanBeBindless{ false };
-			bool bBindlessFeature{ false };
 
 			vk::RenderPass renderPass{ nullptr };
 			uint32_t subpass{ 0 };

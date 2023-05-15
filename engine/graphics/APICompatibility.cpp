@@ -4,6 +4,10 @@
 
 using namespace engine::graphics;
 
+bool APICompatibility::bindlessSupport{ false };
+bool APICompatibility::shaderObjectSupport{ false };
+bool APICompatibility::timelineSemaphoreSupport{ false };
+
 uint32_t APICompatibility::getVulkanVersion(ERenderApi eAPI)
 {
 	switch (eAPI)
@@ -104,7 +108,7 @@ const std::vector<const char*>& APICompatibility::getRequiredDeviceExtensions()
 		VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
 		VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
 		VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
-		VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME
+		VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME,
 	};
 	
 	return requiredExtensions;
@@ -114,7 +118,8 @@ const std::vector<const char*>& APICompatibility::getOptionalDeviceExtensions()
 {
 	static const std::vector<const char*> optionalExtensions{
 		VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-		VK_EXT_SHADER_OBJECT_EXTENSION_NAME
+		VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
+		VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME
 	};
 
 	return optionalExtensions;
@@ -173,6 +178,32 @@ void APICompatibility::transitionImageLayoutGraphics(vk::CommandBuffer& commandB
 		log_error("Unsupported layout transition!");
 
 	imageMemoryBarrierCompat(commandBuffer, barrier);
+}
+
+void APICompatibility::applyDescriptorIndexingFeatures(vk::PhysicalDeviceVulkan12Features& features)
+{
+	features.descriptorBindingPartiallyBound = 
+	features.runtimeDescriptorArray = 
+	features.descriptorBindingSampledImageUpdateAfterBind = 
+	features.descriptorBindingVariableDescriptorCount = bindlessSupport;
+}
+
+void APICompatibility::applyDescriptorIndexingFeatures(vk::PhysicalDeviceDescriptorIndexingFeatures& features)
+{
+	features.descriptorBindingPartiallyBound =
+	features.runtimeDescriptorArray =
+	features.descriptorBindingSampledImageUpdateAfterBind =
+	features.descriptorBindingVariableDescriptorCount = bindlessSupport;
+}
+
+void APICompatibility::applyTimelineSemaphoreFeatures(vk::PhysicalDeviceVulkan12Features& features)
+{
+	features.timelineSemaphore = timelineSemaphoreSupport;
+}
+
+void APICompatibility::applyTimelineSemaphoreFeatures(vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR& features)
+{
+	features.timelineSemaphore = timelineSemaphoreSupport;
 }
 
 bool APICompatibility::setTransferImageLayoutFlags(vk::ImageMemoryBarrier2KHR& barrier)

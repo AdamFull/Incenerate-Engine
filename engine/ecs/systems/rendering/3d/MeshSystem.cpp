@@ -92,7 +92,7 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 				//graphics->endQuery(index);
 			}
 
-			graphics->bindMaterial(invalid_index);
+			//graphics->bindMaterial(invalid_index);
 		}
 
 		graphics->bindVertexBuffer(invalid_index);

@@ -62,8 +62,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     m_pDebugDraw = std::make_unique<CDebugDraw>(this);
     m_pQueryPool = std::make_unique<CQueryPool>(m_pDevice.get());
 
-    m_bBindlessFeature = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
-    if (m_bBindlessFeature)
+    if (APICompatibility::bindlessSupport)
     {
         m_pBindlessTextures = std::make_unique<CBindlessDescriptor>(m_pDevice.get());
         m_pBindlessTextures->create();
@@ -612,21 +611,21 @@ size_t CAPIHandle::addShader(const std::string& name, std::unique_ptr<CShaderObj
 
 size_t CAPIHandle::addShader(const std::string& shadertype, size_t mat_id)
 {
-    std::vector<std::optional<FCachedShader>> compiledShaders;
-    FPipelineParams pipelineParams{};
+    FShaderSpecials specials;
 
-    auto shader_id_name = m_pShaderLoader->getShaderCreateInfo(shadertype, mat_id, compiledShaders, pipelineParams);
-
-    size_t shader_id{ invalid_index };
-    if (auto& shader = getShader(shader_id_name))
+    if (mat_id != invalid_index)
     {
-        shader_id = getShaderID(shader_id_name);
-        shader->increaseUsage(pipelineParams.usages);
-        m_pShaderManager->increment(shader_id);
-    }
-    else
-        shader_id = addShader(shader_id_name, m_pShaderLoader->load(compiledShaders, pipelineParams));
+        auto& pMaterial = getMaterial(mat_id);
+        auto& params = pMaterial->getParameters();
+        specials.usages = pMaterial->getUsageCount();
+        specials.doubleSided = params.doubleSided;
+        specials.alphaBlend = params.alphaMode;
 
+        for (auto& definition : params.vCompileDefinitions)
+            specials.defines.emplace(definition, "");
+    }
+
+    auto shader_id = addShader(shadertype, specials);
     if (mat_id != invalid_index)
     {
         auto& pMaterial = getMaterial(mat_id);
@@ -658,6 +657,7 @@ size_t CAPIHandle::addShader(const std::string& shadertype, const FShaderSpecial
 
 void CAPIHandle::removeShader(const std::string& name)
 {
+    // TODO: Decrement usages
     m_pShaderManager->remove(name);
 }
 
@@ -924,6 +924,7 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
 // Draw state machine
 void CAPIHandle::bindShader(size_t id)
 {
+    static size_t timesBind{ 0ull };
     if (id == invalid_index)
     {
         m_pBindedShader = nullptr;
@@ -931,10 +932,22 @@ void CAPIHandle::bindShader(size_t id)
     }
 
     auto& shader = getShader(id);
-    if (shader)
+    if (shader && shader.get() != m_pBindedShader)
+    {
+        auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
         m_pBindedShader = shader.get();
+        m_pBindedShader->bind(commandBuffer);
+
+        if (m_pBindedShader->isUsesBindlessTextures())
+        {
+            auto& pipeline = m_pBindedShader->getPipeline();
+            m_pBindlessTextures->bind(commandBuffer, pipeline->getBindPoint(), pipeline->getPipelineLayout());
+        }
+
+        timesBind = 1;
+    }        
     else
-        log_error("Cannot bind shader, because shader with id {} is not exists!", id);
+        timesBind++;
 }
 
 void CAPIHandle::bindMaterial(size_t id)
@@ -947,10 +960,32 @@ void CAPIHandle::bindMaterial(size_t id)
     }
 
     auto& material = getMaterial(id);
-    if (material)
+    if (material && material.get() != m_pBindedMaterial)
     {
         m_pBindedMaterial = material.get();
         bindShader(m_pBindedMaterial->getShader());
+
+        /*auto& pSurface = getUniformHandle("UBOMaterial");
+        if (pSurface)
+        {
+            auto& params = m_pBindedMaterial->getParameters();
+
+            pSurface->set("baseColorFactor", params.baseColorFactor);
+            pSurface->set("emissiveFactor", params.emissiveFactor);
+            pSurface->set("emissiveStrength", params.emissiveStrength);
+            pSurface->set("alphaMode", static_cast<int>(params.alphaMode));
+            pSurface->set("alphaCutoff", params.alphaCutoff);
+            pSurface->set("normalScale", params.normalScale);
+            pSurface->set("occlusionStrenth", params.occlusionStrenth);
+            pSurface->set("metallicFactor", params.metallicFactor);
+            pSurface->set("roughnessFactor", params.roughnessFactor);
+            pSurface->set("tessellationFactor", params.tessellationFactor);
+            pSurface->set("displacementStrength", params.displacementStrength);
+        }
+
+        auto& textures = m_pBindedMaterial->getTextures();
+        for (auto& [name, id] : textures)
+            bindTexture(name, id);*/
     }
     else
         log_error("Cannot bind material, because material with id {} is not exists!", id);
@@ -1006,10 +1041,17 @@ void CAPIHandle::bindRenderer(size_t id)
 
 void CAPIHandle::bindTexture(const std::string& name, size_t id, uint32_t mip_level)
 {
-    if (m_pBindedShader)
-        m_pBindedShader->addTexture(name, id, mip_level);
-    else
+    if(!m_pBindedShader)
         log_error("Cannot bind texture, cause shader was not binded.");
+
+    if (m_pBindlessTextures && m_pBindedShader->isUsesBindlessTextures())
+    {
+        auto& pBindlessTextures = getUniformHandle("UBOMaterialTextures");
+        if (pBindlessTextures)
+            pBindlessTextures->set(name, id);
+    }
+    else
+        m_pBindedShader->addTexture(name, id, mip_level);
 }
 
 void CAPIHandle::clearQuery()
@@ -1111,32 +1153,14 @@ void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_ind
             pSurface->set("displacementStrength", params.displacementStrength);
         }
 
-        if (m_pBindlessTextures)
-        {
-            auto& pBindlessTextures = getUniformHandle("UBOMaterialTextures");
-            if (pBindlessTextures)
-            {
-                auto& textures = m_pBindedMaterial->getTextures();
-
-                for (auto& [name, id] : textures)
-                    pBindlessTextures->set(name, id);
-            }
-
-            // TODO: move inside shader object
-            auto& pipeline = m_pBindedShader->getPipeline();
-            m_pBindlessTextures->bind(commandBuffer, pipeline->getBindPoint(), pipeline->getPipelineLayout());
-        }
-        else
-        {
-            auto& textures = m_pBindedMaterial->getTextures();
-            for (auto& [name, id] : textures)
-                bindTexture(name, id);
-        }
+        auto& textures = m_pBindedMaterial->getTextures();
+        for (auto& [name, id] : textures)
+            bindTexture(name, id);
     }
 
     if (m_pBindedShader)
     {
-        if(!m_bManualShaderControl)
+        if (!m_bManualShaderControl)
             m_pBindedShader->predraw(commandBuffer);
     }
     else

@@ -57,6 +57,7 @@ namespace engine
 			void create(uint32_t subpass = 0);
 			void increaseUsage(size_t usages);
 
+			void bind(vk::CommandBuffer& commandBuffer);
 			void bindDescriptor(vk::CommandBuffer& commandBuffer);
 			void predraw(vk::CommandBuffer& commandBuffer);
 			void dispatch(const std::vector<FDispatchParam>& params);

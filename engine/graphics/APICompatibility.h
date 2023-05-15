@@ -30,6 +30,16 @@ namespace engine
 
 			static void transitionImageLayoutTransfer(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier);
 			static void transitionImageLayoutGraphics(vk::CommandBuffer& commandBuffer, vk::ImageMemoryBarrier2& barrier);
+
+			static void applyDescriptorIndexingFeatures(vk::PhysicalDeviceVulkan12Features& features);
+			static void applyDescriptorIndexingFeatures(vk::PhysicalDeviceDescriptorIndexingFeatures& features);
+
+			static void applyTimelineSemaphoreFeatures(vk::PhysicalDeviceVulkan12Features& features);
+			static void applyTimelineSemaphoreFeatures(vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR& features);
+
+			static bool bindlessSupport;
+			static bool shaderObjectSupport;
+			static bool timelineSemaphoreSupport;
 		private:
 			static bool setTransferImageLayoutFlags(vk::ImageMemoryBarrier2KHR& imageBarrier2KHR);
 			static bool setGraphicsImageLayoutFlags(vk::ImageMemoryBarrier2KHR& imageBarrier2KHR);

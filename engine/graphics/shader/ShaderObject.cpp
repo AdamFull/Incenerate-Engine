@@ -84,6 +84,11 @@ void CShaderObject::increaseUsage(size_t usages)
 	usageCount += usages;
 }
 
+void CShaderObject::bind(vk::CommandBuffer& commandBuffer)
+{
+	pPipeline->bind(commandBuffer);
+}
+
 void CShaderObject::bindDescriptor(vk::CommandBuffer& commandBuffer)
 {
 	auto& pInstance = vInstances.at(currentUsage);
@@ -113,7 +118,6 @@ void CShaderObject::bindDescriptor(vk::CommandBuffer& commandBuffer)
 void CShaderObject::predraw(vk::CommandBuffer& commandBuffer)
 {
 	bindDescriptor(commandBuffer);
-	pPipeline->bind(commandBuffer);
 }
 
 void CShaderObject::dispatch(const std::vector<FDispatchParam>& params)

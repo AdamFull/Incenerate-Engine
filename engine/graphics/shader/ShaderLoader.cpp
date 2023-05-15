@@ -7,6 +7,7 @@
 #include "pipeline/GraphicsPipeline.h"
 #include "pipeline/ComputePipeline.h"
 
+#include "APICompatibility.h"
 #include <SessionStorage.hpp>
 
 constexpr const char* shader_config_path = "/embed/shaders.json";
@@ -62,7 +63,6 @@ CShaderLoader::CShaderLoader(CDevice* device, IVirtualFileSystemInterface* vfs_p
 	m_pCompiler = std::make_unique<CShaderCompiler>(m_pVFS);
 
 	bEditorMode = CSessionStorage::getInstance()->get<bool>("editor_mode");
-	bBindlessFeature = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
 }
 
 CShaderLoader::~CShaderLoader()
@@ -74,26 +74,6 @@ CShaderLoader::~CShaderLoader()
 void CShaderLoader::create()
 {
 	m_pVFS->readJson(shader_config_path, programCI);
-}
-
-std::string CShaderLoader::getShaderCreateInfo(const std::string& shaderName, size_t mat_id, std::vector<std::optional<FCachedShader>>& shaderCode, FPipelineParams& pipelineParams)
-{
-	auto* graphics = m_pDevice->getAPI();
-	FShaderSpecials specials;
-
-	if (mat_id != invalid_index)
-	{
-		auto& pMaterial = graphics->getMaterial(mat_id);
-		auto& params = pMaterial->getParameters();
-		specials.usages = pMaterial->getUsageCount();
-		specials.doubleSided = params.doubleSided;
-		specials.alphaBlend = params.alphaMode;
-
-		for (auto& definition : params.vCompileDefinitions)
-			specials.defines.emplace(definition, "");
-	}
-
-	return getShaderCreateInfo(shaderName, specials, shaderCode, pipelineParams);
 }
 
 std::string CShaderLoader::getShaderCreateInfo(const std::string& shaderName, const FShaderSpecials& specials, std::vector<std::optional<FCachedShader>>& shaderCode, FPipelineParams& pipelineParams)
@@ -115,7 +95,7 @@ std::string CShaderLoader::getShaderCreateInfo(const std::string& shaderName, co
 		if (bEditorMode)
 			defineBlock << "#define " << "EDITOR_MODE" << "\n";
 
-		if (bBindlessFeature)
+		if (APICompatibility::bindlessSupport)
 			defineBlock << "#define " << "BINDLESS_TEXTURES" << "\n";
 
 		auto stages = it->second.stages;
