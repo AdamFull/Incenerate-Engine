@@ -9,6 +9,7 @@
 
 using namespace engine::graphics;
 using namespace engine::ecs;
+//map <mat_id, draw_data>
 
 void CMeshSystem::__create()
 {
@@ -22,9 +23,13 @@ void CMeshSystem::__update(float fDt)
 	if (!camera)
 		return;
 
+	graphics->bindCameraData(camera->view, camera->projection, camera->frustum.getFrustumSides());
+
 	draw(camera, EAlphaMode::EOPAQUE);
 	draw(camera, EAlphaMode::EMASK);
 	draw(camera, EAlphaMode::EBLEND);
+
+	graphics->bindMaterial(invalid_index);
 }
 
 void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
@@ -58,38 +63,26 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 			}
 		}
 
+		graphics->bindObjectData(transform.model, transform.normal, static_cast<uint32_t>(entity));
+
 		for (auto& meshlet : mesh.vMeshlets)
 		{
 			bool needToRender{ true };
 			needToRender = camera->frustum.checkBox(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
 			meshlet.bWasCulled = needToRender;
 
-			graphics->bindMaterial(meshlet.material);
-
-			needToRender = needToRender && graphics->compareAlphaMode(alphaMode);
+			needToRender = needToRender && graphics->compareAlphaMode(meshlet.material, alphaMode);
 
 			if (needToRender)
 			{
+				graphics->bindMaterial(meshlet.material);
 				//debug_draw->drawDebugAABB(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
-				auto index = static_cast<uint32_t>(entity);
-
-				auto& pUBO = graphics->getUniformHandle("FUniformData");
-				pUBO->set("model", transform.model);
-				pUBO->set("view", camera->view);
-				pUBO->set("projection", camera->projection);
-				pUBO->set("normal", transform.normal);
-				pUBO->set("viewDir", camera->viewPos);
-				pUBO->set("viewportDim", device->getExtent(true));
-				pUBO->set("frustumPlanes", camera->frustum.getFrustumSides());
-				pUBO->set("object_id", encodeIdToColor(index));
 
 				auto& pJoints = graphics->getUniformHandle("FSkinning");
 				if (pJoints && bHasSkin)
 					pJoints->set("jointMatrices", joints);
 					
-				//graphics->beginQuery(index);
 				graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
-				//graphics->endQuery(index);
 			}
 
 			//graphics->bindMaterial(invalid_index);

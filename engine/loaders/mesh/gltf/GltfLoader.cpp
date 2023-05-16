@@ -470,6 +470,8 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
 
     meshComponent.vbo_id = vbo_id;
     meshComponent.loaded = true;
+
+    std::sort(meshComponent.vMeshlets.begin(), meshComponent.vMeshlets.end(), [](const FMeshlet& a, const FMeshlet& b) { return a.material < b.material; });
 }
 
 void CGltfLoader::loadCameraComponent(const entt::entity& parent, const tinygltf::Node& node, const tinygltf::Model& model)

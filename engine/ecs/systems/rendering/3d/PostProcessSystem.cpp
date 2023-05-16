@@ -59,14 +59,14 @@ void CPostProcessSystem::__update(float fDt)
 	graphics->BarrierFromGraphicsToCompute(getSubresource("depth_tex"));
 
 	size_t current_image = getSubresource("composition_tex");
-	current_image = tonemap.render(camera, fDt, current_image, final_image);
+	current_image = bloom.render(camera, current_image);
 	current_image = fxaa.render(camera, current_image, final_image);
 	current_image = dof.render(camera, getSubresource("depth_tex"), current_image, final_image);
 	current_image = chromatic_aberration.render(camera, current_image, final_image);
 	current_image = vignette.render(camera, current_image, final_image);
 	current_image = filmgrain.render(camera, fDt, current_image, final_image);
 	current_image = fog.render(camera, getSubresource("depth_tex"), current_image, final_image);
-	current_image = bloom.render(camera, current_image);
+	current_image = tonemap.render(camera, fDt, current_image, final_image);
 	
 	if (current_image != final_image)
 	{

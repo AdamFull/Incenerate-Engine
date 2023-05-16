@@ -73,6 +73,16 @@ bool CEditorProject::open(const std::string& path)
     EGFilesystem->mount("/project", std::make_unique<CNativeFileSystem>(fs::parent_path(path)));
     projectpath = fs::path_append("/project", fs::get_filename(path));
 
+    //project.assets = "assets";
+    //project.last_scene = "scene.iescene";
+    //if (EGFilesystem->writeBson(fs::path_append("/project", fs::get_filename(path)), project))
+    //{
+    //    //createOrLoadEditorCamera();
+    //    projectpath = path;
+    //    save();
+    //    return true;
+    //}
+
     if (EGFilesystem->readBson(projectpath, project))
     {
         EGFilesystem->mount("/assets", std::make_unique<CNativeFileSystem>(fs::path_append(fs::parent_path(path), project.assets)));
@@ -121,6 +131,7 @@ void CEditorProject::createOrLoadEditorCamera()
         auto& camcomp = registry.get<FCameraComponent>(*editor_camera);
         camcomp.sensitivity = 15.f;
         camcomp.active = true;
+        camcomp.farPlane = 131072.f;
 
         auto& transform = registry.get<FTransformComponent>(*editor_camera);
         transform.position = glm::vec3(0.f, 6.f, 24.f);

@@ -88,6 +88,7 @@ void CDebugDrawSystem::__update(float fDt)
 		pUniform->set("projection", camera->projection);
 		pUniform->set("view", camera->view);
 
+		graphics->flushShader();
 		graphics->draw(0, pVBO->getLastVertex(), 0, 0, 1);
 
 		graphics->bindVertexBuffer(invalid_index);

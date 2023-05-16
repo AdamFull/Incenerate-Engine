@@ -110,6 +110,8 @@ namespace engine
 			bool bindVertexBuffer(size_t id);
 			void bindRenderer(size_t id);
 			void bindTexture(const std::string& name, size_t id, uint32_t mip_level = 0);
+			void bindObjectData(const glm::mat4& model, const glm::mat4& normal, uint32_t object_id);
+			void bindCameraData(const glm::mat4& view, const glm::mat4& projection, const std::array<std::array<float, 4>, 6>& frustumPlanes);
 
 			void clearQuery();
 			void beginQuery(uint32_t index);
@@ -118,6 +120,7 @@ namespace engine
 			bool occlusionTest(uint32_t index);
 
 			bool compareAlphaMode(EAlphaMode mode);
+			bool compareAlphaMode(size_t material_id, EAlphaMode mode);
 
 			void setManualShaderControlFlag(bool value) { m_bManualShaderControl = value; }
 			void flushConstantRanges(const std::unique_ptr<CPushHandler>& constantRange);
@@ -175,6 +178,16 @@ namespace engine
 			CVertexBufferObject* m_pBindedVBO{ nullptr };
 			CRenderStage* m_pBindedRenderStage{ nullptr };
 			bool m_bManualShaderControl{ false };
+
+			// object data
+			const glm::mat4* m_pModelMatrix{ nullptr };
+			const glm::mat4* m_NormalMatrix{ nullptr };
+			uint32_t m_objectId{ 0u };
+
+			// Camera data
+			const glm::mat4* m_ViewMatrix{ nullptr };
+			const glm::mat4* m_ProjectionMatrix{ nullptr };
+			const std::array<std::array<float, 4>, 6>* m_pFrustumPlanes{ nullptr };
 
 			uint32_t m_imageIndex{ 0 };
 			bool m_bFrameStarted{ false };

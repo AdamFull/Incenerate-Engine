@@ -159,6 +159,7 @@ void CCompositionSystem::__update(float fDt)
 
 	// Drawing 
 	graphics->bindRenderer(stage);
+	graphics->flushShader();
 	graphics->draw(0, 3, 0, 0, 1);
 	graphics->bindRenderer(invalid_index);
 }

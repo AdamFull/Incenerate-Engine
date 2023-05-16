@@ -44,6 +44,7 @@ void CEnvironmentSystem::__update(float fDt)
 
 			graphics->bindTexture("samplerCubeMap", skybox.origin);
 
+			graphics->flushShader();
 			graphics->draw();
 
 			graphics->bindShader(invalid_index);

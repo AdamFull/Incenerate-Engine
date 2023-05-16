@@ -16,6 +16,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include <Helpers.h>
+
 using namespace engine::graphics;
 using namespace engine::filesystem;
 using namespace engine::ecs;
@@ -952,6 +954,7 @@ void CAPIHandle::bindShader(size_t id)
 
 void CAPIHandle::bindMaterial(size_t id)
 {
+    static size_t timesBind{ 0ull };
     if (id == invalid_index)
     {
         m_pBindedMaterial = nullptr;
@@ -965,7 +968,7 @@ void CAPIHandle::bindMaterial(size_t id)
         m_pBindedMaterial = material.get();
         bindShader(m_pBindedMaterial->getShader());
 
-        /*auto& pSurface = getUniformHandle("UBOMaterial");
+        auto& pSurface = getUniformHandle("UBOMaterial");
         if (pSurface)
         {
             auto& params = m_pBindedMaterial->getParameters();
@@ -983,12 +986,32 @@ void CAPIHandle::bindMaterial(size_t id)
             pSurface->set("displacementStrength", params.displacementStrength);
         }
 
+        auto& pUBO = getUniformHandle("FUniformData");
+        if (pUBO)
+        {
+            auto invView = glm::inverse(*m_ViewMatrix);
+
+            pUBO->set("model", *m_pModelMatrix);
+            pUBO->set("view", *m_ViewMatrix);
+            pUBO->set("projection", *m_ProjectionMatrix);
+            pUBO->set("normal", *m_NormalMatrix);
+            pUBO->set("viewDir", glm::vec3(invView[3]));
+            pUBO->set("viewportDim", m_pDevice->getExtent(true));
+            pUBO->set("frustumPlanes", *m_pFrustumPlanes);
+            pUBO->set("object_id", encodeIdToColor(m_objectId));
+        }
+
         auto& textures = m_pBindedMaterial->getTextures();
         for (auto& [name, id] : textures)
-            bindTexture(name, id);*/
+            bindTexture(name, id);
+
+        auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
+        m_pBindedShader->predraw(commandBuffer);
+
+        timesBind = 1;
     }
     else
-        log_error("Cannot bind material, because material with id {} is not exists!", id);
+        timesBind++;
 }
 
 bool CAPIHandle::bindVertexBuffer(size_t id)
@@ -1054,6 +1077,20 @@ void CAPIHandle::bindTexture(const std::string& name, size_t id, uint32_t mip_le
         m_pBindedShader->addTexture(name, id, mip_level);
 }
 
+void CAPIHandle::bindObjectData(const glm::mat4& model, const glm::mat4& normal, uint32_t object_id)
+{
+    m_pModelMatrix = &model;
+    m_NormalMatrix = &normal;
+    m_objectId = object_id;
+}
+
+void CAPIHandle::bindCameraData(const glm::mat4& view, const glm::mat4& projection, const std::array<std::array<float, 4>, 6>& frustumPlanes)
+{
+    m_ViewMatrix = &view;
+    m_ProjectionMatrix = &projection;
+    m_pFrustumPlanes = &frustumPlanes;
+}
+
 void CAPIHandle::clearQuery()
 {
     auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
@@ -1095,6 +1132,20 @@ bool CAPIHandle::compareAlphaMode(EAlphaMode mode)
     return false;
 }
 
+bool CAPIHandle::compareAlphaMode(size_t material_id, EAlphaMode mode)
+{
+    auto& material = getMaterial(material_id);
+    if (material)
+    {
+        auto& params = material->getParameters();
+        return params.alphaMode == mode;
+    }
+
+    log_error("Cannot compare alpha mode, cause material was not found.");
+
+    return false;
+}
+
 void CAPIHandle::flushConstantRanges(const std::unique_ptr<CPushHandler>& constantRange)
 {
     auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
@@ -1132,39 +1183,6 @@ const std::unique_ptr<CPushHandler>& CAPIHandle::getPushBlockHandle(const std::s
 void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_index, size_t index_count, size_t instance_count)
 {
     auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
-
-    if (m_pBindedMaterial)
-    {
-        auto& pSurface = getUniformHandle("UBOMaterial");
-        if (pSurface)
-        {
-            auto& params = m_pBindedMaterial->getParameters();
-
-            pSurface->set("baseColorFactor", params.baseColorFactor);
-            pSurface->set("emissiveFactor", params.emissiveFactor);
-            pSurface->set("emissiveStrength", params.emissiveStrength);
-            pSurface->set("alphaMode", static_cast<int>(params.alphaMode));
-            pSurface->set("alphaCutoff", params.alphaCutoff);
-            pSurface->set("normalScale", params.normalScale);
-            pSurface->set("occlusionStrenth", params.occlusionStrenth);
-            pSurface->set("metallicFactor", params.metallicFactor);
-            pSurface->set("roughnessFactor", params.roughnessFactor);
-            pSurface->set("tessellationFactor", params.tessellationFactor);
-            pSurface->set("displacementStrength", params.displacementStrength);
-        }
-
-        auto& textures = m_pBindedMaterial->getTextures();
-        for (auto& [name, id] : textures)
-            bindTexture(name, id);
-    }
-
-    if (m_pBindedShader)
-    {
-        if (!m_bManualShaderControl)
-            m_pBindedShader->predraw(commandBuffer);
-    }
-    else
-        log_error("Shader program is not binded. Before calling draw, you should bind shader!");
 
     if (m_pBindedVBO)
     {
