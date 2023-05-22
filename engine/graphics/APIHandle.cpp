@@ -1023,7 +1023,7 @@ bool CAPIHandle::bindVertexBuffer(size_t id)
     }
     
     auto& vbo = getVertexBuffer(id);
-    if (vbo && vbo->isLoaded())
+    if (vbo && vbo.get() != m_pBindedVBO && vbo->isLoaded())
     {
         auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
 
