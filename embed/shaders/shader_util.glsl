@@ -47,7 +47,8 @@ mat3 calculateTBN(vec3 normal, vec4 tangent)
 vec3 getPositionFromDepth(vec2 texcoord, float depth, mat4 invViewProjection)
 {
     vec4 clipSpaceLocation;
-    clipSpaceLocation.xy = texcoord * 2.0f - 1.0f;
+    clipSpaceLocation.x = texcoord.x * 2.0f - 1.0f;
+    clipSpaceLocation.y = 1.0f - texcoord.y * 2.0f; // invert Y for Vulkan
     clipSpaceLocation.z = depth;
     clipSpaceLocation.w = 1.0f;
     vec4 homogenousLocation = invViewProjection * clipSpaceLocation;

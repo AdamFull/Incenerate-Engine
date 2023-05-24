@@ -15,7 +15,10 @@ using namespace engine::graphics;
 void CCompositionSystem::__create()
 {
 	auto& device = graphics->getDevice();
-	shader_id = graphics->addShader("pbr_composition");
+
+	FShaderSpecials specials;
+	specials.defines = { {"SHADOW_MAP_CASCADE_COUNT", std::to_string(SHADOW_MAP_CASCADE_COUNT)} };
+	shader_id = graphics->addShader("pbr_composition", specials);
 	brdflut_id = graphics->computeBRDFLUT(512);
 
 	addSubresource("albedo_tex");
@@ -57,7 +60,7 @@ void CCompositionSystem::__update(float fDt)
 		for (auto [entity, transform, light] : view.each())
 		{
 			FDirectionalLightCommit commit;
-			commit.cascadeSplits = light.cascadeSplits;
+			commit.splitDepths = light.splitDepths;
 			commit.cascadeViewProj = light.cascadeViewProj;
 			commit.direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
 			commit.color = light.color;
@@ -133,6 +136,7 @@ void CCompositionSystem::__update(float fDt)
 	graphics->bindTexture("omni_shadowmap_tex", getSubresource("omni_shadowmap_tex"));
 
 	auto& pUBO = graphics->getUniformHandle("UBODeferred");
+	pUBO->set("view", camera->view);
 	pUBO->set("invViewProjection", glm::inverse(camera->projection * camera->view));
 	pUBO->set("viewPos", glm::vec4(camera->viewPos, 1.0));
 	pUBO->set("directionalLightCount", directoonal_light_count);

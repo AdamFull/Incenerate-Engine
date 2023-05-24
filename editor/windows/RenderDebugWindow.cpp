@@ -7,7 +7,7 @@
 
 using namespace engine::editor;
 
-const std::array<const char*, 13> debug_render_mode{ "default", "positions", "depth", "albedo", "normal", "emission", "roughness", "metalness", "ao", "ao strength", "csm", "dsm", "osm" };
+const std::array<const char*, 12> debug_render_mode{ "default", "positions", "depth", "albedo", "normal", "emission", "roughness", "metalness", "ao", "ao strength", "csm", "csm_cascades"};
 
 void CRenderDebugWindow::create()
 {
@@ -30,23 +30,23 @@ void CRenderDebugWindow::__draw(float fDt)
 			CSessionStorage::getInstance()->set("render_debug_cascade_split", split);
 	}
 		
-	// Spot shadow map debug
-	else if (mode == 11)
-	{
-		auto index = CSessionStorage::getInstance()->get<int32_t>("render_debug_spot_shadow_index");
-		if(ImGui::GSliderInt("Index", &index, 0, MAX_SPOT_LIGHT_COUNT))
-			CSessionStorage::getInstance()->set("render_debug_spot_shadow_index", index);
-	}
-		
-	// Omni shadow map debug
-	else if (mode == 12)
-	{
-		auto view = CSessionStorage::getInstance()->get<int32_t>("render_debug_omni_shadow_view");
-		if(ImGui::GSliderInt("View", &view, 0, 6))
-			CSessionStorage::getInstance()->set("render_debug_omni_shadow_view", view);
-
-		auto index = CSessionStorage::getInstance()->get<int32_t>("render_debug_omni_shadow_index");
-		if(ImGui::GSliderInt("Index", &index, 0, MAX_POINT_LIGHT_COUNT))
-			CSessionStorage::getInstance()->set("render_debug_omni_shadow_index", index);
-	}
+	//// Spot shadow map debug
+	//else if (mode == 11)
+	//{
+	//	auto index = CSessionStorage::getInstance()->get<int32_t>("render_debug_spot_shadow_index");
+	//	if(ImGui::GSliderInt("Index", &index, 0, MAX_SPOT_LIGHT_COUNT))
+	//		CSessionStorage::getInstance()->set("render_debug_spot_shadow_index", index);
+	//}
+	//	
+	//// Omni shadow map debug
+	//else if (mode == 12)
+	//{
+	//	auto view = CSessionStorage::getInstance()->get<int32_t>("render_debug_omni_shadow_view");
+	//	if(ImGui::GSliderInt("View", &view, 0, 6))
+	//		CSessionStorage::getInstance()->set("render_debug_omni_shadow_view", view);
+	//
+	//	auto index = CSessionStorage::getInstance()->get<int32_t>("render_debug_omni_shadow_index");
+	//	if(ImGui::GSliderInt("Index", &index, 0, MAX_POINT_LIGHT_COUNT))
+	//		CSessionStorage::getInstance()->set("render_debug_omni_shadow_index", index);
+	//}
 }

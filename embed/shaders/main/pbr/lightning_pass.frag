@@ -5,8 +5,6 @@
 #extension GL_ARB_texture_cube_map_array : enable
 #extension GL_GOOGLE_include_directive : require
 
-#define SHADOW_MAP_CASCADE_COUNT 5
-
 //--------------------Includes--------------------
 #include "light_models/sascha_williems.glsl"
 
@@ -41,6 +39,7 @@ layout (location = 0) out vec4 outFragcolor;
 //--------------------Uniforms--------------------
 layout(std140, binding = 12) uniform UBODeferred
 {
+	mat4 view;
 	mat4 invViewProjection;
 	vec4 viewPos;
 	int directionalLightCount;
@@ -81,7 +80,7 @@ vec3 calculateDirectionalLight(FDirectionalLight light, vec3 worldPosition, vec3
 	float shadow_factor = 1.0;
 
 	if(light.castShadows > 0)
-		shadow_factor = getCascadeShadow(cascade_shadowmap_tex, ubo.viewPos.xyz, worldPosition, N, light);
+		shadow_factor = getCascadeShadow(cascade_shadowmap_tex, (ubo.view * vec4(worldPosition, 1.0)).xyz, worldPosition, N, light);
 
 	return light.color * light.intencity * color * shadow_factor;
 }
@@ -131,9 +130,8 @@ void main()
 	// ---Get G-Buffer values---
 
 	//Load depth and world position
-	vec2 invUV = vec2(inUV.x, 1-inUV.y);
 	float depth = texture(depth_tex, inUV).r;
-	vec3 inWorldPos = getPositionFromDepth(invUV, depth, ubo.invViewProjection);
+	vec3 inWorldPos = getPositionFromDepth(inUV, depth, ubo.invViewProjection);
 
 	vec3 normal = texture(normal_tex, inUV).rgb;
 	vec3 albedo = texture(albedo_tex, inUV).rgb;
@@ -238,9 +236,54 @@ void main()
 	else if(debug.mode == 10)
 		fragcolor = texture(cascade_shadowmap_tex, vec3(inUV, debug.cascadeSplit)).rrr;
 	else if(debug.mode == 11)
-		fragcolor = texture(direct_shadowmap_tex, vec4(inUV, debug.spotShadowIndex, 0.005)).rrr;
-	else if(debug.mode == 12)
-		fragcolor = texture(omni_shadowmap_tex, vec4(inUV, debug.omniShadowView, debug.omniShadowIndex), 0.005).rrr;
+	{
+		vec3 viewPosition = (ubo.view * vec4(inWorldPos, 1.0)).xyz;
+
+		for(int i = 0; i < ubo.directionalLightCount; i++)
+		{
+			FDirectionalLight light = lights.directionalLights[i];
+			uint cascadeIndex = 0;
+			for (uint j = 0; j < SHADOW_MAP_CASCADE_COUNT - 1; ++j)
+			{
+				if (viewPosition.z < light.cascadeSplits[j])
+					cascadeIndex = j + 1;
+			}
+
+			switch(cascadeIndex) 
+			{
+			case 0 : 
+				fragcolor *= vec3(1.0f, 0.25f, 0.25f);
+				break;
+			case 1 : 
+				fragcolor *= vec3(0.25f, 1.0f, 0.25f);
+				break;
+			case 2 : 
+				fragcolor *= vec3(0.25f, 0.25f, 1.0f);
+				break;
+			case 3 : 
+				fragcolor *= vec3(1.0f, 1.0f, 0.25f);
+				break;
+			case 4 : 
+				fragcolor *= vec3(0.25f, 1.0f, 1.0f);
+				break;
+			case 5 : 
+				fragcolor *= vec3(1.0f, 0.25f, 1.0f);
+				break;
+			case 6 : 
+				fragcolor *= vec3(1.0f, 0.5f, 0.5f);
+				break;
+			case 7 : 
+				fragcolor *= vec3(0.5f, 1.0f, 0.5f);
+				break;
+			default:
+				fragcolor *= vec3(1.0f, 1.0f, 1.0f);
+				break;
+			}
+		}
+	}
+	//	fragcolor = texture(direct_shadowmap_tex, vec4(inUV, debug.spotShadowIndex, 0.005)).rrr;
+	//else if(debug.mode == 12)
+	//	fragcolor = texture(omni_shadowmap_tex, vec4(inUV, debug.omniShadowView, debug.omniShadowIndex), 0.005).rrr;
 
   	outFragcolor = vec4(fragcolor, 1.0);
 }

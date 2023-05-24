@@ -131,7 +131,15 @@ void CEditorProject::createOrLoadEditorCamera()
         auto& camcomp = registry.get<FCameraComponent>(*editor_camera);
         camcomp.sensitivity = 15.f;
         camcomp.active = true;
-        camcomp.farPlane = 131072.f;
+        camcomp.nearPlane = 0.1f;
+        camcomp.farPlane = 4096.f;
+        camcomp.effects.aberration.enable = false;
+        camcomp.effects.bloom.enable = false;
+        camcomp.effects.dof.enable = false;
+        camcomp.effects.filmgrain.enable = false;
+        camcomp.effects.fxaa.enable = false;
+        //camcomp.effects.tonemap.enable = false;
+        camcomp.effects.vignette.enable = false;
 
         auto& transform = registry.get<FTransformComponent>(*editor_camera);
         transform.position = glm::vec3(0.f, 6.f, 24.f);
