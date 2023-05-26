@@ -81,7 +81,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         m_mStageInfos["cascade_shadow"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["cascade_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
         m_mStageInfos["cascade_shadow"].bIgnoreRecreation = true;
-        m_mStageInfos["cascade_shadow"].bFlipViewport = true;
+        m_mStageInfos["cascade_shadow"].bFlipViewport = false;
         m_mStageInfos["cascade_shadow"].vImages.emplace_back("cascade_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, SHADOW_MAP_CASCADE_COUNT);
         m_mStageInfos["cascade_shadow"].vDescriptions.emplace_back("cascade_shadowmap_tex");
         m_mStageInfos["cascade_shadow"].vDependencies.emplace_back(

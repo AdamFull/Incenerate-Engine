@@ -21,6 +21,7 @@ namespace engine
 			alignas(16) glm::vec3 direction;
 			alignas(16) glm::vec3 color;
 			alignas(4) float intencity;
+			alignas(4) float farClip;
 			alignas(4) int castShadows;
 		};
 

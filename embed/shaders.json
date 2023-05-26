@@ -129,7 +129,7 @@
   "cascade_shadow_pass": {
     "stage": "cascade_shadow",
     "bind_point": "Graphics",
-    "cull_mode": "Back",
+    "cull_mode": "Front",
     "front_face": "ccw",
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],

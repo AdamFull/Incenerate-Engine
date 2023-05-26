@@ -2,7 +2,14 @@
 #ifndef CASCADE_SHADOWS
 #define CASCADE_SHADOWS
 
-const mat4 biasMat = mat4( 
+//const mat4 biasMat = mat4( 
+//	0.5, 0.0, 0.0, 0.0,
+//	0.0, 0.5, 0.0, 0.0,
+//	0.0, 0.0, 0.5, 0.0,
+//	0.5, 0.5, 0.5, 1.0
+//);
+
+const mat4 biasMat = mat4(
 	0.5, 0.0, 0.0, 0.0,
 	0.0, 0.5, 0.0, 0.0,
 	0.0, 0.0, 1.0, 0.0,
@@ -44,7 +51,7 @@ float cascadeShadowFilterPCF(sampler2DArray shadomwap_tex, vec4 sc, uint cascade
 	return shadowFactor / count;
 }
 
-float getCascadeShadow(sampler2DArray shadomwap_tex, vec3 viewPosition, vec3 worldPosition, vec3 N, FDirectionalLight light)
+float getCascadeShadow(sampler2DArray shadomwap_tex, vec3 viewPosition, vec3 worldPosition, vec3 L, vec3 N, FDirectionalLight light)
 {
 	uint cascadeIndex = 0;
 	for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
@@ -56,12 +63,19 @@ float getCascadeShadow(sampler2DArray shadomwap_tex, vec3 viewPosition, vec3 wor
 	vec4 shadowCoord = (biasMat * light.cascadeViewProjMat[cascadeIndex]) * vec4(worldPosition, 1.0);
 	shadowCoord = shadowCoord / shadowCoord.w;
 
+	float bias = max(0.05 * (1.0 - dot(N, L)), 0.005);
+	const float biasModifier = 0.5f;
+	if (cascadeIndex == SHADOW_MAP_CASCADE_COUNT - 1)
+		bias *= 1.f / (light.farClip * biasModifier);
+	else
+		bias *= 1.f / (abs(light.cascadeSplits[cascadeIndex]) * biasModifier);
+
 	float shadow = 1.0;
-	bool enablePCF = false;
+	bool enablePCF = true;
 	if (enablePCF) {
-		shadow = cascadeShadowFilterPCF(shadomwap_tex, shadowCoord, cascadeIndex, 0.001);
+		shadow = cascadeShadowFilterPCF(shadomwap_tex, shadowCoord, cascadeIndex, bias);
 	} else {
-		shadow = cassadeShadowProjection(shadomwap_tex, shadowCoord, vec2(0.0), cascadeIndex, 0.001);
+		shadow = cassadeShadowProjection(shadomwap_tex, shadowCoord, vec2(0.0), cascadeIndex, bias);
 	}
 	return shadow;
 }

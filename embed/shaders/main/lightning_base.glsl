@@ -9,6 +9,7 @@ struct FDirectionalLight
 	vec3 direction;
     vec3 color;
 	float intencity;
+	float farClip;
 	int castShadows;
 };
 

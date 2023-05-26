@@ -47,6 +47,11 @@ void CCompositionSystem::__create()
 
 void CCompositionSystem::__update(float fDt)
 {
+	auto* camera = EGEngine->getActiveCamera();
+
+	if (!camera)
+		return;
+
 	uint32_t directoonal_light_count{ 0 };
 	std::array<FDirectionalLightCommit, MAX_DIRECTIONAL_LIGHT_COUNT> directional_lights;
 	uint32_t point_light_count{ 0 };
@@ -63,8 +68,10 @@ void CCompositionSystem::__update(float fDt)
 			commit.splitDepths = light.splitDepths;
 			commit.cascadeViewProj = light.cascadeViewProj;
 			commit.direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
+			//commit.direction = glm::normalize(transform.model[2]);
 			commit.color = light.color;
 			commit.intencity = light.intencity;
+			commit.farClip = camera->farPlane;
 			commit.castShadows = static_cast<int>(light.castShadows);
 
 			directional_lights[directoonal_light_count++] = commit;
@@ -96,6 +103,7 @@ void CCompositionSystem::__update(float fDt)
 			FSpotLightCommit commit;
 			commit.position = transform.rposition; 
 			commit.direction = light.toTarget ? light.target : glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
+			//commit.direction = light.toTarget ? light.target : glm::normalize(transform.model[2]);
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.lightAngleScale = 1.f / glm::max(0.001f, glm::cos(light.innerAngle) - glm::cos(light.outerAngle));
@@ -111,11 +119,6 @@ void CCompositionSystem::__update(float fDt)
 
 	auto eskybox = get_active_skybox(*registry);
 	auto* skybox = registry->try_get<FEnvironmentComponent>(eskybox);
-
-	auto* camera = EGEngine->getActiveCamera();
-
-	if (!camera)
-		return;
 
 	graphics->bindShader(shader_id);
 

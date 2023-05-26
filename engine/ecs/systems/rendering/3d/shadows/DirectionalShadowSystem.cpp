@@ -36,6 +36,7 @@ void CDirectionalShadowSystem::__update(float fDt)
 			const glm::vec3 dp(0.0000001f);
 
 			auto lightDir = light.toTarget ? light.target : glm::normalize(glm::toQuat(ltransform.model) * glm::vec3(0.f, 0.f, 1.f));
+			//auto lightDir = light.toTarget ? light.target : glm::normalize(ltransform.model[2]);
 			glm::mat4 shadowProj = glm::perspective(light.outerAngle * 2.f, 1.0f, 0.1f, 32.f);
 			glm::mat4 shadowView = glm::lookAt(ltransform.rposition, ltransform.position + lightDir, glm::vec3(0.0f, 1.0f, 0.0f));
 			auto lightViewProj = shadowProj * shadowView;

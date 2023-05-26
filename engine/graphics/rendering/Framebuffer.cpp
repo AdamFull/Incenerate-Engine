@@ -385,12 +385,12 @@ std::unique_ptr<CImage> CFramebuffer::createImage(const FFramebufferAttachmentIn
     } break;
     case EImageType::eArray2D: { 
         auto tex = std::make_unique<CImage2DArray>(pDevice);
-        tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
+        tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
         texture = std::move(tex);
     } break;
     case EImageType::eArrayCube: { 
         auto tex = std::make_unique<CImageCubemapArray>(pDevice);
-        tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eLinear, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
+        tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
         texture = std::move(tex);
     } break;
     }

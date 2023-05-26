@@ -252,7 +252,7 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
     if (!_sampler)
     {
         bool enableCompare = format == pDevice->getDepthFormat();
-        pDevice->createSampler(_sampler, _filter, _addressMode, enableAnisotropy, enableCompare, _mipLevels);
+        pDevice->createSampler(_sampler, _filter, _addressMode, enableAnisotropy, false, _mipLevels);
     }
 }
 
