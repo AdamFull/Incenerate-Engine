@@ -67,8 +67,8 @@ void CCompositionSystem::__update(float fDt)
 			FDirectionalLightCommit commit;
 			commit.splitDepths = light.splitDepths;
 			commit.cascadeViewProj = light.cascadeViewProj;
-			commit.direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
-			//commit.direction = glm::normalize(transform.model[2]);
+			//commit.direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
+			commit.direction = glm::normalize(glm::vec3(1.f, -1.f, 1.f));
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.farClip = camera->farPlane;

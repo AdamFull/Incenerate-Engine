@@ -148,7 +148,7 @@ void CEditorInspector::__draw(float fDt)
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
 
 				//auto direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
-				glm::vec3 direction = glm::normalize(transform.model[2]);
+				glm::vec3 direction = glm::vec3(1.f, -1.f, 1.f);
 				debug_draw->drawDebugArrow(transform.rposition, transform.rposition + direction, 0.2f, object->color);
 			});
 
@@ -163,8 +163,8 @@ void CEditorInspector::__draw(float fDt)
 				ImGui::GCheckbox("To target", &object->toTarget);
 				ImGui::GCheckbox("Cast shadows", &object->castShadows);
 
-				auto direction = object->toTarget ? object->target : glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
-				//auto direction = object->toTarget ? object->target : glm::normalize(transform.model[2]);
+				//auto direction = object->toTarget ? object->target : glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
+				auto direction = object->toTarget ? object->target : glm::vec3( 1.f, -1.f, 1.f );
 				debug_draw->drawDebugArrow(transform.rposition, transform.rposition + direction, 0.2f, object->color);
 			});
 		

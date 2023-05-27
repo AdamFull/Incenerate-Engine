@@ -7,7 +7,8 @@
 using namespace engine::graphics;
 using namespace engine::ecs;
 
-const float cascadeSplitLambda = 0.985f;
+constexpr const float cascadeSplitLambda = 0.985f;
+constexpr const float cascadeSplitOverlap = 0.2f;
 
 void CCascadeShadowSystem::__create()
 {
@@ -53,6 +54,11 @@ void CCascadeShadowSystem::__update(float fDt)
 				float uniform = minZ + range * p;
 				float d = cascadeSplitLambda * (log - uniform) + uniform;
 				cascadeSplits[i] = (d - nearClip) / clipRange;
+
+				if (i != 0)
+					d += cascadeSplitOverlap * (d - cascadeSplits[i - 1]);
+
+				cascadeSplits[i] = (d - nearClip) / clipRange;
 			}
 
 			// Calculate orthographic projection matrix for each cascade
@@ -61,44 +67,44 @@ void CCascadeShadowSystem::__update(float fDt)
 			{
 				auto& splitDist = cascadeSplits[i];
 
-				glm::vec3 frustumCorners[8] =
+				std::array<glm::vec4, 8> frustumCorners =
 				{
-					glm::vec3(-1.0f,  1.0f, -1.0f),
-					glm::vec3(1.0f,  1.0f, -1.0f),
-					glm::vec3(1.0f, -1.0f, -1.0f),
-					glm::vec3(-1.0f, -1.0f, -1.0f),
-					glm::vec3(-1.0f,  1.0f,  1.0f),
-					glm::vec3(1.0f,  1.0f,  1.0f),
-					glm::vec3(1.0f, -1.0f,  1.0f),
-					glm::vec3(-1.0f, -1.0f,  1.0f),
+					glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f),
+					glm::vec4(1.0f,  1.0f, -1.0f, 1.0f),
+					glm::vec4(1.0f, -1.0f, -1.0f, 1.0f),
+					glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
+					glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f),
+					glm::vec4(1.0f,  1.0f,  1.0f, 1.0f),
+					glm::vec4(1.0f, -1.0f,  1.0f, 1.0f),
+					glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
 				};
 
 				// Project frustum corners into world space
 				glm::mat4 invCam = glm::inverse(camera->projection * camera->view);
-				for (uint32_t j = 0; j < 8; ++j)
+				for (auto& corner : frustumCorners)
 				{
-					glm::vec4 invCorner = invCam * glm::vec4(frustumCorners[j], 1.0f);
-					frustumCorners[j] = invCorner / invCorner.w;
+					glm::vec4 invCorner = invCam * corner;
+					corner = invCorner / invCorner.w;
 				}
 
 				for (uint32_t j = 0; j < 4; ++j)
 				{
-					glm::vec3 dist = frustumCorners[j + 4] - frustumCorners[j];
+					glm::vec4 dist = frustumCorners[j + 4] - frustumCorners[j];
 					frustumCorners[j + 4] = frustumCorners[j] + (dist * splitDist);
 					frustumCorners[j] = frustumCorners[j] + (dist * lastSplitDist);
 				}
 
 				// Get frustum center
-				glm::vec3 frustumCenter = glm::vec3(0.0f);
-				for (uint32_t j = 0; j < 8; ++j)
-					frustumCenter += frustumCorners[j];
+				glm::vec4 frustumCenter = glm::vec4(0.0f);
+				for (auto& corner : frustumCorners)
+					frustumCenter += corner;
 
-				frustumCenter /= 8.0f;
+				frustumCenter /= frustumCorners.size();
 
 				float radius = 0.0f;
-				for (uint32_t j = 0; j < 8; ++j) 
+				for (auto& corner : frustumCorners) 
 				{
-					float distance = glm::length(frustumCorners[j] - frustumCenter);
+					float distance = glm::length(corner - frustumCenter);
 					radius = glm::max(radius, distance);
 				}
 				radius = glm::ceil(radius * 16.0f) / 16.0f;
@@ -107,9 +113,10 @@ void CCascadeShadowSystem::__update(float fDt)
 				glm::vec3 minExtents = -maxExtents;
 
 				//glm::vec3 lightDir = glm::normalize(ltransform.model[2]);
-				//glm::vec3 lightDir = glm::normalize((glm::toQuat(ltransform.model) * glm::vec3(0.f, 0.f, 1.f)));
-				glm::vec3 lightDir = { 1.f, -1.f, 1.f };
-				glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter + -lightDir * -minExtents.z, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
+				//glm::vec3 lightDir = glm::toQuat(ltransform.model) * glm::vec3(0.f, 0.f, 1.f);
+				//glm::vec3 lightDir = glm::normalize(glm::vec3( 1.f, -1.f, 1.f ));
+				glm::vec3 lightDir = glm::vec3( 1.f, -1.f, 1.f );
+				glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(frustumCenter) + -lightDir * -minExtents.z, glm::vec3(frustumCenter), glm::vec3(0.0f, 1.0f, 0.0f));
 				glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, maxExtents.z - minExtents.z);
 
 				// Store split distance and matrix in cascade
