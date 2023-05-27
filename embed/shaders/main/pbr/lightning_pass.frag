@@ -80,7 +80,7 @@ vec3 calculateDirectionalLight(FDirectionalLight light, vec3 worldPosition, vec3
 	float shadow_factor = 1.0;
 
 	if(light.castShadows > 0)
-		shadow_factor = getCascadeShadow(cascade_shadowmap_tex, (ubo.view * vec4(worldPosition, 1.0)).xyz, worldPosition, L, N, light);
+		shadow_factor = getCascadeShadow(cascade_shadowmap_tex, (ubo.view * vec4(worldPosition, 1.0)).xyz, worldPosition, L, N, inUV, light);
 
 	return light.color * light.intencity * color * shadow_factor;
 }

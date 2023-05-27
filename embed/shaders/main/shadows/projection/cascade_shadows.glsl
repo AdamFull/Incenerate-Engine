@@ -9,6 +9,8 @@
 //	0.5, 0.5, 0.5, 1.0
 //);
 
+const bool enableCascadedPCF = true;
+
 const mat4 biasMat = mat4(
 	0.5, 0.0, 0.0, 0.0,
 	0.0, 0.5, 0.0, 0.0,
@@ -51,18 +53,9 @@ float cascadeShadowFilterPCF(sampler2DArray shadomwap_tex, vec4 sc, uint cascade
 	return shadowFactor / count;
 }
 
-float getCascadeShadow(sampler2DArray shadomwap_tex, vec3 viewPosition, vec3 worldPosition, vec3 L, vec3 N, FDirectionalLight light)
+float sampleShadowCascade(sampler2DArray shadomwap_tex, uint cascadeIndex, vec3 worldPosition, float baseBias, FDirectionalLight light)
 {
-	bool enablePCF = true;
-
-	uint cascadeIndex = 0;
-	for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
-	{
-		if (viewPosition.z < light.cascadeSplits[i])
-			cascadeIndex = i + 1;
-	}
-
-	float bias = max(0.05 * (1.0 - dot(N, L)), 0.005);
+	float bias = baseBias;
 	const float biasModifier = 0.5f;
 	if (cascadeIndex == SHADOW_MAP_CASCADE_COUNT - 1)
 		bias *= 1.f / (light.farClip * biasModifier);
@@ -73,12 +66,53 @@ float getCascadeShadow(sampler2DArray shadomwap_tex, vec3 viewPosition, vec3 wor
 	shadowCoord = shadowCoord / shadowCoord.w;
 
 	float shadow = 1.f;
-	if (enablePCF)
+	if (enableCascadedPCF)
 		shadow = cascadeShadowFilterPCF(shadomwap_tex, shadowCoord, cascadeIndex, bias);
 	else
 		shadow = cassadeShadowProjection(shadomwap_tex, shadowCoord, vec2(0.0), cascadeIndex, bias);
 
 	return shadow;
+}
+
+float getBlendFactor(float viewPosZ, uint cascadeIndex, FDirectionalLight light)
+{
+	float blendDist = abs(light.cascadeSplits[cascadeIndex] - light.cascadeSplits[cascadeIndex - 1]) * 0.5f;
+	float midPoint = (light.cascadeSplits[cascadeIndex] + light.cascadeSplits[cascadeIndex - 1]) * 0.5f;
+	return smoothstep(midPoint - blendDist, midPoint + blendDist, viewPosZ);
+}
+
+float getDitheredBlendFactor(float viewPosZ, uint cascadeIndex, vec2 inUV, FDirectionalLight light)
+{
+	vec2 dither = step(fract(inUV * vec2(1.0, 0.5)), vec2(0.5)) * 0.1; // dither scale can be adjusted as needed
+
+	float blendDist = abs(light.cascadeSplits[cascadeIndex] - light.cascadeSplits[cascadeIndex - 1]) * 0.5f;
+	float midPoint = (light.cascadeSplits[cascadeIndex] + light.cascadeSplits[cascadeIndex - 1]) * 0.5f;
+
+	return smoothstep(midPoint - blendDist - dither.x, midPoint + blendDist + dither.y, viewPosZ);
+}
+
+float getCascadeShadow(sampler2DArray shadomwap_tex, vec3 viewPosition, vec3 worldPosition, vec3 L, vec3 N, vec2 inUV, FDirectionalLight light)
+{
+	uint cascadeIndex = 0;
+	for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
+	{
+		if (viewPosition.z < light.cascadeSplits[i])
+			cascadeIndex = i + 1;
+	}
+
+	float bias = max(0.05 * (1.0 - dot(N, L)), 0.005);
+	
+	float currentCascade = sampleShadowCascade(shadomwap_tex, cascadeIndex, worldPosition, bias, light);
+
+	if (cascadeIndex != 0)
+	{
+		float prevCascade = sampleShadowCascade(shadomwap_tex, cascadeIndex - 1, worldPosition, bias, light);
+
+		float blendFactor = getDitheredBlendFactor(viewPosition.z, cascadeIndex, inUV, light);
+		currentCascade = mix(currentCascade, prevCascade, blendFactor);
+	}
+
+	return currentCascade;
 }
 
 #endif

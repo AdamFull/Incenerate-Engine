@@ -8,7 +8,7 @@ using namespace engine::graphics;
 using namespace engine::ecs;
 
 constexpr const float cascadeSplitLambda = 0.985f;
-constexpr const float cascadeSplitOverlap = 0.1f;
+constexpr const float cascadeSplitOverlap = 0.5f;
 
 void CCascadeShadowSystem::__create()
 {
@@ -54,8 +54,8 @@ void CCascadeShadowSystem::__update(float fDt)
 				float uniform = minZ + range * p;
 				float d = cascadeSplitLambda * (log - uniform) + uniform;
 
-				if (i != 0)
-					d += cascadeSplitOverlap * (d - cascadeSplits[i - 1]);
+				//if (i != 0)
+				//	d += cascadeSplitOverlap * (d - cascadeSplits[i - 1]);
 
 				cascadeSplits[i] = (d - nearClip) / clipRange;
 			}
@@ -65,6 +65,9 @@ void CCascadeShadowSystem::__update(float fDt)
 			for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
 			{
 				auto& splitDist = cascadeSplits[i];
+
+				if (i != 0)
+					splitDist = glm::mix(splitDist, cascadeSplits[i - 1], cascadeSplitOverlap);
 
 				std::array<glm::vec4, 8> frustumCorners =
 				{
