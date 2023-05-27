@@ -8,7 +8,7 @@ using namespace engine::graphics;
 using namespace engine::ecs;
 
 constexpr const float cascadeSplitLambda = 0.985f;
-constexpr const float cascadeSplitOverlap = 0.2f;
+constexpr const float cascadeSplitOverlap = 0.1f;
 
 void CCascadeShadowSystem::__create()
 {
@@ -53,7 +53,6 @@ void CCascadeShadowSystem::__update(float fDt)
 				float log = minZ * glm::pow(ratio, p);
 				float uniform = minZ + range * p;
 				float d = cascadeSplitLambda * (log - uniform) + uniform;
-				cascadeSplits[i] = (d - nearClip) / clipRange;
 
 				if (i != 0)
 					d += cascadeSplitOverlap * (d - cascadeSplits[i - 1]);
@@ -69,14 +68,17 @@ void CCascadeShadowSystem::__update(float fDt)
 
 				std::array<glm::vec4, 8> frustumCorners =
 				{
-					glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f),
-					glm::vec4(1.0f,  1.0f, -1.0f, 1.0f),
-					glm::vec4(1.0f, -1.0f, -1.0f, 1.0f),
-					glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
-					glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f),
-					glm::vec4(1.0f,  1.0f,  1.0f, 1.0f),
-					glm::vec4(1.0f, -1.0f,  1.0f, 1.0f),
-					glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
+					//Near face
+					glm::vec4{  1.0f,  1.0f, -1.0f, 1.0f },
+					glm::vec4{ -1.0f,  1.0f, -1.0f, 1.0f },
+					glm::vec4{  1.0f, -1.0f, -1.0f, 1.0f },
+					glm::vec4{ -1.0f, -1.0f, -1.0f, 1.0f },
+
+					//Far face
+					glm::vec4{  1.0f,  1.0f, 1.0f, 1.0f },
+					glm::vec4{ -1.0f,  1.0f, 1.0f, 1.0f },
+					glm::vec4{  1.0f, -1.0f, 1.0f, 1.0f },
+					glm::vec4{ -1.0f, -1.0f, 1.0f, 1.0f },
 				};
 
 				// Project frustum corners into world space
@@ -95,16 +97,15 @@ void CCascadeShadowSystem::__update(float fDt)
 				}
 
 				// Get frustum center
-				glm::vec4 frustumCenter = glm::vec4(0.0f);
+				glm::vec3 frustumCenter = glm::vec3(0.0f);
 				for (auto& corner : frustumCorners)
-					frustumCenter += corner;
-
+					frustumCenter += glm::vec3(corner);
 				frustumCenter /= frustumCorners.size();
 
 				float radius = 0.0f;
 				for (auto& corner : frustumCorners) 
 				{
-					float distance = glm::length(corner - frustumCenter);
+					float distance = glm::length(glm::vec3(corner) - frustumCenter);
 					radius = glm::max(radius, distance);
 				}
 				radius = glm::ceil(radius * 16.0f) / 16.0f;
@@ -112,19 +113,31 @@ void CCascadeShadowSystem::__update(float fDt)
 				glm::vec3 maxExtents = glm::vec3(radius);
 				glm::vec3 minExtents = -maxExtents;
 
-				//glm::vec3 lightDir = glm::normalize(ltransform.model[2]);
-				//glm::vec3 lightDir = glm::toQuat(ltransform.model) * glm::vec3(0.f, 0.f, 1.f);
-				//glm::vec3 lightDir = glm::normalize(glm::vec3( 1.f, -1.f, 1.f ));
-				glm::vec3 lightDir = glm::vec3( 1.f, -1.f, 1.f );
-				glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(frustumCenter) + -lightDir * -minExtents.z, glm::vec3(frustumCenter), glm::vec3(0.0f, 1.0f, 0.0f));
-				glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, maxExtents.z - minExtents.z);
+				glm::vec3 lightDir = glm::normalize(glm::toQuat(ltransform.model) * glm::vec3(0.f, 0.f, 1.f));
+				glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * -minExtents.z, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
+				glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, -15.0f, maxExtents.z - minExtents.z);
+
+				auto shadowMatrix = lightOrthoMatrix * lightViewMatrix;
+				glm::vec4 shadowOrigin = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+				shadowOrigin = shadowMatrix * shadowOrigin;
+				float storedW = shadowOrigin.w;
+				shadowOrigin = shadowOrigin * static_cast<float>(SHADOW_MAP_RESOLUTION) / 2.0f;
+				glm::vec4 roundedOrigin = glm::round(shadowOrigin);
+				glm::vec4 roundOffset = roundedOrigin - shadowOrigin;
+				roundOffset = roundOffset * 2.0f / static_cast<float>(SHADOW_MAP_RESOLUTION);
+				roundOffset.z = 0.0f;
+				roundOffset.w = 0.0f;
+				glm::mat4 lightProjectionMatrix = lightOrthoMatrix;
+				lightProjectionMatrix[3] += roundOffset;
 
 				// Store split distance and matrix in cascade
 				light.splitDepths[i] = (nearClip + splitDist * clipRange) * -1.0f;
-				light.cascadeViewProj[i] = lightOrthoMatrix * lightViewMatrix;
+				light.cascadeViewProj[i] = lightProjectionMatrix * lightViewMatrix;
 
 				lastSplitDist = cascadeSplits[i];
 			}
+
+
 
 			graphics->bindShader(shader_id);
 			graphics->setManualShaderControlFlag(true);
@@ -132,6 +145,8 @@ void CCascadeShadowSystem::__update(float fDt)
 			auto& pUniform = graphics->getUniformHandle("UBOShadowmap");
 			pUniform->set("viewProjMat", light.cascadeViewProj);
 			graphics->flushShader();
+
+			static std::array<glm::mat4, 128> joints{ glm::mat4(1.f) };
 
 			auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 			for (auto [entity, mtransform, mesh] : meshes.each())
@@ -141,6 +156,25 @@ void CCascadeShadowSystem::__update(float fDt)
 				if (!graphics->bindVertexBuffer(mesh.vbo_id))
 					continue;
 
+				bool bHasSkin{ false };
+				entt::entity armature{ entt::null };
+				if (mesh.skin > -1)
+				{
+					bHasSkin = true;
+					auto& scene = registry->get<FSceneComponent>(mesh.head);
+					auto invTransform = glm::inverse(mtransform.model);
+					auto& skin = scene.skins[mesh.skin];
+					armature = skin.root;
+
+					for (uint32_t i = 0; i < skin.joints.size(); i++)
+					{
+						auto& jtransform = registry->get<FTransformComponent>(skin.joints[i]);
+						joints[i] = jtransform.model * skin.inverseBindMatrices[i];
+						joints[i] = invTransform * joints[i];
+					}
+				}
+
+				// TODO: Add skinning support
 				for (auto& meshlet : mesh.vMeshlets)
 				{
 					//auto inLightView = frustum.checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);

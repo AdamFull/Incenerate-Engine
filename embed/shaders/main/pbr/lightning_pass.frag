@@ -238,15 +238,20 @@ void main()
 	else if(debug.mode == 11)
 	{
 		vec3 viewPosition = (ubo.view * vec4(inWorldPos, 1.0)).xyz;
+		//float viewPosition = length(ubo.viewPos.xyz - inWorldPos);
+		float distanceToCamera = viewPosition.z;
 
 		for(int i = 0; i < ubo.directionalLightCount; i++)
 		{
 			FDirectionalLight light = lights.directionalLights[i];
-			uint cascadeIndex = 0;
-			for (uint j = 0; j < SHADOW_MAP_CASCADE_COUNT - 1; ++j)
+			uint cascadeIndex = SHADOW_MAP_CASCADE_COUNT - 1;
+			for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
 			{
-				if (viewPosition.z < light.cascadeSplits[j])
-					cascadeIndex = j + 1;
+				if (distanceToCamera > light.cascadeSplits[i])
+				{
+					cascadeIndex = i;
+					break;
+				}
 			}
 
 			switch(cascadeIndex) 
