@@ -53,7 +53,7 @@ float cascadeShadowFilterPCF(sampler2DArray shadomwap_tex, vec4 sc, uint cascade
 	return shadowFactor / count;
 }
 
-float sampleShadowCascade(sampler2DArray shadomwap_tex, uint cascadeIndex, vec3 worldPosition, float baseBias, FDirectionalLight light)
+float sampleShadowCascade(sampler2DArray shadomwap_tex, uint cascadeIndex, vec3 worldPosition, float baseBias, FCascadeShadow light)
 {
 	float bias = baseBias;
 	const float biasModifier = 0.5f;
@@ -74,14 +74,14 @@ float sampleShadowCascade(sampler2DArray shadomwap_tex, uint cascadeIndex, vec3 
 	return shadow;
 }
 
-float getBlendFactor(float viewPosZ, uint cascadeIndex, FDirectionalLight light)
+float getBlendFactor(float viewPosZ, uint cascadeIndex, FCascadeShadow light)
 {
 	float blendDist = abs(light.cascadeSplits[cascadeIndex] - light.cascadeSplits[cascadeIndex - 1]) * 0.5f;
 	float midPoint = (light.cascadeSplits[cascadeIndex] + light.cascadeSplits[cascadeIndex - 1]) * 0.5f;
 	return smoothstep(midPoint - blendDist, midPoint + blendDist, viewPosZ);
 }
 
-float getDitheredBlendFactor(float viewPosZ, uint cascadeIndex, vec2 inUV, FDirectionalLight light)
+float getDitheredBlendFactor(float viewPosZ, uint cascadeIndex, vec2 inUV, FCascadeShadow light)
 {
 	vec2 dither = step(fract(inUV * vec2(1.0, 0.5)), vec2(0.5)) * 0.1; // dither scale can be adjusted as needed
 
@@ -91,7 +91,7 @@ float getDitheredBlendFactor(float viewPosZ, uint cascadeIndex, vec2 inUV, FDire
 	return smoothstep(midPoint - blendDist - dither.x, midPoint + blendDist + dither.y, viewPosZ);
 }
 
-float getCascadeShadow(sampler2DArray shadomwap_tex, vec3 viewPosition, vec3 worldPosition, vec3 L, vec3 N, vec2 inUV, FDirectionalLight light)
+float getCascadeShadow(sampler2DArray shadomwap_tex, vec3 viewPosition, vec3 worldPosition, vec3 L, vec3 N, vec2 inUV, FCascadeShadow light)
 {
 	uint cascadeIndex = 0;
 	for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)

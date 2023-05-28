@@ -33,20 +33,21 @@ float directionalShadowFilterPCF(sampler2DArrayShadow shadomwap_tex, vec4 sc, fl
 	return shadowFactor / count;
 }
 
-float getDirectionalShadow(sampler2DArrayShadow shadomwap_tex, vec3 fragpos, vec3 N, FSpotLight light, int layer) 
+float getDirectionalShadow(sampler2DArrayShadow shadomwap_tex, vec3 fragpos, vec3 N, vec3 dir, FSpotShadow light)
 {
     float shadow = 1.0;
 	vec4 shadowClip	= light.shadowView * vec4(fragpos, 1.0);
 
-	float cosTheta = dot(N, normalize(light.position - light.direction));
-	float bias = 0.000001 * tan(acos(cosTheta));
-	bias = clamp(bias, 0.0, 0.00001);
+	float cosTheta = dot(N, dir);
+	const float max_bias = 0.005f;
+	const float min_bias = 0.001f;
+	float bias = max(max_bias * (1.0 - cosTheta), min_bias);
 
 	bool enablePCF = true;
 	if (enablePCF)
-		shadow = directionalShadowFilterPCF(shadomwap_tex, shadowClip, bias, layer);
+		shadow = directionalShadowFilterPCF(shadomwap_tex, shadowClip, bias, light.layer);
 	else
-		shadow = directionalShadowProjection(shadomwap_tex, shadowClip, vec2(0.0), bias, layer);
+		shadow = directionalShadowProjection(shadomwap_tex, shadowClip, vec2(0.0), bias, light.layer);
 	return shadow;
 }
 

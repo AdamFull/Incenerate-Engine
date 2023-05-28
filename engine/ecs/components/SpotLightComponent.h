@@ -12,12 +12,19 @@ namespace engine
 			float innerAngle{ 0.f };
 			float outerAngle{ 0.78f };
 			bool toTarget{ false };
+			int shadowIndex{ -1 };
 			bool castShadows{ false };
+		};
+
+		struct FSpotShadowCommit
+		{
+			glm::mat4 shadowView;
+			int index;
 		};
 
 		struct FSpotLightCommit
 		{
-			glm::mat4 shadowView;
+			
 			alignas(16) glm::vec3 position;
 			alignas(16) glm::vec3 direction;
 			alignas(16) glm::vec3 color;
@@ -25,6 +32,7 @@ namespace engine
 			alignas(4) float lightAngleScale;
 			alignas(4) float lightAngleOffset;
 			alignas(4) int toTarget;
+			alignas(4) int shadowIndex;
 			alignas(4) int castShadows;
 		};
 

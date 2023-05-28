@@ -318,9 +318,13 @@ void CDevice::createDevice()
     //shaderObjectFeatures.shaderObject = bShaderObjectExtension;
     //shaderObjectFeatures.pNext = &synchronizationFeatures;
 
+    vk::PhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT shaderDemoteToHelperInvocationFeature{};
+    shaderDemoteToHelperInvocationFeature.shaderDemoteToHelperInvocation = true;
+    shaderDemoteToHelperInvocationFeature.pNext = &synchronizationFeatures;
+
     vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR timelineSemaphoreFeatures{};
     APICompatibility::applyTimelineSemaphoreFeatures(timelineSemaphoreFeatures);
-    timelineSemaphoreFeatures.pNext = &synchronizationFeatures;
+    timelineSemaphoreFeatures.pNext = &shaderDemoteToHelperInvocationFeature;
 
     vk::PhysicalDeviceGraphicsPipelineLibraryFeaturesEXT pipelineLibraryFeatures{};
     pipelineLibraryFeatures.graphicsPipelineLibrary = true;

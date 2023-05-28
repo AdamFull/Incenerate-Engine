@@ -13,7 +13,7 @@ constexpr const float cascadeSplitOverlap = 0.5f;
 void CCascadeShadowSystem::__create()
 {
 	FShaderSpecials specials;
-	specials.defines = { {"INVOCATION_COUNT", std::to_string(SHADOW_MAP_CASCADE_COUNT)} };
+	specials.defines = { {"INVOCATION_COUNT", std::to_string(CASCADE_SHADOW_MAP_CASCADE_COUNT)} };
 	shader_id = graphics->addShader("cascade_shadow_pass", specials);
 
 	CBaseGraphicsSystem::__create();
@@ -21,6 +21,8 @@ void CCascadeShadowSystem::__create()
 
 void CCascadeShadowSystem::__update(float fDt)
 {
+	auto& shadowManager = EGEngine->getShadows();
+
 	const auto* camera = EGEngine->getActiveCamera();
 
 	if (!camera)
@@ -39,17 +41,24 @@ void CCascadeShadowSystem::__update(float fDt)
 	auto stage = graphics->getRenderStageID("cascade_shadow");
 	graphics->bindRenderer(stage);
 
+	uint32_t shadowIndex{ 0u };
 	auto lights = registry->view<FTransformComponent, FDirectionalLightComponent>();
 	for (auto [entity, ltransform, light] : lights.each())
 	{
-		std::array<float, SHADOW_MAP_CASCADE_COUNT> cascadeSplits;
-		if (light.castShadows)
+		// Reset shadow index
+		light.shadowIndex = -1;
+
+		// Calculate shadows
+		std::array<float, CASCADE_SHADOW_MAP_CASCADE_COUNT> cascadeSplits;
+		if (light.castShadows && shadowIndex < MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT)
 		{
+			auto& shadow_commit = shadowManager->getCascadedShadowCommit(shadowIndex);
+
 			// Calculate split depths based on view camera frustum
 			// Based on method presented in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
-			for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
+			for (uint32_t i = 0; i < CASCADE_SHADOW_MAP_CASCADE_COUNT; i++)
 			{
-				float p = (i + 1) / static_cast<float>(SHADOW_MAP_CASCADE_COUNT);
+				float p = (i + 1) / static_cast<float>(CASCADE_SHADOW_MAP_CASCADE_COUNT);
 				float log = minZ * glm::pow(ratio, p);
 				float uniform = minZ + range * p;
 				float d = cascadeSplitLambda * (log - uniform) + uniform;
@@ -62,7 +71,7 @@ void CCascadeShadowSystem::__update(float fDt)
 
 			// Calculate orthographic projection matrix for each cascade
 			float lastSplitDist = 0.0;
-			for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
+			for (uint32_t i = 0; i < CASCADE_SHADOW_MAP_CASCADE_COUNT; i++)
 			{
 				auto& splitDist = cascadeSplits[i];
 
@@ -124,29 +133,27 @@ void CCascadeShadowSystem::__update(float fDt)
 				glm::vec4 shadowOrigin = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 				shadowOrigin = shadowMatrix * shadowOrigin;
 				float storedW = shadowOrigin.w;
-				shadowOrigin = shadowOrigin * static_cast<float>(SHADOW_MAP_RESOLUTION) / 2.0f;
+				shadowOrigin = shadowOrigin * static_cast<float>(CASCADE_SHADOW_MAP_RESOLUTION) / 2.0f;
 				glm::vec4 roundedOrigin = glm::round(shadowOrigin);
 				glm::vec4 roundOffset = roundedOrigin - shadowOrigin;
-				roundOffset = roundOffset * 2.0f / static_cast<float>(SHADOW_MAP_RESOLUTION);
+				roundOffset = roundOffset * 2.0f / static_cast<float>(CASCADE_SHADOW_MAP_RESOLUTION);
 				roundOffset.z = 0.0f;
 				roundOffset.w = 0.0f;
 				glm::mat4 lightProjectionMatrix = lightOrthoMatrix;
 				lightProjectionMatrix[3] += roundOffset;
 
 				// Store split distance and matrix in cascade
-				light.splitDepths[i] = (nearClip + splitDist * clipRange) * -1.0f;
-				light.cascadeViewProj[i] = lightProjectionMatrix * lightViewMatrix;
+				shadow_commit.splitDepths[i] = (nearClip + splitDist * clipRange) * -1.0f;
+				shadow_commit.cascadeViewProj[i] = lightProjectionMatrix * lightViewMatrix;
 
 				lastSplitDist = cascadeSplits[i];
 			}
-
-
 
 			graphics->bindShader(shader_id);
 			graphics->setManualShaderControlFlag(true);
 
 			auto& pUniform = graphics->getUniformHandle("UBOShadowmap");
-			pUniform->set("viewProjMat", light.cascadeViewProj);
+			pUniform->set("viewProjMat", shadow_commit.cascadeViewProj);
 			graphics->flushShader();
 
 			static std::array<glm::mat4, 128> joints{ glm::mat4(1.f) };
@@ -197,6 +204,10 @@ void CCascadeShadowSystem::__update(float fDt)
 
 			graphics->setManualShaderControlFlag(false);
 			graphics->bindShader(invalid_index);
+
+			// Set shadow index and increment it
+			light.shadowIndex = shadowIndex;
+			shadowIndex++;
 		}
 	}
 

@@ -512,7 +512,7 @@ void CEditorInspector::skyboxEdit(FEnvironmentComponent* object)
 						graphics->removeImage(object->origin);
 						object->origin = graphics->addImage(object->source, object->source);
 						object->irradiance = graphics->computeIrradiance(object->origin, 64);
-						object->prefiltred = graphics->computePrefiltered(object->origin, 512);
+						object->prefiltred = graphics->computePrefiltered(object->origin, 1024);
 					}
 					else
 					{

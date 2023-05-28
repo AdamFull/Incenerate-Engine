@@ -12,6 +12,11 @@ namespace engine
 			bool castShadows{ false };
 		};
 
+		struct FOmniShadowCommit
+		{
+
+		};
+
 		struct FPointLightCommit
 		{
 			alignas(16) glm::vec3 position;

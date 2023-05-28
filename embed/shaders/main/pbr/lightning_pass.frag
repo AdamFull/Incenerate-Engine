@@ -16,28 +16,28 @@
 #include "../../shader_util.glsl"
 
 //--------------------Texture bindings--------------------
-layout (binding = 0) uniform sampler2D brdflut_tex;
-layout (binding = 1) uniform samplerCube irradiance_tex;
-layout (binding = 2) uniform samplerCube prefiltred_tex;
+layout (set = 1, binding = 0) uniform sampler2D brdflut_tex;
+layout (set = 1, binding = 1) uniform samplerCube irradiance_tex;
+layout (set = 1, binding = 2) uniform samplerCube prefiltred_tex;
 
-layout (binding = 3) uniform sampler2D albedo_tex;
-layout (binding = 4) uniform sampler2D normal_tex;
-layout (binding = 5) uniform sampler2D mrah_tex;
-layout (binding = 6) uniform sampler2D emission_tex;
-layout (binding = 7) uniform sampler2D depth_tex;
+layout (set = 1, binding = 3) uniform sampler2D albedo_tex;
+layout (set = 1, binding = 4) uniform sampler2D normal_tex;
+layout (set = 1, binding = 5) uniform sampler2D mrah_tex;
+layout (set = 1, binding = 6) uniform sampler2D emission_tex;
+layout (set = 1, binding = 7) uniform sampler2D depth_tex;
 //layout (binding = 8) uniform sampler2D picking_tex;
 //layout (binding = 6) uniform sampler2D ssr_tex;
 
-layout (binding = 8) uniform sampler2DArray cascade_shadowmap_tex;
-layout (binding = 9) uniform sampler2DArrayShadow direct_shadowmap_tex;
-layout (binding = 10) uniform samplerCubeArrayShadow omni_shadowmap_tex;
+layout (set = 1, binding = 8) uniform sampler2DArray cascade_shadowmap_tex;
+layout (set = 1, binding = 9) uniform sampler2DArrayShadow direct_shadowmap_tex;
+layout (set = 1, binding = 10) uniform samplerCubeArrayShadow omni_shadowmap_tex;
 
 //--------------------In/Out locations--------------------
 layout (location = 0) in vec2 inUV;
 layout (location = 0) out vec4 outFragcolor;
 
 //--------------------Uniforms--------------------
-layout(std140, binding = 12) uniform UBODeferred
+layout(std140, set = 0, binding = 0) uniform UBODeferred
 {
 	mat4 view;
 	mat4 invViewProjection;
@@ -48,14 +48,20 @@ layout(std140, binding = 12) uniform UBODeferred
 } ubo;
 
 //Lights
-layout(std430, binding = 15) buffer readonly UBOLights
+layout(std430, set = 0, binding = 1) buffer readonly UBOLights
 {
-	FDirectionalLight directionalLights[1];
-	FSpotLight spotLights[15];
-	FPointLight pointLights[16];
+	FDirectionalLight directionalLights[MAX_DIRECTIONAL_LIGHTS_COUNT];
+	FSpotLight spotLights[MAX_SPOT_LIGHTS_COUNT];
+	FPointLight pointLights[MAX_POINT_LIGHTS_COUNT];
 } lights;
 
-layout(std140, binding = 13) uniform UBODebug
+layout(std430, set = 0, binding = 2) buffer readonly UBOShadows
+{
+	FCascadeShadow directionalShadows[MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT];
+	FSpotShadow spotShadows[MAX_SPOT_LIGHT_SHADOW_COUNT];
+} shadows;
+
+layout(std140, set = 0, binding = 3) uniform UBODebug
 {
 	int mode;
 	int cascadeSplit;
@@ -79,13 +85,13 @@ vec3 calculateDirectionalLight(FDirectionalLight light, vec3 worldPosition, vec3
 
 	float shadow_factor = 1.0;
 
-	if(light.castShadows > 0)
-		shadow_factor = getCascadeShadow(cascade_shadowmap_tex, (ubo.view * vec4(worldPosition, 1.0)).xyz, worldPosition, L, N, inUV, light);
+	if(light.castShadows > 0 && light.shadowIndex != -1)
+		shadow_factor = getCascadeShadow(cascade_shadowmap_tex, (ubo.view * vec4(worldPosition, 1.0)).xyz, worldPosition, L, N, inUV, shadows.directionalShadows[light.shadowIndex]);
 
 	return light.color * light.intencity * color * shadow_factor;
 }
 
-vec3 calculateSpotlight(FSpotLight light, int index, vec3 worldPosition, vec3 albedo, vec3 V, vec3 N, vec3 F0, float metallic, float roughness)
+vec3 calculateSpotlight(FSpotLight light, vec3 worldPosition, vec3 albedo, vec3 V, vec3 N, vec3 F0, float metallic, float roughness)
 {
 	vec3 L = normalize(light.position - worldPosition);
 
@@ -103,8 +109,8 @@ vec3 calculateSpotlight(FSpotLight light, int index, vec3 worldPosition, vec3 al
 	
 	float shadow_factor = 1.0;
 
-	if(light.castShadows > 0)
-		shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, light, index);
+	if(light.castShadows > 0 && light.shadowIndex != -1)
+		shadow_factor = getDirectionalShadow(direct_shadowmap_tex, worldPosition, N, normalize(light.direction), shadows.spotShadows[light.shadowIndex]);
 
 	return light.color * light.intencity * color * angularAttenuation * shadow_factor;
 }
@@ -176,7 +182,7 @@ void main()
 		for(int i = 0; i < ubo.spotLightCount; i++)
 		{
 			FSpotLight light = lights.spotLights[i];
-			Lo += calculateSpotlight(light, i, inWorldPos, albedo, V, normal, F0, metallic, roughness);
+			Lo += calculateSpotlight(light, inWorldPos, albedo, V, normal, F0, metallic, roughness);
 		}
 
 		//Point light
@@ -244,51 +250,54 @@ void main()
 		for(int i = 0; i < ubo.directionalLightCount; i++)
 		{
 			FDirectionalLight light = lights.directionalLights[i];
-			uint cascadeIndex = SHADOW_MAP_CASCADE_COUNT - 1;
-			for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
+
+			if(light.castShadows > 0 && light.shadowIndex != -1)
 			{
-				if (distanceToCamera > light.cascadeSplits[i])
+				FCascadeShadow shadow = shadows.directionalShadows[light.shadowIndex];
+				uint cascadeIndex = 0;
+				for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
 				{
-					cascadeIndex = i;
+					if (viewPosition.z < shadow.cascadeSplits[i])
+						cascadeIndex = i + 1;
+				}
+
+				switch(cascadeIndex) 
+				{
+				case 0 : 
+					fragcolor *= vec3(1.0f, 0.25f, 0.25f);
+					break;
+				case 1 : 
+					fragcolor *= vec3(0.25f, 1.0f, 0.25f);
+					break;
+				case 2 : 
+					fragcolor *= vec3(0.25f, 0.25f, 1.0f);
+					break;
+				case 3 : 
+					fragcolor *= vec3(1.0f, 1.0f, 0.25f);
+					break;
+				case 4 : 
+					fragcolor *= vec3(0.25f, 1.0f, 1.0f);
+					break;
+				case 5 : 
+					fragcolor *= vec3(1.0f, 0.25f, 1.0f);
+					break;
+				case 6 : 
+					fragcolor *= vec3(1.0f, 0.5f, 0.5f);
+					break;
+				case 7 : 
+					fragcolor *= vec3(0.5f, 1.0f, 0.5f);
+					break;
+				default:
+					fragcolor *= vec3(1.0f, 1.0f, 1.0f);
 					break;
 				}
 			}
-
-			switch(cascadeIndex) 
-			{
-			case 0 : 
-				fragcolor *= vec3(1.0f, 0.25f, 0.25f);
-				break;
-			case 1 : 
-				fragcolor *= vec3(0.25f, 1.0f, 0.25f);
-				break;
-			case 2 : 
-				fragcolor *= vec3(0.25f, 0.25f, 1.0f);
-				break;
-			case 3 : 
-				fragcolor *= vec3(1.0f, 1.0f, 0.25f);
-				break;
-			case 4 : 
-				fragcolor *= vec3(0.25f, 1.0f, 1.0f);
-				break;
-			case 5 : 
-				fragcolor *= vec3(1.0f, 0.25f, 1.0f);
-				break;
-			case 6 : 
-				fragcolor *= vec3(1.0f, 0.5f, 0.5f);
-				break;
-			case 7 : 
-				fragcolor *= vec3(0.5f, 1.0f, 0.5f);
-				break;
-			default:
-				fragcolor *= vec3(1.0f, 1.0f, 1.0f);
-				break;
-			}
 		}
 	}
-	//	fragcolor = texture(direct_shadowmap_tex, vec4(inUV, debug.spotShadowIndex, 0.005)).rrr;
-	//else if(debug.mode == 12)
-	//	fragcolor = texture(omni_shadowmap_tex, vec4(inUV, debug.omniShadowView, debug.omniShadowIndex), 0.005).rrr;
+	else if(debug.mode == 12)
+		fragcolor = texture(direct_shadowmap_tex, vec4(inUV, debug.spotShadowIndex, 0.005)).rrr;
+	else if(debug.mode == 13)
+		fragcolor = texture(omni_shadowmap_tex, vec4(inUV, debug.omniShadowView, debug.omniShadowIndex), 0.005).rrr;
 
   	outFragcolor = vec4(fragcolor, 1.0);
 }

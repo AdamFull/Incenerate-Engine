@@ -3,6 +3,7 @@
 #include "EngineStructures.h"
 #include "graphics/APIHandle.h"
 #include "physics/PhysicsCore.h"
+#include "ShadowManager.h"
 //#include "particles/ParticlesCore.h"
 
 #include "game/SceneManager.h"
@@ -38,6 +39,7 @@ namespace engine
 	using scenemgr_t = std::unique_ptr<game::CSceneManager>;
 	using scriptcore_t = std::unique_ptr<scripting::IScriptingCoreInterface>;
 	using physicscore_t = std::unique_ptr<physics::CPhysicsCore>;
+	using shadows_t = std::unique_ptr<CShadowManager>;
 	//using particlescore_t = std::unique_ptr<particles::CParticlesCore>;
 	using filesystem_t = std::unique_ptr<filesystem::IVirtualFileSystemInterface>;
 
@@ -63,6 +65,7 @@ namespace engine
 		const scenemgr_t& getSceneManager() const;
 		const scriptcore_t& getScripting() const;
 		const physicscore_t& getPhysics() const;
+		const shadows_t& getShadows() const;
 		//const particlescore_t& getParticles() const;
 		const filesystem_t& getFilesystem() const;
 
@@ -109,6 +112,7 @@ namespace engine
 		scenemgr_t pSceneManager;
 		scriptcore_t pScripting;
 		physicscore_t pPhysics;
+		shadows_t pShadows;
 		//particlescore_t pParticles;
 		filesystem_t pFilesystem;
 

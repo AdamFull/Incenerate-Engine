@@ -4,18 +4,22 @@
 
 struct FDirectionalLight
 {
-	float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
-	mat4 cascadeViewProjMat[SHADOW_MAP_CASCADE_COUNT];
 	vec3 direction;
     vec3 color;
 	float intencity;
-	float farClip;
+	int shadowIndex;
 	int castShadows;
+};
+
+struct FCascadeShadow
+{
+	float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
+	mat4 cascadeViewProjMat[SHADOW_MAP_CASCADE_COUNT];
+	float farClip;
 };
 
 struct FSpotLight
 {
-	mat4 shadowView;
 	vec3 position;
     vec3 direction;
     vec3 color;
@@ -23,7 +27,14 @@ struct FSpotLight
 	float lightAngleScale; 
     float lightAngleOffset;
 	int toTarget;
+	int shadowIndex;
 	int castShadows;
+};
+
+struct FSpotShadow
+{
+	mat4 shadowView;
+	int layer;
 };
 
 struct FPointLight

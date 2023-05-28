@@ -17,9 +17,20 @@ void CCompositionSystem::__create()
 	auto& device = graphics->getDevice();
 
 	FShaderSpecials specials;
-	specials.defines = { {"SHADOW_MAP_CASCADE_COUNT", std::to_string(SHADOW_MAP_CASCADE_COUNT)} };
+	specials.defines = { 
+		{"SHADOW_MAP_CASCADE_COUNT", std::to_string(CASCADE_SHADOW_MAP_CASCADE_COUNT)},
+		{"MAX_DIRECTIONAL_LIGHTS_COUNT", std::to_string(MAX_DIRECTIONAL_LIGHT_COUNT)},
+		{"MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT", std::to_string(MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT)},
+
+		{"MAX_SPOT_LIGHTS_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)},
+		{"MAX_SPOT_LIGHT_SHADOW_COUNT", std::to_string(MAX_SPOT_LIGHT_SHADOW_COUNT)},
+
+		{"MAX_POINT_LIGHT_SHADOW_COUNT", std::to_string(MAX_POINT_LIGHT_SHADOW_COUNT)},
+		{"MAX_POINT_LIGHTS_COUNT", std::to_string(MAX_POINT_LIGHT_COUNT)},
+
+	};
 	shader_id = graphics->addShader("pbr_composition", specials);
-	brdflut_id = graphics->computeBRDFLUT(512);
+	brdflut_id = graphics->computeBRDFLUT(1024);
 
 	addSubresource("albedo_tex");
 	addSubresource("normal_tex");
@@ -47,6 +58,8 @@ void CCompositionSystem::__create()
 
 void CCompositionSystem::__update(float fDt)
 {
+	auto& shadowManager = EGEngine->getShadows();
+
 	auto* camera = EGEngine->getActiveCamera();
 
 	if (!camera)
@@ -65,15 +78,14 @@ void CCompositionSystem::__update(float fDt)
 		for (auto [entity, transform, light] : view.each())
 		{
 			FDirectionalLightCommit commit;
-			commit.splitDepths = light.splitDepths;
-			commit.cascadeViewProj = light.cascadeViewProj;
 			commit.direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
 			commit.color = light.color;
 			commit.intencity = light.intencity;
-			commit.farClip = camera->farPlane;
+			commit.shadowIndex = light.shadowIndex;
 			commit.castShadows = static_cast<int>(light.castShadows);
 
 			directional_lights[directoonal_light_count++] = commit;
+			break;
 		}
 	}
 	
@@ -90,6 +102,7 @@ void CCompositionSystem::__update(float fDt)
 			commit.castShadows = static_cast<int>(light.castShadows);
 
 			point_lights[point_light_count++] = commit;
+			break;
 		}
 	}
 
@@ -107,9 +120,11 @@ void CCompositionSystem::__update(float fDt)
 			commit.lightAngleScale = 1.f / glm::max(0.001f, glm::cos(light.innerAngle) - glm::cos(light.outerAngle));
 			commit.lightAngleOffset = -glm::cos(light.outerAngle) * commit.lightAngleScale;
 			commit.toTarget = static_cast<int>(light.toTarget);
+			commit.shadowIndex = light.shadowIndex;
 			commit.castShadows = static_cast<int>(light.castShadows);
 
 			spot_lights[spot_light_count++] = commit;
+			break;
 		}
 	}
 
@@ -148,6 +163,10 @@ void CCompositionSystem::__update(float fDt)
 	pUBOLights->set("directionalLights", directional_lights);
 	pUBOLights->set("spotLights", spot_lights);
 	pUBOLights->set("pointLights", point_lights);
+
+	auto& pUBOShadows = graphics->getUniformHandle("UBOShadows");
+	pUBOShadows->set("directionalShadows", shadowManager->getDirectionalLightShadows());
+	pUBOShadows->set("spotShadows", shadowManager->getSpotLightShadows());
 
 	// TODO: get this data from editor
 	auto& pUBODebug = graphics->getUniformHandle("UBODebug");

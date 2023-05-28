@@ -79,10 +79,10 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     {
         m_mStageInfos["cascade_shadow"].srName = "cascade_shadow";
         m_mStageInfos["cascade_shadow"].viewport.offset = vk::Offset2D(0, 0);
-        m_mStageInfos["cascade_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        m_mStageInfos["cascade_shadow"].viewport.extent = vk::Extent2D(CASCADE_SHADOW_MAP_RESOLUTION, CASCADE_SHADOW_MAP_RESOLUTION);
         m_mStageInfos["cascade_shadow"].bIgnoreRecreation = true;
         m_mStageInfos["cascade_shadow"].bFlipViewport = false;
-        m_mStageInfos["cascade_shadow"].vImages.emplace_back("cascade_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, SHADOW_MAP_CASCADE_COUNT);
+        m_mStageInfos["cascade_shadow"].vImages.emplace_back("cascade_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, CASCADE_SHADOW_MAP_CASCADE_COUNT);
         m_mStageInfos["cascade_shadow"].vDescriptions.emplace_back("cascade_shadowmap_tex");
         m_mStageInfos["cascade_shadow"].vDependencies.emplace_back(
             FCIDependency(
@@ -121,10 +121,10 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     {
         m_mStageInfos["direct_shadow"].srName = "direct_shadow";
         m_mStageInfos["direct_shadow"].viewport.offset = vk::Offset2D(0, 0);
-        m_mStageInfos["direct_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        m_mStageInfos["direct_shadow"].viewport.extent = vk::Extent2D(SPOT_LIGHT_SHADOW_MAP_RESOLUTION, SPOT_LIGHT_SHADOW_MAP_RESOLUTION);
         m_mStageInfos["direct_shadow"].bIgnoreRecreation = true;
-        m_mStageInfos["direct_shadow"].bFlipViewport = true;
-        m_mStageInfos["direct_shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, MAX_SPOT_LIGHT_COUNT);
+        m_mStageInfos["direct_shadow"].bFlipViewport = false;
+        m_mStageInfos["direct_shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, MAX_SPOT_LIGHT_SHADOW_COUNT);
         m_mStageInfos["direct_shadow"].vDescriptions.emplace_back("direct_shadowmap_tex");
         m_mStageInfos["direct_shadow"].vDependencies.emplace_back(
             FCIDependency(
@@ -163,10 +163,10 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     {
         m_mStageInfos["omni_shadow"].srName = "omni_shadow";
         m_mStageInfos["omni_shadow"].viewport.offset = vk::Offset2D(0, 0);
-        m_mStageInfos["omni_shadow"].viewport.extent = vk::Extent2D(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+        m_mStageInfos["omni_shadow"].viewport.extent = vk::Extent2D(POINT_LIGHT_SHADOW_MAP_RESOLUTION, POINT_LIGHT_SHADOW_MAP_RESOLUTION);
         m_mStageInfos["omni_shadow"].bIgnoreRecreation = true;
-        m_mStageInfos["omni_shadow"].bFlipViewport = true;
-        m_mStageInfos["omni_shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArrayCube, MAX_POINT_LIGHT_COUNT);
+        m_mStageInfos["omni_shadow"].bFlipViewport = false;
+        m_mStageInfos["omni_shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArrayCube, MAX_POINT_LIGHT_SHADOW_COUNT);
         m_mStageInfos["omni_shadow"].vDescriptions.emplace_back("omni_shadowmap_tex");
         m_mStageInfos["omni_shadow"].vDependencies.emplace_back(
             FCIDependency(

@@ -109,7 +109,7 @@ void construct_skybox(entt::registry& reg, entt::entity entity)
 	{
 		skybox.origin = graphics->addImage(fs::get_filename(skybox.source), skybox.source);
 		skybox.irradiance = graphics->computeIrradiance(skybox.origin, 64);
-		skybox.prefiltred = graphics->computePrefiltered(skybox.origin, 512);
+		skybox.prefiltred = graphics->computePrefiltered(skybox.origin, 1024);
 		skybox.vbo_id = graphics->addVertexBuffer(skybox.source);
 		skybox.shader_id = graphics->addShader("skybox");
 		skybox.loaded = true;

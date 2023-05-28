@@ -10,7 +10,7 @@ using namespace engine::ecs;
 void CDirectionalShadowSystem::__create()
 {
 	FShaderSpecials specials;
-	specials.usages = MAX_SPOT_LIGHT_COUNT;
+	specials.usages = MAX_SPOT_LIGHT_SHADOW_COUNT;
 	//specials.defines = { {"INVOCATION_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)} };
 	shader_id = graphics->addShader("directional_shadow_pass", specials);
 
@@ -19,27 +19,31 @@ void CDirectionalShadowSystem::__create()
 
 void CDirectionalShadowSystem::__update(float fDt)
 {
-	uint32_t lightStride{ 0 };
+	auto& shadowManager = EGEngine->getShadows();
 
 	auto stage = graphics->getRenderStageID("direct_shadow");
 	graphics->bindRenderer(stage);
 
 	// Calculating spot light matrices
 	{
+		uint32_t lightStride{ 0 };
 		auto lights = registry->view<FTransformComponent, FSpotLightComponent>();
 		for (auto [entity, ltransform, light] : lights.each())
 		{
-			if (!light.castShadows && lightStride < MAX_SPOT_LIGHT_COUNT)
+			light.shadowIndex = -1;
+
+			if (!light.castShadows && lightStride < MAX_SPOT_LIGHT_SHADOW_COUNT)
 				continue;
+
+			auto& shadow_commit = shadowManager->getSpotShadowCommit(lightStride);
 
 			FFrustum frustum;
 			const glm::vec3 dp(0.0000001f);
 
 			auto lightDir = light.toTarget ? light.target : glm::normalize(glm::toQuat(ltransform.model) * glm::vec3(0.f, 0.f, 1.f));
-			//auto lightDir = light.toTarget ? light.target : glm::normalize(ltransform.model[2]);
-			glm::mat4 shadowProj = glm::perspective(light.outerAngle * 2.f, 1.0f, 0.1f, 32.f);
+			glm::mat4 shadowProj = glm::perspective(light.outerAngle * 2.f, 1.0f, 0.1f, 64.f);
 			glm::mat4 shadowView = glm::lookAt(ltransform.rposition, ltransform.position + lightDir, glm::vec3(0.0f, 1.0f, 0.0f));
-			auto lightViewProj = shadowProj * shadowView;
+			shadow_commit.shadowView = shadowProj * shadowView;
 
 			frustum.update(shadowView, shadowProj);
 
@@ -47,7 +51,7 @@ void CDirectionalShadowSystem::__update(float fDt)
 			graphics->setManualShaderControlFlag(true);
 
 			auto& pUniform = graphics->getUniformHandle("UBOShadowmap");
-			pUniform->set("lightViewProj", lightViewProj);
+			pUniform->set("viewProjMat", shadow_commit.shadowView);
 			graphics->flushShader();
 
 			auto meshes = registry->view<FTransformComponent, FMeshComponent>();
@@ -79,6 +83,7 @@ void CDirectionalShadowSystem::__update(float fDt)
 			graphics->setManualShaderControlFlag(false);
 			graphics->bindShader(shader_id);
 
+			shadow_commit.index = light.shadowIndex = lightStride;
 			lightStride++;
 		}
 	}
