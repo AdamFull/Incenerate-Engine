@@ -25,9 +25,8 @@ void CCompositionSystem::__create()
 		{"MAX_SPOT_LIGHTS_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)},
 		{"MAX_SPOT_LIGHT_SHADOW_COUNT", std::to_string(MAX_SPOT_LIGHT_SHADOW_COUNT)},
 
-		{"MAX_POINT_LIGHT_SHADOW_COUNT", std::to_string(MAX_POINT_LIGHT_SHADOW_COUNT)},
 		{"MAX_POINT_LIGHTS_COUNT", std::to_string(MAX_POINT_LIGHT_COUNT)},
-
+		{"MAX_POINT_LIGHT_SHADOW_COUNT", std::to_string(MAX_POINT_LIGHT_SHADOW_COUNT)},
 	};
 	shader_id = graphics->addShader("pbr_composition", specials);
 	brdflut_id = graphics->computeBRDFLUT(1024);
@@ -77,6 +76,9 @@ void CCompositionSystem::__update(float fDt)
 		auto view = registry->view<FTransformComponent, FDirectionalLightComponent>();
 		for (auto [entity, transform, light] : view.each())
 		{
+			if (directoonal_light_count > MAX_DIRECTIONAL_LIGHT_COUNT)
+				break;
+
 			FDirectionalLightCommit commit;
 			commit.direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
 			commit.color = light.color;
@@ -85,7 +87,6 @@ void CCompositionSystem::__update(float fDt)
 			commit.castShadows = static_cast<int>(light.castShadows);
 
 			directional_lights[directoonal_light_count++] = commit;
-			break;
 		}
 	}
 	
@@ -94,15 +95,18 @@ void CCompositionSystem::__update(float fDt)
 		auto view = registry->view<FTransformComponent, FPointLightComponent>();
 		for (auto [entity, transform, light] : view.each())
 		{
+			if (point_light_count > MAX_POINT_LIGHT_COUNT)
+				break;
+
 			FPointLightCommit commit;
 			commit.position = transform.rposition;
 			commit.color = light.color;
 			commit.intencity = light.intencity;
 			commit.radius = light.radius;
+			commit.shadowIndex = light.shadowIndex;
 			commit.castShadows = static_cast<int>(light.castShadows);
 
 			point_lights[point_light_count++] = commit;
-			break;
 		}
 	}
 
@@ -112,6 +116,9 @@ void CCompositionSystem::__update(float fDt)
 		auto view = registry->view<FTransformComponent, FSpotLightComponent>();
 		for (auto [entity, transform, light] : view.each())
 		{
+			if (spot_light_count > MAX_SPOT_LIGHT_COUNT)
+				break;
+
 			FSpotLightCommit commit;
 			commit.position = transform.rposition; 
 			commit.direction = light.toTarget ? light.target : glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
@@ -124,7 +131,6 @@ void CCompositionSystem::__update(float fDt)
 			commit.castShadows = static_cast<int>(light.castShadows);
 
 			spot_lights[spot_light_count++] = commit;
-			break;
 		}
 	}
 
@@ -164,9 +170,11 @@ void CCompositionSystem::__update(float fDt)
 	pUBOLights->set("spotLights", spot_lights);
 	pUBOLights->set("pointLights", point_lights);
 
+	// Push shadow data
 	auto& pUBOShadows = graphics->getUniformHandle("UBOShadows");
 	pUBOShadows->set("directionalShadows", shadowManager->getDirectionalLightShadows());
 	pUBOShadows->set("spotShadows", shadowManager->getSpotLightShadows());
+	pUBOShadows->set("pointShadows", shadowManager->getPointLightShadows());
 
 	// TODO: get this data from editor
 	auto& pUBODebug = graphics->getUniformHandle("UBODebug");

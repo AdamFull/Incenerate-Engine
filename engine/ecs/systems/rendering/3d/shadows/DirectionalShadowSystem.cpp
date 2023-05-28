@@ -83,6 +83,7 @@ void CDirectionalShadowSystem::__update(float fDt)
 			graphics->setManualShaderControlFlag(false);
 			graphics->bindShader(shader_id);
 
+			// Set shadow index and increment it
 			shadow_commit.index = light.shadowIndex = lightStride;
 			lightStride++;
 		}

@@ -19,7 +19,7 @@ namespace engine
 		struct FSpotShadowCommit
 		{
 			glm::mat4 shadowView;
-			int index;
+			alignas(4) int index;
 		};
 
 		struct FSpotLightCommit

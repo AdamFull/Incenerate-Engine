@@ -59,6 +59,7 @@ layout(std430, set = 0, binding = 2) buffer readonly UBOShadows
 {
 	FCascadeShadow directionalShadows[MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT];
 	FSpotShadow spotShadows[MAX_SPOT_LIGHT_SHADOW_COUNT];
+	FOmniShadow pointShadows[MAX_POINT_LIGHT_SHADOW_COUNT];
 } shadows;
 
 layout(std140, set = 0, binding = 3) uniform UBODebug
@@ -125,8 +126,8 @@ vec3 calculatePointLight(FPointLight light, int index, vec3 worldPosition, vec3 
 
 	float shadow_factor = 1.0;
 
-	if(light.castShadows > 0)
-		shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, ubo.viewPos.xyz, N, light, index, light.radius);
+	if(light.castShadows > 0 && light.shadowIndex != -1)
+		shadow_factor = getOmniShadow(omni_shadowmap_tex, worldPosition, light.position, N, shadows.pointShadows[light.shadowIndex]);
 
 	return light.color * atten * color * light.intencity * shadow_factor;
 }

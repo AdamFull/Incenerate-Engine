@@ -18,7 +18,17 @@ const spot_shadows_t& CShadowManager::getSpotLightShadows()
 	return aSpotLightShadows;
 }
 
-ecs::FSpotShadowCommit& CShadowManager::getSpotShadowCommit(size_t index)
+FSpotShadowCommit& CShadowManager::getSpotShadowCommit(size_t index)
 {
 	return aSpotLightShadows[index];
+}
+
+const omni_shadows_t& CShadowManager::getPointLightShadows()
+{
+	return aPointLightShadows;
+}
+
+FOmniShadowCommit& CShadowManager::getPointShadowCommit(size_t index)
+{
+	return aPointLightShadows[index];
 }

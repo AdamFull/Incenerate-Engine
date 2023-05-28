@@ -8,6 +8,7 @@ namespace engine
 {
 	using cascaded_shadows_t = std::array<ecs::FCascadedShadowCommit, MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT>;
 	using spot_shadows_t = std::array<ecs::FSpotShadowCommit, MAX_SPOT_LIGHT_SHADOW_COUNT>;
+	using omni_shadows_t = std::array<ecs::FOmniShadowCommit, MAX_POINT_LIGHT_SHADOW_COUNT>;
 
 	class CShadowManager
 	{
@@ -17,8 +18,12 @@ namespace engine
 
 		const spot_shadows_t& getSpotLightShadows();
 		ecs::FSpotShadowCommit& getSpotShadowCommit(size_t index);
+
+		const omni_shadows_t& getPointLightShadows();
+		ecs::FOmniShadowCommit& getPointShadowCommit(size_t index);
 	private:
 		cascaded_shadows_t aDirectionalLightShadows{};
 		spot_shadows_t aSpotLightShadows{};
+		omni_shadows_t aPointLightShadows{};
 	};
 }

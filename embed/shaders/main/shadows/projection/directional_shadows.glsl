@@ -4,7 +4,6 @@
 
 float directionalShadowProjection(sampler2DArrayShadow shadomwap_tex, vec4 P, vec2 offset, float bias, int layer)
 {
-	float shadow = 1.0;
 	vec4 shadowCoord = P / P.w;
 	shadowCoord.st = shadowCoord.st * 0.5 + 0.5;
 	return texture(shadomwap_tex, vec4(shadowCoord.st + offset, layer, shadowCoord.z - bias));

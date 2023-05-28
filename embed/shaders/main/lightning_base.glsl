@@ -43,7 +43,14 @@ struct FPointLight
     vec3 color;
 	float intencity;
 	float radius;
+	int shadowIndex;
 	int castShadows;
+};
+
+struct FOmniShadow
+{
+	float farClip;
+	int layer;
 };
 
 #endif

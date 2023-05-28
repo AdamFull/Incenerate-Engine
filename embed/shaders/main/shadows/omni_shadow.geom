@@ -4,7 +4,7 @@
 #define NUM_FACES 6
 
 layout (triangles) in;
-layout (triangle_strip, max_vertices= NUM_FACES * 3) out;
+layout (triangle_strip, max_vertices=3) out;
 
 layout (binding = 0) uniform UBOShadowmap 
 {
