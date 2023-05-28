@@ -98,6 +98,8 @@ namespace engine
 			const std::unique_ptr<CRenderStage>& getRenderStage(size_t id);
 			size_t getRenderStageID(const std::string& name);
 
+			const size_t getDrawCallCount() const;
+
 			const std::unique_ptr<CFramebuffer>& getFramebuffer(const std::string& srName);
 
 			size_t computeBRDFLUT(uint32_t size);
@@ -192,6 +194,7 @@ namespace engine
 			uint32_t m_imageIndex{ 0 };
 			bool m_bFrameStarted{ false };
 			std::unique_ptr<CCommandBuffer> m_pCommandBuffers;
+			size_t drawCallCount{ 0ull };
 		};
 	}
 }

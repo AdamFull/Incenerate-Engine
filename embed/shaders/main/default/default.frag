@@ -83,12 +83,14 @@ void main()
 #endif
 
 //NORMALS
-	vec3 normal_map = vec3(0.0);
+	vec4 normal_map = vec4(0.0, 0.0, 0.0, 1.0);
 #ifdef HAS_NORMALMAP // HAS_NORMALMAP
-	normal_map = getTangentSpaceNormalMap(sample_texture(normal_tex, texCoord).rgb, tbn, material.normalScale);
+	vec4 normal_sample = sample_texture(normal_tex, texCoord);
+	normal_map = vec4(getTangentSpaceNormalMap(normal_sample.xyz, tbn, material.normalScale), normal_sample.a);
 #else // HAS_NORMALMAP
-	normal_map = tbn[2].xyz;
+	normal_map.xyz = tbn[2].xyz;
 #endif
+	normal_map.a = min(normal_map.a, albedo_map.a);
 
 //AMBIENT OCCLUSION
 #ifdef HAS_OCCLUSIONMAP
@@ -102,13 +104,14 @@ void main()
 //EMISSION
 	vec4 emission = vec4(0.0);
 #ifdef HAS_EMISSIVEMAP
-    emission = vec4(sample_texture(emissive_tex, texCoord).rgb * material.emissiveFactor, 1.0) * material.emissiveStrength;
+	vec4 emission_sample = sample_texture(emissive_tex, texCoord);
+    emission = vec4(emission_sample.rgb * material.emissiveFactor, emission_sample.a) * material.emissiveStrength;
 #else // HAS_EMISSIVEMAP
 	emission = vec4(material.emissiveFactor, 1.0) * material.emissiveStrength;
 #endif // HAS_EMISSIVEMAP
 
 	outAlbedo = albedo_map;
-	outNormal = vec4(normal_map, 1.0);
+	outNormal = normal_map;
 	outMRAH = pbr_map;
 	outEmissive = emission;
 #ifdef EDITOR_MODE

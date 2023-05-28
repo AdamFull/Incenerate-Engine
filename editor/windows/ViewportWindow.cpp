@@ -237,14 +237,22 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 	}
 
 	auto& io = ImGui::GetIO();
+
+	// Fps / frame time
 	char overlay[64];
 	sprintf(overlay, "dt: %.3f | FPS: %u", fDt, frameRate);
 	ImGui::Text(overlay);
 
+	sprintf(overlay, "Draw calls: %u", graphics->getDrawCallCount());
+	ImGui::Text(overlay);
+
+	// GPU name
 	auto& physical = graphics->getDevice()->getPhysical();
 	auto props = physical.getProperties();
 	sprintf(overlay, "GPU: %s", props.deviceName.data());
 	ImGui::Text(overlay);
+
+
 
 	overlayY = ImGui::GetCursorPosY();
 

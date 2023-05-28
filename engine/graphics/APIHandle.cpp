@@ -793,6 +793,11 @@ size_t CAPIHandle::getRenderStageID(const std::string& name)
     return m_pRenderStageManager->getId(name);
 }
 
+const size_t CAPIHandle::getDrawCallCount() const
+{
+    return drawCallCount;
+}
+
 const std::unique_ptr<CFramebuffer>& CAPIHandle::getFramebuffer(const std::string& srName)
 {
     return getRenderStage(srName)->getFramebuffer();
@@ -1205,6 +1210,8 @@ void CAPIHandle::draw(size_t begin_vertex, size_t vertex_count, size_t begin_ind
     else
         // Screen space drawing
         commandBuffer.draw(vertex_count, instance_count, begin_vertex, 0);
+
+    ++drawCallCount;
 }
 
 void CAPIHandle::dispatch(const std::vector<FDispatchParam>& params)
@@ -1354,5 +1361,6 @@ vk::Result CAPIHandle::endFrame()
     log_cerror(m_bFrameStarted, "Can't call endFrame while frame is not in progress");
     m_pCommandBuffers->end();
     m_bFrameStarted = false;
+    drawCallCount = 0ull;
     return m_pCommandBuffers->submit(m_imageIndex);
 }
