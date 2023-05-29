@@ -54,14 +54,12 @@ float getCascadeShadow(sampler2DArrayShadow shadomwap_tex, vec3 viewPosition, ve
 			cascadeIndex = i + 1;
 	}
 
-	float bias = max(0.05 * (1.0 - dot(N, L)), 0.005);
-	const float biasModifier = 0.5f;
-	if (cascadeIndex == SHADOW_MAP_CASCADE_COUNT - 1)
-		bias *= 1.f / (light.farClip * biasModifier);
-	else
-		bias *= 1.f / (abs(light.cascadeSplits[cascadeIndex]) * biasModifier);
+	const float biasScale = 0.0001f;
+	float depth = -viewPosition.z;
+	float bias = biasScale * depth;
 
-	vec4 shadowCoord = (biasMat * light.cascadeViewProjMat[cascadeIndex]) * vec4(worldPosition, 1.0);
+	vec4 offsetPos = vec4(worldPosition + 0.05 * N, 1.0);
+	vec4 shadowCoord = (biasMat * light.cascadeViewProjMat[cascadeIndex]) * offsetPos;
 	shadowCoord = shadowCoord / shadowCoord.w;
 
 	float shadow = 1.f;
