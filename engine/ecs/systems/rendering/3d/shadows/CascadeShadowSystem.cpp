@@ -8,7 +8,7 @@ using namespace engine::graphics;
 using namespace engine::ecs;
 
 constexpr const float cascadeSplitLambda = 0.985f;
-constexpr const float cascadeSplitOverlap = 0.5f;
+constexpr const float cascadeSplitOverlap = 0.9f;
 
 void CCascadeShadowSystem::__create()
 {
@@ -58,14 +58,10 @@ void CCascadeShadowSystem::__update(float fDt)
 			// Based on method presented in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
 			for (uint32_t i = 0; i < CASCADE_SHADOW_MAP_CASCADE_COUNT; i++)
 			{
-				float p = (i + 1) / static_cast<float>(CASCADE_SHADOW_MAP_CASCADE_COUNT);
+				float p = static_cast<float>(i + 1) / static_cast<float>(CASCADE_SHADOW_MAP_CASCADE_COUNT);
 				float log = minZ * glm::pow(ratio, p);
 				float uniform = minZ + range * p;
 				float d = cascadeSplitLambda * (log - uniform) + uniform;
-
-				//if (i != 0)
-				//	d += cascadeSplitOverlap * (d - cascadeSplits[i - 1]);
-
 				cascadeSplits[i] = (d - nearClip) / clipRange;
 			}
 
@@ -74,9 +70,6 @@ void CCascadeShadowSystem::__update(float fDt)
 			for (uint32_t i = 0; i < CASCADE_SHADOW_MAP_CASCADE_COUNT; i++)
 			{
 				auto& splitDist = cascadeSplits[i];
-
-				if (i != 0)
-					splitDist = glm::mix(splitDist, cascadeSplits[i - 1], cascadeSplitOverlap);
 
 				std::array<glm::vec4, 8> frustumCorners =
 				{
@@ -94,6 +87,7 @@ void CCascadeShadowSystem::__update(float fDt)
 				};
 
 				// Project frustum corners into world space
+				auto projection = camera->projection;
 				glm::mat4 invCam = glm::inverse(camera->projection * camera->view);
 				for (auto& corner : frustumCorners)
 				{
@@ -126,8 +120,8 @@ void CCascadeShadowSystem::__update(float fDt)
 				glm::vec3 minExtents = -maxExtents;
 
 				glm::vec3 lightDir = glm::normalize(glm::toQuat(ltransform.model) * glm::vec3(0.f, 0.f, 1.f));
-				glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * -minExtents.z, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
-				glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, -15.0f, maxExtents.z - minExtents.z);
+				glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * -minExtents.z, frustumCenter, camera->up);
+				glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, minExtents.z, maxExtents.z - minExtents.z);
 
 				auto shadowMatrix = lightOrthoMatrix * lightViewMatrix;
 				glm::vec4 shadowOrigin = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -187,8 +181,6 @@ void CCascadeShadowSystem::__update(float fDt)
 				// TODO: Add skinning support
 				for (auto& meshlet : mesh.vMeshlets)
 				{
-					//auto inLightView = frustum.checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
-
 					if (head.castShadows)
 					{
 						auto& pPush = graphics->getPushBlockHandle("modelData");

@@ -6,18 +6,13 @@
 layout (triangles) in;
 layout (triangle_strip, max_vertices=3) out;
 
-layout (binding = 0) uniform UBOShadowmap 
+layout(push_constant) uniform UBOShadowmapModelData
 {
 	mat4 viewProjMat;
+	mat4 model;
 	vec4 position;
 	int stride;
     float farPlane;
-} uboshadow;
-
-layout(push_constant) uniform UBOShadowmapModelData
-{
-	mat4 model;
-	int stride;
 } modelData;
 
 layout(location = 0) out vec4 outPosition;
@@ -25,12 +20,12 @@ layout(location = 1) out vec4 outLightPos;
 
 void main() 
 {
-	for(int vertex_index = 0; vertex_index < 3; vertex_index++) 
+	for(int vertex_index = 0; vertex_index < gl_in.length(); vertex_index++) 
     {	
 		gl_Layer = modelData.stride;
         outPosition = gl_in[vertex_index].gl_Position;
-        outLightPos = uboshadow.position;
-		gl_Position = uboshadow.viewProjMat * outPosition;
+        outLightPos = modelData.position;
+		gl_Position = modelData.viewProjMat * outPosition;
 		EmitVertex();
 	}
 	EndPrimitive();

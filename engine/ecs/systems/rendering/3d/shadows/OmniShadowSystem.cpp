@@ -58,11 +58,10 @@ void COmniShadowSystem::__update(float fDt)
 				auto shadowViewProj = shadowProj * point_light_view_matrices[i];
 				point_light_frustums[i].update(point_light_view_matrices[i], shadowProj);
 
-				auto& pUniform = graphics->getUniformHandle("UBOShadowmap");
-				pUniform->set("viewProjMat", shadowViewProj);
-				pUniform->set("position", glm::vec4(ltransform.rposition, 1.f));
-				pUniform->set("farPlane", light.radius);
-				graphics->flushShader();
+				auto& pPush = graphics->getPushBlockHandle("modelData");
+				pPush->set("viewProjMat", shadowViewProj);
+				pPush->set("position", glm::vec4(ltransform.rposition, 1.f));
+				pPush->set("farPlane", light.radius);
 
 				auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 				for (auto [entity, mtransform, mesh] : meshes.each())
@@ -78,7 +77,7 @@ void COmniShadowSystem::__update(float fDt)
 
 						if (inLightView)
 						{
-							auto& pPush = graphics->getPushBlockHandle("modelData");
+							
 							pPush->set("model", mtransform.model);
 							pPush->set("stride", array_shift + i);
 							graphics->flushConstantRanges(pPush);

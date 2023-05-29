@@ -50,9 +50,8 @@ void CDirectionalShadowSystem::__update(float fDt)
 			graphics->bindShader(shader_id);
 			graphics->setManualShaderControlFlag(true);
 
-			auto& pUniform = graphics->getUniformHandle("UBOShadowmap");
-			pUniform->set("viewProjMat", shadow_commit.shadowView);
-			graphics->flushShader();
+			auto& pPush = graphics->getPushBlockHandle("modelData");
+			pPush->set("viewProjMat", shadow_commit.shadowView);
 
 			auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 			for (auto [entity, mtransform, mesh] : meshes.each())
@@ -68,7 +67,7 @@ void CDirectionalShadowSystem::__update(float fDt)
 
 					if(inLightView)
 					{
-						auto& pPush = graphics->getPushBlockHandle("modelData");
+						
 						pPush->set("model", mtransform.model);
 						pPush->set("stride", lightStride);
 						graphics->flushConstantRanges(pPush);

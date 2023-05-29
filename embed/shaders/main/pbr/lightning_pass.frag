@@ -28,7 +28,7 @@ layout (set = 1, binding = 7) uniform sampler2D depth_tex;
 //layout (binding = 8) uniform sampler2D picking_tex;
 //layout (binding = 6) uniform sampler2D ssr_tex;
 
-layout (set = 1, binding = 8) uniform sampler2DArray cascade_shadowmap_tex;
+layout (set = 1, binding = 8) uniform sampler2DArrayShadow cascade_shadowmap_tex;
 layout (set = 1, binding = 9) uniform sampler2DArrayShadow direct_shadowmap_tex;
 layout (set = 1, binding = 10) uniform samplerCubeArrayShadow omni_shadowmap_tex;
 
@@ -241,7 +241,7 @@ void main()
 	else if(debug.mode == 9)
 		fragcolor = vec3(occlusionStrength);
 	else if(debug.mode == 10)
-		fragcolor = texture(cascade_shadowmap_tex, vec3(inUV, debug.cascadeSplit)).rrr;
+		fragcolor = texture(cascade_shadowmap_tex, vec4(inUV, debug.cascadeSplit, 1.0)).rrr;
 	else if(debug.mode == 11)
 	{
 		vec3 viewPosition = (ubo.view * vec4(inWorldPos, 1.0)).xyz;
@@ -296,9 +296,9 @@ void main()
 		}
 	}
 	else if(debug.mode == 12)
-		fragcolor = texture(direct_shadowmap_tex, vec4(inUV, debug.spotShadowIndex, 0.005)).rrr;
+		fragcolor = texture(direct_shadowmap_tex, vec4(inUV, debug.spotShadowIndex, 1.0)).rrr;
 	else if(debug.mode == 13)
-		fragcolor = texture(omni_shadowmap_tex, vec4(inUV, debug.omniShadowView, debug.omniShadowIndex), 0.005).rrr;
+		fragcolor = texture(omni_shadowmap_tex, vec4(inUV, debug.omniShadowView, debug.omniShadowIndex), 1.0).rrr;
 
   	outFragcolor = vec4(fragcolor, 1.0);
 }

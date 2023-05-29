@@ -10,8 +10,11 @@ layout (location = 6) in vec4 inJoint0;
 
 layout(push_constant) uniform UBOShadowmapModelData
 {
+	mat4 viewProjMat;
 	mat4 model;
+	vec4 position;
 	int stride;
+    float farPlane;
 } modelData;
 
 void main()

@@ -30,7 +30,7 @@ void CCompositionSystem::__create()
 	};
 	shader_id = graphics->addShader("pbr_composition", specials);
 	brdflut_id = graphics->computeBRDFLUT(1024);
-
+	
 	addSubresource("albedo_tex");
 	addSubresource("normal_tex");
 	addSubresource("mrah_tex");
