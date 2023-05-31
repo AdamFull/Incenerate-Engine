@@ -62,12 +62,16 @@ void COmniShadowSystem::__update(float fDt)
 				pPush->set("viewProjMat", shadowViewProj);
 				pPush->set("position", glm::vec4(ltransform.rposition, 1.f));
 				pPush->set("farPlane", light.radius);
+				pPush->set("stride", array_shift + i);
 
 				auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 				for (auto [entity, mtransform, mesh] : meshes.each())
 				{
 					if (!graphics->bindVertexBuffer(mesh.vbo_id))
 						continue;
+
+					pPush->set("model", mtransform.model);
+					graphics->flushConstantRanges(pPush);
 
 					auto& head = registry->get<FSceneComponent>(mesh.head);
 
@@ -76,14 +80,7 @@ void COmniShadowSystem::__update(float fDt)
 						auto inLightView = head.castShadows && point_light_frustums[i].checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
 
 						if (inLightView)
-						{
-							
-							pPush->set("model", mtransform.model);
-							pPush->set("stride", array_shift + i);
-							graphics->flushConstantRanges(pPush);
-
 							graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
-						}
 					}
 
 					graphics->bindVertexBuffer(invalid_index);

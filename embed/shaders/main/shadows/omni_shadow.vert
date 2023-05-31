@@ -1,4 +1,5 @@
 #version 450
+#extension GL_ARB_shader_viewport_layer_array : require
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -17,7 +18,13 @@ layout(push_constant) uniform UBOShadowmapModelData
     float farPlane;
 } modelData;
 
+layout(location = 0) out vec4 outPosition;
+layout(location = 1) out vec4 outLightPos;
+
 void main()
 {
-	gl_Position = modelData.model * vec4(inPosition, 1.0);
+	gl_Layer = modelData.stride;
+	outPosition = modelData.model * vec4(inPosition, 1.0);
+	outLightPos = modelData.position;
+	gl_Position = modelData.viewProjMat * outPosition;
 }

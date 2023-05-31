@@ -134,8 +134,7 @@
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "/embed/shaders/main/shadows/cascade_shadow.vert",
-      "/embed/shaders/main/shadows/cascade_shadow.geom"
+      "/embed/shaders/main/shadows/cascade_shadow.vert"
     ],
     "defines": {}
   },
@@ -147,8 +146,7 @@
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "/embed/shaders/main/shadows/shadow_base.vert",
-      "/embed/shaders/main/shadows/directional_shadow.geom"
+      "/embed/shaders/main/shadows/directional_shadow.vert"
     ],
     "defines": {}
   },
@@ -160,8 +158,7 @@
     "depth_test": true,
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
-      "/embed/shaders/main/shadows/shadow_base.vert",
-      "/embed/shaders/main/shadows/omni_shadow.geom",
+      "/embed/shaders/main/shadows/omni_shadow.vert",
       "/embed/shaders/main/shadows/omni_shadow.frag"
     ],
     "defines": {}

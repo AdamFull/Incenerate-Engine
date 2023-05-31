@@ -28,6 +28,17 @@ void CCascadeShadowSystem::__update(float fDt)
 	if (!camera)
 		return;
 
+	static std::array<glm::mat4, 128> joints{ glm::mat4(1.f) };
+
+	auto stage = graphics->getRenderStageID("cascade_shadow");
+	graphics->bindRenderer(stage);
+
+	graphics->bindShader(shader_id);
+	graphics->setManualShaderControlFlag(true);
+
+	auto& pPush = graphics->getPushBlockHandle("modelData");
+
+	// Begin calculating cascades
 	const auto& nearClip = camera->nearPlane;
 	const auto& farClip = camera->farPlane;
 	float clipRange = farClip - nearClip;
@@ -37,9 +48,6 @@ void CCascadeShadowSystem::__update(float fDt)
 
 	float range = maxZ - minZ;
 	float ratio = maxZ / minZ;
-
-	auto stage = graphics->getRenderStageID("cascade_shadow");
-	graphics->bindRenderer(stage);
 
 	uint32_t shadowIndex{ 0u };
 	auto lights = registry->view<FTransformComponent, FDirectionalLightComponent>();
@@ -141,68 +149,59 @@ void CCascadeShadowSystem::__update(float fDt)
 				shadow_commit.splitDepths[i] = (nearClip + splitDist * clipRange) * -1.0f;
 				shadow_commit.cascadeViewProj[i] = lightProjectionMatrix * lightViewMatrix;
 
+				//Rendering shadow map
+				pPush->set("viewProjMat", shadow_commit.cascadeViewProj[i]);
+				pPush->set("layer", i);
+
+				auto meshes = registry->view<FTransformComponent, FMeshComponent>();
+				for (auto [entity, mtransform, mesh] : meshes.each())
+				{
+					auto& head = registry->get<FSceneComponent>(mesh.head);
+
+					if (!graphics->bindVertexBuffer(mesh.vbo_id))
+						continue;
+
+					pPush->set("model", mtransform.model);
+					graphics->flushConstantRanges(pPush);
+
+					bool bHasSkin{ false };
+					entt::entity armature{ entt::null };
+					if (mesh.skin > -1)
+					{
+						bHasSkin = true;
+						auto& scene = registry->get<FSceneComponent>(mesh.head);
+						auto invTransform = glm::inverse(mtransform.model);
+						auto& skin = scene.skins[mesh.skin];
+						armature = skin.root;
+
+						for (uint32_t i = 0; i < skin.joints.size(); i++)
+						{
+							auto& jtransform = registry->get<FTransformComponent>(skin.joints[i]);
+							joints[i] = jtransform.model * skin.inverseBindMatrices[i];
+							joints[i] = invTransform * joints[i];
+						}
+					}
+
+					// TODO: Add skinning support
+					for (auto& meshlet : mesh.vMeshlets)
+					{
+						if (head.castShadows)
+							graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
+					}
+				}
+
 				lastSplitDist = cascadeSplits[i];
 			}
-
-			graphics->bindShader(shader_id);
-			graphics->setManualShaderControlFlag(true);
-
-			auto& pUniform = graphics->getUniformHandle("UBOShadowmap");
-			pUniform->set("viewProjMat", shadow_commit.cascadeViewProj);
-			graphics->flushShader();
-
-			static std::array<glm::mat4, 128> joints{ glm::mat4(1.f) };
-
-			auto meshes = registry->view<FTransformComponent, FMeshComponent>();
-			for (auto [entity, mtransform, mesh] : meshes.each())
-			{
-				auto& head = registry->get<FSceneComponent>(mesh.head);
-
-				if (!graphics->bindVertexBuffer(mesh.vbo_id))
-					continue;
-
-				bool bHasSkin{ false };
-				entt::entity armature{ entt::null };
-				if (mesh.skin > -1)
-				{
-					bHasSkin = true;
-					auto& scene = registry->get<FSceneComponent>(mesh.head);
-					auto invTransform = glm::inverse(mtransform.model);
-					auto& skin = scene.skins[mesh.skin];
-					armature = skin.root;
-
-					for (uint32_t i = 0; i < skin.joints.size(); i++)
-					{
-						auto& jtransform = registry->get<FTransformComponent>(skin.joints[i]);
-						joints[i] = jtransform.model * skin.inverseBindMatrices[i];
-						joints[i] = invTransform * joints[i];
-					}
-				}
-
-				// TODO: Add skinning support
-				for (auto& meshlet : mesh.vMeshlets)
-				{
-					if (head.castShadows)
-					{
-						auto& pPush = graphics->getPushBlockHandle("modelData");
-						pPush->set("model", mtransform.model);
-						graphics->flushConstantRanges(pPush);
-
-						graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
-					}
-				}
-
-				graphics->bindVertexBuffer(invalid_index);
-			}
-
-			graphics->setManualShaderControlFlag(false);
-			graphics->bindShader(invalid_index);
 
 			// Set shadow index and increment it
 			light.shadowIndex = shadowIndex;
 			shadowIndex++;
 		}
 	}
+
+	graphics->setManualShaderControlFlag(false);
+	graphics->bindShader(invalid_index);
+	graphics->bindVertexBuffer(invalid_index);
 
 	graphics->bindRenderer(invalid_index);
 }

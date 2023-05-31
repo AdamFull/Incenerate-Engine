@@ -52,6 +52,7 @@ void CDirectionalShadowSystem::__update(float fDt)
 
 			auto& pPush = graphics->getPushBlockHandle("modelData");
 			pPush->set("viewProjMat", shadow_commit.shadowView);
+			pPush->set("stride", lightStride);
 
 			auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 			for (auto [entity, mtransform, mesh] : meshes.each())
@@ -61,19 +62,15 @@ void CDirectionalShadowSystem::__update(float fDt)
 				if (!graphics->bindVertexBuffer(mesh.vbo_id))
 					continue;
 
+				pPush->set("model", mtransform.model);
+				graphics->flushConstantRanges(pPush);
+
 				for (auto& meshlet : mesh.vMeshlets)
 				{
 					auto inLightView = head.castShadows && frustum.checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
 
 					if(inLightView)
-					{
-						
-						pPush->set("model", mtransform.model);
-						pPush->set("stride", lightStride);
-						graphics->flushConstantRanges(pPush);
-
 						graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
-					}
 				}
 
 				graphics->bindVertexBuffer(invalid_index);

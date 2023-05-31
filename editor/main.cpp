@@ -10,31 +10,29 @@ using namespace engine;
 using namespace engine::ecs;
 using namespace engine::editor;
 
-//size_t calculateOptimalTextureSize(size_t minSize, size_t maxSize, size_t pixelWeight, size_t memoryBudget, size_t desiredQuality) {
-//	// Calculate the number of pixels that can fit into the memory budget
-//	size_t pixelBudget = memoryBudget / pixelWeight;
+//float calculateOptimalTextureSize(float minExtent, float maxExtent, size_t pixelSize, size_t textureCount, size_t memoryBudget, float quality) 
+//{
+//	// Calculate available budget
+//	size_t availableBudget = static_cast<size_t>(memoryBudget * quality);
 //
-//	// Define the boundaries for the texture sizes
-//	size_t lowerBound = std::log2(minSize);
-//	size_t upperBound = std::log2(maxSize);
+//	// Start with the max extent and work our way down
+//	for (float extent = maxExtent; extent >= minExtent; extent /= 2) 
+//	{
+//		size_t requiredMemory = static_cast<size_t>(std::pow(extent, 2) * pixelSize * textureCount);
 //
-//	// Map the desiredQuality to a range between lowerBound and upperBound
-//	size_t range = upperBound - lowerBound;
-//	size_t optimalSizeLog2 = lowerBound + static_cast<size_t>(std::round(range * (static_cast<double>(desiredQuality) / 4.0)));
-//
-//	// Check if the optimal texture size fits into the memory budget
-//	while ((std::pow(2, optimalSizeLog2) * std::pow(2, optimalSizeLog2) * pixelWeight) > memoryBudget && optimalSizeLog2 > lowerBound) {
-//		// If it does not fit, decrease the texture size until it fits into the budget
-//		optimalSizeLog2--;
+//		// Check if the texture fits in the available budget
+//		if (requiredMemory <= availableBudget)
+//			return extent;
 //	}
 //
-//	// Return the optimal texture size as a power of two
-//	return std::pow(2, optimalSizeLog2);
+//	// If no suitable extent was found, return the minimum extent
+//	return minExtent;
 //}
 
 int main()
 {
-	//auto tex_size = calculateOptimalTextureSize(512, 8192, 4, 4194304, 1000);
+	//auto budget = 4ull * 1024ull * 1024ull * 1024ull;
+	//auto tex_size = calculateOptimalTextureSize(512.f, 8192.f, 4, 8, budget, 0.15);
 
 	CSessionStorage::getInstance()->set("editor_mode", true);
 	CSessionStorage::getInstance()->set("display_normals", false);

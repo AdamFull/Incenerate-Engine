@@ -623,7 +623,7 @@ void CEditor::onKeyDown(const std::unique_ptr<IEvent>& event)
     if (ImGui::IsKeyReleased(ImGuiKey_PrintScreen))
     {
         auto& device = graphics->getDevice();
-        device->takeScreenshot("/temp/screenshot.png");
+        device->takeScreenshot("temp/screenshot.png");
     }
 }
 
