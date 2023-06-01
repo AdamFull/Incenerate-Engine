@@ -1,6 +1,7 @@
 #include "CascadeShadowSystem.h"
 
 #include "Engine.h"
+#include "Helpers.h"
 
 #include "ecs/components/components.h"
 
@@ -28,6 +29,7 @@ void CCascadeShadowSystem::__update(float fDt)
 	if (!camera)
 		return;
 
+	std::array<FFrustum, CASCADE_SHADOW_MAP_CASCADE_COUNT> cadcaded_frustums;
 	static std::array<glm::mat4, 128> joints{ glm::mat4(1.f) };
 
 	auto stage = graphics->getRenderStageID("cascade_shadow");
@@ -149,9 +151,17 @@ void CCascadeShadowSystem::__update(float fDt)
 				shadow_commit.splitDepths[i] = (nearClip + splitDist * clipRange) * -1.0f;
 				shadow_commit.cascadeViewProj[i] = lightProjectionMatrix * lightViewMatrix;
 
+				cadcaded_frustums[i].update(lightViewMatrix, lightProjectionMatrix);
+
+				// Calculating level of detail for cascade
+				auto lod_level = rangeToRange<uint32_t>(i, 0u, CASCADE_SHADOW_MAP_CASCADE_COUNT - 1u, 1u, MAX_LEVEL_OF_DETAIL - 1u);
+				//auto lod_level = getCascadeLOD(i, CASCADE_SHADOW_MAP_CASCADE_COUNT, MAX_LEVEL_OF_DETAIL);
+
 				//Rendering shadow map
 				pPush->set("viewProjMat", shadow_commit.cascadeViewProj[i]);
 				pPush->set("layer", i);
+
+				auto& frustum = cadcaded_frustums[i];
 
 				auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 				for (auto [entity, mtransform, mesh] : meshes.each())
@@ -181,12 +191,16 @@ void CCascadeShadowSystem::__update(float fDt)
 							joints[i] = invTransform * joints[i];
 						}
 					}
-
+					
 					// TODO: Add skinning support
 					for (auto& meshlet : mesh.vMeshlets)
 					{
-						if (head.castShadows)
-							graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
+						auto inLightView = head.castShadows && frustum.checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
+						if (head.castShadows && inLightView)
+						{
+							auto& lod = meshlet.levels_of_detail[lod_level];
+							graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count);
+						}
 					}
 				}
 

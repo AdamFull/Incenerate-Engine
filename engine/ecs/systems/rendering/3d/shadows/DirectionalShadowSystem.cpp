@@ -62,6 +62,7 @@ void CDirectionalShadowSystem::__update(float fDt)
 				if (!graphics->bindVertexBuffer(mesh.vbo_id))
 					continue;
 
+
 				pPush->set("model", mtransform.model);
 				graphics->flushConstantRanges(pPush);
 
@@ -69,8 +70,14 @@ void CDirectionalShadowSystem::__update(float fDt)
 				{
 					auto inLightView = head.castShadows && frustum.checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
 
-					if(inLightView)
-						graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
+					if (inLightView)
+					{
+						auto distance = glm::distance(ltransform.rposition, mtransform.rposition);
+						auto lod_level = getLodLevel(0.1f, 64.f, distance);
+
+						auto& lod = meshlet.levels_of_detail[lod_level];
+						graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count);
+					}
 				}
 
 				graphics->bindVertexBuffer(invalid_index);

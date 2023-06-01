@@ -4,10 +4,17 @@ namespace engine
 {
 	namespace ecs
 	{
-		struct FMeshlet
+		struct FMeshletLOD
 		{
 			size_t begin_index, index_count;
 			size_t begin_vertex, vertex_count;
+		};
+
+		struct FMeshlet
+		{
+			std::array<FMeshletLOD, MAX_LEVEL_OF_DETAIL> levels_of_detail;
+			//size_t begin_index, index_count;
+			//size_t begin_vertex, vertex_count;
 			size_t material{ invalid_index };
 
 			bool bWasCulled{ false };

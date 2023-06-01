@@ -2,6 +2,16 @@
 
 namespace engine
 {
+	uint32_t getLodLevel(float nearPlane, float farPlane, float distance)
+	{
+		auto nearDist = nearPlane / static_cast<float>(MAX_LEVEL_OF_DETAIL);
+		auto farDist = farPlane / static_cast<float>(MAX_LEVEL_OF_DETAIL);
+
+		float normalizedDist = (distance - nearDist) / (farDist - nearDist);
+		normalizedDist = glm::clamp(normalizedDist, 0.0f, 1.0f);
+		return MAX_LEVEL_OF_DETAIL * (1.f - std::exp(-normalizedDist * MAX_LEVEL_OF_DETAIL));
+	}
+
     glm::vec4 encodeIdToColor(uint32_t hex)
     {
         glm::vec4 color;

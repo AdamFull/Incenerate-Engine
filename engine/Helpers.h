@@ -8,6 +8,8 @@ namespace engine
 		return (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 	}
 
+	uint32_t getLodLevel(float nearPlane, float farPlane, float distance);
+
 	glm::vec4 encodeIdToColor(uint32_t hex);
 	uint32_t decodeIdFromColor(uint8_t x, uint8_t y, uint8_t z, uint8_t w);
 

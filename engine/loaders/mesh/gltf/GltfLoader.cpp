@@ -14,6 +14,7 @@
 
 #include "graphics/image/ImageLoader.h"
 
+#include "meshoptimizer/src/meshoptimizer.h"
 #include "loaders/mesh/MeshHelper.h"
 
 using namespace engine;
@@ -437,19 +438,11 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             }
         }
 
-        //if (!bHasNormals)
-        //    calculate_normals(vertexBuffer, indexBuffer, vertexStart);
-        //
-        //if (!bHasTangents)
-        //    calculate_tangents(vertexBuffer, indexBuffer, vertexStart);
-
+        //Creating meshlet
         FMeshlet meshlet;
-        meshlet.begin_index = indexStart;
-        meshlet.index_count = indexCount;
-        meshlet.begin_vertex = vertexStart;
-        meshlet.vertex_count = vertexCount;
         meshlet.setDimensions(posMin, posMax);
 
+        // Attaching materials
         if (!vMaterials.empty())
         {
             auto& material = primitive.material > -1 ? vMaterials.at(primitive.material) : vMaterials.back();
@@ -462,10 +455,50 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             meshlet.material = material;
         }
 
-        meshComponent.vMeshlets.emplace_back(meshlet);
+        // Optimizing and generating lod
+        for (auto& index : indexBuffer)
+            index -= vertexStart;
 
+        auto* vertices = reinterpret_cast<float*>(vertexBuffer.data());
+
+        // Optimize mesh
+        //meshopt_optimizeOverdraw(temp_indexBuffer.data(), temp_indexBuffer.data(), indexCount, vertices, vertexBuffer.size(), sizeof(FVertex), 1.05f);
+        meshopt_optimizeVertexFetch(vertices, indexBuffer.data(), indexCount, vertices, vertexBuffer.size(), sizeof(FVertex));
+        meshopt_optimizeVertexCache(indexBuffer.data(), indexBuffer.data(), indexBuffer.size(), vertexBuffer.size());
+
+        // Generating lod
+        for (uint32_t lod = 0; lod < MAX_LEVEL_OF_DETAIL; ++lod)
+        {
+            std::vector<uint32_t> indexBufferCpy = indexBuffer;
+
+            indexStart = static_cast<uint32_t>(vIndexBuffer.size());
+
+            const float lod_quality = 1.f / (1 << lod);
+
+            size_t target_index_count = size_t(double(indexBufferCpy.size() / 3) * lod_quality) * 3;
+            const float target_error = 2e-2f;
+
+            bool lock_borders = true;
+            unsigned int options = lock_borders ? meshopt_SimplifyLockBorder : 0;
+
+            float lod_error = 0.f;
+            indexBufferCpy.resize(meshopt_simplify<uint32_t>(indexBufferCpy.data(), indexBuffer.data(), indexBuffer.size(), reinterpret_cast<float*>(vertexBuffer.data()), vertexBuffer.size(), sizeof(FVertex),
+                target_index_count, target_error, options, &lod_error));
+
+            indexCount = indexBufferCpy.size();
+
+            for (size_t i = 0ull; i < indexBufferCpy.size(); ++i)
+                indexBufferCpy[i] += vertexStart;
+
+            meshlet.levels_of_detail[lod].begin_index = indexStart;
+            meshlet.levels_of_detail[lod].index_count = indexCount;
+            meshlet.levels_of_detail[lod].begin_vertex = vertexStart;
+            meshlet.levels_of_detail[lod].vertex_count = vertexCount;
+            vIndexBuffer.insert(vIndexBuffer.end(), indexBufferCpy.begin(), indexBufferCpy.end());
+        }
+
+        meshComponent.vMeshlets.emplace_back(meshlet);
         vVertexBuffer.insert(vVertexBuffer.end(), vertexBuffer.begin(), vertexBuffer.end());
-        vIndexBuffer.insert(vIndexBuffer.end(), indexBuffer.begin(), indexBuffer.end());
     }
 
     meshComponent.vbo_id = vbo_id;

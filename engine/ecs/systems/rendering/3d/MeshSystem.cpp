@@ -65,6 +65,9 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 
 		graphics->bindObjectData(transform.model, transform.normal, static_cast<uint32_t>(entity));
 
+		auto distance = glm::distance(camera->viewPos, transform.rposition);
+		auto lod_level = getLodLevel(camera->nearPlane, camera->farPlane, distance);
+
 		for (auto& meshlet : mesh.vMeshlets)
 		{
 			bool needToRender{ true };
@@ -76,13 +79,14 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 			if (needToRender)
 			{
 				graphics->bindMaterial(meshlet.material);
+				auto& lod = meshlet.levels_of_detail[lod_level];
 				//debug_draw->drawDebugAABB(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
 
 				auto& pJoints = graphics->getUniformHandle("FSkinning");
 				if (pJoints && bHasSkin)
 					pJoints->set("jointMatrices", joints);
 					
-				graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
+				graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count);
 			}
 
 			//graphics->bindMaterial(invalid_index);

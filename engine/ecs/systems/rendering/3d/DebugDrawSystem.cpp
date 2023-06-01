@@ -54,7 +54,8 @@ void CDebugDrawSystem::__update(float fDt)
 					pPush->set("normal", transform.normal);
 					graphics->flushConstantRanges(pPush);
 
-					graphics->draw(meshlet.begin_vertex, meshlet.vertex_count, meshlet.begin_index, meshlet.index_count);
+					auto& lod = meshlet.levels_of_detail[0];
+					graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count);
 				}
 			}
 

@@ -40,6 +40,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC BulletCollision)
 target_link_libraries(${PROJECT_NAME} PUBLIC BulletDynamics)
 target_link_libraries(${PROJECT_NAME} PUBLIC LinearMath)
 
+add_subdirectory(meshoptimizer)
+target_link_libraries(${PROJECT_NAME} PUBLIC meshoptimizer)
+
 target_include_directories(${PROJECT_NAME} 
     PUBLIC "vulkan/include"
     PUBLIC "SDL/include"
