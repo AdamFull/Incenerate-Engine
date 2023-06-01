@@ -24,6 +24,7 @@ namespace engine
 		private:
 			CDevice* pDevice{ nullptr };
 			CShader* pShader{ nullptr };
+			uint32_t updatedInFrame{ -1u };
 			std::unique_ptr<CDescriptorSet> pDescriptorSet;
 			std::vector<vk::WriteDescriptorSet> vWriteDescriptorSets;
 		};

@@ -1,34 +1,7 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
 
-layout(std140, set = 0, binding = 0) uniform FUniformData 
-{
-  	mat4 model;
-  	mat4 view;
-  	mat4 projection;
-  	mat4 normal;
-	vec3 viewDir;
-	vec2 viewportDim;
-	vec4 frustumPlanes[6];
-	vec4 object_id;
-} data;
-
-layout(std140, set = 0, binding = 2) uniform UBOMaterial
-{
-	vec4 baseColorFactor;
-	vec3 emissiveFactor;
-	float alphaCutoff;
-	float normalScale;
-	float occlusionStrenth;
-	float metallicFactor;
-	float roughnessFactor;
-	float tessellationFactor;
-	float displacementStrength;
-} material;
-
-#ifdef HAS_HEIGHTMAP
-layout(set = 1, binding = 5) uniform sampler2D height_tex;
-#endif
+#include "shader_inputs.glsl"
 
 #define VERTICES_COUNT 3
  
@@ -64,7 +37,7 @@ float screenSpaceTessFactor(vec4 p0, vec4 p1)
 	float radius = distance(p0, p1) / 2.0;
 
 	// View space
-	vec4 v0 = data.view * data.model  * midPoint;
+	vec4 v0 = data.view * meshData.model  * midPoint;
 
 	// Project into clip space
 	vec4 clip0 = (data.projection * (v0 - vec4(radius, vec3(0.0))));

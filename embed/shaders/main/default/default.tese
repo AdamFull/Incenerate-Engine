@@ -1,34 +1,7 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
 
-layout(std140, set = 0, binding = 0) uniform FUniformData 
-{
-  	mat4 model;
-  	mat4 view;
-  	mat4 projection;
-  	mat4 normal;
-	vec3 viewDir;
-	vec2 viewportDim;
-	vec4 frustumPlanes[6];
-	vec4 object_id;
-} data;
-
-layout(std140, set = 0, binding = 2) uniform UBOMaterial
-{
-	vec4 baseColorFactor;
-	vec3 emissiveFactor;
-	float alphaCutoff;
-	float normalScale;
-	float occlusionStrenth;
-	float metallicFactor;
-	float roughnessFactor;
-	float tessellationFactor;
-	float displacementStrength;
-} material;
-
-#ifdef HAS_HEIGHTMAP
-layout(set = 1, binding = 5) uniform sampler2D height_tex;
-#endif
+#include "shader_inputs.glsl"
 
 layout(triangles, equal_spacing , cw) in;
 
@@ -73,7 +46,7 @@ void main()
     outPosition += vec4(displace, 0.0);
 #endif
 
-	outPosition = data.model * outPosition;
+	outPosition = meshData.model * outPosition;
 		
 	gl_Position = data.projection * data.view * outPosition;
 }

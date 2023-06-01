@@ -30,16 +30,16 @@ vec4 localPos;
 		inWeight0.z * jointMatrices[int(inJoint0.z)] +
 		inWeight0.w * jointMatrices[int(inJoint0.w)];
 
-	localPos = data.model * skinMat * vec4(inPosition, 1.0);
+	localPos = meshData.model * skinMat * vec4(inPosition, 1.0);
 #else
-	localPos = data.model * vec4(inPosition, 1.0);
+	localPos = meshData.model * vec4(inPosition, 1.0);
 #endif
 
 	outUV = inTexCoord * 1.0;
   	outColor = inColor;
 
-	vec3 normal = mat3(data.normal) * inNormal;
-	vec4 tangent = vec4(mat3(data.normal) * inTangent.xyz, inTangent.w);
+	vec3 normal = mat3(meshData.normal) * inNormal;
+	vec4 tangent = vec4(mat3(meshData.normal) * inTangent.xyz, inTangent.w);
 	outTBN = calculateTBN(normal, tangent);
 
 #ifdef USE_TESSELLATION

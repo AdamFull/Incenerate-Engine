@@ -995,15 +995,21 @@ void CAPIHandle::bindMaterial(size_t id)
         if (pUBO)
         {
             auto invView = glm::inverse(*m_ViewMatrix);
-
-            pUBO->set("model", *m_pModelMatrix);
             pUBO->set("view", *m_ViewMatrix);
             pUBO->set("projection", *m_ProjectionMatrix);
-            pUBO->set("normal", *m_NormalMatrix);
             pUBO->set("viewDir", glm::vec3(invView[3]));
             pUBO->set("viewportDim", m_pDevice->getExtent(true));
             pUBO->set("frustumPlanes", *m_pFrustumPlanes);
-            pUBO->set("object_id", encodeIdToColor(m_objectId));
+            
+        }
+
+        auto& pMesh = getPushBlockHandle("meshData");
+        if (pMesh)
+        {
+            pMesh->set("model", *m_pModelMatrix);
+            pMesh->set("normal", *m_NormalMatrix);
+            pMesh->set("object_id", encodeIdToColor(m_objectId));
+            flushConstantRanges(pMesh);
         }
 
         auto& textures = m_pBindedMaterial->getTextures();

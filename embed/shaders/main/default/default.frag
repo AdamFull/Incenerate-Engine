@@ -115,6 +115,6 @@ void main()
 	outMRAH = pbr_map;
 	outEmissive = emission;
 #ifdef EDITOR_MODE
-	outObjectID = data.object_id;
+	outObjectID = meshData.object_id;
 #endif
 }

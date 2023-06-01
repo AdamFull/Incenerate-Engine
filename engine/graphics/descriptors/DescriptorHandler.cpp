@@ -18,9 +18,15 @@ void CDescriptorHandler::create(const vk::DescriptorPool& descriptorPool, const 
 
 void CDescriptorHandler::update()
 {
-	auto& vkDevice = pDevice->getLogical();
-	log_cerror(vkDevice, "Trying to update descriptor sets, but device is invalid.");
-	vkDevice.updateDescriptorSets(static_cast<uint32_t>(vWriteDescriptorSets.size()), vWriteDescriptorSets.data(), 0, nullptr);
+	auto currentFrame = pDevice->getCurrentFrame();
+	if (currentFrame != updatedInFrame)
+	{
+		auto& vkDevice = pDevice->getLogical();
+		log_cerror(vkDevice, "Trying to update descriptor sets, but device is invalid.");
+		vkDevice.updateDescriptorSets(static_cast<uint32_t>(vWriteDescriptorSets.size()), vWriteDescriptorSets.data(), 0, nullptr);
+
+		updatedInFrame = currentFrame;
+	}
 }
 
 void CDescriptorHandler::bind(const vk::CommandBuffer& commandBuffer, vk::PipelineBindPoint bindPoint, const vk::PipelineLayout& pipelineLayout) const

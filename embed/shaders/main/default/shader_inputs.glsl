@@ -30,16 +30,20 @@ layout(set = 1, binding = 5) uniform sampler2D height_tex;
 #endif // HAS_HEIGHTMAP
 #endif // BINDLESS_TEXTURES
 
-layout(std140, set = 0, binding = 0) uniform FUniformData
+layout(push_constant) uniform UBOMeshData
 {
 	mat4 model;
+	mat4 normal;
+	vec4 object_id;
+} meshData;
+
+layout(std140, set = 0, binding = 0) uniform FUniformData
+{
 	mat4 view;
 	mat4 projection;
-	mat4 normal;
 	vec3 viewDir;
 	vec2 viewportDim;
 	vec4 frustumPlanes[6];
-	vec4 object_id;
 } data;
 
 #ifdef HAS_SKIN
