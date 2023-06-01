@@ -476,7 +476,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             const float lod_quality = 1.f / (1 << lod);
 
             size_t target_index_count = size_t(double(indexBufferCpy.size() / 3) * lod_quality) * 3;
-            const float target_error = 2e-2f;
+            const float target_error = 1e-2f;
 
             bool lock_borders = true;
             unsigned int options = lock_borders ? meshopt_SimplifyLockBorder : 0;

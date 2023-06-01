@@ -20,6 +20,11 @@ void COmniShadowSystem::__update(float fDt)
 {
 	auto& shadowManager = EGEngine->getShadows();
 
+	const auto* camera = EGEngine->getActiveCamera();
+
+	if (!camera)
+		return;
+
 	uint32_t point_light_count{ 0 };
 	std::array<glm::mat4, 6> point_light_view_matrices;
 	std::array<FFrustum, 6> point_light_frustums;
@@ -50,6 +55,9 @@ void COmniShadowSystem::__update(float fDt)
 			point_light_view_matrices[4] = glm::lookAt(ltransform.rposition, ltransform.rposition + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0));	// POSITIVE_Z
 			point_light_view_matrices[5] = glm::lookAt(ltransform.rposition, ltransform.rposition + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0));	// NEGATIVE_Z
 
+			auto distance = glm::distance(camera->viewPos, ltransform.rposition);
+			auto lod_level = getLodLevel(camera->nearPlane, camera->farPlane, distance);
+
 			graphics->bindShader(shader_id);
 			graphics->setManualShaderControlFlag(true);
 
@@ -69,9 +77,6 @@ void COmniShadowSystem::__update(float fDt)
 				{
 					if (!graphics->bindVertexBuffer(mesh.vbo_id))
 						continue;
-
-					auto distance = glm::distance(ltransform.rposition, mtransform.rposition);
-					auto lod_level = getLodLevel(0.1f, light.radius, distance);
 
 					pPush->set("model", mtransform.model);
 					graphics->flushConstantRanges(pPush);

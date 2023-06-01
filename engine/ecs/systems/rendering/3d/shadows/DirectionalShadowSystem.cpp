@@ -21,6 +21,11 @@ void CDirectionalShadowSystem::__update(float fDt)
 {
 	auto& shadowManager = EGEngine->getShadows();
 
+	const auto* camera = EGEngine->getActiveCamera();
+
+	if (!camera)
+		return;
+
 	auto stage = graphics->getRenderStageID("direct_shadow");
 	graphics->bindRenderer(stage);
 
@@ -54,6 +59,9 @@ void CDirectionalShadowSystem::__update(float fDt)
 			pPush->set("viewProjMat", shadow_commit.shadowView);
 			pPush->set("stride", lightStride);
 
+			auto distance = glm::distance(camera->viewPos, ltransform.rposition);
+			auto lod_level = getLodLevel(camera->nearPlane, camera->farPlane, distance);
+
 			auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 			for (auto [entity, mtransform, mesh] : meshes.each())
 			{
@@ -61,7 +69,6 @@ void CDirectionalShadowSystem::__update(float fDt)
 
 				if (!graphics->bindVertexBuffer(mesh.vbo_id))
 					continue;
-
 
 				pPush->set("model", mtransform.model);
 				graphics->flushConstantRanges(pPush);
@@ -72,9 +79,6 @@ void CDirectionalShadowSystem::__update(float fDt)
 
 					if (inLightView)
 					{
-						auto distance = glm::distance(ltransform.rposition, mtransform.rposition);
-						auto lod_level = getLodLevel(0.1f, 64.f, distance);
-
 						auto& lod = meshlet.levels_of_detail[lod_level];
 						graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count);
 					}
