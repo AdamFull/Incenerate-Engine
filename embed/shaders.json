@@ -203,6 +203,19 @@
     ],
     "defines": {}
   },
+  "ssr_pass": {
+    "stage": "ssr",
+    "bind_point": "Graphics",
+    "cull_mode": "Back",
+    "front_face": "cw",
+    "depth_test": false,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "/embed/shaders/main/screenspace.vert",
+      "/embed/shaders/main/ssr.frag"
+    ],
+    "defines": {}
+  },
 
   "fxaa": {
     "bind_point": "Compute",
@@ -271,13 +284,6 @@
     "bind_point": "Compute",
     "stages": [
       "/embed/shaders/postprocess/fog.comp"
-    ],
-    "defines": {}
-  },
-  "ssr_pass": {
-    "bind_point": "Compute",
-    "stages": [
-      "/embed/shaders/postprocess/ssr.comp"
     ],
     "defines": {}
   },

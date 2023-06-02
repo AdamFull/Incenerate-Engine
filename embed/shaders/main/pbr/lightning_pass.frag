@@ -27,12 +27,13 @@ layout (set = 1, binding = 6) uniform sampler2D emission_tex;
 layout (set = 1, binding = 7) uniform sampler2D depth_tex;
 
 layout (set = 1, binding = 8) uniform sampler2D ambient_occlusion_tex;
+layout (set = 1, binding = 9) uniform sampler2D reflections_tex;
 //layout (binding = 8) uniform sampler2D picking_tex;
 //layout (binding = 6) uniform sampler2D ssr_tex;
 
-layout (set = 1, binding = 9) uniform sampler2DArrayShadow cascade_shadowmap_tex;
-layout (set = 1, binding = 10) uniform sampler2DArrayShadow direct_shadowmap_tex;
-layout (set = 1, binding = 11) uniform samplerCubeArrayShadow omni_shadowmap_tex;
+layout (set = 1, binding = 10) uniform sampler2DArrayShadow cascade_shadowmap_tex;
+layout (set = 1, binding = 11) uniform sampler2DArrayShadow direct_shadowmap_tex;
+layout (set = 1, binding = 12) uniform samplerCubeArrayShadow omni_shadowmap_tex;
 
 //--------------------In/Out locations--------------------
 layout (location = 0) in vec2 inUV;
@@ -144,7 +145,7 @@ void main()
 	vec3 inWorldPos = getPositionFromDepth(inUV, depth, ubo.invViewProjection);
 
 	vec3 normal = texture(normal_tex, inUV).rgb;
-	vec3 albedo = texture(albedo_tex, inUV).rgb;
+	vec3 albedo = texture(reflections_tex, inUV).rgb;
 	vec4 mrah = texture(mrah_tex, inUV);
 
 	float ambientOcclusion = texture(ambient_occlusion_tex, inUV).r;
@@ -253,6 +254,7 @@ void main()
 		fragcolor = vec3(occlusionStrength);
 	else if(debug.mode == 10)
 	{
+		fragcolor = texture(reflections_tex, inUV).rgb;
 	}
 	else if(debug.mode == 11)
 	{

@@ -7,7 +7,7 @@
 
 using namespace engine::editor;
 
-const std::array<const char*, 14> debug_render_mode{ "default", "positions", "depth", "albedo", "normal", "emission", "roughness", "metalness", "ao", "ao strength", "csm", "csm_cascades", "spot shadows", "point shadows"};
+const std::array<const char*, 14> debug_render_mode{ "default", "positions", "depth", "albedo", "normal", "emission", "roughness", "metalness", "ao", "ao strength", "reflections", "csm_cascades", "spot shadows", "point shadows"};
 
 void CRenderDebugWindow::create()
 {
