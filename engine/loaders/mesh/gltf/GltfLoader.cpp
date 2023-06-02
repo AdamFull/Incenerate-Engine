@@ -373,8 +373,10 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
                     {
                     case 3:
                         vert.color = glm::vec4(glm::make_vec3(&bufferColors[v * 3]), 1.0f);
+                        break;
                     case 4:
                         vert.color = glm::make_vec4(&bufferColors[v * 4]);
+                        break;
                     }
                 }
                 else
@@ -458,7 +460,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         // Optimizing and generating lod
         for (auto& index : indexBuffer)
             index -= vertexStart;
-
+        
         auto* vertices = reinterpret_cast<float*>(vertexBuffer.data());
 
         // Optimize mesh
@@ -470,26 +472,26 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         for (uint32_t lod = 0; lod < MAX_LEVEL_OF_DETAIL; ++lod)
         {
             std::vector<uint32_t> indexBufferCpy = indexBuffer;
-
+        
             indexStart = static_cast<uint32_t>(vIndexBuffer.size());
-
+        
             const float lod_quality = 1.f / (1 << lod);
-
+        
             size_t target_index_count = size_t(double(indexBufferCpy.size() / 3) * lod_quality) * 3;
             const float target_error = 1e-2f;
-
+        
             bool lock_borders = true;
             unsigned int options = lock_borders ? meshopt_SimplifyLockBorder : 0;
-
+        
             float lod_error = 0.f;
             indexBufferCpy.resize(meshopt_simplify<uint32_t>(indexBufferCpy.data(), indexBuffer.data(), indexBuffer.size(), reinterpret_cast<float*>(vertexBuffer.data()), vertexBuffer.size(), sizeof(FVertex),
                 target_index_count, target_error, options, &lod_error));
-
+        
             indexCount = indexBufferCpy.size();
-
+        
             for (size_t i = 0ull; i < indexBufferCpy.size(); ++i)
                 indexBufferCpy[i] += vertexStart;
-
+        
             meshlet.levels_of_detail[lod].begin_index = indexStart;
             meshlet.levels_of_detail[lod].index_count = indexCount;
             meshlet.levels_of_detail[lod].begin_vertex = vertexStart;
@@ -498,6 +500,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         }
 
         meshComponent.vMeshlets.emplace_back(meshlet);
+
         vVertexBuffer.insert(vVertexBuffer.end(), vertexBuffer.begin(), vertexBuffer.end());
     }
 

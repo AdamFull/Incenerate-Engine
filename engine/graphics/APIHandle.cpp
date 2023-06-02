@@ -1090,15 +1090,6 @@ void CAPIHandle::bindMaterial(size_t id)
             
         }
 
-        auto& pMesh = getPushBlockHandle("meshData");
-        if (pMesh)
-        {
-            pMesh->set("model", *m_pModelMatrix);
-            pMesh->set("normal", *m_NormalMatrix);
-            pMesh->set("object_id", encodeIdToColor(m_objectId));
-            flushConstantRanges(pMesh);
-        }
-
         auto& textures = m_pBindedMaterial->getTextures();
         for (auto& [name, id] : textures)
             bindTexture(name, id);
@@ -1177,9 +1168,14 @@ void CAPIHandle::bindTexture(const std::string& name, size_t id, uint32_t mip_le
 
 void CAPIHandle::bindObjectData(const glm::mat4& model, const glm::mat4& normal, uint32_t object_id)
 {
-    m_pModelMatrix = &model;
-    m_NormalMatrix = &normal;
-    m_objectId = object_id;
+    auto& pMesh = getPushBlockHandle("meshData");
+    if (pMesh)
+    {
+        pMesh->set("model", model);
+        pMesh->set("normal", normal);
+        pMesh->set("object_id", encodeIdToColor(object_id));
+        flushConstantRanges(pMesh);
+    }
 }
 
 void CAPIHandle::bindCameraData(const glm::mat4& view, const glm::mat4& projection, const std::array<std::array<float, 4>, 6>& frustumPlanes)

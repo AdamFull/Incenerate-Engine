@@ -181,11 +181,6 @@ namespace engine
 			CRenderStage* m_pBindedRenderStage{ nullptr };
 			bool m_bManualShaderControl{ false };
 
-			// object data
-			const glm::mat4* m_pModelMatrix{ nullptr };
-			const glm::mat4* m_NormalMatrix{ nullptr };
-			uint32_t m_objectId{ 0u };
-
 			// Camera data
 			const glm::mat4* m_ViewMatrix{ nullptr };
 			const glm::mat4* m_ProjectionMatrix{ nullptr };

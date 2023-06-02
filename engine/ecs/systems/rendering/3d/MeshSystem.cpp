@@ -63,8 +63,6 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 			}
 		}
 
-		graphics->bindObjectData(transform.model, transform.normal, static_cast<uint32_t>(entity));
-
 		auto distance = glm::distance(camera->viewPos, transform.rposition);
 		auto lod_level = getLodLevel(camera->nearPlane, camera->farPlane, distance);
 
@@ -85,6 +83,8 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 				auto& pJoints = graphics->getUniformHandle("FSkinning");
 				if (pJoints && bHasSkin)
 					pJoints->set("jointMatrices", joints);
+
+				graphics->bindObjectData(transform.model, transform.normal, static_cast<uint32_t>(entity));
 					
 				graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count);
 			}
