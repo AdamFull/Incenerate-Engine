@@ -36,6 +36,11 @@
 // Level of detail
 #define MAX_LEVEL_OF_DETAIL 4u
 
+// SSAO
+#define SSAO_KERNEL_SIZE 64u
+#define SSAO_RADIUS 0.3f
+#define SSAO_NOISE_DIM 8u
+
 // Directional light
 #define MAX_DIRECTIONAL_LIGHT_COUNT 3u
 #define MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT 1u

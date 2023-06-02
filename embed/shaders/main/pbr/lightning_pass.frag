@@ -25,12 +25,14 @@ layout (set = 1, binding = 4) uniform sampler2D normal_tex;
 layout (set = 1, binding = 5) uniform sampler2D mrah_tex;
 layout (set = 1, binding = 6) uniform sampler2D emission_tex;
 layout (set = 1, binding = 7) uniform sampler2D depth_tex;
+
+layout (set = 1, binding = 8) uniform sampler2D ambient_occlusion_tex;
 //layout (binding = 8) uniform sampler2D picking_tex;
 //layout (binding = 6) uniform sampler2D ssr_tex;
 
-layout (set = 1, binding = 8) uniform sampler2DArrayShadow cascade_shadowmap_tex;
-layout (set = 1, binding = 9) uniform sampler2DArrayShadow direct_shadowmap_tex;
-layout (set = 1, binding = 10) uniform samplerCubeArrayShadow omni_shadowmap_tex;
+layout (set = 1, binding = 9) uniform sampler2DArrayShadow cascade_shadowmap_tex;
+layout (set = 1, binding = 10) uniform sampler2DArrayShadow direct_shadowmap_tex;
+layout (set = 1, binding = 11) uniform samplerCubeArrayShadow omni_shadowmap_tex;
 
 //--------------------In/Out locations--------------------
 layout (location = 0) in vec2 inUV;
@@ -45,6 +47,7 @@ layout(std140, set = 0, binding = 0) uniform UBODeferred
 	int directionalLightCount;
 	int spotLightCount;
 	int pointLightCount;
+	int ambientOcclusion;
 } ubo;
 
 //Lights
@@ -144,6 +147,8 @@ void main()
 	vec3 albedo = texture(albedo_tex, inUV).rgb;
 	vec4 mrah = texture(mrah_tex, inUV);
 
+	float ambientOcclusion = texture(ambient_occlusion_tex, inUV).r;
+
 	bool calculateLightning = normal != vec3(0.0f);
 
 	normal = normalize(normal);
@@ -211,6 +216,8 @@ void main()
 		vec3 ambient = (kD * diffuse + specular);
 
 		ambient = mix(ambient, ambient * occlusion, occlusionStrength);
+		if(ubo.ambientOcclusion > 0)
+			ambient = ambient * ambientOcclusion;
 
 		// Ambient part
 		fragcolor = ambient + (emission * 1.0) + Lo;
@@ -237,11 +244,16 @@ void main()
 	else if(debug.mode == 7)
 		fragcolor = vec3(metallic);
 	else if(debug.mode == 8)
+	{
 		fragcolor = vec3(occlusion);
+		if(ubo.ambientOcclusion > 0)
+			fragcolor *= texture(ambient_occlusion_tex, inUV).rrr;
+	}
 	else if(debug.mode == 9)
 		fragcolor = vec3(occlusionStrength);
 	else if(debug.mode == 10)
-		fragcolor = texture(cascade_shadowmap_tex, vec4(inUV, debug.cascadeSplit, 1.0)).rrr;
+	{
+	}
 	else if(debug.mode == 11)
 	{
 		vec3 viewPosition = (ubo.view * vec4(inWorldPos, 1.0)).xyz;

@@ -32,6 +32,7 @@ size_t CVignetteEffect::render(FCameraComponent* camera, size_t in_source, size_
 		pPush->set("inner_radius", camera->effects.vignette.inner);
 		pPush->set("outer_radius", camera->effects.vignette.outer);
 		pPush->set("opacity", camera->effects.vignette.opacity);
+		graphics->flushConstantRanges(pPush);
 
 		graphics->dispatch(param);
 

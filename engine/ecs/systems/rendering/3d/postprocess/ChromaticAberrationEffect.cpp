@@ -31,6 +31,7 @@ size_t CChromaticAberrationEffect::render(FCameraComponent* camera, size_t in_so
 		auto& pPush = graphics->getPushBlockHandle("ubo");
 		pPush->set("distortion", camera->effects.aberration.distortion);
 		pPush->set("iterations", camera->effects.aberration.iterations);
+		graphics->flushConstantRanges(pPush);
 
 		graphics->dispatch(param);
 

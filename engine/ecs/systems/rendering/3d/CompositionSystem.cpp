@@ -2,6 +2,7 @@
 
 #include "Engine.h"
 #include "graphics/image/ImageCubemap.h"
+#include "graphics/GraphicsSettings.h"
 
 #include "ecs/components/components.h"
 
@@ -30,12 +31,14 @@ void CCompositionSystem::__create()
 	};
 	shader_id = graphics->addShader("pbr_composition", specials);
 	brdflut_id = graphics->computeBRDFLUT(1024);
-	
+
 	addSubresource("albedo_tex");
 	addSubresource("normal_tex");
 	addSubresource("mrah_tex");
 	addSubresource("emission_tex");
 	addSubresource("depth_tex");
+
+	addSubresource("raw_ao_tex");
 	
 	addSubresource("cascade_shadowmap_tex");
 	addSubresource("direct_shadowmap_tex");
@@ -57,6 +60,8 @@ void CCompositionSystem::__create()
 
 void CCompositionSystem::__update(float fDt)
 {
+	auto& settings = CGraphicsSettings::getInstance()->getSettings();
+
 	auto& shadowManager = EGEngine->getShadows();
 
 	auto* camera = EGEngine->getActiveCamera();
@@ -151,6 +156,9 @@ void CCompositionSystem::__update(float fDt)
 	graphics->bindTexture("mrah_tex", getSubresource("mrah_tex"));
 	graphics->bindTexture("emission_tex", getSubresource("emission_tex"));
 	graphics->bindTexture("depth_tex", getSubresource("depth_tex"));
+
+	graphics->bindTexture("ambient_occlusion_tex", graphics->getImageID("ambient_occlusion_tex"));
+	//graphics->bindTexture("ambient_occlusion_tex", getSubresource("raw_ao_tex"));
 	//graphics->bindTexture("picking_tex", getSubresource("picking_tex"));
 
 	graphics->bindTexture("cascade_shadowmap_tex", getSubresource("cascade_shadowmap_tex"));
@@ -164,6 +172,7 @@ void CCompositionSystem::__update(float fDt)
 	pUBO->set("directionalLightCount", directoonal_light_count);
 	pUBO->set("spotLightCount", spot_light_count);
 	pUBO->set("pointLightCount", point_light_count);
+	pUBO->set("ambientOcclusion", settings.bEnableAmbientOcclusion ? 1 : -1);
 
 	auto& pUBOLights = graphics->getUniformHandle("UBOLights");
 	pUBOLights->set("directionalLights", directional_lights);

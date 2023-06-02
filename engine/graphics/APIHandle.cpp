@@ -202,20 +202,19 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         pStage->create(m_mStageInfos["omni_shadow"]);
     }
 
-
     {
         m_mStageInfos["deferred"].srName = "deferred";
         m_mStageInfos["deferred"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["deferred"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["deferred"].bFlipViewport = true;
         m_mStageInfos["deferred"].bViewportDependent = true;
-        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "albedo_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "albedo_tex", vk::Format::eR8G8B8A8Srgb, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["deferred"].vOutputs.emplace_back("albedo_tex");
         m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "normal_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["deferred"].vOutputs.emplace_back("normal_tex");
         m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "mrah_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["deferred"].vOutputs.emplace_back("mrah_tex");
-        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "emission_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "emission_tex", vk::Format::eR8G8B8A8Srgb, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["deferred"].vOutputs.emplace_back("emission_tex");
         m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["deferred"].vDescriptions.emplace_back("depth_tex");
@@ -258,6 +257,50 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         auto stageId = addRenderStage("deferred");
         auto& pStage = getRenderStage(stageId);
         pStage->create(m_mStageInfos["deferred"]);
+    }
+
+    {
+        m_mStageInfos["ssao"].srName = "ssao";
+        m_mStageInfos["ssao"].viewport.offset = vk::Offset2D(0, 0);
+        m_mStageInfos["ssao"].viewport.extent = m_pDevice->getExtent(true);
+        m_mStageInfos["ssao"].bFlipViewport = false;
+        m_mStageInfos["ssao"].bViewportDependent = true;
+        m_mStageInfos["ssao"].vImages.emplace_back(FCIImage{ "raw_ao_tex", vk::Format::eR8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["ssao"].vDescriptions.emplace_back("");
+        m_mStageInfos["ssao"].vOutputs.emplace_back("raw_ao_tex");
+
+        m_mStageInfos["ssao"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eAllGraphics,
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                )
+            )
+        );
+        m_mStageInfos["ssao"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                )
+            )
+        );
+
+        auto stageId = addRenderStage("ssao");
+        auto& pStage = getRenderStage(stageId);
+        pStage->create(m_mStageInfos["ssao"]);
     }
 
     {

@@ -69,6 +69,41 @@ vec3 WorldPosFromDepth(vec2 texcoord, float depth, mat4 invProjMatrix, mat4 invV
     return worldSpacePosition.xyz;
 }
 
+vec3 depthToPosition(in sampler2D depth_sampler, in vec2 uv, in mat4 invProjection)
+{
+    float depth = texture(depth_sampler, uv).x;
+
+    vec4 clipSpace = vec4(uv * 2.0 - 1.0, depth, 1.0);
+    vec4 viewSpace = invProjection * clipSpace;
+    viewSpace.xyz /= viewSpace.w;
+
+    return viewSpace.xyz;
+}
+
+#ifdef VK_FRAGMENT_SHADER
+vec3 getNormalFromDepth(in sampler2D depth_sampler, in vec2 uv, in mat4 invProjection)
+{
+    float depth = texture(depth_sampler, uv).x;
+
+    vec4 clipSpace = vec4(uv * 2.0 - 1.0, depth, 1.0);
+    vec4 viewSpace = invProjection * clipSpace;
+    viewSpace.xyz /= viewSpace.w;
+
+    vec3 pos = viewSpace.xyz;
+    vec3 n = normalize(cross(dFdx(pos), dFdy(pos)));
+    n *= -1;
+
+    return n;
+}
+#endif
+
+float getLinearDepth(sampler2D depth_sampler, vec2 inUV, float zNear, float zFar)
+{
+    float depth = texture(depth_sampler, inUV).r;
+    float z = depth * 2.0f - 1.0f;
+    return (2.0f * zNear * zFar) / (zFar + zNear - z * (zFar - zNear));
+}
+
 uvec4 packTextures(vec3 normal_map, vec3 albedo_map, vec4 pbr_map)
 {
     uvec4 texture_pack;

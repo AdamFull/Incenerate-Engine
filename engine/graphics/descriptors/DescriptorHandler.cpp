@@ -19,7 +19,7 @@ void CDescriptorHandler::create(const vk::DescriptorPool& descriptorPool, const 
 void CDescriptorHandler::update()
 {
 	auto currentFrame = pDevice->getCurrentFrame();
-	if (currentFrame != updatedInFrame)
+	//if (currentFrame != updatedInFrame)
 	{
 		auto& vkDevice = pDevice->getLogical();
 		log_cerror(vkDevice, "Trying to update descriptor sets, but device is invalid.");

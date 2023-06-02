@@ -47,7 +47,21 @@ void CBaseGraphicsSystem::updateSubresources()
 
 	for (auto& name : vSubresourceNames)
 	{
+		// Check is string contain number
 		for (uint32_t i = 0; i < framesInFlight; i++)
-			mSubresourceMap[name].emplace_back(graphics->getImageID(name + "_" + std::to_string(i)));
+		{
+			auto img_name = name + "_" + std::to_string(i);
+			auto image = graphics->getImageID(img_name);
+
+			if(image != invalid_index)
+				mSubresourceMap[name].emplace_back(image);
+			else
+			{
+				image = graphics->getImageID(name);
+				if(image != invalid_index)
+					mSubresourceMap[name].emplace_back(image);
+			}
+		}
+			
 	}
 }

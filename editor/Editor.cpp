@@ -24,6 +24,7 @@
 #include "windows/SystemPerfomanceViewWindow.h"
 #include "windows/RenderDebugWindow.h"
 #include "windows/MaterialEditorWindow.h"
+#include "windows/GraphicsSettingsWindow.h"
 
 #include "operations/RemoveEntityOperation.h"
 
@@ -158,6 +159,7 @@ void CEditor::create()
     vEditorWindows.emplace_back(std::make_unique<CEditorPerfomanceView>("System perfomance view"));
     vEditorWindows.emplace_back(std::make_unique<CRenderDebugWindow>("Render Debug Window"));
     vEditorWindows.emplace_back(std::make_unique<CMaterialEditorWindow>("Material editor"));
+    vEditorWindows.emplace_back(std::make_unique<CGraphicsSettingsWindow>("Graphics settings"));
 
     ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window*>(window->getHandle()));
     ImGui_ImplVulkan_InitInfo init_info = {};

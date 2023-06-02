@@ -32,6 +32,7 @@ size_t CFilmGrainEffect::render(FCameraComponent* camera, float time, size_t in_
 		auto& pPush = graphics->getPushBlockHandle("ubo");
 		pPush->set("amount", camera->effects.filmgrain.amount);
 		pPush->set("time", time);
+		graphics->flushConstantRanges(pPush);
 
 		graphics->dispatch(param);
 

@@ -178,7 +178,7 @@
     "defines": {}
   },
   "ssao_pass": {
-    "stage": "tonemapping",
+    "stage": "ssao",
     "bind_point": "Graphics",
     "cull_mode": "Back",
     "front_face": "cw",
@@ -187,6 +187,19 @@
     "stages": [
       "/embed/shaders/main/screenspace.vert",
       "/embed/shaders/main/ssao.frag"
+    ],
+    "defines": {}
+  },
+  "hbao_pass": {
+    "stage": "ssao",
+    "bind_point": "Graphics",
+    "cull_mode": "Back",
+    "front_face": "cw",
+    "depth_test": false,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "/embed/shaders/main/screenspace.vert",
+      "/embed/shaders/main/hbao.frag"
     ],
     "defines": {}
   },
@@ -282,14 +295,19 @@
       "/embed/shaders/postprocess/bokeh.comp"
     ]
   },
+  "ambient_occlusion_blur": {
+    "bind_point": "Compute",
+    "stages": [
+      "/embed/shaders/postprocess/ao_blur.comp"
+    ],
+    "defines": {}
+  },
   "gaussian_blur": {
     "bind_point": "Compute",
     "stages": [
       "/embed/shaders/postprocess/gaussianblur.comp"
     ],
-    "defines": {
-      "BLUR_TYPE": "13"
-    }
+    "defines": {}
   },
   "tonemap": {
     "bind_point": "Compute",

@@ -139,7 +139,7 @@ void CEditorProject::createOrLoadEditorCamera()
         camcomp.effects.dof.enable = false;
         camcomp.effects.filmgrain.enable = false;
         camcomp.effects.fxaa.enable = false;
-        //camcomp.effects.tonemap.enable = false;
+        camcomp.effects.tonemap.enable = false;
         camcomp.effects.vignette.enable = false;
 
         auto& transform = registry.get<FTransformComponent>(*editor_camera);

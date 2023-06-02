@@ -1,0 +1,21 @@
+{
+  "framepasses": [
+    {
+      "name": "cascade_shadow",
+      "viewport": {
+        "offset": null,
+        "extent": "CASCADE_RESOLUTION"
+      },
+      "ignoreRecreate": true,
+      "images": [
+        {
+          "name": "cascade_shadowmap_tex",
+          "format": "depth",
+          "usage": ["sampled", "depth_attachment"],
+          "type": "2DArray",
+          "layers": "CASCADE_COUNT"
+        }
+      ]
+    }
+  ]
+}

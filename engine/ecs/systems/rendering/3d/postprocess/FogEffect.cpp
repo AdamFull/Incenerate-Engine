@@ -35,6 +35,7 @@ size_t CFogEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 		pPush->set("invViewProjection", glm::inverse(camera->projection * camera->view));
 		pPush->set("fogDensity", camera->effects.fog.density);
 		pPush->set("fogMax", camera->farPlane);
+		graphics->flushConstantRanges(pPush);
 
 		graphics->dispatch(param);
 
