@@ -13,7 +13,7 @@ void CReflectionsSystem::__create()
 {
 	shader_id = graphics->addShader("ssr_pass");
 
-	addSubresource("albedo_tex");
+	addSubresource("composition_tex");
 	addSubresource("normal_tex");
 	addSubresource("mrah_tex");
 	addSubresource("depth_tex");
@@ -40,7 +40,7 @@ void CReflectionsSystem::__update(float fDt)
 	graphics->bindTexture("depth_tex", getSubresource("depth_tex"));
 	graphics->bindTexture("mrah_tex", getSubresource("mrah_tex"));
 	graphics->bindTexture("normal_tex", getSubresource("normal_tex"));
-	graphics->bindTexture("albedo_tex", getSubresource("albedo_tex"));
+	graphics->bindTexture("albedo_tex", getSubresource("composition_tex"));
 
 	auto& pUBO = graphics->getUniformHandle("UBOGeneralMatrices");
 	//auto& pUBO = graphics->getPushBlockHandle("data");

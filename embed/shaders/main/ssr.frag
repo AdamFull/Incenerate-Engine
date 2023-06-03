@@ -127,8 +127,8 @@ void main()
 	vec4 normal = data.view * vec4(texture(normal_tex, inUV).xyz, 0.0);
 	vec4 mrah = texture(mrah_tex, inUV);
 
-	float metallic = mrah.r;
-	float roughness = mrah.g;
+	float metallic = mrah.g;
+	float roughness = mrah.r;
 
 	vec3 albedo = texture(albedo_tex, inUV).xyz;
 	albedo = mix(albedo, vec3(0.04), metallic);

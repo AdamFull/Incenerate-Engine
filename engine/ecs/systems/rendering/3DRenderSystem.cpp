@@ -18,9 +18,9 @@ void C3DRenderSystem::__create()
 	vSubSystems.emplace_back(std::make_unique<CShadowPassSystem>());
 	vSubSystems.emplace_back(std::make_unique<CDeferredPassSystem>());
 	vSubSystems.emplace_back(std::make_unique<CAmbientOcclusionSystem>());
-	vSubSystems.emplace_back(std::make_unique<CGlobalIlluminationSystem>());
-	vSubSystems.emplace_back(std::make_unique<CReflectionsSystem>());
+	//vSubSystems.emplace_back(std::make_unique<CGlobalIlluminationSystem>());
 	vSubSystems.emplace_back(std::make_unique<CCompositionSystem>());
+	vSubSystems.emplace_back(std::make_unique<CReflectionsSystem>());
 	vSubSystems.emplace_back(std::make_unique<CPostProcessSystem>());
 
 	for (auto& system : vSubSystems)

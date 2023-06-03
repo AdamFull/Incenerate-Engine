@@ -27,7 +27,7 @@ layout (set = 1, binding = 6) uniform sampler2D emission_tex;
 layout (set = 1, binding = 7) uniform sampler2D depth_tex;
 
 layout (set = 1, binding = 8) uniform sampler2D ambient_occlusion_tex;
-layout (set = 1, binding = 9) uniform sampler2D global_illumination_tex;
+//layout (set = 1, binding = 9) uniform sampler2D global_illumination_tex;
 //layout (binding = 8) uniform sampler2D picking_tex;
 //layout (binding = 6) uniform sampler2D ssr_tex;
 
@@ -258,7 +258,7 @@ void main()
 	}
 	else if(debug.mode == 11)
 	{
-		fragcolor = texture(global_illumination_tex, inUV).rgb;
+		//fragcolor = texture(global_illumination_tex, inUV).rgb;
 	}
 	else if(debug.mode == 12)
 	{

@@ -3,6 +3,8 @@
 
 #include "postprocess/EffectShared.h"
 
+#include "graphics/GraphicsSettings.h"
+
 #include "ecs/components/CameraComponent.h"
 #include "ecs/helper.hpp"
 
@@ -30,6 +32,7 @@ void CPostProcessSystem::__create()
 
 	shader_id = graphics->addShader("emptypass");
 
+	addSubresource("reflections_tex");
 	addSubresource("composition_tex");
 	addSubresource("depth_tex");
 
@@ -38,6 +41,8 @@ void CPostProcessSystem::__create()
 
 void CPostProcessSystem::__update(float fDt)
 {
+	auto& settings = CGraphicsSettings::getInstance()->getSettings();
+
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 
@@ -55,10 +60,20 @@ void CPostProcessSystem::__update(float fDt)
 		bloom.update();
 	}
 
-	graphics->BarrierFromGraphicsToCompute(getSubresource("composition_tex"));
+	size_t current_image{ invalid_index };
+	if (settings.bEnableReflections)
+	{
+		current_image = getSubresource("reflections_tex");
+		graphics->BarrierFromGraphicsToCompute(current_image);
+	}
+	else
+	{
+		current_image = getSubresource("composition_tex");
+		graphics->BarrierFromGraphicsToCompute(current_image);
+	}
+	
 	graphics->BarrierFromGraphicsToCompute(getSubresource("depth_tex"));
 
-	size_t current_image = getSubresource("composition_tex");
 	current_image = bloom.render(camera, current_image);
 	current_image = fxaa.render(camera, current_image, final_image);
 	current_image = dof.render(camera, getSubresource("depth_tex"), current_image, final_image);

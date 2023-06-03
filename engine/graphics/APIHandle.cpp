@@ -353,7 +353,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         m_mStageInfos["ssr"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["ssr"].bFlipViewport = false;
         m_mStageInfos["ssr"].bViewportDependent = true;
-        m_mStageInfos["ssr"].vImages.emplace_back(FCIImage{ "reflections_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["ssr"].vImages.emplace_back(FCIImage{ "reflections_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["ssr"].vDescriptions.emplace_back("");
         m_mStageInfos["ssr"].vOutputs.emplace_back("reflections_tex");
 
