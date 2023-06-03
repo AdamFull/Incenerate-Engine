@@ -17,7 +17,6 @@ void CGraphicsSettingsWindow::__draw(float fDt)
 	auto& settings = CGraphicsSettings::getInstance()->getSettings();
 
 	ImGui::GCheckbox("Ambient occlusion", &settings.bEnableAmbientOcclusion);
-
 	if (settings.bEnableAmbientOcclusion)
 	{
 		ImGui::GDragFloat("radius", &settings.fAmbientOcclusionRadius, 0.01f, 0.01f, 1.f);
@@ -27,7 +26,6 @@ void CGraphicsSettingsWindow::__draw(float fDt)
 
 
 	ImGui::GCheckbox("Reflections", &settings.bEnableReflections);
-
 	if (settings.bEnableReflections)
 	{
 		ImGui::GDragFloat("ray step", &settings.fReflectionRayStep, 0.01f, 0.01f, 1.f);
@@ -53,5 +51,11 @@ void CGraphicsSettingsWindow::__draw(float fDt)
 			settings.bReflectionBinarySearchEnabled = false;
 
 		ImGui::GCheckbox("debug", &settings.bReflectionDebugDraw);
+	}
+
+	ImGui::GCheckbox("Global illumination", &settings.bEnableGlobalIllumination);
+	if (settings.bEnableGlobalIllumination)
+	{
+
 	}
 }

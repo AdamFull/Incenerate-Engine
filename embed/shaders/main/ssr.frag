@@ -133,7 +133,7 @@ void main()
 	vec3 albedo = texture(albedo_tex, inUV).xyz;
 	albedo = mix(albedo, vec3(0.04), metallic);
 
-	if(metallic < 0.01) // refl.isReflectionsEnabled > 0 && 
+	if(metallic < 0.01)
 		outFragcolor = vec4(albedo, 1.0);
 	else
 	{

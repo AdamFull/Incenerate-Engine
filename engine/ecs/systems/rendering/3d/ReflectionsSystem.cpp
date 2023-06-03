@@ -14,6 +14,7 @@ void CReflectionsSystem::__create()
 	shader_id = graphics->addShader("ssr_pass");
 
 	addSubresource("composition_tex");
+	addSubresource("global_illumination_tex");
 	addSubresource("normal_tex");
 	addSubresource("mrah_tex");
 	addSubresource("depth_tex");
@@ -33,6 +34,8 @@ void CReflectionsSystem::__update(float fDt)
 	auto projection = camera->projection;
 	projection[1][1] *= -1.f;
 
+	size_t color_texture = settings.bEnableGlobalIllumination ? getSubresource("global_illumination_tex") : getSubresource("composition_tex");
+
 	auto stage = graphics->getRenderStageID("ssr");
 
 	graphics->bindShader(shader_id);
@@ -40,7 +43,7 @@ void CReflectionsSystem::__update(float fDt)
 	graphics->bindTexture("depth_tex", getSubresource("depth_tex"));
 	graphics->bindTexture("mrah_tex", getSubresource("mrah_tex"));
 	graphics->bindTexture("normal_tex", getSubresource("normal_tex"));
-	graphics->bindTexture("albedo_tex", getSubresource("composition_tex"));
+	graphics->bindTexture("albedo_tex", color_texture);
 
 	auto& pUBO = graphics->getUniformHandle("UBOGeneralMatrices");
 	//auto& pUBO = graphics->getPushBlockHandle("data");

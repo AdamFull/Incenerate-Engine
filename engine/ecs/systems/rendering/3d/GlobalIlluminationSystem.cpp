@@ -25,7 +25,7 @@ void CGlobalIlluminationSystem::__create()
 		FShaderSpecials specials;
 		specials.defines =
 		{
-			{"SSDO_KERNEL_SIZE", std::to_string(SSAO_KERNEL_SIZE)}
+			{"SSAO_KERNEL_SIZE", std::to_string(SSAO_KERNEL_SIZE)}
 		};
 		shader_id = graphics->addShader("ssdo_pass", specials);
 	}
@@ -50,7 +50,8 @@ void CGlobalIlluminationSystem::__create()
 	
 	noise_image = graphics->addImage("ssdo_noise_image", std::move(pNoise));
 
-	addSubresource("albedo_tex");
+	addSubresource("composition_tex");
+	addSubresource("normal_tex");
 	addSubresource("depth_tex");
 
 	CBaseGraphicsSystem::__create();
@@ -72,8 +73,9 @@ void CGlobalIlluminationSystem::__update(float fDt)
 
 	graphics->bindShader(shader_id);
 
-	graphics->bindTexture("albedo_tex", getSubresource("albedo_tex"));
+	graphics->bindTexture("albedo_tex", getSubresource("composition_tex"));
 	graphics->bindTexture("depth_tex", getSubresource("depth_tex"));
+	graphics->bindTexture("normal_tex", getSubresource("normal_tex"));
 	graphics->bindTexture("ssdo_noise_tex", noise_image);
 
 	auto& pUBO = graphics->getUniformHandle("UBODirectionalOcclusion");

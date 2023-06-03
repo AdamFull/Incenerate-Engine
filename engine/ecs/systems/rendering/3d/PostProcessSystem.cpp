@@ -32,8 +32,10 @@ void CPostProcessSystem::__create()
 
 	shader_id = graphics->addShader("emptypass");
 
-	addSubresource("reflections_tex");
 	addSubresource("composition_tex");
+	addSubresource("global_illumination_tex");
+	addSubresource("reflections_tex");
+	
 	addSubresource("depth_tex");
 
 	CBaseGraphicsSystem::__create();
@@ -61,16 +63,12 @@ void CPostProcessSystem::__update(float fDt)
 	}
 
 	size_t current_image{ invalid_index };
-	if (settings.bEnableReflections)
-	{
-		current_image = getSubresource("reflections_tex");
-		graphics->BarrierFromGraphicsToCompute(current_image);
-	}
+	if (settings.bEnableGlobalIllumination)
+		current_image = settings.bEnableReflections ? getSubresource("reflections_tex") : getSubresource("global_illumination_tex");
 	else
-	{
-		current_image = getSubresource("composition_tex");
-		graphics->BarrierFromGraphicsToCompute(current_image);
-	}
+		current_image = settings.bEnableReflections ? getSubresource("reflections_tex") : getSubresource("composition_tex");
+
+	graphics->BarrierFromGraphicsToCompute(current_image);
 	
 	graphics->BarrierFromGraphicsToCompute(getSubresource("depth_tex"));
 
