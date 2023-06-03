@@ -50,9 +50,9 @@ Game engine architecture. Goog book for creating not bad game engine architectur
 - [x] PBR (UE4 like)
 - [x] Bloom
 - [x] DOF
-- [ ] Shadow mapping
-- [ ] SSAO
-- [ ] SSR
+- [x] Shadow mapping (directional light - csm, spot and omni - sm)
+- [x] SSAO
+- [x] SSR
 - [ ] Instancing
 - [ ] Tescellation (Exists, but now working incorrect)
 - [ ] GI
