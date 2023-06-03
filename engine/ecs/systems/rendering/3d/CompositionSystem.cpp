@@ -152,16 +152,13 @@ void CCompositionSystem::__update(float fDt)
 	graphics->bindTexture("irradiance_tex", skybox ? skybox->irradiance : empty_cube_id);
 	graphics->bindTexture("prefiltred_tex", skybox ? skybox->prefiltred : empty_cube_id);
 
-	graphics->bindTexture("albedo_tex", getSubresource("albedo_tex"));
+	graphics->bindTexture("albedo_tex", settings.bEnableReflections ? getSubresource("reflections_tex") : getSubresource("albedo_tex"));
 	graphics->bindTexture("normal_tex", getSubresource("normal_tex"));
 	graphics->bindTexture("mrah_tex", getSubresource("mrah_tex"));
 	graphics->bindTexture("emission_tex", getSubresource("emission_tex"));
 	graphics->bindTexture("depth_tex", getSubresource("depth_tex"));
 
 	graphics->bindTexture("ambient_occlusion_tex", graphics->getImageID("ambient_occlusion_tex"));
-	graphics->bindTexture("reflections_tex", getSubresource("reflections_tex"));
-	//graphics->bindTexture("ambient_occlusion_tex", getSubresource("raw_ao_tex"));
-	//graphics->bindTexture("picking_tex", getSubresource("picking_tex"));
 
 	graphics->bindTexture("cascade_shadowmap_tex", getSubresource("cascade_shadowmap_tex"));
 	graphics->bindTexture("direct_shadowmap_tex", getSubresource("direct_shadowmap_tex"));

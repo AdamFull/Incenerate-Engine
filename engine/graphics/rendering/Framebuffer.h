@@ -13,6 +13,7 @@ namespace engine
 		{
 			vk::Format format;
 			vk::ImageUsageFlags usageFlags;
+			vk::SamplerAddressMode addressMode{ vk::SamplerAddressMode::eClampToEdge };
 			EImageType eType;
 			uint32_t reference;
 			uint32_t layers;
@@ -51,7 +52,7 @@ namespace engine
 
 			vk::RenderPass& getRenderPass() { return renderPass; }
 
-			void addImage(const std::string& name, vk::Format format, vk::ImageUsageFlags usageFlags, EImageType eImageType = EImageType::e2D, uint32_t layers = 1);
+			void addImage(const std::string& name, vk::Format format, vk::ImageUsageFlags usageFlags, vk::SamplerAddressMode addressMode, EImageType eImageType = EImageType::e2D, uint32_t layers = 1);
 
 			vk::Framebuffer& getFramebuffer(uint32_t index) { return vFramebuffers[index]; }
 			vk::Framebuffer& getCurrentFramebuffer();

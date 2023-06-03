@@ -82,7 +82,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         m_mStageInfos["cascade_shadow"].viewport.extent = vk::Extent2D(CASCADE_SHADOW_MAP_RESOLUTION, CASCADE_SHADOW_MAP_RESOLUTION);
         m_mStageInfos["cascade_shadow"].bIgnoreRecreation = true;
         m_mStageInfos["cascade_shadow"].bFlipViewport = false;
-        m_mStageInfos["cascade_shadow"].vImages.emplace_back("cascade_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, CASCADE_SHADOW_MAP_CASCADE_COUNT);
+        m_mStageInfos["cascade_shadow"].vImages.emplace_back("cascade_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SamplerAddressMode::eClampToEdge, EImageType::eArray2D, CASCADE_SHADOW_MAP_CASCADE_COUNT);
         m_mStageInfos["cascade_shadow"].vDescriptions.emplace_back("cascade_shadowmap_tex");
         m_mStageInfos["cascade_shadow"].vDependencies.emplace_back(
             FCIDependency(
@@ -124,7 +124,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         m_mStageInfos["direct_shadow"].viewport.extent = vk::Extent2D(SPOT_LIGHT_SHADOW_MAP_RESOLUTION, SPOT_LIGHT_SHADOW_MAP_RESOLUTION);
         m_mStageInfos["direct_shadow"].bIgnoreRecreation = true;
         m_mStageInfos["direct_shadow"].bFlipViewport = false;
-        m_mStageInfos["direct_shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArray2D, MAX_SPOT_LIGHT_SHADOW_COUNT);
+        m_mStageInfos["direct_shadow"].vImages.emplace_back("direct_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SamplerAddressMode::eClampToEdge, EImageType::eArray2D, MAX_SPOT_LIGHT_SHADOW_COUNT);
         m_mStageInfos["direct_shadow"].vDescriptions.emplace_back("direct_shadowmap_tex");
         m_mStageInfos["direct_shadow"].vDependencies.emplace_back(
             FCIDependency(
@@ -166,7 +166,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         m_mStageInfos["omni_shadow"].viewport.extent = vk::Extent2D(POINT_LIGHT_SHADOW_MAP_RESOLUTION, POINT_LIGHT_SHADOW_MAP_RESOLUTION);
         m_mStageInfos["omni_shadow"].bIgnoreRecreation = true;
         m_mStageInfos["omni_shadow"].bFlipViewport = false;
-        m_mStageInfos["omni_shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, EImageType::eArrayCube, MAX_POINT_LIGHT_SHADOW_COUNT);
+        m_mStageInfos["omni_shadow"].vImages.emplace_back("omni_shadowmap_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SamplerAddressMode::eClampToEdge, EImageType::eArrayCube, MAX_POINT_LIGHT_SHADOW_COUNT);
         m_mStageInfos["omni_shadow"].vDescriptions.emplace_back("omni_shadowmap_tex");
         m_mStageInfos["omni_shadow"].vDependencies.emplace_back(
             FCIDependency(
@@ -208,15 +208,15 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         m_mStageInfos["deferred"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["deferred"].bFlipViewport = true;
         m_mStageInfos["deferred"].bViewportDependent = true;
-        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "albedo_tex", vk::Format::eR8G8B8A8Srgb, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "albedo_tex", vk::Format::eR8G8B8A8Srgb, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled, vk::SamplerAddressMode::eRepeat });
         m_mStageInfos["deferred"].vOutputs.emplace_back("albedo_tex");
-        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "normal_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "normal_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled, vk::SamplerAddressMode::eRepeat });
         m_mStageInfos["deferred"].vOutputs.emplace_back("normal_tex");
-        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "mrah_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "mrah_tex", vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled, vk::SamplerAddressMode::eRepeat });
         m_mStageInfos["deferred"].vOutputs.emplace_back("mrah_tex");
         m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "emission_tex", vk::Format::eR8G8B8A8Srgb, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["deferred"].vOutputs.emplace_back("emission_tex");
-        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["deferred"].vImages.emplace_back(FCIImage{ "depth_tex", depth_format, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::SamplerAddressMode::eRepeat });
         m_mStageInfos["deferred"].vDescriptions.emplace_back("depth_tex");
         
         if (CSessionStorage::getInstance()->get<bool>("editor_mode"))

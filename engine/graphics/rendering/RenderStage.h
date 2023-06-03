@@ -13,8 +13,8 @@ namespace engine
 
 		struct FCIImage
 		{
-			FCIImage(const std::string& name, vk::Format fmt, vk::ImageUsageFlags usg, EImageType tp = EImageType::e2D, uint32_t lrs = 1) :
-				srName(name), format(fmt), usage(usg), type(tp), layers(lrs)
+			FCIImage(const std::string& name, vk::Format fmt, vk::ImageUsageFlags usg, vk::SamplerAddressMode addressMode = vk::SamplerAddressMode::eClampToEdge, EImageType tp = EImageType::e2D, uint32_t lrs = 1) :
+				srName(name), format(fmt), usage(usg), addressMode(addressMode), type(tp), layers(lrs)
 			{
 
 			}
@@ -22,6 +22,7 @@ namespace engine
 			std::string srName;
 			vk::Format format;
 			vk::ImageUsageFlags usage;
+			vk::SamplerAddressMode addressMode;
 			EImageType type{ EImageType::e2D };
 			uint32_t layers{ 1 };
 		};

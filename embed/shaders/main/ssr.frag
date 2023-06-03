@@ -21,14 +21,6 @@ layout (std140, set = 0, binding = 0) uniform UBOGeneralMatrices
 	mat4 invView;
 } data;
 
-//layout(push_constant) uniform UBOGeneralMatrices
-//{
-//    mat4 projection;
-//    mat4 invProjection;
-//    mat4 view;
-//	mat4 invView;
-//} data;
-
 layout (std140, set = 0, binding = 1) uniform UBOReflections
 {
     float rayStep;
@@ -138,8 +130,11 @@ void main()
 	float metallic = mrah.r;
 	float roughness = mrah.g;
 
-	if(metallic < 0.01)
-		outFragcolor = texture(albedo_tex, inUV);
+	vec3 albedo = texture(albedo_tex, inUV).xyz;
+	albedo = mix(albedo, vec3(0.04), metallic);
+
+	if(metallic < 0.01) // refl.isReflectionsEnabled > 0 && 
+		outFragcolor = vec4(albedo, 1.0);
 	else
 	{
 		vec3 reflectionDirection = normalize(reflect(position, normalize(normal.xyz)));
@@ -151,7 +146,8 @@ void main()
 
 			for (int i = 0; i < refl.sampleCount; i++) 
 			{
-				vec2 coeffs = vec2(random(inUV + vec2(0, i)) + random(inUV + vec2(i, 0))) * refl.samplingCoefficient;
+				// Applying roughness to resulting reflection vertor
+				vec2 coeffs = vec2(random(inUV + vec2(0, i)) + random(inUV + vec2(i, 0))) * refl.samplingCoefficient * roughness;
 				vec3 reflectionDirectionRandomized = reflectionDirection + firstBasis * coeffs.x + secondBasis * coeffs.y;
 				vec3 tempColor = SSR(position, normalize(reflectionDirectionRandomized));
 				if (tempColor != vec3(0.f))
@@ -163,14 +159,23 @@ void main()
 			else 
 			{
 				resultingColor /= resultingColor.w;
-				outFragcolor = vec4(resultingColor.xyz, 1.f);
+				outFragcolor = vec4(mix(albedo, resultingColor.xyz, metallic), 1.f);
 			}
 		}
 		else
 		{
-			outFragcolor = vec4(SSR(position, normalize(reflectionDirection)), 1.f);
-			if (outFragcolor.xyz == vec3(0.f))
-				outFragcolor = texture(albedo_tex, inUV);
+			// Applying roughness to resulting reflection vertor
+			vec2 coeffs = vec2(random(inUV)) * roughness;
+			vec3 firstBasis = normalize(cross(vec3(0.f, 0.f, 1.f), reflectionDirection));
+			vec3 secondBasis = normalize(cross(reflectionDirection, firstBasis));
+			reflectionDirection += firstBasis * coeffs.x + secondBasis * coeffs.y;
+
+			vec3 ssrColor = SSR(position, normalize(reflectionDirection));
+			if (ssrColor == vec3(0.f))
+				outFragcolor = vec4(albedo, 1.0);
+			else
+				// Metallic factor influences the mix of albedo and SSR color
+				outFragcolor = vec4(mix(albedo, ssrColor, metallic), 1.f);
 		}
 	}
 }

@@ -186,7 +186,7 @@ void CFramebuffer::setRenderArea(vk::Rect2D&& area)
     renderArea = std::move(area);
 }
 
-void CFramebuffer::addImage(const std::string& name, vk::Format format, vk::ImageUsageFlags usageFlags, EImageType eImageType, uint32_t layers)
+void CFramebuffer::addImage(const std::string& name, vk::Format format, vk::ImageUsageFlags usageFlags, vk::SamplerAddressMode addressMode, EImageType eImageType, uint32_t layers)
 {
     uint32_t reference{ 0 };
     vk::ClearValue clearValue{};
@@ -261,7 +261,7 @@ void CFramebuffer::addImage(const std::string& name, vk::Format format, vk::Imag
     reference = static_cast<uint32_t>(mFbAttachments.size());
     vAttachDesc.emplace_back(attachmentDescription);
     vClearValues.emplace_back(clearValue);
-    mFbAttachments.emplace(name, FFramebufferAttachmentInfo{ format, usageFlags, eImageType, reference, layers });
+    mFbAttachments.emplace(name, FFramebufferAttachmentInfo{ format, usageFlags, addressMode, eImageType, reference, layers });
 }
 
 vk::Framebuffer& CFramebuffer::getCurrentFramebuffer()
@@ -380,17 +380,17 @@ std::unique_ptr<CImage> CFramebuffer::createImage(const FFramebufferAttachmentIn
     {
     case EImageType::e2D: {
         auto tex = std::make_unique<CImage2D>(pDevice); 
-        tex->create(extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
+        tex->create(extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, attachment.addressMode, vk::SampleCountFlagBits::e1, translate_layout);
         texture = std::move(tex);
     } break;
     case EImageType::eArray2D: { 
         auto tex = std::make_unique<CImage2DArray>(pDevice);
-        tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
+        tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, attachment.addressMode, vk::SampleCountFlagBits::e1, translate_layout);
         texture = std::move(tex);
     } break;
     case EImageType::eArrayCube: { 
         auto tex = std::make_unique<CImageCubemapArray>(pDevice);
-        tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, vk::SamplerAddressMode::eClampToEdge, vk::SampleCountFlagBits::e1, translate_layout);
+        tex->create(attachment.layers, extent, attachment.format, imageLayout, attachment.usageFlags, aspectMask, vk::Filter::eNearest, attachment.addressMode, vk::SampleCountFlagBits::e1, translate_layout);
         texture = std::move(tex);
     } break;
     }

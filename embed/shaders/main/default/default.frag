@@ -58,7 +58,7 @@ void main()
 	metallic = metallic * metalRough.b;
 #endif // HAS_METALLIC_ROUGHNESS
 	roughness = clamp(roughness, minRoughness, 1.0);
-    metallic = clamp(metallic, 0.01, 1.0);
+    //metallic = clamp(metallic, 0.01, 1.0);
 	pbr_map = vec4(roughness, metallic, 0.0, 0.0);
 	
 

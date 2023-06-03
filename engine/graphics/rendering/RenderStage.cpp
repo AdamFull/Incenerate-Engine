@@ -17,7 +17,7 @@ void CRenderStage::create(const FCIStage& createInfo)
 	pFramebuffer->setFlipViewport(createInfo.bFlipViewport);
 
 	for (auto& image : createInfo.vImages)
-		pFramebuffer->addImage(image.srName, image.format, image.usage, image.type, image.layers);
+		pFramebuffer->addImage(image.srName, image.format, image.usage, image.addressMode, image.type, image.layers);
 
 	pFramebuffer->addOutputReference(0, createInfo.vOutputs);
 
