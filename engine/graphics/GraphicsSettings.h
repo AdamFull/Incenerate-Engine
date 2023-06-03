@@ -6,12 +6,14 @@ namespace engine
 	{
 		struct FGraphicsSettings
 		{
+			// Ambient occlusion
 			bool bEnableAmbientOcclusion{ true };
 			float fAmbientOcclusionRadius{ 0.3f };
 			float fAmbientOcclusionBias{ 0.025f };
 			int iAmbientOcclusionSmoothingSteps{ 2 };
 
-			bool bEnableReflections{ true };
+			// Reflections
+			bool bEnableReflections{ false };
 			float fReflectionRayStep{ 0.2f };
 			int iReflectionIterationCount{ 100 };
 			float fReflectionDistanceBias{ 0.05f };
@@ -22,6 +24,9 @@ namespace engine
 			bool bReflectionAdaptiveStepEnabled{ true };
 			bool bReflectionExponentialStepEnabled{ false };
 			bool bReflectionSamplingEnabled{ true };
+
+			// Directional occlusion
+			bool bEnableGlobalIllumination{ true };
 		};
 
 		class CGraphicsSettings : public utl::singleton<CGraphicsSettings>

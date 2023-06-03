@@ -8,6 +8,12 @@ namespace engine
 		return (input - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 	}
 
+	template<class _Ty>
+	_Ty lerp(_Ty a, _Ty b, _Ty f)
+	{
+		return a + f * (b - a);
+	}
+
 	uint32_t getLodLevel(float nearPlane, float farPlane, float distance);
 
 	glm::vec4 encodeIdToColor(uint32_t hex);

@@ -80,7 +80,6 @@ size_t CDOFEffect::render(FCameraComponent* camera, size_t depth_source, size_t 
 			pPush->set("nearTransition", camera->effects.dof.near_transition);
 			pPush->set("farField", camera->effects.dof.far_field);
 			pPush->set("farTransition", camera->effects.dof.far_transition);
-			graphics->flushConstantRanges(pPush);
 
 			graphics->bindTexture("writeColor", temp_image);
 			graphics->bindTexture("samplerDepth", depth_source);

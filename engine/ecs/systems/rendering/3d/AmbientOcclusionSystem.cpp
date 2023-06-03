@@ -1,4 +1,4 @@
-#include "SSAOSystem.h"
+#include "AmbientOcclusionSystem.h"
 #include "image/Image.h"
 #include "Engine.h"
 
@@ -7,17 +7,14 @@
 
 #include "ecs/components/CameraComponent.h"
 
+#include "Helpers.h"
+
 #include <random>
 
 using namespace engine::ecs;
 using namespace engine::graphics;
 
-float lerp(float a, float b, float f)
-{
-	return a + f * (b - a);
-}
-
-void CSSAOSystem::__create()
+void CAmbientOcclusionSystem::__create()
 {
 	std::default_random_engine rndEngine(0);
 	std::uniform_real_distribution<float> rndDist(0.0f, 1.0f);
@@ -60,7 +57,7 @@ void CSSAOSystem::__create()
 	CBaseGraphicsSystem::__create();
 }
 
-void CSSAOSystem::__update(float fDt)
+void CAmbientOcclusionSystem::__update(float fDt)
 {
 	auto& settings = CGraphicsSettings::getInstance()->getSettings();
 	auto& device = graphics->getDevice();
@@ -105,7 +102,6 @@ void CSSAOSystem::__update(float fDt)
 
 	auto& pPush = graphics->getPushBlockHandle("ubo");
 	pPush->set("blur_range", settings.iAmbientOcclusionSmoothingSteps);
-	graphics->flushConstantRanges(pPush);
 
 	FDispatchParam param;
 	param.size = { extent.width, extent.height, 1.f };
@@ -120,7 +116,7 @@ void CSSAOSystem::__update(float fDt)
 	graphics->BarrierFromComputeToGraphics();
 }
 
-void CSSAOSystem::updateOutputImage(const std::string& image_name, size_t& image_id)
+void CAmbientOcclusionSystem::updateOutputImage(const std::string& image_name, size_t& image_id)
 {
 	auto& device = graphics->getDevice();
 	auto& image = graphics->getImage(image_id);

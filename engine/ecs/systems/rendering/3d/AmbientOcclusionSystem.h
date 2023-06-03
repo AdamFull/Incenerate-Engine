@@ -6,11 +6,11 @@ namespace engine
 {
 	namespace ecs
 	{
-		class CSSAOSystem : public CBaseGraphicsSystem
+		class CAmbientOcclusionSystem : public CBaseGraphicsSystem
 		{
 		public:
-			CSSAOSystem() { name = "Rendering ssao system"; }
-			virtual ~CSSAOSystem() override = default;
+			CAmbientOcclusionSystem() { name = "Rendering ssao system"; }
+			virtual ~CAmbientOcclusionSystem() override = default;
 
 			void __create() override;
 			void __update(float fDt) override;

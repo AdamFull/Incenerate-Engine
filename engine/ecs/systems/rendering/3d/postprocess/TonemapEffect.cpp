@@ -41,7 +41,6 @@ size_t CTonemapEffect::render(FCameraComponent* camera, float time, size_t in_so
 		pBlock->set("exposure", camera->effects.tonemap.exposure);
 		pBlock->set("whitePoint", camera->effects.tonemap.whitePoint);
 		pBlock->set("adaptive", static_cast<int32_t>(camera->effects.tonemap.adaptive));
-		graphics->flushConstantRanges(pBlock);
 
 		float logLumRange = camera->effects.tonemap.lumMax - camera->effects.tonemap.lumMin;
 		float timeCoeff = glm::clamp<float>(1.0f - glm::exp(-time * camera->effects.tonemap.tau), 0.0, 1.0);

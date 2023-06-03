@@ -304,6 +304,50 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
 
     {
+        m_mStageInfos["global_illumination"].srName = "global_illumination";
+        m_mStageInfos["global_illumination"].viewport.offset = vk::Offset2D(0, 0);
+        m_mStageInfos["global_illumination"].viewport.extent = m_pDevice->getExtent(true);
+        m_mStageInfos["global_illumination"].bFlipViewport = false;
+        m_mStageInfos["global_illumination"].bViewportDependent = true;
+        m_mStageInfos["global_illumination"].vImages.emplace_back(FCIImage{ "global_illumination_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["global_illumination"].vDescriptions.emplace_back("");
+        m_mStageInfos["global_illumination"].vOutputs.emplace_back("global_illumination_tex");
+
+        m_mStageInfos["global_illumination"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eAllGraphics,
+                    vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite
+                )
+            )
+        );
+        m_mStageInfos["global_illumination"].vDependencies.emplace_back(
+            FCIDependency(
+                FCIDependencyDesc(
+                    0,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                ),
+                FCIDependencyDesc(
+                    VK_SUBPASS_EXTERNAL,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eColorAttachmentWrite
+                )
+            )
+        );
+
+        auto stageId = addRenderStage("global_illumination");
+        auto& pStage = getRenderStage(stageId);
+        pStage->create(m_mStageInfos["global_illumination"]);
+    }
+
+    {
         m_mStageInfos["ssr"].srName = "ssr";
         m_mStageInfos["ssr"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["ssr"].viewport.extent = m_pDevice->getExtent(true);

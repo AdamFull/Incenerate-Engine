@@ -82,7 +82,6 @@ size_t CBloomEffect::render(FCameraComponent* camera, size_t source)
 
 			auto& pPush = graphics->getPushBlockHandle("ubo");
 			pPush->set("bloom_threshold", camera->effects.bloom.threshold);
-			graphics->flushConstantRanges(pPush);
 
 			graphics->bindTexture("writeColor", final_image);
 			graphics->bindTexture("samplerColor", source);

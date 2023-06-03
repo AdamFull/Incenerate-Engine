@@ -190,6 +190,19 @@
     ],
     "defines": {}
   },
+  "ssdo_pass": {
+    "stage": "global_illumination",
+    "bind_point": "Graphics",
+    "cull_mode": "Back",
+    "front_face": "cw",
+    "depth_test": false,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "/embed/shaders/main/screenspace.vert",
+      "/embed/shaders/main/ssdo.frag"
+    ],
+    "defines": {}
+  },
   "hbao_pass": {
     "stage": "ssao",
     "bind_point": "Graphics",

@@ -39,6 +39,7 @@ void CCompositionSystem::__create()
 	addSubresource("depth_tex");
 
 	addSubresource("raw_ao_tex");
+	addSubresource("global_illumination_tex");
 	addSubresource("reflections_tex");
 	
 	addSubresource("cascade_shadowmap_tex");
@@ -159,6 +160,7 @@ void CCompositionSystem::__update(float fDt)
 	graphics->bindTexture("depth_tex", getSubresource("depth_tex"));
 
 	graphics->bindTexture("ambient_occlusion_tex", graphics->getImageID("ambient_occlusion_tex"));
+	graphics->bindTexture("global_illumination_tex", getSubresource("global_illumination_tex"));
 
 	graphics->bindTexture("cascade_shadowmap_tex", getSubresource("cascade_shadowmap_tex"));
 	graphics->bindTexture("direct_shadowmap_tex", getSubresource("direct_shadowmap_tex"));
