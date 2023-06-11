@@ -17,6 +17,7 @@ namespace engine
 			float fReflectionRayStep{ 0.2f };
 			int iReflectionIterationCount{ 100 };
 			float fReflectionDistanceBias{ 0.05f };
+			float fReflectionSpecularFalloffExponent{ 3.f };
 			int iReflectionSampleCount{ 4 };
 			float fReflectionSamplingCoefficient{ 0.01f };
 			bool bReflectionDebugDraw{ false };

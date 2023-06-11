@@ -3,6 +3,10 @@
 #extension GL_ARB_shading_language_420pack : enable
 #extension GL_GOOGLE_include_directive : require
 
+//Based on https://github.com/RoundedGlint585/ScreenSpaceReflection/blob/master/shaders/SSRFragment.glsl
+
+#include "../shared_shading.glsl"
+
 layout (set = 1, binding = 0) uniform sampler2D depth_tex;
 layout (set = 1, binding = 1) uniform sampler2D mrah_tex;
 layout (set = 1, binding = 2) uniform sampler2D normal_tex;
@@ -28,18 +32,13 @@ layout (std140, set = 0, binding = 1) uniform UBOReflections
 	float distanceBias;
 	int sampleCount;
 	float samplingCoefficient;
+	float reflectionSpecularFalloffExponent;
 	int debugDraw;
 	int isBinarySearchEnabled;
 	int isAdaptiveStepEnabled;
 	int isExponentialStepEnabled;
 	int isSamplingEnabled;
 } refl;
-
-
-float random (vec2 uv) 
-{
-	return fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453123); //simple random function
-}
 
 vec3 generatePositionFromDepth(vec2 texturePos, float depth) 
 {
@@ -56,10 +55,10 @@ vec2 generateProjectedPosition(vec3 pos)
 	return samplePosition.xy;
 }
 
-vec3 SSR(vec3 position, vec3 reflection) 
+vec2 SSR(vec3 position, vec3 reflection, out vec3 color) 
 {
-	vec3 step = refl.rayStep * reflection;
-	vec3 marchingPosition = position + step;
+	vec3 stp = refl.rayStep * reflection;
+	vec3 marchingPosition = position + stp;
 	float delta;
 	float depthFromScreen;
 	vec2 screenPosition;
@@ -70,15 +69,16 @@ vec3 SSR(vec3 position, vec3 reflection)
 		screenPosition = generateProjectedPosition(marchingPosition);
 		depthFromScreen = abs(generatePositionFromDepth(screenPosition, texture(depth_tex, screenPosition).x).z);
 		delta = abs(marchingPosition.z) - depthFromScreen;
+
 		if (abs(delta) < refl.distanceBias) 
 		{
-			vec3 color = vec3(1);
+			color = vec3(1);
 			if(refl.debugDraw > 0)
 				color = vec3( 0.5+ sign(delta)/2,0.3,0.5- sign(delta)/2);
-			return texture(albedo_tex, screenPosition).xyz * color;
+			return screenPosition;
 		}
 
-		if (refl.isBinarySearchEnabled > 0 && delta > 0)
+		if (refl.isBinarySearchEnabled > 0 && delta >= 0)
 			break;
 
 		if (refl.isAdaptiveStepEnabled > 0)
@@ -86,14 +86,14 @@ vec3 SSR(vec3 position, vec3 reflection)
 			float directionSign = sign(abs(marchingPosition.z) - depthFromScreen);
 			//this is sort of adapting step, should prevent lining reflection by doing sort of iterative converging
 			//some implementation doing it by binary search, but I found this idea more cheaty and way easier to implement
-			step = step * (1.0 - refl.rayStep * max(directionSign, 0.0));
-			marchingPosition += step * (-directionSign);
+			stp = stp * (1.0 - refl.rayStep * max(directionSign, 0.0));
+			marchingPosition += stp * (-directionSign);
 		}
 		else
-			marchingPosition += step;
+			marchingPosition += stp;
 	
 		if (refl.isExponentialStepEnabled > 0)
-			step *= 1.05;
+			stp *= 1.05;
     }
 
 
@@ -101,8 +101,8 @@ vec3 SSR(vec3 position, vec3 reflection)
 	{
 		for(; i < refl.iterationCount; i++){
 			
-			step *= 0.5;
-			marchingPosition = marchingPosition - step * sign(delta);
+			stp *= 0.5;
+			marchingPosition = marchingPosition - stp * sign(delta);
 			
 			screenPosition = generateProjectedPosition(marchingPosition);
 			depthFromScreen = abs(generatePositionFromDepth(screenPosition, texture(depth_tex, screenPosition).x).z);
@@ -110,15 +110,15 @@ vec3 SSR(vec3 position, vec3 reflection)
 			
 			if (abs(delta) < refl.distanceBias) 
 			{
-                vec3 color = vec3(1);
+                color = vec3(1);
                 if(refl.debugDraw > 0)
                     color = vec3( 0.5+ sign(delta)/2,0.3,0.5- sign(delta)/2);
-				return texture(albedo_tex, screenPosition).xyz * color;
+				return screenPosition;
 			}
 		}
 	}
 	
-    return vec3(0.0);
+    return vec2(0.0);
 }
 
 void main()
@@ -131,7 +131,11 @@ void main()
 	float roughness = mrah.r;
 
 	vec3 albedo = texture(albedo_tex, inUV).xyz;
-	albedo = mix(albedo, vec3(0.04), metallic);
+	//albedo = mix(albedo, vec3(0.04), metallic);
+
+	vec3 F0 = vec3(0.04); 
+    F0 = mix(F0, albedo, metallic);
+	vec3 fresnel = F_SchlickR(max(dot(normalize(normal.rgb), normalize(position)), 0.0), F0, roughness);
 
 	if(metallic < 0.01)
 		outFragcolor = vec4(albedo, 1.0);
@@ -146,12 +150,24 @@ void main()
 
 			for (int i = 0; i < refl.sampleCount; i++) 
 			{
-				// Applying roughness to resulting reflection vertor
 				vec2 coeffs = vec2(random(inUV + vec2(0, i)) + random(inUV + vec2(i, 0))) * refl.samplingCoefficient * roughness;
 				vec3 reflectionDirectionRandomized = reflectionDirection + firstBasis * coeffs.x + secondBasis * coeffs.y;
-				vec3 tempColor = SSR(position, normalize(reflectionDirectionRandomized));
-				if (tempColor != vec3(0.f))
-					resultingColor += vec4(tempColor, 1.f);
+
+				vec3 debugColor;
+				vec2 coords = SSR(position, normalize(reflectionDirectionRandomized), debugColor);
+				if (coords != vec2(0.0f))
+				{
+					vec4 reflColor = texture(albedo_tex, coords);
+					reflColor.rgb *= debugColor;
+
+					vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - coords.xy));
+					float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
+					float reflectionMultiplier = pow(metallic, refl.reflectionSpecularFalloffExponent) * screenEdgefactor * -reflectionDirection.z;
+
+					reflColor.rgb *= clamp(reflectionMultiplier, 0.0, 0.9) * fresnel;
+
+					resultingColor += reflColor;
+				}
 			}
 
 			if (resultingColor.w == 0)
@@ -159,7 +175,8 @@ void main()
 			else 
 			{
 				resultingColor /= resultingColor.w;
-				outFragcolor = vec4(mix(albedo, resultingColor.xyz, metallic), 1.f);
+				//outFragcolor = vec4(mix(albedo, resultingColor.xyz, metallic), 1.f);
+				outFragcolor = vec4(resultingColor.rgb, 1.f);
 			}
 		}
 		else
@@ -170,12 +187,23 @@ void main()
 			vec3 secondBasis = normalize(cross(reflectionDirection, firstBasis));
 			reflectionDirection += firstBasis * coeffs.x + secondBasis * coeffs.y;
 
-			vec3 ssrColor = SSR(position, normalize(reflectionDirection));
-			if (ssrColor == vec3(0.f))
+			vec3 debugColor;
+			vec2 coords = SSR(position, normalize(reflectionDirection), debugColor);
+			if (coords == vec2(0.f))
 				outFragcolor = vec4(albedo, 1.0);
 			else
+			{
+				vec4 reflColor = texture(albedo_tex, coords);
+				reflColor.rgb *= debugColor;
+
+				vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - coords.xy));
+				float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
+				float reflectionMultiplier = pow(metallic, refl.reflectionSpecularFalloffExponent) * screenEdgefactor * -reflectionDirection.z;
+
+				reflColor.rgb *= clamp(reflectionMultiplier, 0.0, 0.9) * fresnel;
 				// Metallic factor influences the mix of albedo and SSR color
-				outFragcolor = vec4(mix(albedo, ssrColor, metallic), 1.f);
+				outFragcolor = reflColor;
+			}	
 		}
 	}
 }

@@ -59,6 +59,7 @@ void CReflectionsSystem::__update(float fDt)
 	pReflections->set("distanceBias", settings.fReflectionDistanceBias);
 	pReflections->set("sampleCount", settings.iReflectionSampleCount);
 	pReflections->set("samplingCoefficient", settings.fReflectionSamplingCoefficient);
+	pReflections->set("reflectionSpecularFalloffExponent", settings.fReflectionSpecularFalloffExponent);
 	pReflections->set("debugDraw", settings.bReflectionDebugDraw ? 1 : -1);
 	pReflections->set("isBinarySearchEnabled", settings.bReflectionBinarySearchEnabled ? 1 : -1);
 	pReflections->set("isAdaptiveStepEnabled", settings.bReflectionAdaptiveStepEnabled ? 1 : -1);

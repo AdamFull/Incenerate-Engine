@@ -701,4 +701,36 @@ namespace glm
     {
         utl::parse_to("x", json, type.x);
     }
+
+    void to_json(nlohmann::json& json, const quat& type)
+    {
+        utl::serialize_from("x", json, type.x, type.x != 0.f);
+        utl::serialize_from("y", json, type.y, type.y != 0.f);
+        utl::serialize_from("z", json, type.z, type.z != 0.f);
+        utl::serialize_from("w", json, type.w, type.w != 1.f);
+    }
+
+    void from_json(const nlohmann::json& json, quat& type)
+    {
+        utl::parse_to("x", json, type.x);
+        utl::parse_to("y", json, type.y);
+        utl::parse_to("z", json, type.z);
+        utl::parse_to("w", json, type.w);
+    }
+
+    void to_json(nlohmann::json& json, const dquat& type)
+    {
+        utl::serialize_from("x", json, type.x, type.x != 0.0);
+        utl::serialize_from("y", json, type.y, type.y != 0.0);
+        utl::serialize_from("z", json, type.z, type.z != 0.0);
+        utl::serialize_from("w", json, type.w, type.w != 1.0);
+    }
+
+    void from_json(const nlohmann::json& json, dquat& type)
+    {
+        utl::parse_to("x", json, type.x);
+        utl::parse_to("y", json, type.y);
+        utl::parse_to("z", json, type.z);
+        utl::parse_to("w", json, type.w);
+    }
 }

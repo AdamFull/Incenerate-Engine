@@ -156,4 +156,11 @@ namespace glm
     //glm::dvec1
     void to_json(nlohmann::json& json, const dvec1& type);
     void from_json(const nlohmann::json& json, dvec1& type);
+
+    //glm::quat
+    void to_json(nlohmann::json& json, const quat& type);
+    void from_json(const nlohmann::json& json, quat& type);
+
+    void to_json(nlohmann::json& json, const dquat& type);
+    void from_json(const nlohmann::json& json, dquat& type);
 }

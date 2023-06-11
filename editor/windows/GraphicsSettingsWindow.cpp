@@ -51,6 +51,8 @@ void CGraphicsSettingsWindow::__draw(float fDt)
 			settings.bReflectionBinarySearchEnabled = false;
 
 		ImGui::GCheckbox("debug", &settings.bReflectionDebugDraw);
+
+		ImGui::GDragFloat("falloff", &settings.fReflectionSpecularFalloffExponent, 0.01f, 0.0f, 10.f);
 	}
 
 	ImGui::GCheckbox("Global illumination", &settings.bEnableGlobalIllumination);

@@ -244,12 +244,11 @@ void CEditor::create()
     {
         auto path = std::string(recproj.last);
         pEditorProject->open(path);
+        activateEditorCamera();
     }
 
     for (auto& overlay : vEditorWindows)
         overlay->create();
-
-    activateEditorCamera();
 
     ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Engine loading success!" });
 }
@@ -631,7 +630,7 @@ void CEditor::onKeyDown(const std::unique_ptr<IEvent>& event)
 
 void CEditor::load_editor()
 {
-    if(EGFilesystem->exists(editor_local_data))
+    if (EGFilesystem->exists(editor_local_data))
         EGFilesystem->readBson(editor_local_data, recproj);
 }
 
