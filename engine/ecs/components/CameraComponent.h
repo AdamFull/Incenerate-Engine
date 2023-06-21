@@ -22,7 +22,7 @@ namespace engine
 
 			float fieldOfView{ 45.f };
 			float nearPlane{ 0.1f };
-			float farPlane{ 131072.f }; 
+			float farPlane{ 4096.f };
 			float sensitivity{ 15.f };
 
 			float xmag{ 0.f };

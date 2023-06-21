@@ -17,6 +17,8 @@
 #include "meshoptimizer/src/meshoptimizer.h"
 #include "loaders/mesh/MeshHelper.h"
 
+#include "Helpers.h"
+
 using namespace engine;
 using namespace engine::loaders;
 using namespace engine::graphics;
@@ -209,28 +211,14 @@ void CGltfLoader::loadNode(const entt::entity& parent, const tinygltf::Node& nod
     if (!node.rotation.empty())
     {
         //TODO: refactor transform for using quaterion
-        glm::quat quat = glm::make_quat(node.rotation.data());
-        transform.rotation = glm::eulerAngles(quat); //  * glm::vec3(-1.0, 1.0, 1.0)
+        transform.rotation = glm::make_quat(node.rotation.data());
     }
     // Loading scale data
     if (!node.scale.empty())
         transform.scale = glm::make_vec3(node.scale.data());
 
     if (!node.matrix.empty())
-    {
-        glm::mat4 translation = glm::make_mat4(node.matrix.data());
-
-        glm::vec3 skew;
-        glm::quat qrotation;
-        glm::vec4 perspective;
-        glm::vec3 scale;
-        glm::vec3 position;
-        glm::decompose(translation, scale, qrotation, position, skew, perspective);
-        qrotation = glm::conjugate(qrotation);
-        transform.position += position;
-        transform.rotation += glm::eulerAngles(qrotation);
-        transform.scale *= scale;
-    }
+        transform.matrix = glm::make_mat4(node.matrix.data());
 
     // Node with children
     if (node.children.size() > 0)
@@ -508,6 +496,31 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
     meshComponent.loaded = true;
 
     std::sort(meshComponent.vMeshlets.begin(), meshComponent.vMeshlets.end(), [](const FMeshlet& a, const FMeshlet& b) { return a.material < b.material; });
+
+    // temp (generate instances)
+    //for (int k = 0; k < 4; k++)
+    //{
+    //    for (int i = 0; i < 10; i++)
+    //    {
+    //        for (int j = 0; j < 10; j++)
+    //        {
+    //            auto posX = static_cast<float>(j * 20.f);
+    //            auto posY = static_cast<float>(k * 30.f);
+    //            auto posZ = static_cast<float>(i * 20.f);
+    //            auto translation = glm::vec3{ posX, posY, posZ };
+    //
+    //            auto& instance = meshComponent.vInstances[meshComponent.instanceCount];
+    //            instance.model = glm::mat4(1.f);
+    //            instance.model = glm::translate(instance.model, translation);
+    //            instance.model = glm::scale(instance.model, glm::vec3{ 1.f });
+    //            
+    //            instance.color = glm::normalize(glm::vec4{ translation, 1.f});
+    //            instance.color.w = 1.f;
+    //
+    //            meshComponent.instanceCount++;
+    //        }
+    //    }
+    //}     
 }
 
 void CGltfLoader::loadCameraComponent(const entt::entity& parent, const tinygltf::Node& node, const tinygltf::Model& model)
@@ -643,6 +656,9 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
 
         if (mat.values.find("metallicFactor") != mat.values.end())
             params.metallicFactor = static_cast<float>(mat.values.at("metallicFactor").Factor());
+
+        //params.roughnessFactor = 0.2f;
+        //params.metallicFactor = 0.9f;
 
         if (mat.values.find("baseColorFactor") != mat.values.end())
             params.baseColorFactor = glm::make_vec4(mat.values.at("baseColorFactor").ColorFactor().data());

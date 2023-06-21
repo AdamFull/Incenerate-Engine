@@ -10,6 +10,7 @@ namespace property_type
 	constexpr const uint32_t vec2_h = utl::type_hash<glm::vec2>();
 	constexpr const uint32_t vec3_h = utl::type_hash<glm::vec3>();
 	constexpr const uint32_t vec4_h = utl::type_hash<glm::vec4>();
+	constexpr const uint32_t quat_h = utl::type_hash<glm::quat>();
 	constexpr const uint32_t string_h = utl::type_hash<std::string>();
 }
 
@@ -71,6 +72,14 @@ void CPropertyChangedOperation::undo()
 		newValueCpy = *vnew;
 		*vnew = vold;
 	} break;
+
+	case property_type::quat_h:
+	{
+		auto vold = std::any_cast<glm::quat>(oldValue);
+		auto* vnew = std::any_cast<glm::quat*>(newValue);
+		newValueCpy = *vnew;
+		*vnew = vold;
+	} break;
 	
 	case property_type::string_h:
 	{
@@ -128,6 +137,13 @@ void CPropertyChangedOperation::redo()
 	{
 		auto vnewcpy = std::any_cast<glm::vec4>(newValueCpy);
 		auto* vnew = std::any_cast<glm::vec4*>(newValue);
+		*vnew = vnewcpy;
+	} break;
+
+	case property_type::quat_h:
+	{
+		auto vnewcpy = std::any_cast<glm::quat>(newValueCpy);
+		auto* vnew = std::any_cast<glm::quat*>(newValue);
 		*vnew = vnewcpy;
 	} break;
 

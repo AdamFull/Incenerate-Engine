@@ -21,7 +21,13 @@ layout(location = 3) out mat3 outTBN;
 
 void main() 
 {
-vec4 localPos;
+	vec4 localPos;
+
+	mat4 instanceModel = instancing.instances[gl_InstanceIndex].model;
+	vec4 instanceColor = instancing.instances[gl_InstanceIndex].color;
+
+	mat4 modelMatrix = instanceModel * meshData.model;
+
 // Calculate skinned matrix from weights and joint indices of the current vertex
 #ifdef HAS_SKIN
 	mat4 skinMat = 
@@ -30,16 +36,17 @@ vec4 localPos;
 		inWeight0.z * jointMatrices[int(inJoint0.z)] +
 		inWeight0.w * jointMatrices[int(inJoint0.w)];
 
-	localPos = meshData.model * skinMat * vec4(inPosition, 1.0);
+	localPos = modelMatrix * skinMat * vec4(inPosition, 1.0);
 #else
-	localPos = meshData.model * vec4(inPosition, 1.0);
+	localPos = modelMatrix * vec4(inPosition, 1.0);
 #endif
 
 	outUV = inTexCoord * 1.0;
-  	outColor = inColor;
+  	outColor = inColor * instanceColor.rgb;
 
-	vec3 normal = mat3(meshData.normal) * inNormal;
-	vec4 tangent = vec4(mat3(meshData.normal) * inTangent.xyz, inTangent.w);
+	mat3 normalMatrix = mat3(transpose(inverse(meshData.normal)));
+	vec3 normal = normalMatrix * inNormal;
+	vec4 tangent = vec4(normalMatrix * inTangent.xyz, inTangent.w);
 	outTBN = calculateTBN(normal, tangent);
 
 #ifdef USE_TESSELLATION

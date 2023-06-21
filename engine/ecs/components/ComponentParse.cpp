@@ -54,7 +54,7 @@ namespace engine
 		{
 			json = nlohmann::json{};
 			utl::serialize_from("pos", json, type.position, type.position != glm::vec3(0.f));
-			utl::serialize_from("rot", json, type.rotation, type.rotation != glm::vec3(0.f));
+			utl::serialize_from("rot", json, type.rotation, type.rotation != glm::quat(1.f, 0.f, 0.f, 0.f));
 			utl::serialize_from("scale", json, type.scale, type.scale != glm::vec3(1.f));
 		}
 

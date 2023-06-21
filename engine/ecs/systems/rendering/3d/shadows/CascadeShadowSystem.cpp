@@ -171,9 +171,6 @@ void CCascadeShadowSystem::__update(float fDt)
 					if (!graphics->bindVertexBuffer(mesh.vbo_id))
 						continue;
 
-					pPush->set("model", mtransform.model);
-					graphics->flushConstantRanges(pPush);
-
 					bool bHasSkin{ false };
 					entt::entity armature{ entt::null };
 					if (mesh.skin > -1)
@@ -191,6 +188,20 @@ void CCascadeShadowSystem::__update(float fDt)
 							joints[i] = invTransform * joints[i];
 						}
 					}
+
+					pPush->set("hasSkin", bHasSkin ? 1 : -1);
+					pPush->set("model", mtransform.model);
+					graphics->flushConstantRanges(pPush);
+
+					auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
+					if (pInstanceUBO)
+						pInstanceUBO->set("instances", mesh.vInstances);
+
+					auto& pJoints = graphics->getUniformHandle("FSkinning");
+					if (pJoints && bHasSkin)
+						pJoints->set("jointMatrices", joints);
+
+					graphics->flushShader();
 					
 					// TODO: Add skinning support
 					for (auto& meshlet : mesh.vMeshlets)
@@ -199,7 +210,7 @@ void CCascadeShadowSystem::__update(float fDt)
 						if (head.castShadows && inLightView)
 						{
 							auto& lod = meshlet.levels_of_detail[lod_level];
-							graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count);
+							graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count, mesh.instanceCount == 0 ? 1 : mesh.instanceCount);
 						}
 					}
 				}

@@ -13,7 +13,7 @@ namespace engine
 		{
 			std::unordered_map<std::string, std::string> defines;
 			uint32_t subpass{ 0 };
-			size_t usages{ 1 };
+			size_t usages{ 512 };
 			bool doubleSided{ false };
 			EAlphaMode alphaBlend;
 		};

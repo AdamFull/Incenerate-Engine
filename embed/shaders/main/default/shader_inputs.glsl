@@ -80,6 +80,17 @@ layout(std140, set = 0, binding = 3) uniform UBOMaterialTextures
 } texture_ids;
 #endif
 
+struct FInstance
+{
+	mat4 model;
+	vec4 color;
+};
+
+layout(std430, set = 0, binding = 4) buffer readonly UBOInstancing
+{
+	FInstance instances[512];
+} instancing;
+
 #ifdef BINDLESS_TEXTURES
 #define sample_texture(samplerName, texCoord) texture(textures[texture_ids.samplerName], texCoord)
 #define sample_texture_lod(samplerName, texCoord, lodn) textureLod(textures[texture_ids.samplerName], texCoord, lodn)

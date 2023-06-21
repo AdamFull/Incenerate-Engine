@@ -155,7 +155,7 @@ void CEditorInspector::__draw(float fDt)
 			[&](auto* object)
 			{
 				ImGui::GColorEdit3("Color", object->color);
-				ImGui::GDragFloatVec3("Target", object->target, 0.01f);
+				ImGui::GDragFloatVec3("Target", glm::value_ptr(object->target), 0.01f);
 				ImGui::GDragFloat("Intencity", &object->intencity, 0.01f, 0.01f, 50.f);
 				ImGui::GDragFloat("Inner angle", &object->innerAngle, 0.01f, 0.01f, object->outerAngle);
 				ImGui::GDragFloat("Outer angle", &object->outerAngle, 0.01f, object->innerAngle, 3.14f);
@@ -596,7 +596,7 @@ void CEditorInspector::rigidbodyEdit(FTransformComponent* transform, FRigidBodyC
 	switch (static_cast<EPhysicsShapeType>(shape.type))
 	{
 	case EPhysicsShapeType::eBox: {
-		ImGui::GDragFloatVec3("Size", shape.sizes);
+		ImGui::GDragFloatVec3("Size", glm::value_ptr(shape.sizes));
 		debug_draw->drawDebugBox(transform->rposition, shape.sizes.x * 2.f, shape.sizes.y * 2.f, shape.sizes.z * 2.f);
 
 	} break;
@@ -607,11 +607,11 @@ void CEditorInspector::rigidbodyEdit(FTransformComponent* transform, FRigidBodyC
 	case EPhysicsShapeType::eCone: {
 		ImGui::GDragFloat("Radius", &shape.radius, 0.01f, 0.f, 9999.f);
 		ImGui::GDragFloat("Height", &shape.height, 0.01f, 0.f, 9999.f);
-		debug_draw->drawDebugCone(transform->rposition, glm::normalize(transform->rposition + transform->rotation + shape.height), shape.radius, 0.f);
+		//debug_draw->drawDebugCone(transform->rposition, glm::normalize(transform->rposition + transform->rotation + shape.height), shape.radius, 0.f);
 	} break;
 	case EPhysicsShapeType::eCylinder: {
-		ImGui::GDragFloatVec3("Size", shape.sizes);
-		debug_draw->drawDebugCone(transform->rposition, glm::normalize(transform->rposition + transform->rotation), shape.sizes.x, shape.sizes.x);
+		ImGui::GDragFloatVec3("Size", glm::value_ptr(shape.sizes));
+		//debug_draw->drawDebugCone(transform->rposition, glm::normalize(transform->rposition + transform->rotation), shape.sizes.x, shape.sizes.x);
 	} break;
 	case EPhysicsShapeType::eSphere: {
 		ImGui::GDragFloat("Radius", &shape.radius, 0.01f, 0.f, 9999.f);

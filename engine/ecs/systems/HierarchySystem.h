@@ -19,6 +19,7 @@ namespace engine
 			void __update(float fDt) override;
 
 		private:
+			static void build_hierarchy(entt::registry* registry, entt::entity node);
 			static void initialize_matrix(FTransformComponent* transform);
 			static void initialize_matrices(entt::registry* registry, entt::entity node);
 			static void calculate_matrices(entt::registry* registry, entt::entity node);

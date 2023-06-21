@@ -1088,14 +1088,14 @@ void CAPIHandle::bindShader(size_t id)
         timesBind++;
 }
 
-void CAPIHandle::bindMaterial(size_t id)
+bool CAPIHandle::bindMaterial(size_t id)
 {
     static size_t timesBind{ 0ull };
     if (id == invalid_index)
     {
         m_pBindedMaterial = nullptr;
         m_pBindedShader = nullptr;
-        return;
+        return false;
     }
 
     auto& material = getMaterial(id);
@@ -1131,20 +1131,23 @@ void CAPIHandle::bindMaterial(size_t id)
             pUBO->set("viewDir", glm::vec3(invView[3]));
             pUBO->set("viewportDim", m_pDevice->getExtent(true));
             pUBO->set("frustumPlanes", *m_pFrustumPlanes);
-            
         }
 
         auto& textures = m_pBindedMaterial->getTextures();
         for (auto& [name, id] : textures)
             bindTexture(name, id);
 
-        auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
-        m_pBindedShader->predraw(commandBuffer);
+        //auto& commandBuffer = m_pCommandBuffers->getCommandBuffer();
+        //m_pBindedShader->predraw(commandBuffer);
 
         timesBind = 1;
+
+        return true;
     }
-    else
-        timesBind++;
+
+    timesBind++;
+
+    return false;
 }
 
 bool CAPIHandle::bindVertexBuffer(size_t id)

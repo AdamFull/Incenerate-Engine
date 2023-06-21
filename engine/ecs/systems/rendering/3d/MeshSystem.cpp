@@ -32,6 +32,25 @@ void CMeshSystem::__update(float fDt)
 	graphics->bindMaterial(invalid_index);
 }
 
+void CMeshSystem::debugDrawSkeleton(entt::entity& node, glm::mat4 parentMatrix)
+{
+	auto& debug_draw = graphics->getDebugDraw();
+
+	auto& nodeTransform = registry->get<FTransformComponent>(node);
+	auto& nodeHierarchy = registry->get<FHierarchyComponent>(node);
+
+	glm::vec3 nodePosition = glm::vec3(nodeTransform.model[3]);
+
+	if (parentMatrix != glm::mat4(1.0f))
+	{
+		glm::vec3 parentPosition = glm::vec3(parentMatrix[3]);
+		debug_draw->drawDebugLine(parentPosition, nodePosition);
+	}
+
+	for (auto child : nodeHierarchy.children)
+		debugDrawSkeleton(child, nodeTransform.model);
+}
+
 void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 {
 	auto& device = graphics->getDevice();
@@ -55,6 +74,10 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 			auto& skin = scene.skins[mesh.skin];
 			armature = skin.root;
 
+			auto hh = registry->get<FHierarchyComponent>(armature);
+
+			debugDrawSkeleton(armature);
+
 			for (uint32_t i = 0; i < skin.joints.size(); i++)
 			{
 				auto& jtransform = registry->get<FTransformComponent>(skin.joints[i]);
@@ -69,26 +92,36 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 		for (auto& meshlet : mesh.vMeshlets)
 		{
 			bool needToRender{ true };
-			needToRender = camera->frustum.checkBox(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
+			//needToRender = camera->frustum.checkBox(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
 			meshlet.bWasCulled = needToRender;
-
+		
 			needToRender = needToRender && graphics->compareAlphaMode(meshlet.material, alphaMode);
-
+		
 			if (needToRender)
 			{
-				graphics->bindMaterial(meshlet.material);
+				if (graphics->bindMaterial(meshlet.material))
+				{
+					auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
+					if (pInstanceUBO)
+					{
+						pInstanceUBO->set("instances", mesh.vInstances);
+					}
+		
+					graphics->flushShader();
+				}
+		
 				auto& lod = meshlet.levels_of_detail[lod_level];
-				//debug_draw->drawDebugAABB(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
-
+				debug_draw->drawDebugAABB(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
+		
 				auto& pJoints = graphics->getUniformHandle("FSkinning");
 				if (pJoints && bHasSkin)
 					pJoints->set("jointMatrices", joints);
-
+		
 				graphics->bindObjectData(transform.model, transform.normal, static_cast<uint32_t>(entity));
 					
-				graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count);
+				graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count, mesh.instanceCount == 0 ? 1 : mesh.instanceCount);
 			}
-
+		
 			//graphics->bindMaterial(invalid_index);
 		}
 	}

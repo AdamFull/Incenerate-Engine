@@ -49,9 +49,9 @@ int main()
 
 	engine->initialize();
 
+	engine->addSystem<CPhysicsSystem>();
 	engine->addSystem<CAnimationSystem>();
 	engine->addSystem<CHierarchySystem>();
-	engine->addSystem<CPhysicsSystem>();
 
 	engine->addSystem<CInputSystem>();
 	engine->addSystem<CScriptingSystem>();

@@ -127,7 +127,7 @@ void CEditorViewport::viewportPicking()
 void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex, float sizey)
 {
 	static glm::vec3 oldTranslation{ 0.f };
-	static glm::vec3 oldRotation{ 0.f };
+	static glm::quat oldRotation{ 1.f, 0.f, 0.f, 0.f };
 	static glm::vec3 oldScale{ 1.f };
 
 	if (ImGui::IsWindowHovered() && ImGui::IsWindowFocused())
@@ -166,10 +166,10 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 		//Manipulating
 		if (ImGuizmo::Manipulate(glm::value_ptr(camera->view), glm::value_ptr(camera->projection), mCurrentGizmoOperation, mCurrentGizmoMode, glm::value_ptr(transform.model), glm::value_ptr(delta)))
 		{
-			glm::vec3 translation, rotation, scale;
-			decompose(delta, translation, rotation, scale);
-
-			auto rel = glm::abs(translation - transform.position);
+			glm::quat rotation{};
+			glm::vec3 translation, scale, skew;
+			glm::vec4 perspective{};
+			glm::decompose(delta, scale, rotation, translation, skew, perspective);
 
 			if (!isManipulating)
 			{

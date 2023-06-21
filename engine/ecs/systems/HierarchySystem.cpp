@@ -16,30 +16,32 @@ void CHierarchySystem::__update(float fDt)
 	fDt;
 	auto root = EGSceneManager->getRoot();
 
-	// Preparing transformation
-	auto view = registry->view<FTransformComponent>();
-	for (auto [entity, transform] : view.each())
+	build_hierarchy(registry, root);
+}
+
+void CHierarchySystem::build_hierarchy(entt::registry* registry, entt::entity node)
+{
+	auto& transform = registry->get<FTransformComponent>(node);
+	auto& hierarchy = registry->get<FHierarchyComponent>(node);
+
+	transform.model_old = transform.model;
+	initialize_matrix(&transform);
+
+	if (registry->valid(hierarchy.parent)) 
 	{
-		transform.model_old = transform.model;
-		initialize_matrix(&transform);
+		auto parentTransform = registry->get<FTransformComponent>(hierarchy.parent);
+		transform.model = parentTransform.model * transform.model;
 	}
 
-	if (root != entt::null)
-		calculate_matrices(registry, root);
+	transform.update();
+
+	for (auto& child : hierarchy.children)
+		build_hierarchy(registry, child);
 }
 
 void CHierarchySystem::initialize_matrix(FTransformComponent* transform)
 {
-	transform->model = glm::mat4(1.f);
-
-	transform->model = glm::translate(transform->model, transform->position);
-	if (transform->rotation.x != 0.f)
-		transform->model = glm::rotate(transform->model, transform->rotation.x, glm::vec3(1.f, 0.f, 0.f));
-	if (transform->rotation.y != 0.f)
-		transform->model = glm::rotate(transform->model, transform->rotation.y, glm::vec3(0.f, 1.f, 0.f));
-	if (transform->rotation.z != 0.f)
-		transform->model = glm::rotate(transform->model, transform->rotation.z, glm::vec3(0.f, 0.f, 1.f));
-	transform->model = glm::scale(transform->model, transform->scale);
+	transform->model = glm::translate(glm::mat4(1.0f), transform->position) * glm::mat4(transform->rotation) * glm::scale(glm::mat4(1.0f), transform->scale) * transform->matrix;
 	transform->update();
 }
 
@@ -80,6 +82,12 @@ void CHierarchySystem::calculate_matrices(entt::registry* registry, entt::entity
 		auto& transform = registry->get<FTransformComponent>(current);
 		auto& hierarchy = registry->get<FHierarchyComponent>(current);
 		transform.update();
+
+		if (hierarchy.name == "Skeleton_torso_joint_1")
+		{
+			int i = 0;
+			i += 10;
+		}
 
 		if (transform.model != transform.model_old)
 			transform.normal = glm::transpose(glm::inverse(transform.model));

@@ -39,7 +39,8 @@ void CCameraControlSystem::updateCamera(FCameraComponent& camera, FTransformComp
 	auto& device = graphics->getDevice();
 	auto extent = device->getExtent(true);
 
-	camera.forward = glm::normalize(transform.rotation);
+	auto direction = glm::eulerAngles(transform.rotation);
+	camera.forward = glm::normalize(glm::rotate(transform.rotation, glm::vec3(0, 0, -1)));
 	camera.right = glm::normalize(glm::cross(camera.forward, glm::vec3{ 0.0, 1.0, 0.0 }));
 	camera.up = glm::normalize(glm::cross(camera.right, camera.forward));
 
@@ -87,8 +88,14 @@ void CCameraControlSystem::rotate(FCameraComponent& camera, FTransformComponent&
 	{
 		delta *= camera.sensitivity * camera.sensitivity;
 
-		glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-delta.y, camera.right), glm::angleAxis(-delta.x, camera.up)));
-		transform.rotation = glm::rotate(q, camera.forward);
+		//glm::quat q = glm::normalize(glm::cross(glm::angleAxis(delta.y, camera.right), glm::angleAxis(delta.x, camera.up)));
+		//transform.rotation = glm::rotate(q, camera.forward);
+
+		glm::quat pitch = glm::angleAxis(-delta.y, camera.right);
+		glm::quat yaw = glm::angleAxis(-delta.x, camera.up);
+		glm::quat q = glm::normalize(glm::cross(pitch, yaw));
+
+		transform.rotation = q * transform.rotation;
 
 		camera.moved = true;
 	}

@@ -108,7 +108,7 @@ namespace engine
 
 			// Drawing methods
 			void bindShader(size_t id);
-			void bindMaterial(size_t id);
+			bool bindMaterial(size_t id);
 			bool bindVertexBuffer(size_t id);
 			void bindRenderer(size_t id);
 			void bindTexture(const std::string& name, size_t id, uint32_t mip_level = 0);

@@ -38,12 +38,20 @@ namespace engine
 			}
 		};
 
+		struct FMeshInstance
+		{
+			glm::mat4 model{};
+			glm::vec4 color{ 1.f };
+		};
+
 		struct FMeshComponent
 		{
 			size_t vbo_id{ invalid_index };
 			std::vector<FMeshlet> vMeshlets;
 			int32_t skin{ -1 };
 			entt::entity head{ entt::null };
+			size_t instanceCount{ 0ull };
+			std::array<FMeshInstance, 512> vInstances{};
 			bool loaded{ false };
 		};
 	}
