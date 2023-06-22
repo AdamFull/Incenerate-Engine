@@ -29,16 +29,7 @@ void CCascadeShadowSystem::__update(float fDt)
 	if (!camera)
 		return;
 
-	std::array<FFrustum, CASCADE_SHADOW_MAP_CASCADE_COUNT> cadcaded_frustums;
-	static std::array<glm::mat4, 128> joints{ glm::mat4(1.f) };
-
-	auto stage = graphics->getRenderStageID("cascade_shadow");
-	graphics->bindRenderer(stage);
-
-	graphics->bindShader(shader_id);
-	graphics->setManualShaderControlFlag(true);
-
-	auto& pPush = graphics->getPushBlockHandle("modelData");
+	std::array<std::array<FFrustum, CASCADE_SHADOW_MAP_CASCADE_COUNT>, MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT> cadcaded_frustums;
 
 	// Begin calculating cascades
 	const auto& nearClip = camera->nearPlane;
@@ -119,7 +110,7 @@ void CCascadeShadowSystem::__update(float fDt)
 				frustumCenter /= frustumCorners.size();
 
 				float radius = 0.0f;
-				for (auto& corner : frustumCorners) 
+				for (auto& corner : frustumCorners)
 				{
 					float distance = glm::length(glm::vec3(corner) - frustumCenter);
 					radius = glm::max(radius, distance);
@@ -151,69 +142,7 @@ void CCascadeShadowSystem::__update(float fDt)
 				shadow_commit.splitDepths[i] = (nearClip + splitDist * clipRange) * -1.0f;
 				shadow_commit.cascadeViewProj[i] = lightProjectionMatrix * lightViewMatrix;
 
-				cadcaded_frustums[i].update(lightViewMatrix, lightProjectionMatrix);
-
-				// Calculating level of detail for cascade
-				auto lod_level = rangeToRange<uint32_t>(i, 0u, CASCADE_SHADOW_MAP_CASCADE_COUNT - 1u, 1u, MAX_LEVEL_OF_DETAIL - 1u);
-				//auto lod_level = getCascadeLOD(i, CASCADE_SHADOW_MAP_CASCADE_COUNT, MAX_LEVEL_OF_DETAIL);
-
-				//Rendering shadow map
-				pPush->set("viewProjMat", shadow_commit.cascadeViewProj[i]);
-				pPush->set("layer", i);
-
-				auto& frustum = cadcaded_frustums[i];
-
-				auto meshes = registry->view<FTransformComponent, FMeshComponent>();
-				for (auto [entity, mtransform, mesh] : meshes.each())
-				{
-					auto& head = registry->get<FSceneComponent>(mesh.head);
-
-					if (!graphics->bindVertexBuffer(mesh.vbo_id))
-						continue;
-
-					bool bHasSkin{ false };
-					entt::entity armature{ entt::null };
-					if (mesh.skin > -1)
-					{
-						bHasSkin = true;
-						auto& scene = registry->get<FSceneComponent>(mesh.head);
-						auto invTransform = glm::inverse(mtransform.model);
-						auto& skin = scene.skins[mesh.skin];
-						armature = skin.root;
-
-						for (uint32_t i = 0; i < skin.joints.size(); i++)
-						{
-							auto& jtransform = registry->get<FTransformComponent>(skin.joints[i]);
-							joints[i] = jtransform.model * skin.inverseBindMatrices[i];
-							joints[i] = invTransform * joints[i];
-						}
-					}
-
-					pPush->set("hasSkin", bHasSkin ? 1 : -1);
-					pPush->set("model", mtransform.model);
-					graphics->flushConstantRanges(pPush);
-
-					auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
-					if (pInstanceUBO)
-						pInstanceUBO->set("instances", mesh.vInstances);
-
-					auto& pJoints = graphics->getUniformHandle("FSkinning");
-					if (pJoints && bHasSkin)
-						pJoints->set("jointMatrices", joints);
-
-					graphics->flushShader();
-					
-					// TODO: Add skinning support
-					for (auto& meshlet : mesh.vMeshlets)
-					{
-						auto inLightView = head.castShadows && frustum.checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
-						if (head.castShadows && inLightView)
-						{
-							auto& lod = meshlet.levels_of_detail[lod_level];
-							graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count, mesh.instanceCount == 0 ? 1 : mesh.instanceCount);
-						}
-					}
-				}
+				cadcaded_frustums[shadowIndex][i].update(lightViewMatrix, lightProjectionMatrix);
 
 				lastSplitDist = cascadeSplits[i];
 			}
@@ -221,6 +150,71 @@ void CCascadeShadowSystem::__update(float fDt)
 			// Set shadow index and increment it
 			light.shadowIndex = shadowIndex;
 			shadowIndex++;
+		}
+	}
+
+	// Render shadow cascades
+	auto stage = graphics->getRenderStageID("cascade_shadow");
+	graphics->bindRenderer(stage);
+
+	graphics->bindShader(shader_id);
+	graphics->setManualShaderControlFlag(true);
+
+	auto& pPush = graphics->getPushBlockHandle("modelData");
+
+	auto meshes = registry->view<FTransformComponent, FMeshComponent>();
+	for (auto [entity, mtransform, mesh] : meshes.each())
+	{
+		auto& head = registry->get<FSceneComponent>(mesh.head);
+
+		if (!graphics->bindVertexBuffer(mesh.vbo_id))
+			continue;
+
+		bool bHasSkin{ mesh.skin > -1 };
+
+		pPush->set("hasSkin", bHasSkin ? 1 : -1);
+		pPush->set("model", mtransform.model);
+
+		auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
+		if (pInstanceUBO)
+			pInstanceUBO->set("instances", mesh.vInstances);
+
+		auto& pJoints = graphics->getUniformHandle("FSkinning");
+		if (pJoints && bHasSkin)
+		{
+			auto& skin = head.skins[mesh.skin];
+			pJoints->set("jointMatrices", skin.jointMatrices);
+		}
+
+		graphics->flushShader();
+
+		for (auto& meshlet : mesh.vMeshlets)
+		{
+			for (size_t shadow = 0ull; shadow < shadowIndex; ++shadow)
+			{
+				auto& shadow_commit = shadowManager->getCascadedShadowCommit(shadow);
+				for (size_t cascade = 0ull; cascade < CASCADE_SHADOW_MAP_CASCADE_COUNT; ++cascade)
+				{
+					auto& frustum = cadcaded_frustums[shadow][cascade];
+
+					glm::vec4 clipSpacePos = shadow_commit.cascadeViewProj * mtransform.model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+					auto inLightView = head.castShadows && frustum.checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
+					if (head.castShadows && inLightView)
+					{
+						// Calculating level of detail for cascade
+						auto lod_level = rangeToRange<uint32_t>(cascade, 0u, CASCADE_SHADOW_MAP_CASCADE_COUNT - 1u, 1u, MAX_LEVEL_OF_DETAIL - 1u);
+						auto& lod = meshlet.levels_of_detail[lod_level];
+
+						//Rendering shadow map
+						pPush->set("viewProjMat", shadow_commit.cascadeViewProj[cascade]);
+						pPush->set("layer", cascade);
+						graphics->flushConstantRanges(pPush);
+
+						graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count, mesh.instanceCount == 0 ? 1 : mesh.instanceCount);
+					}
+				}
+			}
 		}
 	}
 

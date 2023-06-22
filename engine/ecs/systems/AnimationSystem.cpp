@@ -6,47 +6,48 @@
 
 using namespace engine::ecs;
 
-glm::vec3 linear(const std::vector<glm::vec4>& positions, uint32_t index, const float interp, bool quat = false)
+glm::quat q_linear(const std::vector<glm::vec4>& positions, uint32_t index, const float interp)
 {
 	auto& prev = positions[index];
 	auto& next = positions[index + 1];
 
-	if (quat)
-	{
-		glm::quat prevq;
-		prevq.x = prev.x;
-		prevq.y = prev.y;
-		prevq.z = prev.z;
-		prevq.w = prev.w;
+	glm::quat prevq;
+	prevq.x = prev.x;
+	prevq.y = prev.y;
+	prevq.z = prev.z;
+	prevq.w = prev.w;
 
-		glm::quat nextq;
-		nextq.x = next.x;
-		nextq.y = next.y;
-		nextq.z = next.z;
-		nextq.w = next.w;
+	glm::quat nextq;
+	nextq.x = next.x;
+	nextq.y = next.y;
+	nextq.z = next.z;
+	nextq.w = next.w;
 
-		return glm::eulerAngles(glm::normalize(glm::slerp(prevq, nextq, interp)));
-	}
-	else 
-		return glm::mix(prev, next, interp);
+	return glm::normalize(glm::slerp(prevq, nextq, interp));
 }
 
-glm::vec3 step(const std::vector<glm::vec4>& positions, uint32_t index, const float interp, bool quat = false)
+glm::vec3 v_linear(const std::vector<glm::vec4>& positions, uint32_t index, const float interp)
+{
+	auto& prev = positions[index];
+	auto& next = positions[index + 1];
+	return glm::mix(prev, next, interp);
+}
+
+glm::quat q_step(const std::vector<glm::vec4>& positions, uint32_t index, const float interp)
 {
 	auto& pos = positions[index + 1];
+	glm::quat q;
+	q.x = pos.x;
+	q.y = pos.y;
+	q.z = pos.z;
+	q.w = pos.w;
 
-	if (quat)
-	{
-		glm::quat q;
-		q.x = pos.x;
-		q.y = pos.y;
-		q.z = pos.z;
-		q.w = pos.w;
+	return glm::normalize(q);
+}
 
-		return glm::vec3(glm::eulerAngles(glm::normalize(q)));
-	}
-	else
-		return pos;
+glm::vec3 v_step(const std::vector<glm::vec4>& positions, uint32_t index, const float interp)
+{
+	return positions[index + 1];
 }
 
 glm::vec4 cubicspline(const std::vector<glm::vec4>& positions, uint32_t index, const float interp)
@@ -69,19 +70,19 @@ glm::vec4 cubicspline(const std::vector<glm::vec4>& positions, uint32_t index, c
 glm::vec3 v_interpolate(EInterpolationType interpolation, const std::vector<glm::vec4>& positions, uint32_t index, const float interp)
 {
 	if (interpolation == EInterpolationType::eLinear)
-		return linear(positions, index, interp);
+		return v_linear(positions, index, interp);
 	else if (interpolation == EInterpolationType::eStep)
-		return step(positions, index, interp);
+		return v_step(positions, index, interp);
 	else if (interpolation == EInterpolationType::eCubicSpline)
 		return cubicspline(positions, index, interp);
 }
 
-glm::vec3 q_interpolate(EInterpolationType interpolation, const std::vector<glm::vec4>& positions, uint32_t index, const float interp)
+glm::quat q_interpolate(EInterpolationType interpolation, const std::vector<glm::vec4>& positions, uint32_t index, const float interp)
 {
 	if (interpolation == EInterpolationType::eLinear)
-		return linear(positions, index, interp, true);
+		return q_linear(positions, index, interp);
 	else if (interpolation == EInterpolationType::eStep)
-		return step(positions, index, interp, true);
+		return q_step(positions, index, interp);
 	else if (interpolation == EInterpolationType::eCubicSpline)
 	{
 		auto tmp = cubicspline(positions, index, interp);
@@ -91,7 +92,7 @@ glm::vec3 q_interpolate(EInterpolationType interpolation, const std::vector<glm:
 		q.y = tmp.y;
 		q.z = tmp.z;
 		q.w = tmp.w;
-		return glm::eulerAngles(glm::normalize(q));
+		return glm::normalize(q);
 	}
 }
 

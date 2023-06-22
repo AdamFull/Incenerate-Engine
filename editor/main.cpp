@@ -52,6 +52,7 @@ int main()
 	engine->addSystem<CPhysicsSystem>();
 	engine->addSystem<CAnimationSystem>();
 	engine->addSystem<CHierarchySystem>();
+	engine->addSystem<CSkinningSystem>();
 
 	engine->addSystem<CInputSystem>();
 	engine->addSystem<CScriptingSystem>();

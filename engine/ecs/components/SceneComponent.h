@@ -47,6 +47,7 @@ namespace engine
 			entt::entity root{ entt::null };
 			std::vector<glm::mat4> inverseBindMatrices;
 			std::vector<entt::entity> joints;
+			std::array<glm::mat4, 128> jointMatrices;
 		};
 
 		struct FSceneComponent
