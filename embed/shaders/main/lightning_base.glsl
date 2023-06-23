@@ -11,12 +11,14 @@ struct FDirectionalLight
 	int castShadows;
 };
 
+#ifdef SHADOW_MAP_CASCADE_COUNT
 struct FCascadeShadow
 {
 	float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
 	mat4 cascadeViewProjMat[SHADOW_MAP_CASCADE_COUNT];
 	float farClip;
 };
+#endif
 
 struct FSpotLight
 {

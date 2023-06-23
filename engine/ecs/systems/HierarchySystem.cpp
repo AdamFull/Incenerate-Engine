@@ -4,6 +4,8 @@
 
 #include "ecs/components/components.h"
 
+#include <glm/gtx/quaternion.hpp>
+
 using namespace engine::ecs;
 
 void CHierarchySystem::__create()
@@ -41,7 +43,10 @@ void CHierarchySystem::build_hierarchy(entt::registry* registry, entt::entity no
 
 void CHierarchySystem::initialize_matrix(FTransformComponent* transform)
 {
-	transform->model = glm::translate(glm::mat4(1.0f), transform->position) * glm::mat4(transform->rotation) * glm::scale(glm::mat4(1.0f), transform->scale) * transform->matrix;
+	transform->model = glm::translate(glm::mat4(1.0f), transform->position);
+	transform->model *= glm::mat4_cast(glm::normalize(transform->rotation));
+	transform->model = glm::scale(transform->model, transform->scale);
+	transform->model *= transform->matrix;
 	transform->update();
 }
 

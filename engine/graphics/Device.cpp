@@ -1163,6 +1163,28 @@ uint32_t CDevice::getQueueFamilyIndex(uint32_t type)
     return queueFamilies.getFamilyIndex(type);
 }
 
+void CDevice::getOccupedDeviceMemory(vk::MemoryHeapFlags memoryFlags, size_t& totalMemory, size_t& usedMemory)
+{
+    vk::PhysicalDeviceMemoryBudgetPropertiesEXT memoryBudgetProps{};
+    vk::PhysicalDeviceMemoryProperties2 memoryProps{};
+    memoryProps.pNext = &memoryBudgetProps;
+
+    vkPhysical.getMemoryProperties2(&memoryProps);
+
+    totalMemory = usedMemory = 0ull;
+
+    auto heaps_count = static_cast<size_t>(memoryProps.memoryProperties.memoryHeapCount);
+    for (size_t i = 0ull; i < heaps_count; ++i)
+    {
+        auto heapFlags = memoryProps.memoryProperties.memoryHeaps[i].flags;
+        if (heapFlags & memoryFlags)
+        {
+            totalMemory += memoryBudgetProps.heapBudget[i];
+            usedMemory += memoryBudgetProps.heapUsage[i];
+        }
+    }
+}
+
 FSwapChainSupportDetails CDevice::querySwapChainSupport(const vk::PhysicalDevice& device)
 {
     FSwapChainSupportDetails details;

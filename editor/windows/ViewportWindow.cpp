@@ -182,7 +182,7 @@ void CEditorViewport::drawManipulator(float offsetx, float offsety, float sizex,
 			switch (mCurrentGizmoOperation)
 			{
 			case ImGuizmo::TRANSLATE: { transform.position += translation; } break;
-			case ImGuizmo::ROTATE: { transform.rotation += rotation; } break;
+			case ImGuizmo::ROTATE: { transform.rotation *= rotation; } break;
 			case ImGuizmo::SCALE: { transform.scale *= scale; } break;
 			}
 
@@ -239,7 +239,7 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 	auto& io = ImGui::GetIO();
 
 	// Fps / frame time
-	char overlay[64];
+	char overlay[128];
 	sprintf(overlay, "dt: %.3f | FPS: %u", fDt, frameRate);
 	ImGui::Text(overlay);
 
@@ -247,9 +247,16 @@ void CEditorViewport::drawOverlay(float offsetx, float offsety, float fDt)
 	ImGui::Text(overlay);
 
 	// GPU name
-	auto& physical = graphics->getDevice()->getPhysical();
+	auto& device = graphics->getDevice();
+	auto& physical = device->getPhysical();
 	auto props = physical.getProperties();
-	sprintf(overlay, "GPU: %s", props.deviceName.data());
+
+	size_t memoryUsed{}, memoryTotal{};
+	device->getOccupedDeviceMemory(vk::MemoryHeapFlagBits::eDeviceLocal, memoryTotal, memoryUsed);
+	float memoryUsedGb = static_cast<float>(memoryUsed) / 1024.f / 1024.f / 1024.f;
+	float memoryTotalGb = static_cast<float>(memoryTotal) / 1024.f / 1024.f / 1024.f;
+
+	sprintf(overlay, "GPU: %s Memory: %.2f/%.2f Gb", props.deviceName.data(), memoryUsedGb, memoryTotalGb);
 	ImGui::Text(overlay);
 
 

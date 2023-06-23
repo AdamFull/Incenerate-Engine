@@ -504,7 +504,7 @@ bool ImGui::GDragTransform(glm::vec3& pos, glm::quat& rot, glm::vec3& scale, flo
 {
     bool bValueChanged{ false };
     bValueChanged |= GDragFloatVec3("position", glm::value_ptr(pos), step, min, max);
-    bValueChanged |= GDragFloatVec4("rotation", glm::value_ptr(rot), step, -1.f, 1.f);
+    bValueChanged |= GDragFloatVec4("rotation", glm::value_ptr(rot), step, min, max);
     bValueChanged |= GDragFloatVec3("scale", glm::value_ptr(scale), step, min, max);
     return bValueChanged;
 }

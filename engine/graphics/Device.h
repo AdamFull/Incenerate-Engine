@@ -95,6 +95,8 @@ namespace engine
 
             uint32_t getQueueFamilyIndex(uint32_t type);
 
+            void getOccupedDeviceMemory(vk::MemoryHeapFlags memoryFlags, size_t& totalMemory, size_t& usedMemory);
+
             /**************************************************Swapchain********************************************/
             vk::Result acquireNextImage(uint32_t* imageIndex);
             vk::Result submitCommandBuffers(const vk::CommandBuffer* commandBuffer, uint32_t* imageIndex, vk::QueueFlags ququeFlags);

@@ -197,7 +197,9 @@ void CCascadeShadowSystem::__update(float fDt)
 				{
 					auto& frustum = cadcaded_frustums[shadow][cascade];
 
-					glm::vec4 clipSpacePos = shadow_commit.cascadeViewProj * mtransform.model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+					glm::vec4 clipSpacePos = shadow_commit.cascadeViewProj[cascade] * mtransform.model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+					float clipSpaceZ = clipSpacePos.z / clipSpacePos.w;
+					float worldZ = camera->nearPlane + (camera->farPlane - camera->nearPlane) * ((clipSpaceZ + 1.0f) / 2.0f);
 
 					auto inLightView = head.castShadows && frustum.checkBox(mtransform.rposition + meshlet.dimensions.min * mtransform.rscale, mtransform.rposition + meshlet.dimensions.max * mtransform.rscale);
 					if (head.castShadows && inLightView)
