@@ -1,0 +1,72 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_ARB_shading_language_420pack : enable
+#extension GL_GOOGLE_include_directive : require
+
+#define SUN
+
+#include "../../../shader_util.glsl"
+#include "../../lightning_base.glsl"
+#include "common.glsl"
+
+layout(local_size_x = 32, local_size_y = 32) in;
+
+layout(set = 1, binding = 0, rgba16f) uniform writeonly image2D writeColor;
+layout(set = 1, binding = 1) uniform sampler2D cloudsTex;
+
+layout(std140, set = 0, binding = 0) uniform FCameraData 
+{
+  	mat4 view;
+  	mat4 invView;
+  	mat4 projection;
+  	mat4 invProjection;
+    mat4 invViewProjection;
+} camera;
+
+layout(std140, set = 0, binding = 1) uniform FAtmosphereScattering 
+{
+    int lightCount;
+} scattering;
+
+layout(std430, set = 0, binding = 2) buffer readonly UBOLights
+{
+	FDirectionalLight directionalLights[MAX_DIRECTIONAL_LIGHTS_COUNT];
+};
+
+void main()
+{
+	ivec2 iUV = ivec2(gl_GlobalInvocationID.xy);
+	vec2 inUV = (iUV + 0.5f) / vec2(imageSize(writeColor).xy);
+
+    const vec3 viewerPosition = vec3(camera.invView[3]);
+    const vec3 origin = vec3(0, earthRadius, 0) + viewerPosition * 0.01;
+
+    const vec2 sunAngular = vec2(mix(-SunAngularR, SunAngularR, inUV.x), mix(-SunAngularR, SunAngularR, inUV.y));
+
+    vec3 finalColor = vec3(0.0);
+    for(int i = 0; i < scattering.lightCount; ++i)
+    {
+        vec3 dirWorldSpace;
+        const FDirectionalLight light = directionalLights[i];
+        const vec3 dirToSun = normalize(-light.direction);
+
+        const vec3 right = normalize(cross(dirToSun, vec3(0,1,0)));
+        const vec3 up = cross(right, dirToSun);
+
+        vec3 viewDir = rotate(dirToSun, up, sunAngular.x);
+        dirWorldSpace = normalize(rotate(viewDir, cross(dirToSun, up), sunAngular.y));
+
+        vec4 uvView = ((camera.projection * camera.view * vec4(dirWorldSpace, 1.0)) + 1.0f) * 0.5f;
+        uvView /= uvView.w;
+
+        float clouds = texture(cloudsTex, uvView.xy).a;
+
+        if(clouds < 0.5)
+        {
+            finalColor += skyLighting(origin, dirWorldSpace.xyz, -dirToSun, light.color, light.intencity);
+        }
+    }
+    finalColor /= float(scattering.lightCount);
+
+    imageStore(writeColor, iUV, vec4(finalColor, 1.0));
+}

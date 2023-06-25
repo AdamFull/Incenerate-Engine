@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LightsSystem.h"
 #include "ScriptingSystem.h"
 #include "InputSystem.h"
 #include "HierarchySystem.h"

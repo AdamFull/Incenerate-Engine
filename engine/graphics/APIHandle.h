@@ -105,6 +105,8 @@ namespace engine
 			size_t computeBRDFLUT(uint32_t size);
 			size_t computeIrradiance(size_t origin, uint32_t size);
 			size_t computePrefiltered(size_t origin, uint32_t size);
+			size_t compute2DNoise(const std::string& image_name, vk::Extent2D noiseDim);
+			size_t compute3DNoise(const std::string& image_name, const std::string& shader_name, vk::Extent3D noiseDim);
 
 			// Drawing methods
 			void bindShader(size_t id);

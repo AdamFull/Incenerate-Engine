@@ -4,6 +4,7 @@
 #include "Engine.h"
 
 #include "image/Image2D.h"
+#include "image/Image3D.h"
 #include "image/ImageCubemap.h"
 
 #include "window/SDL2WindowAdapter.h"
@@ -1053,6 +1054,68 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
 
         m_pDevice->destroy(&levelView);
     }
+
+    removeShader(shader_id);
+
+    return output_id;
+}
+
+size_t CAPIHandle::compute2DNoise(const std::string& imageName, vk::Extent2D noiseDim)
+{
+    FDispatchParam param;
+    param.size = { noiseDim.width, noiseDim.height, 1 };
+
+    auto noiseTexture = std::make_unique<CImage2D>(m_pDevice.get());
+    noiseTexture->create(
+        noiseDim,
+        vk::Format::eR8G8B8A8Unorm,
+        vk::ImageLayout::eGeneral,
+        vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
+        vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
+        vk::ImageUsageFlagBits::eStorage,
+        vk::ImageAspectFlagBits::eColor,
+        vk::Filter::eLinear,
+        vk::SamplerAddressMode::eClampToEdge,
+        vk::SampleCountFlagBits::e1);
+
+    auto output_id = addImage(imageName, std::move(noiseTexture));
+
+    auto shader_id = addShader("2dnoisegen");
+    auto& pShader = getShader(shader_id);
+    pShader->addTexture("outNoise", output_id);
+
+    pShader->dispatch(param);
+
+    removeShader(shader_id);
+
+    return output_id;
+}
+
+size_t CAPIHandle::compute3DNoise(const std::string& imageName, const std::string& shaderName, vk::Extent3D noiseDim)
+{
+    FDispatchParam param;
+    param.size = { noiseDim.width, noiseDim.height, noiseDim.depth };
+
+    auto noiseTexture = std::make_unique<CImage3D>(m_pDevice.get());
+    noiseTexture->create(
+        noiseDim,
+        vk::Format::eR8Unorm,
+        vk::ImageLayout::eGeneral,
+        vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
+        vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
+        vk::ImageUsageFlagBits::eStorage,
+        vk::ImageAspectFlagBits::eColor,
+        vk::Filter::eLinear,
+        vk::SamplerAddressMode::eClampToEdge,
+        vk::SampleCountFlagBits::e1);
+
+    auto output_id = addImage(imageName, std::move(noiseTexture));
+
+    auto shader_id = addShader(shaderName);
+    auto& pShader = getShader(shader_id);
+    pShader->addTexture("outNoise", output_id);
+
+    pShader->dispatch(param);
 
     removeShader(shader_id);
 

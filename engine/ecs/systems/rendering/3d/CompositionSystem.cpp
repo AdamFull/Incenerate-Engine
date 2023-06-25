@@ -65,81 +65,16 @@ void CCompositionSystem::__update(float fDt)
 	auto& settings = CGraphicsSettings::getInstance()->getSettings();
 
 	auto& shadowManager = EGEngine->getShadows();
+	auto& lightsManager = EGEngine->getLights();
 
 	auto* camera = EGEngine->getActiveCamera();
 
 	if (!camera)
 		return;
 
-	uint32_t directoonal_light_count{ 0 };
-	std::array<FDirectionalLightCommit, MAX_DIRECTIONAL_LIGHT_COUNT> directional_lights;
-	uint32_t point_light_count{ 0 };
-	std::array<FPointLightCommit, MAX_POINT_LIGHT_COUNT> point_lights;
-	uint32_t spot_light_count{ 0 };
-	std::array<FSpotLightCommit, MAX_SPOT_LIGHT_COUNT> spot_lights;
-
-	// Collecting directional lights
-	{
-		auto view = registry->view<FTransformComponent, FDirectionalLightComponent>();
-		for (auto [entity, transform, light] : view.each())
-		{
-			if (directoonal_light_count > MAX_DIRECTIONAL_LIGHT_COUNT)
-				break;
-
-			FDirectionalLightCommit commit;
-			commit.direction = glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
-			commit.color = light.color;
-			commit.intencity = light.intencity;
-			commit.shadowIndex = light.shadowIndex;
-			commit.castShadows = static_cast<int>(light.castShadows);
-
-			directional_lights[directoonal_light_count++] = commit;
-		}
-	}
-	
-	// Collecting point lights
-	{
-		auto view = registry->view<FTransformComponent, FPointLightComponent>();
-		for (auto [entity, transform, light] : view.each())
-		{
-			if (point_light_count > MAX_POINT_LIGHT_COUNT)
-				break;
-
-			FPointLightCommit commit;
-			commit.position = transform.rposition;
-			commit.color = light.color;
-			commit.intencity = light.intencity;
-			commit.radius = light.radius;
-			commit.shadowIndex = light.shadowIndex;
-			commit.castShadows = static_cast<int>(light.castShadows);
-
-			point_lights[point_light_count++] = commit;
-		}
-	}
-
-	// Collecting spot lights
-	{
-		// TODO: direction as dot product of rotation and some vec
-		auto view = registry->view<FTransformComponent, FSpotLightComponent>();
-		for (auto [entity, transform, light] : view.each())
-		{
-			if (spot_light_count > MAX_SPOT_LIGHT_COUNT)
-				break;
-
-			FSpotLightCommit commit;
-			commit.position = transform.rposition; 
-			commit.direction = light.toTarget ? light.target : glm::normalize(glm::toQuat(transform.model) * glm::vec3(0.f, 0.f, 1.f));
-			commit.color = light.color;
-			commit.intencity = light.intencity;
-			commit.lightAngleScale = 1.f / glm::max(0.001f, glm::cos(light.innerAngle) - glm::cos(light.outerAngle));
-			commit.lightAngleOffset = -glm::cos(light.outerAngle) * commit.lightAngleScale;
-			commit.toTarget = static_cast<int>(light.toTarget);
-			commit.shadowIndex = light.shadowIndex;
-			commit.castShadows = static_cast<int>(light.castShadows);
-
-			spot_lights[spot_light_count++] = commit;
-		}
-	}
+	auto& directional = lightsManager->getDirectional();
+	auto& point = lightsManager->getPoint();
+	auto& spot = lightsManager->getSpot();
 
 	auto stage = graphics->getRenderStageID("composition");
 
@@ -171,15 +106,15 @@ void CCompositionSystem::__update(float fDt)
 	pUBO->set("view", camera->view);
 	pUBO->set("invViewProjection", glm::inverse(camera->projection * camera->view));
 	pUBO->set("viewPos", glm::vec4(camera->viewPos, 1.0));
-	pUBO->set("directionalLightCount", directoonal_light_count);
-	pUBO->set("spotLightCount", spot_light_count);
-	pUBO->set("pointLightCount", point_light_count);
+	pUBO->set("directionalLightCount", directional.light_count);
+	pUBO->set("spotLightCount", spot.light_count);
+	pUBO->set("pointLightCount", point.light_count);
 	pUBO->set("ambientOcclusion", settings.bEnableAmbientOcclusion ? 1 : -1);
 
 	auto& pUBOLights = graphics->getUniformHandle("UBOLights");
-	pUBOLights->set("directionalLights", directional_lights);
-	pUBOLights->set("spotLights", spot_lights);
-	pUBOLights->set("pointLights", point_lights);
+	pUBOLights->set("directionalLights", directional.lights);
+	pUBOLights->set("spotLights", spot.lights);
+	pUBOLights->set("pointLights", point.lights);
 
 	// Push shadow data
 	auto& pUBOShadows = graphics->getUniformHandle("UBOShadows");

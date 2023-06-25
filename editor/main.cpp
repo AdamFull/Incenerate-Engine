@@ -54,6 +54,8 @@ int main()
 	engine->addSystem<CHierarchySystem>();
 	engine->addSystem<CSkinningSystem>();
 
+	engine->addSystem<CLightsSystem>();
+
 	engine->addSystem<CInputSystem>();
 	engine->addSystem<CScriptingSystem>();
 	engine->addSystem<CCameraControlSystem>();

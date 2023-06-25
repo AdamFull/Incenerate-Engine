@@ -55,6 +55,7 @@ void CEngine::initialize()
 	pPhysics = std::make_unique<CPhysicsCore>();
 	pAudio = std::make_unique<CAudioCore>(pFilesystem.get());
 	pShadows = std::make_unique<CShadowManager>();
+	pLights = std::make_unique<CLightManager>();
 
 	pScripting = std::make_unique<CScriptingCore>(pFilesystem.get());
 	pGraphics = std::make_unique<CAPIHandle>();
@@ -165,6 +166,11 @@ const physicscore_t& CEngine::getPhysics() const
 const shadows_t& CEngine::getShadows() const
 {
 	return pShadows;
+}
+
+const lights_t& CEngine::getLights() const
+{
+	return pLights;
 }
 
 //const particlescore_t& CEngine::getParticles() const

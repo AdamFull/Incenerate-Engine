@@ -83,10 +83,38 @@
     ],
     "defines": {}
   },
+  "sky_atmosphere_comp": {
+    "bind_point": "Compute",
+    "stages": [
+      "/embed/shaders/main/default/skybox/atmosphere.comp"
+    ],
+    "defines": {}
+  },
+  "sky_clouds_comp": {
+    "bind_point": "Compute",
+    "stages": [
+      "/embed/shaders/main/default/skybox/clouds.comp"
+    ],
+    "defines": {}
+  },
+  "sky_sun_comp": {
+    "bind_point": "Compute",
+    "stages": [
+      "/embed/shaders/main/default/skybox/sun.comp"
+    ],
+    "defines": {}
+  },
+  "sky_compose_comp": {
+    "bind_point": "Compute",
+    "stages": [
+      "/embed/shaders/main/default/skybox/compose.comp"
+    ],
+    "defines": {}
+  },
   "skybox": {
     "stage": "deferred",
     "bind_point": "Graphics",
-    "cull_mode": "Front",
+    "cull_mode": "Back",
     "front_face": "ccw",
     "depth_test": false,
     "dynamic_states": [ "Viewport", "Scissor" ],
@@ -96,7 +124,7 @@
     ],
     "defines": {}
   },
-  "new_skybox": {
+  "atmosphere": {
     "stage": "deferred",
     "vertex_free": true,
     "bind_point": "Graphics",
@@ -106,7 +134,21 @@
     "dynamic_states": [ "Viewport", "Scissor" ],
     "stages": [
       "/embed/shaders/main/screenspace.vert",
-      "/embed/shaders/main/default/skybox/skybox.frag"
+      "/embed/shaders/main/default/skybox/atmosphere.frag"
+    ],
+    "defines": {}
+  },
+  "clouds": {
+    "stage": "deferred",
+    "vertex_free": true,
+    "bind_point": "Graphics",
+    "cull_mode": "Back",
+    "front_face": "ccw",
+    "depth_test": false,
+    "dynamic_states": [ "Viewport", "Scissor" ],
+    "stages": [
+      "/embed/shaders/main/screenspace.vert",
+      "/embed/shaders/main/default/skybox/clouds.frag"
     ],
     "defines": {}
   },
@@ -244,6 +286,34 @@
     "defines": {}
   },
 
+  "3dnoisegen": {
+    "bind_point": "Compute",
+    "stages": [
+      "/embed/shaders/main/noise/3dnoise.comp"
+    ],
+    "defines": {}
+  },
+  "2dnoisegen": {
+    "bind_point": "Compute",
+    "stages": [
+      "/embed/shaders/main/noise/2dnoise.comp"
+    ],
+    "defines": {}
+  },
+  "genCloudsNoiseHigh": {
+    "bind_point": "Compute",
+    "stages": [
+      "/embed/shaders/main/noise/genCloudsNoiseHigh.comp"
+    ],
+    "defines": {}
+  },
+  "genCloudsNoiseLow": {
+    "bind_point": "Compute",
+    "stages": [
+      "/embed/shaders/main/noise/genCloudsNoiseLow.comp"
+    ],
+    "defines": {}
+  },
   "fxaa": {
     "bind_point": "Compute",
     "stages": [

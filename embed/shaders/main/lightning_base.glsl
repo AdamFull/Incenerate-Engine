@@ -2,6 +2,10 @@
 #ifndef LIGHTNING_BASE
 #define LIGHTNING_BASE
 
+#ifndef MAX_DIRECTIONAL_LIGHTS_COUNT
+#define MAX_DIRECTIONAL_LIGHTS_COUNT 1
+#endif
+
 struct FDirectionalLight
 {
 	vec3 direction;

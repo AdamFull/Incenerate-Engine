@@ -9,6 +9,7 @@
 #include "3d/ReflectionsSystem.h"
 #include "3d/CompositionSystem.h"
 #include "3d/PostProcessSystem.h"
+#include "3d/ComputeSkySystem.h"
 
 using namespace engine::graphics;
 using namespace engine::ecs;
@@ -16,6 +17,7 @@ using namespace engine::ecs;
 void C3DRenderSystem::__create()
 {
 	vSubSystems.emplace_back(std::make_unique<CShadowPassSystem>());
+	vSubSystems.emplace_back(std::make_unique<CComputeSkySystem>());
 	vSubSystems.emplace_back(std::make_unique<CDeferredPassSystem>());
 	vSubSystems.emplace_back(std::make_unique<CAmbientOcclusionSystem>());
 	vSubSystems.emplace_back(std::make_unique<CCompositionSystem>());

@@ -71,7 +71,7 @@ std::string fs::get_filename(const std::string& path)
 std::string fs::parent_path(const std::string& path)
 {
 	const size_t separator_pos = path.find_last_of("/\\");
-	return (separator_pos == std::string::npos) ? path : path.substr(0, separator_pos);
+	return (separator_pos == std::string::npos) ? "" : path.substr(0, separator_pos);
 }
 
 std::string fs::path_append(const std::string& base_path, const std::string& relative_path)

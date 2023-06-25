@@ -18,9 +18,7 @@ size_t effectshared::createImage(const std::string& name, vk::Format format, boo
 		device->getExtent(true),
 		format,
 		vk::ImageLayout::eGeneral,
-		vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
-		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment |
-		vk::ImageUsageFlagBits::eStorage,
+		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eStorage,
 		vk::ImageAspectFlagBits::eColor,
 		vk::Filter::eLinear,
 		vk::SamplerAddressMode::eClampToEdge,

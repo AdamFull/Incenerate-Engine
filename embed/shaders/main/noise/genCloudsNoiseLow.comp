@@ -1,0 +1,33 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_ARB_shading_language_420pack : enable
+#extension GL_GOOGLE_include_directive : require
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+layout(binding = 0, r8) uniform writeonly image3D outNoise;
+
+#include "noise.glsl"
+#include "../../math.glsl"
+
+void main() 
+{
+	vec3 position = (gl_GlobalInvocationID.xyz );
+	vec3 uv = (position + 0.5f) / vec3(imageSize(outNoise).xyz);
+
+	const float frequency = 4.0f;
+
+	float noiseR = mix(1.0f, fBmTiledPerlin(uv, 4, frequency), 0.5f);
+	noiseR = abs(noiseR * 2.f -1.f);
+
+	float noiseG = fBmTiledWorley(uv, frequency);
+	float noiseB = fBmTiledWorley(uv, frequency * 4.f);
+	float noiseA = fBmTiledWorley(uv, frequency * 8.f);
+
+	noiseR = remap(noiseR, 0., 1., fBmTiledPerlin(uv, 7, frequency), 1.);
+
+	float noise = remap(noiseR, (noiseG * 0.625 + noiseB * 0.25 + noiseA * 0.125) - 1.0, 1.0, 0.0, 1.0);
+	//noise = remap(noise, .85, 1., 0., 1.);
+
+	imageStore(outNoise, ivec3(gl_GlobalInvocationID.xyz), vec4(noise, noise, noise, 1.0f));
+}
