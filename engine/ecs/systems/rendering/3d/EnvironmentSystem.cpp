@@ -27,7 +27,7 @@ void CEnvironmentSystem::__update(float fDt)
 	if (!camera)
 		return;
 
-	auto atmosphere = graphics->getImageID("sky_compose_texture");
+	auto atmosphere = graphics->getImageID("sky_atmosphere_texture");
 
 	auto view = registry->view<FTransformComponent, FEnvironmentComponent>();
 	for (auto [entity, transform, skybox] : view.each())

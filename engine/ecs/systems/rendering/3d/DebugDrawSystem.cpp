@@ -71,6 +71,11 @@ void CDebugDrawSystem::__update(float fDt)
 
 	auto& pVBO = graphics->getVertexBuffer(debug_vbo_id);
 
+	const bool debugEnabled = false;
+
+	if(!debugEnabled)
+		debug_draw->clear();
+
 	auto& draw_list = debug_draw->getDrawList();
 	if (!draw_list.empty())
 	{

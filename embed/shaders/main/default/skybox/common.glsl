@@ -4,140 +4,105 @@
 #include "../../../math.glsl"
 #include "constants.glsl"
 
-float phaseReileight(float cosAngle)
+
+float phaseRayleight(float cosAngle)
 {
-	return ((3.0f * PI) / 16.0f) * (1.0f + cosAngle * cosAngle);
+    const float cosAngleSquare = cosAngle * cosAngle;
+    return ((3.0 * PI) / 16.0) * (1.0 + cosAngleSquare);
 }
 
-float phaseOzon(float cosAngle)
+float phaseMie(float cosAngle)
 {
-	return ((2.0f * PI) / 16.0f) * (1.0f + cosAngle * cosAngle);
+    const float cosAngleSquare = cosAngle * cosAngle;
+    const float gSquare = g * g;
+    return ((3.0 * PI) / 8.0) * (gSquare * (1.0 + cosAngleSquare)) / pow((2.0 + gSquare) * (1.0 + gSquare - 2.0 * g * cosAngle), 1.5);
 }
 
-// The best variant with the precomputed values
-// taken from Github
-float phaseMie(float x)
+// Calculate Rayleight, Mie and Absorbtion density 
+vec3 calculateDensity(float height, float deltaHeight)
 {
-	const vec3 c = vec3(.256098, .132268, .010016);
-	const vec3 d = vec3(-1.5, -1.74, -1.98);
-	const vec3 e = vec3(1.5625, 1.7569, 1.9801);
-	return dot((x * x + 1.) * c / pow(d * x + e, vec3(1.5)), vec3(.33333333333));
+    const vec2 scaleHeight = vec2(RayleighScaleHeight, MieScaleHeight);
+
+    vec3 density = vec3(exp(-height / scaleHeight), 0.0);
+
+    float denom = (AbsorptionScaleHeight - height) / FalloffAbsorbtion;
+    density.z = (1.0 / (denom * denom + 1.0)) * density.x;
+
+    density *= deltaHeight;
+
+    return density;
 }
 
-
-vec3 intersectSphere(in vec3 origin, in vec3 direction, in float innerRadius, in float outerRadius)
+vec3 atmosphere(vec3 origin, vec3 direction, vec3 sunDirection, vec3 sunColor, float sunIntensity)
 {
-    vec2 intersection = raySphereIntersect(origin, direction, vec3(0.0), outerRadius);
-    float outerHit = intersection.x < 0 ? intersection.y : intersection.x;
+    // Trace ray from viewer position to atmosphere
+    vec2 intersection = raySphereIntersect(origin, direction, vec3(0.0), atmosphereRadius);
 
-    if (outerHit < 0.0)
-        return origin;
+    // Prepare his distances to calculations
+    intersection.x = max(intersection.x, 0.0);
+    intersection.y = min(intersection.y, maxScatterDistance);
 
-    float maxDistance = (outerRadius - innerRadius) * 10;
-    float shift = min(maxDistance, outerHit);
+    // Discard when first intersection distance is higher then second
+    if (intersection.x > intersection.y)
+        return defaultColor;
 
-    return origin + direction * shift;
-}
+    // Calculate point where ray hit a sphere
+    const float hitDistance = intersection.y - intersection.x;
+    const vec3 hitPosition = direction * hitDistance;
+    const vec3 rayStep = hitPosition / float(integralStepCount);
+    const float stepHeight = length(rayStep);
 
-vec3 skyLighting(vec3 origin, vec3 direction, vec3 sunDirection, vec3 sunColor, float sunIntensity)
-{
-    const vec3 hitPos = intersectSphere(origin, direction, earthRadius, atmosphereRadius);
+    vec3 opticalDepth = vec3(0.0);
+    vec3 totalRayleight = vec3(0.0);
+    vec3 totalMie = vec3(0.0);
 
-    if (length(hitPos - origin) < 0.01)
+    // Solve first integral
+    for (int i = 0; i < integralStepCount; ++i)
     {
-        return vec3(0);
-    }
+        const vec3 integralPos = origin + rayStep * i;
+        const float integralHeight = length(integralPos) - planetRadius;
 
-    const float angle = dot(normalize(hitPos - origin), -sunDirection);
+        // Accumulate air density
+        const vec3 density = calculateDensity(integralHeight, stepHeight);
+        opticalDepth += density;
 
-    const vec3 rayStep = (hitPos - origin) / float(integralSteps);
+        // Trace ray from current step position to sun direction
+        vec2 sunIntersection = raySphereIntersect(integralPos, -sunDirection, vec3(0.0), atmosphereRadius);
 
-    const float heightOrigin = length(origin);
-    const float dh = (length(hitPos) - heightOrigin) / float(integralSteps);
-    const float dStep = length(rayStep);
+        // Calculate point where ray hit a sphere
+        const vec3 sunHitPosition = -sunDirection * sunIntersection.y;
+        const vec3 sunRayStep = sunHitPosition / float(lightIntegralStepCount);
+        const float sunStepHeight = length(sunRayStep);
 
-    vec3 resR = vec3(0.0f);
-    vec3 resMie = vec3(0.0f);
-    vec3 resOzon = vec3(0.0f);
+        vec3 sunOpticalDepth = vec3(0.0);
 
-    float densityR = 0.0f;
-    float densityMie = 0.0f;
-    float densityOzon = 0.0f;
-
-#if defined(SUN)
-    const float theta = dot(direction, -sunDirection);
-    const float zeta = cos(SunAngularR);
-    if (theta < zeta)
-    {
-        return vec3(0);
-    }
-#endif
-
-    for (uint i = 0; i < integralSteps - 1; i++)
-    {
-        const vec3 point = origin + rayStep * (i + 1);
-        const float h = length(point) - earthRadius;
-
-        const float hr = exp(-h / RayleighScaleHeight) * dStep;
-        const float hm = exp(-h / MieScaleHeight) * dStep;
-        const float ho = exp(-h / OzonScaleHeight) * dStep;
-
-        densityR += hr;
-        densityMie += hm;
-        densityOzon += ho;
-
-        const vec3  toLight = intersectSphere(point, -sunDirection, earthRadius, atmosphereRadius);
-        const float hLight = length(toLight) - earthRadius;
-        const float stepToLight = (hLight - h) / float(secondaryIntegralSteps);
-
-        float dStepLight = length(toLight - point) / float(secondaryIntegralSteps);
-        float densityLightR = 0.0f;
-        float densityLightMie = 0.0f;
-        float densityLightOzon = 0.0f;
-
-        bool bReached = true;
-        for (int j = 0; j < secondaryIntegralSteps; j++)
+        // Solve second integral
+        for (int j = 0; j < lightIntegralStepCount; ++j)
         {
-            const float h1 = h + stepToLight * j;
+            const vec3 sunIntegralPos = integralPos + sunRayStep * j;
+            const float sunIntegralHeight = length(sunIntegralPos) - planetRadius;
 
-            if (h1 < 0)
-            {
-                bReached = false;
-                break;
-            }
-
-            densityLightMie += exp(-h1 / MieScaleHeight) * dStepLight;
-            densityLightR += exp(-h1 / RayleighScaleHeight) * dStepLight;
-            densityLightOzon += exp(-h1 / OzonScaleHeight) * dStepLight;
+            // Accumulate sun density
+            const vec3 sunDensity = calculateDensity(sunIntegralHeight, sunStepHeight);
+            sunOpticalDepth += sunDensity;
         }
 
-        if (bReached)
-        {
-            vec3 aggr = exp(-BetaRayleigh * (densityR + densityLightR) - BetaMie * (densityLightMie + densityMie) - BetaOzon * (densityLightOzon + densityOzon));
-            resR += aggr * hr;
-            resMie += aggr * hm;
-            resOzon += aggr * ho;
-        }
+        // Calculate attenuation
+        vec3 attenuation = exp(-BetaRayleigh * (opticalDepth.x + sunOpticalDepth.x) - BetaMie * (opticalDepth.y + sunOpticalDepth.y) - BetaAbsorption * (opticalDepth.z + sunOpticalDepth.z));
+
+        totalRayleight += density.x * attenuation;
+        totalMie += density.y * attenuation;
     }
 
-#if defined(SUN)
-    // Sun disk
-    vec2 intersection = raySphereIntersect(origin, direction, vec3(0), earthRadius);
-    if (max(intersection.x, intersection.y) < 0.0f)
-    {
-        const float t = (1 - pow((1 - theta) / (1 - zeta), 2));
-        const float attenuation = mix(0.83, 1.0f, t);
-        const vec3 SunIlluminance = attenuation * vec3(1.0f) * 12000000.0f;
-        const vec3 final = SunIlluminance;// * (resR * B0R * PhaseR(Angle) + B0Mie * resMie * PhaseMie(Angle));
-        return final;
-    }
-    else
-    {
-        return vec3(0);
-    }
-#else
-    return sunIntensity * (BetaRayleigh * resR * phaseReileight(angle) + BetaMie * resMie * phaseMie(angle) * sunColor + BetaOzon * resOzon * phaseOzon(angle) * vec3(0.5, 0.7, 1.0));
-#endif
+    vec3 opacity = exp(-(BetaRayleigh * opticalDepth.x + BetaMie * opticalDepth.y + BetaAbsorption * opticalDepth.z));
+
+    // Angle between viewer direction and sun direction
+    const float angle = dot(normalize(direction), -sunDirection);
+
+    // Calculate total scattered color
+    vec3 totalScatter = phaseRayleight(angle) * BetaRayleigh * totalRayleight + phaseMie(angle) * BetaMie * totalMie; // +normalize(opticalDepth.z * betaAmbient);
+
+    return totalScatter * sunIntensity + defaultColor * opacity;
 }
 
 #endif

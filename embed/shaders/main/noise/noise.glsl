@@ -18,51 +18,39 @@ vec3 hash33(vec3 p)
 	return -1. + 2. * vec3(q) * UIF;
 }
 
-float tiledPerlin3D(vec3 x, float freq)
+float tiledPerlin3D(vec3 position, float freq)
 {
-	// grid
-	vec3 p = floor(x);
-	vec3 w = fract(x);
+	vec3 fraction = frac(position);
 
-	// quintic interpolant
-	vec3 u = w * w * w * (w * (w * 6. - 15.) + 10.);
+	float interpolatorX = easeInOut(fraction.x);
+	float interpolatorY = easeInOut(fraction.y);
+	float interpolatorZ = easeInOut(fraction.z);
 
-
-	// gradients
-	vec3 ga = hash33(mod(p + vec3(0., 0., 0.), freq));
-	vec3 gb = hash33(mod(p + vec3(1., 0., 0.), freq));
-	vec3 gc = hash33(mod(p + vec3(0., 1., 0.), freq));
-	vec3 gd = hash33(mod(p + vec3(1., 1., 0.), freq));
-	vec3 ge = hash33(mod(p + vec3(0., 0., 1.), freq));
-	vec3 gf = hash33(mod(p + vec3(1., 0., 1.), freq));
-	vec3 gg = hash33(mod(p + vec3(0., 1., 1.), freq));
-	vec3 gh = hash33(mod(p + vec3(1., 1., 1.), freq));
-
-	// projections
-	float va = dot(ga, w - vec3(0., 0., 0.));
-	float vb = dot(gb, w - vec3(1., 0., 0.));
-	float vc = dot(gc, w - vec3(0., 1., 0.));
-	float vd = dot(gd, w - vec3(1., 1., 0.));
-	float ve = dot(ge, w - vec3(0., 0., 1.));
-	float vf = dot(gf, w - vec3(1., 0., 1.));
-	float vg = dot(gg, w - vec3(0., 1., 1.));
-	float vh = dot(gh, w - vec3(1., 1., 1.));
-
-	// interpolation
-	return va +
-		u.x * (vb - va) +
-		u.y * (vc - va) +
-		u.z * (ve - va) +
-		u.x * u.y * (va - vb - vc + vd) +
-		u.y * u.z * (va - vc - ve + vg) +
-		u.z * u.x * (va - vb - ve + vf) +
-		u.x * u.y * u.z * (-va + vb + vc - vd + ve - vf - vg + vh);
+	float cellNoiseZ[2];
+	for (int z = 0; z <= 1; z++) 
+	{
+		float cellNoiseY[2];
+		for (int y = 0; y <= 1; y++) 
+		{
+			float cellNoiseX[2];
+			for (int x = 0; x <= 1; x++) 
+			{
+				vec3 cell = mod(floor(position) + vec3(x, y, z), freq);
+				vec3 cellDirection = rand3Dto3D(cell) * 2.0f - 1.0f;
+				vec3 compareVector = fraction - vec3(x, y, z);
+				cellNoiseX[x] = dot(cellDirection, compareVector);
+			}
+			cellNoiseY[y] = mix(cellNoiseX[0], cellNoiseX[1], interpolatorX);
+		}
+		cellNoiseZ[z] = mix(cellNoiseY[0], cellNoiseY[1], interpolatorY);
+	}
+	return mix(cellNoiseZ[0], cellNoiseZ[1], interpolatorZ);
 }
 
-float tiledWorley3D(vec3 uv, float freq)
+float tiledWorley3D(vec3 position, float freq)
 {
-	vec3 id = floor(uv);
-	vec3 p = fract(uv);
+	vec3 id = floor(position);
+	vec3 p = fract(position);
 
 	float minDist = 10000.;
 	for (float x = -1.; x <= 1.; ++x)
@@ -80,29 +68,44 @@ float tiledWorley3D(vec3 uv, float freq)
 		}
 	}
 
-	return 1.0 - minDist;
+	// inverted worley noise
+	return minDist;
 }
 
-float fBmTiledPerlin(vec3 position, int octaves, float frequency)
+float fBmTiledPerlin(vec3 position, int octaves, float frequency, float gain, float lacunarity, float amplitude)
 {
-	float G = exp2(-.85);
-	float amp = 1.;
-	float noise = 0.;
-	for (int i = 0; i < octaves; ++i)
+	float result = 0.0;
+
+	for (int i = 0; i < octaves; i++)
 	{
-		noise += amp * tiledPerlin3D(position * frequency, frequency);
-		frequency *= 2.;
-		amp *= G;
+		result += tiledPerlin3D(position, frequency) * amplitude;
+		frequency *= lacunarity;
+		position = position * lacunarity;
+		amplitude *= gain;
 	}
 
-	return noise;
+	return result;
 }
 
-float fBmTiledWorley(vec3 position, float frequency)
+float fBmTiledVoronoi(vec3 position, int octaves, float frequency, float gain, float lacunarity, float amplitude)
 {
-	return tiledWorley3D(position * frequency, frequency) * 0.625 +
-		tiledWorley3D(position * frequency * 2.0, frequency * 2.0) * 0.25 +
-		tiledWorley3D(position * frequency * 4.0, frequency * 4.0) * 0.125;
+	float result = 0.0;
+
+	for (int i = 0; i < octaves; i++)
+	{
+		result += tiledWorley3D(position, frequency) * amplitude;
+		frequency *= lacunarity;
+		position = position * lacunarity;
+		amplitude *= gain;
+	}
+
+	return result;
+}
+
+float fBmTiledWorley(vec3 position, int octaves, float frequency, float gain, float lacunarity, float amplitude)
+{
+	return clamp((1.0f - fBmTiledVoronoi(position, octaves, frequency, gain, lacunarity, amplitude)) * 1.5f - 0.25f, 0.0f, 1.0f);
+	//return fBmTiledVoronoi(position, octaves, frequency, gain, lacunarity, amplitude);
 }
 
 #endif

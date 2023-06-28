@@ -22,19 +22,19 @@ void CComputeSkySystem::__create()
 	atmosphere_shader_id = graphics->addShader("sky_atmosphere_comp", specials);
 	atmosphere_tex_id = effectshared::createImage("sky_atmosphere_texture", vk::Format::eR16G16B16A16Sfloat);
 
-	clouds_shader_id = graphics->addShader("sky_clouds_comp");
-	clouds_tex_id = effectshared::createImage("sky_clouds_texture", vk::Format::eR16G16B16A16Sfloat);
+	//clouds_shader_id = graphics->addShader("sky_clouds_comp");
+	//clouds_tex_id = effectshared::createImage("sky_clouds_texture", vk::Format::eR16G16B16A16Sfloat);
+	//
+	//sun_shader_id = graphics->addShader("sky_sun_comp");
+	//sun_tex_id = effectshared::createImage("sky_sun_texture", vk::Format::eR16G16B16A16Sfloat);
+	//
+	//composition_shader_id = graphics->addShader("sky_compose_comp");
+	//composition_tex_id = effectshared::createImage("sky_compose_texture", vk::Format::eR16G16B16A16Sfloat);
+	//
+	//perlin_noise_tex_id = graphics->compute3DNoise("cloudsNoiseHigh", "genCloudsNoiseHigh", vk::Extent3D{ 32, 32, 32 });
+	//cellular_noise_tex_id = graphics->compute3DNoise("cloudsNoiseLow", "genCloudsNoiseLow", vk::Extent3D{ 128, 128, 128 });
 
-	sun_shader_id = graphics->addShader("sky_sun_comp");
-	sun_tex_id = effectshared::createImage("sky_sun_texture", vk::Format::eR16G16B16A16Sfloat);
-
-	composition_shader_id = graphics->addShader("sky_compose_comp");
-	composition_tex_id = effectshared::createImage("sky_compose_texture", vk::Format::eR16G16B16A16Sfloat);
-
-	perlin_noise_tex_id = graphics->compute3DNoise("cloudsNoiseHigh", "genCloudsNoiseHigh", vk::Extent3D{ 32, 32, 32 });
-	cellular_noise_tex_id = graphics->compute3DNoise("cloudsNoiseLow", "genCloudsNoiseLow", vk::Extent3D{ 128, 128, 128 });
-
-	noise_tex_id = graphics->compute2DNoise("shared_noise_tex", vk::Extent2D{ 256, 256 });
+	//noise_tex_id = graphics->compute2DNoise("shared_noise_tex", vk::Extent2D{ 256, 256 });
 
 	CBaseGraphicsSystem::__create();
 }
@@ -50,9 +50,9 @@ void CComputeSkySystem::__update(float fDt)
 
 	{
 		effectshared::tryReCreateImage("sky_atmosphere_texture", atmosphere_tex_id, vk::Format::eR16G16B16A16Sfloat);
-		effectshared::tryReCreateImage("sky_clouds_texture", clouds_tex_id, vk::Format::eR16G16B16A16Sfloat);
-		effectshared::tryReCreateImage("sky_sun_texture", sun_tex_id, vk::Format::eR16G16B16A16Sfloat);
-		effectshared::tryReCreateImage("sky_compose_texture", composition_tex_id, vk::Format::eR16G16B16A16Sfloat);
+		//effectshared::tryReCreateImage("sky_clouds_texture", clouds_tex_id, vk::Format::eR16G16B16A16Sfloat);
+		//effectshared::tryReCreateImage("sky_sun_texture", sun_tex_id, vk::Format::eR16G16B16A16Sfloat);
+		//effectshared::tryReCreateImage("sky_compose_texture", composition_tex_id, vk::Format::eR16G16B16A16Sfloat);
 	}
 
 	if (cloudmap_tex_id == invalid_index)
@@ -60,11 +60,16 @@ void CComputeSkySystem::__update(float fDt)
 		cloudmap_tex_id = graphics->addImage("cloudmap", "/assets/textures/skybox/cloudmap.png");
 	}
 
+	if (noise_tex_id == invalid_index)
+	{
+		noise_tex_id = graphics->addImage("shared_noise_tex", "/assets/textures/skybox/noise.png");
+	}
+
 	computeAtmosphericScattering(camera->projection, camera->view);
-	graphics->BarrierFromComputeToCompute();
-	computeClouds(camera->projection, camera->view);
-	graphics->BarrierFromComputeToCompute();
-	computeComposition(camera->projection, camera->view);
+	//graphics->BarrierFromComputeToCompute();
+	//computeClouds(camera->projection, camera->view);
+	//graphics->BarrierFromComputeToCompute();
+	//computeComposition(camera->projection, camera->view);
 	graphics->BarrierFromComputeToGraphics();
 }
 

@@ -75,11 +75,13 @@ void main()
     //finalColor /= float(scattering.lightCount);
 
     vec3 finalColor = vec3(0.0);
-    vec3 atmosphere = linearTosRGB(texture(atmosphereTex, inUV)).rgb;
-    vec4 clouds = linearTosRGB(texture(cloudsTex, inUV));
-    finalColor = mix(atmosphere, clouds.rgb, clouds.a);
+    finalColor += linearTosRGB(texture(atmosphereTex, inUV)).rgb;
+    //vec3 atmosphere = linearTosRGB(texture(atmosphereTex, inUV)).rgb;
+    //vec4 clouds = linearTosRGB(texture(cloudsTex, inUV));
+    //finalColor = mix(atmosphere, clouds.rgb, clouds.a);
 
     //finalColor += textureLod(cloudsNoiseLowSampler, vec3(inUV, 0), 0).rrr;
+    //finalColor += textureLod(cloudsNoiseHighSampler, vec3(inUV, 0), 0).rrr;
 
     imageStore(writeColor, iUV, vec4(finalColor, 1.0));
 }

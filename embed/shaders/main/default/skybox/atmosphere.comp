@@ -37,7 +37,7 @@ void main()
 
     vec4 dirWorldSpace = vec4(0);
     const vec3 viewerPosition = vec3(camera.invView[3]);
-    const vec3 origin = vec3(0, earthRadius, 0) + viewerPosition * 0.01;
+    const vec3 origin = vec3(0, planetRadius, 0) + viewerPosition;
 
     dirWorldSpace.xyz = getPositionFromDepth(vec2(inUV.x, 1.0 - inUV.y), 1.0f, camera.invViewProjection).xyz;
 
@@ -47,10 +47,10 @@ void main()
         const FDirectionalLight light = directionalLights[i];
         const vec3 dirToSun = normalize(-light.direction);
     
-        finalColor += skyLighting(origin, dirWorldSpace.xyz, -dirToSun, light.color, light.intencity);
+        finalColor += atmosphere(origin, dirWorldSpace.xyz, -dirToSun, light.color, light.intencity).rgb;
     }
     finalColor /= float(scattering.lightCount);
     finalColor = 1.0 - exp(-1.0 * finalColor);
 
-    imageStore(writeColor, iUV, vec4(finalColor, 1.0));
+    imageStore(writeColor, iUV, linearTosRGB(vec4(finalColor, 1.0)));
 }

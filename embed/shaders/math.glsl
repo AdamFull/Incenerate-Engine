@@ -16,7 +16,7 @@ vec2 raySphereIntersect(vec3 r0, vec3 rd, vec3 s0, float sr) {
     float b = 2.0 * dot(rd, s0_r0);
     float c = dot(s0_r0, s0_r0) - (sr * sr);
     if (b * b - 4.0 * a * c < 0.0) {
-        return vec2(-1.0, -1.0);
+        return vec2(1e5, -1e5);
     }
 
     float t1 = (-b - sqrt((b * b) - 4.0 * a * c)) / (2.0 * a);
@@ -27,6 +27,53 @@ vec2 raySphereIntersect(vec3 r0, vec3 rd, vec3 s0, float sr) {
 float remap(float value, float minValue, float maxValue, float newMinValue, float newMaxValue)
 {
 	return newMinValue + (value - minValue) / (maxValue - minValue) * (newMaxValue - newMinValue);
+}
+
+float frac(float num)
+{
+    float f = (num - int(num));
+    if (f < 0.0) f *= -1.0;
+
+    return f;
+}
+
+vec3 frac(vec3 v)
+{
+    return vec3((v.x - int(v.x)), (v.y - int(v.y)), (v.z - int(v.z)));
+}
+
+float easeIn(float interpolator)
+{
+    return interpolator * interpolator;
+}
+
+float easeOut(float interpolator)
+{
+    return 1.0 - easeIn(1.0 - interpolator);
+}
+
+float easeInOut(float interpolator)
+{
+    float easeInValue = easeIn(interpolator);
+    float easeOutValue = easeOut(interpolator);
+    return mix(easeInValue, easeOutValue, interpolator);
+}
+
+float rand3Dto1D(vec3 value, vec3 dotDir)
+{
+    vec3 smallValue = vec3(sin(value.x), sin(value.y), sin(value.z));
+    float random = dot(smallValue, dotDir);
+    random = frac(sin(random) * 1023465);
+    return random;
+}
+
+vec3 rand3Dto3D(vec3 value)
+{
+    return vec3(
+        rand3Dto1D(value, vec3(12.989, 78.233, 37.719)),
+        rand3Dto1D(value, vec3(39.346, 11.135, 83.155)),
+        rand3Dto1D(value, vec3(73.156, 52.235, 09.151))
+    );
 }
 
 vec4 quatConj(vec4 q)
