@@ -113,6 +113,7 @@
   },
   "skybox": {
     "stage": "deferred",
+    "vertex_free": true,
     "bind_point": "Graphics",
     "cull_mode": "Back",
     "front_face": "ccw",

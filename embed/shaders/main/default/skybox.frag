@@ -29,11 +29,12 @@ layout(location = 4) out vec4 outObjectID;
 //} ubo;
 
 #include "../../shader_util.glsl"
+#include "../../math.glsl"
 
 void main() 
 {
 	//outAlbedo = texture(samplerCubeMap, inWorldPos);
-	outAlbedo = texture(samplerCubeMap, inUV);
+	outAlbedo = linearTosRGB(texture(samplerCubeMap, inUV));
 	outNormal = vec4(0.0);
 	outMRAH = vec4(0.0);
 	outEmissive = vec4(0.0);

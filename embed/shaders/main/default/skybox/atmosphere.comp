@@ -9,7 +9,7 @@
 
 layout(local_size_x = 32, local_size_y = 32) in;
 
-layout(set = 1, binding = 0, rgba16f) uniform writeonly image2D writeColor;
+layout(set = 1, binding = 0, r11f_g11f_b10f) uniform writeonly image2D writeColor;
 
 layout(std140, set = 0, binding = 0) uniform FCameraData 
 {
@@ -47,10 +47,10 @@ void main()
         const FDirectionalLight light = directionalLights[i];
         const vec3 dirToSun = normalize(-light.direction);
     
-        finalColor += atmosphere(origin, dirWorldSpace.xyz, -dirToSun, light.color, light.intencity).rgb;
+        finalColor += atmosphere(origin, dirWorldSpace.xyz, -dirToSun, light.intencity).rgb;
     }
     finalColor /= float(scattering.lightCount);
     finalColor = 1.0 - exp(-1.0 * finalColor);
 
-    imageStore(writeColor, iUV, linearTosRGB(vec4(finalColor, 1.0)));
+    imageStore(writeColor, iUV, vec4(finalColor, 1.0));
 }

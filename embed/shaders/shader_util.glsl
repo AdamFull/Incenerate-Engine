@@ -1,18 +1,20 @@
 #ifndef SHADER_UTIL
 #define SHADER_UTIL
 
-vec4 SRGBtoLINEAR(in vec4 srgbIn, bool srgb)
+vec4 sRGBToLinear(in vec4 srgbIn)
 {
-    if(srgb)
-    {
-        vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
-	    vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
-	    return vec4(linOut,srgbIn.w);;
-    }
-    else
-    {
-        return srgbIn;
-    }
+    vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
+	vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
+	return vec4(linOut,srgbIn.w);
+}
+
+vec4 linearTosRGB(vec4 linearRGB)
+{
+    bvec4 cutoff = lessThan(linearRGB, vec4(0.0031308));
+    vec4 higher = vec4(1.055) * pow(linearRGB, vec4(1.0 / 2.4)) - vec4(0.055);
+    vec4 lower = linearRGB * vec4(12.92);
+
+    return mix(higher, lower, cutoff);
 }
 
 // From http://filmicworlds.com/blog/filmic-tonemapping-operators/

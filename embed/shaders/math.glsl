@@ -122,13 +122,4 @@ vec3 rotate(vec3 v, vec3 axis, float angle)
     return rotate(v, quat);
 }
 
-vec4 linearTosRGB(vec4 linearRGB)
-{
-    bvec4 cutoff = lessThan(linearRGB, vec4(0.0031308));
-    vec4 higher = vec4(1.055) * pow(linearRGB, vec4(1.0 / 2.4)) - vec4(0.055);
-    vec4 lower = linearRGB * vec4(12.92);
-
-    return mix(higher, lower, cutoff);
-}
-
 #endif

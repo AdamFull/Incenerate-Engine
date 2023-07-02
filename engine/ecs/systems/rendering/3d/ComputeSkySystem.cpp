@@ -20,7 +20,7 @@ void CComputeSkySystem::__create()
 		{"MAX_DIRECTIONAL_LIGHTS_COUNT", std::to_string(MAX_DIRECTIONAL_LIGHT_COUNT)}
 	};
 	atmosphere_shader_id = graphics->addShader("sky_atmosphere_comp", specials);
-	atmosphere_tex_id = effectshared::createImage("sky_atmosphere_texture", vk::Format::eR16G16B16A16Sfloat);
+	atmosphere_tex_id = effectshared::createImage("sky_atmosphere_texture", vk::Format::eB10G11R11UfloatPack32);
 
 	//clouds_shader_id = graphics->addShader("sky_clouds_comp");
 	//clouds_tex_id = effectshared::createImage("sky_clouds_texture", vk::Format::eR16G16B16A16Sfloat);
@@ -49,7 +49,7 @@ void CComputeSkySystem::__update(float fDt)
 		return;
 
 	{
-		effectshared::tryReCreateImage("sky_atmosphere_texture", atmosphere_tex_id, vk::Format::eR16G16B16A16Sfloat);
+		effectshared::tryReCreateImage("sky_atmosphere_texture", atmosphere_tex_id, vk::Format::eB10G11R11UfloatPack32);
 		//effectshared::tryReCreateImage("sky_clouds_texture", clouds_tex_id, vk::Format::eR16G16B16A16Sfloat);
 		//effectshared::tryReCreateImage("sky_sun_texture", sun_tex_id, vk::Format::eR16G16B16A16Sfloat);
 		//effectshared::tryReCreateImage("sky_compose_texture", composition_tex_id, vk::Format::eR16G16B16A16Sfloat);
