@@ -78,7 +78,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     auto depth_format = m_pDevice->getDepthFormat();
     
     {
-        m_mStageInfos["cascade_shadow"].srName = "cascade_shadow";
+        m_mStageInfos["cascade_shadow"].srName = "Cascade shadow pass";
         m_mStageInfos["cascade_shadow"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["cascade_shadow"].viewport.extent = vk::Extent2D(CASCADE_SHADOW_MAP_RESOLUTION, CASCADE_SHADOW_MAP_RESOLUTION);
         m_mStageInfos["cascade_shadow"].bIgnoreRecreation = true;
@@ -120,7 +120,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
 
     {
-        m_mStageInfos["direct_shadow"].srName = "direct_shadow";
+        m_mStageInfos["direct_shadow"].srName = "Directional shadow pass";
         m_mStageInfos["direct_shadow"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["direct_shadow"].viewport.extent = vk::Extent2D(SPOT_LIGHT_SHADOW_MAP_RESOLUTION, SPOT_LIGHT_SHADOW_MAP_RESOLUTION);
         m_mStageInfos["direct_shadow"].bIgnoreRecreation = true;
@@ -162,7 +162,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
 
     {
-        m_mStageInfos["omni_shadow"].srName = "omni_shadow";
+        m_mStageInfos["omni_shadow"].srName = "Omni shadow pass";
         m_mStageInfos["omni_shadow"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["omni_shadow"].viewport.extent = vk::Extent2D(POINT_LIGHT_SHADOW_MAP_RESOLUTION, POINT_LIGHT_SHADOW_MAP_RESOLUTION);
         m_mStageInfos["omni_shadow"].bIgnoreRecreation = true;
@@ -204,7 +204,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
 
     {
-        m_mStageInfos["deferred"].srName = "deferred";
+        m_mStageInfos["deferred"].srName = "Deferred GBuffer pass";
         m_mStageInfos["deferred"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["deferred"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["deferred"].bFlipViewport = true;
@@ -261,7 +261,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
 
     {
-        m_mStageInfos["ssao"].srName = "ssao";
+        m_mStageInfos["ssao"].srName = "Post Process SSAO pass";
         m_mStageInfos["ssao"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["ssao"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["ssao"].bFlipViewport = false;
@@ -305,7 +305,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
 
     {
-        m_mStageInfos["composition"].srName = "composition";
+        m_mStageInfos["composition"].srName = "Deferred composition pass";
         m_mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["composition"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["composition"].bViewportDependent = true;
@@ -347,7 +347,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
 
     {
-        m_mStageInfos["global_illumination"].srName = "global_illumination";
+        m_mStageInfos["global_illumination"].srName = "Post Process Global Illumination pass";
         m_mStageInfos["global_illumination"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["global_illumination"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["global_illumination"].bFlipViewport = false;
@@ -391,7 +391,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
 
     {
-        m_mStageInfos["ssr"].srName = "ssr";
+        m_mStageInfos["ssr"].srName = "Post Process Screen Space Reflections pass";
         m_mStageInfos["ssr"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["ssr"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["ssr"].bFlipViewport = false;
@@ -435,7 +435,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
     }
     
     {
-        m_mStageInfos["present"].srName = "present";
+        m_mStageInfos["present"].srName = "Present pass";
         m_mStageInfos["present"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["present"].viewport.extent = m_pDevice->getExtent();
         m_mStageInfos["present"].vImages.emplace_back(FCIImage{ "present_khr", m_pDevice->getImageFormat(), vk::ImageUsageFlagBits::eColorAttachment });

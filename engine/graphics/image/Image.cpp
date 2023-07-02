@@ -190,11 +190,6 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
 
     vma::MemoryUsage memoryUsage{ vma::MemoryUsage::eUnknown };
     vk::ImageTiling tiling{ vk::ImageTiling::eOptimal };
-    //if ((flags & vk::ImageUsageFlagBits::eTransferSrc) || (flags & vk::ImageUsageFlagBits::eTransferDst))
-    //{
-    //    memoryUsage = vma::MemoryUsage::eGpuToCpu;
-    //    tiling = vk::ImageTiling::eLinear;
-    //}
 
     imageInfo.format = _format;
     imageInfo.tiling = tiling;
@@ -206,7 +201,7 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
     if (info->isCubemap)
         imageInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
     else
-        imageInfo.flags = vk::ImageCreateFlags{};
+        imageInfo.flags = vk::ImageCreateFlagBits::eExtendedUsage;;
 
     imageInfo.samples = pDevice->getSamples();
 

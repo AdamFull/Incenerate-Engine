@@ -18,20 +18,6 @@ using namespace engine::graphics;
 
 std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation", "VK_LAYER_KHRONOS_synchronization2" };
 
-VKAPI_ATTR VkBool32 VKAPI_CALL CDevice::validationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
-{
-    switch (messageSeverity)
-    {
-    //case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: log_verbose(pCallbackData->pMessage); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: log_info(pCallbackData->pMessage); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: log_warning(pCallbackData->pMessage); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:  log_error(pCallbackData->pMessage); std::cout << pCallbackData->pMessage << std::endl; break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT: break;
-    }
-
-    return VK_FALSE;
-}
-
 void* allocationFunction(void* pUserData, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
 {
     void* ptr = malloc(size);
@@ -89,9 +75,6 @@ CDevice::~CDevice()
     vmaAlloc.destroy();
     vkDevice.destroy(pAllocator);
 
-    if (bValidation)
-        vkInstance.destroyDebugUtilsMessengerEXT(vkDebugUtils, pAllocator);
-
     vkInstance.destroy(pAllocator);
     free(pAllocator);
     pAllocator = nullptr;
@@ -101,6 +84,8 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
+
+    pDebugUtils = std::make_unique<CDebugUtils>(this);
 
     vkVersion = APICompatibility::getVulkanVersion(createInfo.eAPI);
 
@@ -119,18 +104,14 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
     log_debug("Validation state: {}", bValidation);
    
     createInstance(createInfo, window);
-    createDebugCallback();
     createSurface(window);
     selectPhysicalDeviceAndExtensions();
+    APICompatibility::printDeviceExtensions(vkPhysical);
+    pDebugUtils->initialize();
     createDevice();
     createMemoryAllocator(createInfo);
     createPipelineCache();
     createSwapchain(createInfo.window.actualWidth, createInfo.window.actualHeight);
-
-    //vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures;
-    //vk::PhysicalDeviceFeatures2 features2;
-    //features2.pNext = &indexingFeatures;
-    //auto features = vkPhysical.getFeatures2(features2);
 
     viewportExtent = swapchainExtent;
 }
@@ -192,23 +173,6 @@ void CDevice::createInstance(const FEngineCreateInfo& createInfo, IWindowAdapter
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkInstance);
 }
 
-void CDevice::createDebugCallback()
-{
-    if (!bValidation)
-        return;
-
-    auto createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
-        vk::DebugUtilsMessengerCreateFlagsEXT(),
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-        validationCallback,
-        nullptr);
-
-    vkDebugUtils = vkInstance.createDebugUtilsMessengerEXT(createInfo, pAllocator);
-    if (!vkDebugUtils)
-        log_error("failed to set up debug callback!");
-}
-
 void CDevice::createSurface(IWindowAdapter* window)
 {
     log_cerror(vkInstance, "Unable to create surface, cause vulkan instance is not valid");
@@ -232,7 +196,7 @@ void CDevice::selectPhysicalDeviceAndExtensions()
         auto& requiredExtensions = APICompatibility::getRequiredDeviceExtensions();
         for (auto& extensionName : requiredExtensions)
         {
-            if (!APICompatibility::checkExtensionSupport(physicalDevice, extensionName))
+            if (!APICompatibility::checkDeviceExtensionSupport(physicalDevice, extensionName))
                 continue;
         }
 
@@ -262,7 +226,7 @@ void CDevice::selectPhysicalDeviceAndExtensions()
     // After we found target device, we can check optional extension support
     auto& optionalExtensions = APICompatibility::getOptionalDeviceExtensions();
     for (auto& extensionName : optionalExtensions)
-        CSessionStorage::getInstance()->set(extensionName, APICompatibility::checkExtensionSupport(vkPhysical, extensionName));
+        CSessionStorage::getInstance()->set(extensionName, APICompatibility::checkDeviceExtensionSupport(vkPhysical, extensionName));
 
     APICompatibility::bindlessSupport = CSessionStorage::getInstance()->get<bool>(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
     APICompatibility::shaderObjectSupport = CSessionStorage::getInstance()->get<bool>(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
@@ -300,6 +264,7 @@ void CDevice::createDevice()
     vk::PhysicalDeviceVulkan13Features vk13features{};
     vk13features.synchronization2 = true;
     vk13features.maintenance4 = true;
+    vk13features.shaderDemoteToHelperInvocation = true;
 
     // vk 1.2 features
     vk::PhysicalDeviceVulkan12Features vk12features{};
@@ -313,10 +278,6 @@ void CDevice::createDevice()
     vk::PhysicalDeviceSynchronization2FeaturesKHR synchronizationFeatures{};
     synchronizationFeatures.synchronization2 = true;
     synchronizationFeatures.pNext = vkVersion > VK_API_VERSION_1_1 ? &vk12features : nullptr;
-
-    //vk::PhysicalDeviceShaderObjectFeaturesEXT shaderObjectFeatures{};
-    //shaderObjectFeatures.shaderObject = bShaderObjectExtension;
-    //shaderObjectFeatures.pNext = &synchronizationFeatures;
 
     vk::PhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT shaderDemoteToHelperInvocationFeature{};
     shaderDemoteToHelperInvocationFeature.shaderDemoteToHelperInvocation = true;
@@ -339,9 +300,9 @@ void CDevice::createDevice()
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
 
-    if (vkVersion > VK_API_VERSION_1_1)
+    if (vkVersion > VK_API_VERSION_1_2)
         createInfo.pNext = &vk12features;
-    else if (vkVersion == VK_API_VERSION_1_1)
+    else if (vkVersion >= VK_API_VERSION_1_1)
         createInfo.pNext = &indexingFeatures;
     else
         createInfo.pNext = nullptr;
@@ -1183,6 +1144,11 @@ void CDevice::getOccupedDeviceMemory(vk::MemoryHeapFlags memoryFlags, size_t& to
             usedMemory += memoryBudgetProps.heapUsage[i];
         }
     }
+}
+
+const std::unique_ptr<CDebugUtils>& CDevice::getDebugUtils()
+{
+    return pDebugUtils;
 }
 
 FSwapChainSupportDetails CDevice::querySwapChainSupport(const vk::PhysicalDevice& device)

@@ -1,6 +1,7 @@
 #include "RenderStage.h"
 
 #include "APIHandle.h"
+//#include <glm/gtx/color_cast.hpp>
 
 using namespace engine;
 using namespace engine::graphics;
@@ -40,6 +41,8 @@ void CRenderStage::create(const FCIStage& createInfo)
 			dependency.depFlags
 		);
 
+	srName = createInfo.srName;
+
 	pFramebuffer->create();
 }
 
@@ -51,22 +54,23 @@ void CRenderStage::reCreate(const FCIStage& createInfo)
 
 void CRenderStage::begin(vk::CommandBuffer& commandBuffer)
 {
+	auto& debugUtils = pDevice->getDebugUtils();
+
+	debugUtils->beginLabel(commandBuffer, srName.c_str());
 	pFramebuffer->begin(commandBuffer);
 }
 
 void CRenderStage::end(vk::CommandBuffer& commandBuffer)
 {
+	auto& debugUtils = pDevice->getDebugUtils();
+
 	pFramebuffer->end(commandBuffer);
+	debugUtils->endLabel(commandBuffer);
 }
 
 const std::unique_ptr<CFramebuffer>& CRenderStage::getFramebuffer() const
 {
 	return pFramebuffer;
-}
-
-ERenderStageAvaliableFlagBits CRenderStage::getStageFlag()
-{
-	return stageCI.eFlag;
 }
 
 CDevice* CRenderStage::getDevice()

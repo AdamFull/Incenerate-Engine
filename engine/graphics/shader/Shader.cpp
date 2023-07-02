@@ -106,6 +106,10 @@ void CShader::createShaderModule(const std::vector<uint32_t>& spirv, vk::ShaderS
         shaderStageCI.module = shaderModule;
         shaderStageCI.pName = "main";
 
+        auto& debugUtils = pDevice->getDebugUtils();
+        auto shader_id = (uint64_t)static_cast<VkShaderModule>(shaderModule);
+        debugUtils->setObjectTag(vk::ObjectType::eShaderModule, shader_id, shader_id, spirv.data(), spirv.size());
+
         vShaderModules.emplace_back(std::move(shaderStageCI));
     }
     catch (vk::SystemError err)

@@ -25,6 +25,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     auto graphics = pDevice->getAPI();
     auto& shader = pShader->getShader();
     auto& pipelineParams = pShader->getPipelineParams();
+    auto& debugUtils = pDevice->getDebugUtils();
 
     vk::PipelineVertexInputStateCreateInfo vertexInputCI{};
     vertexInputCI.vertexBindingDescriptionCount = 0;
@@ -149,6 +150,8 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader)
     vk::Pipeline pipeline{ nullptr };
     auto result = pDevice->create(pipelineInfo, &pipeline);
     log_cerror(pipeline, "Failed creating pipeline.");
+
+    //debugUtils->setObjectName(vk::ObjectType::ePipeline, (uint64_t)static_cast<VkPipeline>(pipeline), );
 
     vPipelines.emplace_back(pipeline);
 }

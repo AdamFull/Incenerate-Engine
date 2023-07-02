@@ -25,6 +25,14 @@ uint32_t APICompatibility::getVulkanVersion(ERenderApi eAPI)
 	return 0;
 }
 
+void APICompatibility::printDeviceExtensions(const vk::PhysicalDevice& physicalDevice)
+{
+	std::vector<vk::ExtensionProperties> availableExtensions = physicalDevice.enumerateDeviceExtensionProperties();
+
+	for (auto& extension : availableExtensions)
+		log_debug(extension.extensionName);
+}
+
 bool APICompatibility::check(vk::Result result)
 {
 	return result == vk::Result::eSuccess;
@@ -52,13 +60,45 @@ bool APICompatibility::checkValidationLayerSupport(const std::vector<const char*
 	return layerFound;
 }
 
-bool APICompatibility::checkExtensionSupport(const vk::PhysicalDevice& physicalDevice, const char* extensionName)
+bool APICompatibility::checkDeviceExtensionSupport(const vk::PhysicalDevice& physicalDevice, const char* extensionName)
 {
 	std::vector<vk::ExtensionProperties> availableExtensions = physicalDevice.enumerateDeviceExtensionProperties();
 	auto foundExtension = std::find_if(availableExtensions.begin(), availableExtensions.end(),
 		[&](const vk::ExtensionProperties& extension) {
 			return strcmp(extension.extensionName, extensionName) == 0;
 		});
+	return foundExtension != availableExtensions.end();
+}
+
+bool APICompatibility::checkDeviceExtensionEnabled(const vk::PhysicalDevice& physicalDevice, const char* extensionName)
+{
+	auto availableExtensions = getDeviceAvaliableExtensions(physicalDevice);
+	auto foundExtension = std::find_if(availableExtensions.begin(), availableExtensions.end(),
+		[&](const char* extension) {
+			return strcmp(extension, extensionName) == 0;
+		});
+
+	return foundExtension != availableExtensions.end();
+}
+
+bool APICompatibility::checkInstanceExtensionSupport(const char* extensionName)
+{
+	auto availableExtensions = vk::enumerateInstanceExtensionProperties();
+	auto foundExtension = std::find_if(availableExtensions.begin(), availableExtensions.end(),
+		[&](const vk::ExtensionProperties& extension) {
+			return strcmp(extension.extensionName, extensionName) == 0;
+		});
+	return foundExtension != availableExtensions.end();
+}
+
+bool APICompatibility::checkInstanceExtensionEnabled(const char* extensionName)
+{
+	auto availableExtensions = getInstanceAvaliableExtensions();
+	auto foundExtension = std::find_if(availableExtensions.begin(), availableExtensions.end(),
+		[&](const char* extension) {
+			return strcmp(extension, extensionName) == 0;
+		});
+
 	return foundExtension != availableExtensions.end();
 }
 
@@ -109,7 +149,7 @@ const std::vector<const char*>& APICompatibility::getRequiredDeviceExtensions()
 		VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
 		VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
 		VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME,
-		VK_EXT_SHADER_DEMOTE_TO_HELPER_INVOCATION_EXTENSION_NAME
+		VK_EXT_SHADER_DEMOTE_TO_HELPER_INVOCATION_EXTENSION_NAME,
 	};
 	
 	return requiredExtensions;
@@ -120,7 +160,7 @@ const std::vector<const char*>& APICompatibility::getOptionalDeviceExtensions()
 	static const std::vector<const char*> optionalExtensions{
 		VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
 		VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
-		VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME
+		VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
 	};
 
 	return optionalExtensions;
@@ -133,14 +173,55 @@ std::vector<const char*> APICompatibility::getDeviceAvaliableExtensions(const vk
 	auto& requiredExtensions = getRequiredDeviceExtensions();
 	for (auto& extension : requiredExtensions)
 	{
-		if (checkExtensionSupport(physicalDevice, extension))
+		if (checkDeviceExtensionSupport(physicalDevice, extension))
 			allExtensions.emplace_back(extension);
 	}
 
 	auto& optionalExtensions = getOptionalDeviceExtensions();
 	for (auto& extension : optionalExtensions)
 	{
-		if (checkExtensionSupport(physicalDevice, extension))
+		if (checkDeviceExtensionSupport(physicalDevice, extension))
+			allExtensions.emplace_back(extension);
+	}
+
+	return allExtensions;
+}
+
+const std::vector<const char*>& APICompatibility::getRequiredInstanceExtensions()
+{
+	static const std::vector<const char*> requiredExtensions{
+	};
+
+	return requiredExtensions;
+}
+
+const std::vector<const char*>& APICompatibility::getOptionalInstanceExtensions()
+{
+	static const std::vector<const char*> optionalExtensions{
+#ifdef _DEBUG
+		VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+		VK_EXT_DEBUG_MARKER_EXTENSION_NAME,
+#endif
+	};
+
+	return optionalExtensions;
+}
+
+std::vector<const char*> APICompatibility::getInstanceAvaliableExtensions()
+{
+	std::vector<const char*> allExtensions{};
+
+	auto& requiredExtensions = getRequiredInstanceExtensions();
+	for (auto& extension : requiredExtensions)
+	{
+		if (checkInstanceExtensionSupport(extension))
+			allExtensions.emplace_back(extension);
+	}
+
+	auto& optionalExtensions = getOptionalInstanceExtensions();
+	for (auto& extension : optionalExtensions)
+	{
+		if (checkInstanceExtensionSupport(extension))
 			allExtensions.emplace_back(extension);
 	}
 
@@ -183,6 +264,7 @@ void APICompatibility::transitionImageLayoutGraphics(vk::CommandBuffer& commandB
 
 void APICompatibility::applyDescriptorIndexingFeatures(vk::PhysicalDeviceVulkan12Features& features)
 {
+	features.descriptorIndexing =
 	features.descriptorBindingPartiallyBound = 
 	features.runtimeDescriptorArray = 
 	features.descriptorBindingSampledImageUpdateAfterBind = 

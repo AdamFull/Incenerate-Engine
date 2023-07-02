@@ -84,12 +84,11 @@ namespace engine
 			void end(vk::CommandBuffer& commandBuffer);
 
 			const std::unique_ptr<CFramebuffer>& getFramebuffer() const;
-			ERenderStageAvaliableFlagBits getStageFlag();
 
 			CDevice* getDevice();
 		private:
 			CDevice* pDevice{ nullptr };
-			FCIStage stageCI;
+			std::string srName{};
 			std::unique_ptr<CFramebuffer> pFramebuffer;
 		};
 	}

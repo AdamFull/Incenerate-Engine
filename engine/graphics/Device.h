@@ -4,6 +4,7 @@
 
 #include "buffers/CommandPool.h"
 #include "QueueFamily.h"
+#include "DebugUtils.h"
 #include "EngineStructures.h"
 
 #include <mutex>
@@ -26,8 +27,6 @@ namespace engine
 			~CDevice();
 
 			void create(const FEngineCreateInfo& createInfo, IWindowAdapter* window);
-
-			static VKAPI_ATTR VkBool32 VKAPI_CALL validationCallback(VkDebugUtilsMessageSeverityFlagBitsEXT, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT*, void*);
 
 			void updateCommandPools();
 
@@ -96,6 +95,10 @@ namespace engine
             uint32_t getQueueFamilyIndex(uint32_t type);
 
             void getOccupedDeviceMemory(vk::MemoryHeapFlags memoryFlags, size_t& totalMemory, size_t& usedMemory);
+
+            bool isValidationEnabled() const { return bValidation; }
+
+            const std::unique_ptr<CDebugUtils>& getDebugUtils();
 
             /**************************************************Swapchain********************************************/
             vk::Result acquireNextImage(uint32_t* imageIndex);
@@ -289,7 +292,6 @@ namespace engine
         private:
             void createMemoryAllocator(const FEngineCreateInfo& createInfo);
             void createInstance(const FEngineCreateInfo& createInfo, IWindowAdapter* window);
-            void createDebugCallback();
             void createSurface(IWindowAdapter* window);
             void selectPhysicalDeviceAndExtensions();
             void createDevice();
@@ -307,11 +309,12 @@ namespace engine
             CAPIHandle* m_pAPI{ nullptr };
             vk::DynamicLoader dl;
             vk::Instance vkInstance{ VK_NULL_HANDLE }; // Main vulkan instance
-            vk::DebugUtilsMessengerEXT vkDebugUtils{ VK_NULL_HANDLE };
             vk::SurfaceKHR vkSurface{ VK_NULL_HANDLE }; // Vulkan's drawing surface
             std::map<vk::QueueFlags, std::map<std::thread::id, std::shared_ptr<CCommandPool>>> commandPools;
             vk::AllocationCallbacks* pAllocator{ nullptr };
             vma::Allocator vmaAlloc{ VK_NULL_HANDLE };
+
+            std::unique_ptr<CDebugUtils> pDebugUtils;
 
             std::mutex cplock;
 
