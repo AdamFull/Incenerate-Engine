@@ -4,8 +4,9 @@
 #extension GL_GOOGLE_include_directive : require
 
 #include "fxaa.glsl"
+#include "../compute_common.glsl"
 
-layout(local_size_x = 16, local_size_y = 16) in;
+layout(local_size_x = 8, local_size_y = 8) in;
 
 layout(binding = 0, rgba32f) uniform writeonly image2D writeColor;
 layout(binding = 1) uniform sampler2D samplerColor;
@@ -19,8 +20,12 @@ layout(push_constant) uniform UBOFXAA
 
 void main()
 {
-	ivec2 iUV = ivec2(gl_GlobalInvocationID.xy);
-	vec2 uv = (iUV + 0.5f) / vec2(imageSize(writeColor).xy);
+	uvec2 image_size = imageSize(writeColor);
 
-    imageStore(writeColor, iUV, vec4(FxaaPixelShader(uv, samplerColor, ubo.quality, ubo.threshold, ubo.threshold_min).rgb, 1.0));
+	uvec2 px = uvec2(0, 0);
+	vec2 uv = vec2(0.0, 0.0);
+	if(swizzle_compute_workgroups_8x8(gl_GlobalInvocationID.xy, gl_LocalInvocationID.xy, image_size, uv, px))
+		return;
+
+    imageStore(writeColor, ivec2(px), vec4(FxaaPixelShader(uv, samplerColor, ubo.quality, ubo.threshold, ubo.threshold_min).rgb, 1.0));
 }

@@ -6,8 +6,9 @@
 #include "../../../shader_util.glsl"
 #include "../../lightning_base.glsl"
 #include "common.glsl"
+#include "../../../compute_common.glsl"
 
-layout(local_size_x = 32, local_size_y = 32) in;
+layout(local_size_x = 8, local_size_y = 8) in;
 
 layout(set = 1, binding = 0, r11f_g11f_b10f) uniform writeonly image2D writeColor;
 
@@ -32,14 +33,18 @@ layout(std430, set = 0, binding = 2) buffer readonly UBOLights
 
 void main()
 {
-	ivec2 iUV = ivec2(gl_GlobalInvocationID.xy);
-	vec2 inUV = (iUV + 0.5f) / vec2(imageSize(writeColor).xy);
+    uvec2 image_size = imageSize(writeColor);
+
+	uvec2 px = uvec2(0, 0);
+	vec2 uv = vec2(0.0, 0.0);
+	if(swizzle_compute_workgroups_8x8(gl_GlobalInvocationID.xy, gl_LocalInvocationID.xy, image_size, uv, px))
+		return;
 
     vec4 dirWorldSpace = vec4(0);
     const vec3 viewerPosition = vec3(camera.invView[3]);
     const vec3 origin = vec3(0, planetRadius, 0) + viewerPosition;
 
-    dirWorldSpace.xyz = getPositionFromDepth(vec2(inUV.x, 1.0 - inUV.y), 1.0f, camera.invViewProjection).xyz;
+    dirWorldSpace.xyz = getPositionFromDepth(vec2(uv.x, 1.0 - uv.y), 1.0f, camera.invViewProjection).xyz;
 
     vec3 finalColor = vec3(0.0);
     for(int i = 0; i < scattering.lightCount; ++i)
@@ -52,5 +57,5 @@ void main()
     finalColor /= float(scattering.lightCount);
     finalColor = 1.0 - exp(-1.0 * finalColor);
 
-    imageStore(writeColor, iUV, vec4(finalColor, 1.0));
+    imageStore(writeColor, ivec2(px), vec4(finalColor, 1.0));
 }

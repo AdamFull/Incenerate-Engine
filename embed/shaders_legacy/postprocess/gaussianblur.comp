@@ -1,8 +1,11 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
+#extension GL_GOOGLE_include_directive : enable
 
-layout(local_size_x = 16, local_size_y = 16) in;
+#include "../compute_common.glsl"
+
+layout(local_size_x = 8, local_size_y = 8) in;
 
 layout(binding = 0, OUT_IMAGE_FORMAT) uniform writeonly image2D writeColor;
 layout(binding = 1) uniform sampler2D samplerColor;
@@ -16,8 +19,12 @@ layout(push_constant) uniform FBloomUbo
 
 void main()
 {
-	ivec2 iUV = ivec2(gl_GlobalInvocationID.xy);
-	vec2 uv = (iUV + 0.5f) / vec2(imageSize(writeColor).xy);
+	uvec2 image_size = imageSize(writeColor);
+
+	uvec2 px = uvec2(0, 0);
+	vec2 uv = vec2(0.0, 0.0);
+	if(swizzle_compute_workgroups_8x8(gl_GlobalInvocationID.xy, gl_LocalInvocationID.xy, image_size, uv, px))
+		return;
 
 	vec2 colorSize = textureSize(samplerColor, 0);
 	vec4 color = vec4(0.0f);
@@ -52,5 +59,5 @@ void main()
 	color += texture(samplerColor, uv - (off3 / colorSize)) * 0.010381362401148057f * ubo.blur_scale;
 #endif
 
-	imageStore(writeColor, iUV, color);
+	imageStore(writeColor, ivec2(px), color);
 }

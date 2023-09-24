@@ -69,7 +69,6 @@ vec3 atmosphere(vec3 origin, vec3 direction, vec3 sunDirection, float sunIntensi
     hitDistance = min(hitDistance, maxScatterDistance);
 
     // Calculate point where ray hit a sphere
-
     vec3 hitPosition = direction * hitDistance;
     vec3 rayStep = hitPosition / float(integralStepCount);
     float stepHeight = length(rayStep);
@@ -114,16 +113,11 @@ vec3 atmosphere(vec3 origin, vec3 direction, vec3 sunDirection, float sunIntensi
 
         // Calculate light attenuation
         vec3 attenuation = exp(-(BetaRayleigh * (opticalDepth.x + sunOpticalDepth.x) + BetaMie * (opticalDepth.y + sunOpticalDepth.y) + BetaAbsorption * (opticalDepth.z + sunOpticalDepth.z)));
-        //vec3 rattenuation = exp(-BetaRayleigh * (opticalDepth.x + sunOpticalDepth.x));
-        //vec3 mattenuation = exp(-BetaMie * (opticalDepth.y + sunOpticalDepth.y));
 
         // Accumulate Rayleight and Mie color
         totalRayleight += density.x * attenuation;
         totalMie += density.y * attenuation;
     }
-
-    // Calculate opacity for default color
-    vec3 opacity = exp(-(BetaRayleigh * opticalDepth.x + BetaMie * opticalDepth.y + BetaAbsorption * opticalDepth.z));
 
     // Angle between viewer direction and sun direction
     float angle = dot(normalize(direction), -sunDirection);
@@ -133,7 +127,7 @@ vec3 atmosphere(vec3 origin, vec3 direction, vec3 sunDirection, float sunIntensi
     vec3 mieColor = sunIntensity * phaseMie(angle, 0.45) * BetaMie * totalMie;
     vec3 sunColor = sunIntensity * phaseMie(angle, 0.999) * BetaMie * totalMie;
 
-    return rayleightColor + mieColor + sunColor + DefaultColor * opacity;
+    return rayleightColor + mieColor + sunColor;
 }
 
 #endif

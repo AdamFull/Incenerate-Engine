@@ -2,13 +2,6 @@
 #ifndef CASCADE_SHADOWS
 #define CASCADE_SHADOWS
 
-//const mat4 biasMat = mat4( 
-//	0.5, 0.0, 0.0, 0.0,
-//	0.0, 0.5, 0.0, 0.0,
-//	0.0, 0.0, 0.5, 0.0,
-//	0.5, 0.5, 0.5, 1.0
-//);
-
 const bool enableCascadedPCF = true;
 
 const mat4 biasMat = mat4(
@@ -18,7 +11,7 @@ const mat4 biasMat = mat4(
 	0.5, 0.5, 0.0, 1.0
 );
 
-float cassadeShadowProjection(sampler2DArrayShadow shadomwap_tex, vec4 shadowCoord, vec2 offset, uint cascadeIndex, float bias)
+float cascadeShadowProjection(sampler2DArrayShadow shadomwap_tex, vec4 shadowCoord, vec2 offset, uint cascadeIndex, float bias)
 {
 	return texture(shadomwap_tex, vec4(shadowCoord.st + offset, cascadeIndex, shadowCoord.z - bias));
 }
@@ -38,7 +31,7 @@ float cascadeShadowFilterPCF(sampler2DArrayShadow shadomwap_tex, vec4 sc, uint c
 	{
 		for (int y = -range; y <= range; y++) 
 		{
-			shadowFactor += cassadeShadowProjection(shadomwap_tex, sc, vec2(dx*x, dy*y), cascadeIndex, bias);
+			shadowFactor += cascadeShadowProjection(shadomwap_tex, sc, vec2(dx*x, dy*y), cascadeIndex, bias);
 			count++;
 		}
 	}
@@ -66,7 +59,7 @@ float getCascadeShadow(sampler2DArrayShadow shadomwap_tex, vec3 viewPosition, ve
 	if (enableCascadedPCF)
 		shadow = cascadeShadowFilterPCF(shadomwap_tex, shadowCoord, cascadeIndex, bias);
 	else
-		shadow = cassadeShadowProjection(shadomwap_tex, shadowCoord, vec2(0.0), cascadeIndex, bias);
+		shadow = cascadeShadowProjection(shadomwap_tex, shadowCoord, vec2(0.0), cascadeIndex, bias);
 
 	return shadow;
 }
