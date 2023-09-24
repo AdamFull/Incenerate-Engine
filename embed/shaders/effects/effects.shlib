@@ -1,0 +1,81 @@
+{
+	name: "postprocess";
+
+	shaders: [
+		{
+			name: "hbao";
+			sources: [
+				{
+					type: "vertex";
+					common: true;
+					shader_name: "screenspace_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "hbao_frag";
+				}
+			];
+		},
+		{
+			name: "ssao";
+			sources: [
+				{
+					type: "vertex";
+					common: true;
+					shader_name: "screenspace_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "ssao_frag";
+				}
+			];
+		},
+		{
+			name: "ssdo";
+			sources: [
+				{
+					type: "vertex";
+					common: true;
+					shader_name: "screenspace_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "ssdo_frag";
+				}
+			];
+		},
+		{
+			name: "ssr";
+			sources: [
+				{
+					type: "vertex";
+					common: true;
+					shader_name: "screenspace_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "ssr_frag";
+				}
+			];
+		}
+	];
+
+	compile: [
+		{ 
+			shader_name: "hbao";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "ssao";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "ssdo";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "ssr";
+			permutations: [{}];
+		}
+	];
+}

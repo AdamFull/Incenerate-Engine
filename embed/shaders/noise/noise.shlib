@@ -1,0 +1,48 @@
+{
+	name: "noise";
+
+	shaders: [
+		{
+			name: "2dnoise";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "2dnoise_comp";
+				}
+			];
+		},
+		{
+			name: "clouds_noise_high";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "clouds_noise_high_comp";
+				}
+			];
+		},
+		{
+			name: "clouds_noise_low";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "clouds_noise_low_comp";
+				}
+			];
+		}
+	];
+
+	compile: [
+		{ 
+			shader_name: "2dnoise";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "clouds_noise_high";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "clouds_noise_low";
+			permutations: [{}];
+		}
+	];
+}

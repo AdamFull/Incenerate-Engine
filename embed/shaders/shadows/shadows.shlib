@@ -1,0 +1,56 @@
+{
+	name: "postprocess";
+
+	shaders: [
+		{
+			name: "cascaded";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "cascade_shadow_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "cascade_shadow_frag";
+				}
+			];
+		},
+		{
+			name: "directional";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "directional_shadow_vert";
+				}
+			];
+		},
+		{
+			name: "omni";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "omni_shadow_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "omni_shadow_frag";
+				}
+			];
+		}
+	];
+
+	compile: [
+		{ 
+			shader_name: "cascaded";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "directional";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "omni";
+			permutations: [{}];
+		}
+	];
+}

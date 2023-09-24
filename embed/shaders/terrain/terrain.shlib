@@ -1,0 +1,82 @@
+{
+	name: "terrain";
+
+	shaders: [
+		{
+			name: "terrain_tesellation";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "terrain_vert";
+				},
+				{
+					type: "control";
+					shader_name: "terrain_ctrl";
+				},
+				{
+					type: "evaluation";
+					shader_name: "terrain_eval";
+				},
+				{
+					type: "fragment";
+					shader_name: "terrain_frag";
+				}
+			];
+		},
+		{
+			name: "terrain_geometry";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "terrain_vert";
+				},
+				{
+					type: "geometry";
+					shader_name: "terrain_geom";
+				},
+				{
+					type: "fragment";
+					shader_name: "terrain_frag";
+				}
+			];
+		}
+	];
+
+	compile: [
+		//{
+		//	shader_name: "terrain_tesellation";
+		//	permutation_generator: {
+		//		definitions: [
+		//			"USE_TESSELLATION",
+		//			"HAS_HEIGHTMAP",
+		//			"HAS_BASECOLORMAP",
+		//			"HAS_METALLIC_ROUGHNESS",
+		//			"HAS_TANGENTS",
+		//			"HAS_NORMALS",
+		//			"HAS_NORMALMAP",
+		//			"HAS_OCCLUSIONMAP",
+		//			"HAS_EMISSIVEMAP",
+		//			"EDITOR_MODE",
+		//			"BINDLESS_TEXTURES"
+		//		];
+		//	};
+		//},
+		//{
+		//	shader_name: "terrain_geometry";
+		//	permutation_generator: {
+		//		definitions: [
+		//			"HAS_HEIGHTMAP",
+		//			"HAS_BASECOLORMAP",
+		//			"HAS_METALLIC_ROUGHNESS",
+		//			"HAS_TANGENTS",
+		//			"HAS_NORMALS",
+		//			"HAS_NORMALMAP",
+		//			"HAS_OCCLUSIONMAP",
+		//			"HAS_EMISSIVEMAP",
+		//			"EDITOR_MODE",
+		//			"BINDLESS_TEXTURES"
+		//		];
+		//	};
+		//}
+	];
+}

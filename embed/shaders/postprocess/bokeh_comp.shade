@@ -1,0 +1,69 @@
+{
+	version: 450;
+
+	enable_extensions: [
+		"GL_ARB_separate_shader_objects",
+		"GL_ARB_shading_language_420pack"
+	];
+
+	definitions: [];
+	require_extensions: [];
+	includes: ["math", "compute_common"];
+
+	code: 
+	"""
+		layout(local_size_x = 8, local_size_y = 8) in;
+
+		layout(binding = 0, r11f_g11f_b10f) uniform writeonly image2D writeColor;
+		layout(binding = 1) uniform sampler2D samplerColor;
+		
+		layout(push_constant) uniform UBOBokehBlur
+		{
+			int max_radius;
+			float sides;
+		} ubo;
+		
+		vec4 gamma_fun(vec4 vector, float gamma)
+		{
+		    return vec4(pow(vector.rgb, vec3(gamma)), vector.w);
+		}
+		
+		void main()
+		{
+		    uvec2 image_size = imageSize(writeColor);
+			vec2 texSize = vec2(image_size.xy);
+		    vec2 texelSize = 1.0 / texSize;
+			
+		    uvec2 px = uvec2(0, 0);
+			vec2 uv = vec2(0.0, 0.0);
+			if(swizzle_compute_workgroups_8x8(gl_GlobalInvocationID.xy, gl_LocalInvocationID.xy, image_size, uv, px))
+				return;
+		
+			vec4 color = vec4(0.0);
+		
+			for (float x = -ubo.max_radius; x <= ubo.max_radius; x += 1.0)
+		    {
+		        for (float y = -ubo.max_radius; y <= ubo.max_radius; y += 1.0)
+		        {
+		            vec2 offset = vec2(x, y);
+		            float angle = atan(y, x);
+		            float radius = sqrt(dot(offset, offset));
+		
+		            float paraPoly = cos(angle - (2.0 * PI * floor((PI + ubo.sides * angle) / (2.0 * PI))) / ubo.sides) / cos(PI / ubo.sides);
+		            float sdfPoly = paraPoly * radius - ubo.max_radius;
+		            float egdeFalloff = smoothstep(0.0, -1.0, sdfPoly);
+		
+		            vec4 tap = texture(samplerColor, uv  + texelSize.xy * offset.xy);
+		
+		            tap = gamma_fun(tap, 4.0);
+		            color += tap * egdeFalloff;
+		        }
+		    }
+		
+		    color.rgb /= color.www;
+		    color = gamma_fun(color, 1.0 / 4.0);
+		
+			imageStore(writeColor, ivec2(px), vec4(color.rgb, 1.0));
+		}
+	""";
+}

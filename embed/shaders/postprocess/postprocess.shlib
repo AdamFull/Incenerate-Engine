@@ -1,0 +1,269 @@
+{
+	name: "postprocess";
+
+	shaders: [
+		{
+			name: "ao_blur";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "ao_blur_comp";
+				}
+			];
+		},
+		{
+			name: "applybloom";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "applybloom_comp";
+				}
+			];
+		},
+		{
+			name: "bokeh";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "bokeh_comp";
+				}
+			];
+		},
+		{
+			name: "brightdetect";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "brightdetect_comp";
+				}
+			];
+		},
+		{
+			name: "chromatic_aberration";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "chromatic_aberration_comp";
+				}
+			];
+		},
+		{
+			name: "comp_average_brightness";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "comp_average_brightness_comp";
+				}
+			];
+		},
+		{
+			name: "comp_histogram";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "comp_histogram_comp";
+				}
+			];
+		},
+		{
+			name: "dof";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "dof_comp";
+				}
+			];
+		},
+		{
+			name: "downsample";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "downsample_comp";
+				}
+			];
+		},
+		{
+			name: "emptypass";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "emptypass_comp";
+				}
+			];
+		},
+		{
+			name: "filmgrain";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "filmgrain_comp";
+				}
+			];
+		},
+		{
+			name: "fog";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "fog_comp";
+				}
+			];
+		},
+		{
+			name: "fxaa";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "fxaa_comp";
+				}
+			];
+		},
+		{
+			name: "fxaa";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "fxaa_comp";
+				}
+			];
+		},
+		{
+			name: "gaussianblur";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "gaussianblur_comp";
+				}
+			];
+		},
+		{
+			name: "lensflare";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "lensflare_comp";
+				}
+			];
+		},
+		{
+			name: "throughpass";
+			sources: [
+				{
+					type: "fragment";
+					shader_name: "throughpass_frag";
+				}
+			];
+		},
+		{
+			name: "tonemap";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "tonemap_comp";
+				}
+			];
+		},
+		{
+			name: "upsample";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "upsample_comp";
+				}
+			];
+		},
+		{
+			name: "vignette";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "vignette_comp";
+				}
+			];
+		}
+	];
+
+	compile: [
+		{ 
+			shader_name: "ao_blur";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "applybloom";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "bokeh";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "brightdetect";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "chromatic_aberration";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "comp_average_brightness";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "comp_histogram";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "dof";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "downsample";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "emptypass";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "filmgrain";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "fog";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "fxaa";
+			permutations: [{}];
+		},
+		{
+			shader_name: "gaussianblur";
+			permutations: [
+				{ definitions: ["BLUR_TYPE 5"] },
+				{ definitions: ["BLUR_TYPE 9"] },
+				{ definitions: ["BLUR_TYPE 13"] }
+			];
+		},
+		{ 
+			shader_name: "lensflare";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "throughpass";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "tonemap";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "upsample";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "vignette";
+			permutations: [{}];
+		}
+	];
+}

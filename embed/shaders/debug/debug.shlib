@@ -1,0 +1,47 @@
+{
+	name: "debug";
+
+	shaders: [
+		{
+			name: "debugdraw";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "debugdraw_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "displaynormal_frag";
+				}
+			];
+		},
+		{
+			name: "displaynormal";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "displaynormal_vert";
+				},
+				{
+					type: "geometry";
+					shader_name: "displaynormal_geom";
+				},
+				{
+					type: "fragment";
+					shader_name: "displaynormal_frag";
+				}
+			];
+		}
+	];
+
+	compile: [
+		{ 
+			shader_name: "debugdraw";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "displaynormal";
+			permutations: [{}];
+		}
+	];
+}

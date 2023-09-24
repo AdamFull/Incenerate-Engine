@@ -1,0 +1,48 @@
+{
+	name: "generators";
+
+	shaders: [
+		{
+			name: "brdflut_generator";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "brdflut_comp";
+				}
+			];
+		},
+		{
+			name: "irradiancecube_generator";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "irradiancecube_comp";
+				}
+			];
+		},
+		{
+			name: "prefilteredmap_generator";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "prefilteredmap_comp";
+				}
+			];
+		}
+	];
+
+	compile: [
+		{ 
+			shader_name: "brdflut_generator"; 
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "irradiancecube_generator";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "prefilteredmap_generator";
+			permutations: [{}];
+		}
+	];
+}

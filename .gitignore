@@ -4,3 +4,4 @@ out/
 *.spv
 .vs/
 .vscode/
+embed/shader_library

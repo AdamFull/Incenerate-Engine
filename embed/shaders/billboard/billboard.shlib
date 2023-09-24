@@ -1,0 +1,29 @@
+{
+	name: "billboard";
+
+	shaders: [
+		{
+			name: "billboard";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "billboard_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "billboard_frag";
+				}
+			];
+		}
+	];
+
+	compile: [
+		{
+			shader_name: "billboard";
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
+		}
+	];
+}

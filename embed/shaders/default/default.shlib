@@ -1,0 +1,78 @@
+{
+	name: "default_lib";
+
+	shaders: [
+		{
+			name: "default";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "default_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "default_frag";
+				}
+			];
+		},
+		{
+			name: "default_tescellation";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "default_vert";
+				},
+				{
+					type: "control";
+					shader_name: "default_ctrl";
+				},
+				{
+					type: "evaluation";
+					shader_name: "default_eval";
+				},
+				{
+					type: "fragment";
+					shader_name: "default_frag";
+				}
+			];
+		}
+	];
+
+	compile: [
+		{
+			shader_name: "default";
+			permutation_generator: {
+				definitions: [
+					"HAS_SKIN",
+					"HAS_BASECOLORMAP",
+					"HAS_METALLIC_ROUGHNESS",
+					"HAS_TANGENTS",
+					"HAS_NORMALS",
+					"HAS_NORMALMAP",
+					"HAS_OCCLUSIONMAP",
+					"HAS_EMISSIVEMAP",
+					"EDITOR_MODE",
+					"BINDLESS_TEXTURES"
+				];
+			};
+		},
+		{
+			shader_name: "default_tescellation";
+			permutation_generator: {
+				definitions: [
+					"HAS_SKIN",
+					"USE_TESSELLATION",
+					"HAS_BASECOLORMAP",
+					"HAS_METALLIC_ROUGHNESS",
+					"HAS_TANGENTS",
+					"HAS_NORMALS",
+					"HAS_NORMALMAP",
+					"HAS_OCCLUSIONMAP",
+					"HAS_EMISSIVEMAP",
+					"EDITOR_MODE",
+					"BINDLESS_TEXTURES"
+				];
+			};
+		}
+	];
+}

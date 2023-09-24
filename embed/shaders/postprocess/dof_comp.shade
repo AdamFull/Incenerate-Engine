@@ -1,0 +1,65 @@
+{
+	version: 450;
+
+	enable_extensions: [
+		"GL_ARB_separate_shader_objects",
+		"GL_ARB_shading_language_420pack"
+	];
+
+	definitions: [];
+	require_extensions: [];
+	includes: ["compute_common"];
+
+	code: 
+	"""
+		layout(local_size_x = 8, local_size_y = 8) in;
+
+		layout(binding = 0, r11f_g11f_b10f) uniform writeonly image2D writeColor;
+		layout(binding = 1) uniform sampler2D samplerDepth;
+		layout(binding = 2) uniform sampler2D samplerColor;
+		layout(binding = 3) uniform sampler2D samplerBlured;
+		
+		layout(push_constant) uniform UBODepthOfField
+		{
+			float nearPlane;
+			float farPlane;
+		
+			float focusPoint;
+			float nearField;
+			float nearTransition;
+			float farField;
+			float farTransition;
+		} ubo;
+		
+		float linearDepth(float depth) 
+		{
+			float z = depth * 2.0f - 1.0f;
+			return (2.0f * ubo.nearPlane * ubo.farPlane) / (ubo.farPlane + ubo.nearPlane - z * (ubo.farPlane - ubo.nearPlane));
+		}
+		
+		void main()
+		{
+			uvec2 image_size = imageSize(writeColor);
+		
+			uvec2 px = uvec2(0, 0);
+			vec2 uv = vec2(0.0, 0.0);
+			if(swizzle_compute_workgroups_8x8(gl_GlobalInvocationID.xy, gl_LocalInvocationID.xy, image_size, uv, px))
+				return;
+		
+			float depth = linearDepth(texture(samplerDepth, uv).r);
+			vec3 textureColor = texture(samplerColor, uv).rgb;
+			vec3 textureBlured = texture(samplerBlured, uv).rgb;
+		
+			float nearEnd = ubo.nearField + ubo.nearTransition;
+			float farStart = ubo.farField - ubo.farTransition;
+		
+			float nearVisibility = smoothstep(ubo.nearField * ubo.focusPoint, nearEnd * ubo.focusPoint, depth);
+			float farVisibility = 1.0f - smoothstep(farStart * ubo.focusPoint, ubo.farField * ubo.focusPoint, depth);
+		
+			vec4 color = vec4(mix(textureBlured, textureColor, nearVisibility), 1.0f);
+			color.rgb = mix(textureBlured, color.rgb, farVisibility);
+		
+			imageStore(writeColor, ivec2(px), color);
+		}
+	""";
+}

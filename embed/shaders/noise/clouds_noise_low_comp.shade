@@ -1,0 +1,40 @@
+{
+	version: 450;
+
+	enable_extensions: [
+		"GL_ARB_separate_shader_objects",
+		"GL_ARB_shading_language_420pack"
+	];
+
+	definitions: [];
+	require_extensions: [];
+	includes: ["noise"];
+
+	code: 
+	"""
+		layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+		layout(binding = 0, r8) uniform writeonly image3D outNoise;
+
+		void main() 
+		{
+			vec3 position = (gl_GlobalInvocationID.xyz );
+			vec3 uv = (position + 0.5f) / vec3(imageSize(outNoise).xyz);
+		
+			const float frequency = 5.0f;
+			const float gain = 0.5f;
+			const float lacunarity = 2.0f;
+			const float amplitude = 1.0f;
+		
+			float noiseR = fBmTiledPerlin(uv * frequency, 4, frequency + 1.0f, gain, lacunarity, amplitude);
+			noiseR = abs(noiseR * 2.0 - 1.0);
+			float noiseG = fBmTiledWorley(uv * frequency, 4, frequency, gain, lacunarity, amplitude);
+			float noiseB = fBmTiledWorley(uv * frequency * 2.f, 4, frequency * 2.f, gain, lacunarity, amplitude);
+			float noiseA = fBmTiledWorley(uv * frequency * 4.f, 4, frequency * 4.f, gain, lacunarity, amplitude);
+		
+			float noise = remap(noiseR, (noiseG * 0.625 + noiseB * 0.25 + noiseA * 0.125) - 1.0, 1.0, 0.0, 1.0);
+		
+			imageStore(outNoise, ivec3(gl_GlobalInvocationID.xyz), vec4(noise, noise, noise, 1.0f));
+		}
+	""";
+}

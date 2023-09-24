@@ -1,0 +1,83 @@
+{
+	name: "billboard";
+
+	shaders: [
+		{
+			name: "atmosphere";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "atmosphere_comp";
+				}
+			];
+		},
+		{
+			name: "clouds";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "clouds_comp";
+				}
+			];
+		},
+		{
+			name: "compose";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "compose_comp";
+				}
+			];
+		},
+		{
+			name: "sun";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "sun_comp";
+				}
+			];
+		},
+		{
+			name: "skybox";
+			sources: [
+				{
+					type: "vertex";
+					shader_name: "skybox_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "skybox_frag";
+				}
+			];
+		}
+	];
+
+	compile: [
+		{ 
+			shader_name: "atmosphere";
+			permutations: [
+				{ definitions: ["MAX_DIRECTIONAL_LIGHTS_COUNT 3"] }
+			];
+		},
+		{ 
+			shader_name: "clouds";
+			permutations: [{}];
+		},
+		{ 
+			shader_name: "compose";
+			permutations: [{}];
+		},
+		//{ 
+		//	shader_name: "sun";
+		//	permutations: [{}];
+		//},
+		{
+			shader_name: "skybox";
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
+		}
+	];
+}

@@ -1,0 +1,93 @@
+{
+	version: 450;
+
+	enable_extensions: [
+		"GL_ARB_separate_shader_objects",
+		"GL_ARB_shading_language_420pack"
+	];
+
+	definitions: [];
+	require_extensions: [];
+	includes: ["shader_util", "math", "lighting_base", "atmosphere/constants"];
+
+	code: 
+	"""
+		layout(local_size_x = 32, local_size_y = 32) in;
+
+        layout(set = 1, binding = 0, rgba16f) uniform writeonly image2D writeColor;
+        layout(set = 1, binding = 1) uniform sampler2D atmosphereTex;
+        layout(set = 1, binding = 2) uniform sampler2D cloudsTex;
+        layout(set = 1, binding = 3) uniform sampler3D cloudsNoiseHighSampler;
+        layout(set = 1, binding = 4) uniform sampler3D cloudsNoiseLowSampler;
+        
+        layout(std140, set = 0, binding = 0) uniform FCameraData 
+        {
+          	mat4 view;
+          	mat4 invView;
+          	mat4 projection;
+          	mat4 invProjection;
+            mat4 invViewProjection;
+        } camera;
+        
+        //layout(std140, set = 0, binding = 1) uniform FAtmosphereScattering 
+        //{
+        //    int lightCount;
+        //} scattering;
+        //
+        //layout(std430, set = 0, binding = 2) buffer readonly UBOLights
+        //{
+        //	FDirectionalLight directionalLights[MAX_DIRECTIONAL_LIGHTS_COUNT];
+        //};
+        
+        void main()
+        {
+        	ivec2 iUV = ivec2(gl_GlobalInvocationID.xy);
+        	vec2 inUV = (iUV + 0.5f) / vec2(imageSize(writeColor).xy);
+        
+        	vec3 dirWorldSpace = getPositionFromDepth(vec2(inUV.x, 1.0 - inUV.y), 1.0f, camera.invViewProjection).xyz;
+        
+            //vec3 finalColor = vec3(0.0);
+            //for(int i = 0; i < scattering.lightCount; ++i)
+            //{
+            //    const FDirectionalLight light = directionalLights[i];
+            //    const vec3 dirToSun = normalize(-light.direction);
+            //
+            //    const vec3 right = normalize(cross(dirToSun, vec3(0,1,0)));
+            //    const vec3 up = cross(right, dirToSun);
+            //
+            //    float dx = dot(dirWorldSpace.xyz - dirToSun, right);
+            //    float dy = dot(dirWorldSpace.xyz - dirToSun, up);
+            //
+            //    const float angle = atan(dot(cross(dirWorldSpace.xyz, dirToSun), up), dot(dirWorldSpace.xyz, dirToSun));
+            //
+            //    finalColor += atmosphere;
+            //
+            //    if(dx > -SunAngularR && 
+            //      dy > -SunAngularR && 
+            //      dx < SunAngularR && 
+            //      dy < SunAngularR && 
+            //      abs(angle) < PI * 0.5)
+            //   {
+            //     vec2 sunUv = ((vec2(dx, dy) / SunAngularR) + 1.0f) / 2.0f;
+            //     sunUv.y = 1 - sunUv.y;
+            //     sunUv.x = 1 - sunUv.x;
+            //     const vec3 sunColor = texture(cloudsTex, sunUv).xyz;
+            //     float luminance = dot(sunColor,sunColor);
+            //     finalColor += max(finalColor, mix(finalColor, sunColor, clamp(0,1, luminance)));         
+            //   }
+            //}
+            //finalColor /= float(scattering.lightCount);
+        
+            vec3 finalColor = vec3(0.0);
+            finalColor += linearTosRGB(texture(atmosphereTex, inUV)).rgb;
+            //vec3 atmosphere = linearTosRGB(texture(atmosphereTex, inUV)).rgb;
+            //vec4 clouds = linearTosRGB(texture(cloudsTex, inUV));
+            //finalColor = mix(atmosphere, clouds.rgb, clouds.a);
+        
+            //finalColor += textureLod(cloudsNoiseLowSampler, vec3(inUV, 0), 0).rrr;
+            //finalColor += textureLod(cloudsNoiseHighSampler, vec3(inUV, 0), 0).rrr;
+        
+            imageStore(writeColor, iUV, vec4(finalColor, 1.0));
+        }
+	""";
+}

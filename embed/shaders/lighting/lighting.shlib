@@ -1,0 +1,40 @@
+{
+	name: "lighting";
+
+	shaders: [
+		{
+			name: "lighting";
+			sources: [
+				{
+					type: "vertex";
+					common: true;
+					shader_name: "screenspace_vert";
+				},
+				{
+					type: "fragment";
+					shader_name: "lighting_frag";
+				}
+			];
+		}
+	];
+
+	compile: [
+		{ 
+			shader_name: "lighting";
+			permutations: [
+				{ 
+					definitions: [
+						"MAX_DIRECTIONAL_LIGHTS_COUNT 3",
+						"MAX_SPOT_LIGHTS_COUNT 64",
+						"MAX_POINT_LIGHTS_COUNT 64",
+
+						"MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT 1",
+						"SHADOW_MAP_CASCADE_COUNT 8",
+						"MAX_SPOT_LIGHT_SHADOW_COUNT 16",
+						"MAX_POINT_LIGHT_SHADOW_COUNT 16"
+					] 
+				}
+			];
+		}
+	];
+}

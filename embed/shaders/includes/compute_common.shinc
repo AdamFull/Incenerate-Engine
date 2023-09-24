@@ -1,0 +1,39 @@
+{
+	includes: [];
+
+	code: 
+	"""
+		uint ABfiM(uint src, uint ins, uint bits)
+		{
+			uint mask = (1 << bits) - 1;
+			return (ins & mask) | (src & (~mask));
+		}
+		
+		uint ABfe(uint src, uint off, uint bits)
+		{
+			uint mask = (1<<bits) - 1;
+			return (src >> off) & mask;
+		}
+		
+		uvec2 ARmp8x8(uint a)
+		{
+			return uvec2(ABfe(a, 1, 3), ABfiM(ABfe(a, 3, 3), a, 1));
+		}
+		
+		bool swizzle_compute_workgroups_8x8(in uvec2 tid, in uvec2 lid, in uvec2 face_size, out vec2 uv, out ivec2 px)
+		{
+			uvec2 base_tx = tid - lid;
+			uint lid1d = lid.y * 8 + lid.x;
+			uvec2 sub_xy = ARmp8x8(lid1d);
+			uvec2 tx = uvec2(sub_xy.x + 8 * ((lid1d >> 6) % 2), sub_xy.y + 8 * ((lid1d >> 7)));
+			px = ivec2(base_tx + tx);
+		
+			uv = (vec2(px) + vec2(0.5, 0.5)) / vec2(face_size);
+		
+			if (px.x > face_size.x || px.y > face_size.y)
+				return true;
+		
+			return false;
+		}
+	""";
+}

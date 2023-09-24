@@ -1,0 +1,132 @@
+{
+	includes: ["math", "atmosphere/constants"];
+
+	code: 
+	"""
+		const float maxScatterDistance = (atmosphereRadius - planetRadius) * 2.0;
+
+        const int integralStepCount = 32;
+        const int lightIntegralStepCount = 8;
+        
+        const vec3 DefaultColor = vec3(0.01);
+        const float BaseIntencity = 5.0;
+        
+        const float RayleighScaleHeight = 8e3;
+        const vec3 BetaRayleigh = vec3(5.8e-6, 13.5e-6, 33.1e-6);
+        
+        const float MieScaleHeight = 1.2e3;
+        const vec3 BetaMie = vec3(21e-6);
+        
+        const float AbsorptionScaleHeight = 30e3;
+        const vec3 BetaAbsorption = vec3(2.04e-5, 4.97e-5, 1.95e-6);
+        const float FalloffAbsorbtion = 4e3;
+        const vec3 BetaAmbient = vec3(0.01);
+        
+        float phaseRayleight(float cosAngle)
+        {
+            float cosAngleSquare = cosAngle * cosAngle;
+            return ((3.0 * PI) / 16.0) * (1.0 + cosAngleSquare);
+        }
+        
+        float phaseMie(float cosAngle, float g)
+        {
+            float cosAngleSquare = cosAngle * cosAngle;
+            float gSquare = g * g;
+            return ((3.0 * PI) / 8.0) * (1.0 - gSquare) * (1.0 + cosAngleSquare) / ((2.0 + gSquare) * pow(1.0 + gSquare - 2. * g * cosAngle, 1.5));
+        }
+        
+        // Calculate Rayleight, Mie and Absorbtion density 
+        vec3 calculateDensity(float height, float deltaHeight)
+        {
+            const vec2 scaleHeight = vec2(RayleighScaleHeight, MieScaleHeight);
+        
+            // Calculate density for Rayleight and Mie both
+            vec3 density = vec3(exp(-height / scaleHeight), 0.0);
+        
+            // Calculate adsorption (Ozone)
+            float denom = (AbsorptionScaleHeight - height) / FalloffAbsorbtion;
+            density.z = (1.0 / (denom * denom + 1.0)) * density.x;
+        
+            density *= deltaHeight;
+        
+            return density;
+        }
+        
+        vec3 atmosphere(vec3 origin, vec3 direction, vec3 sunDirection, float sunIntensity)
+        {
+            // Trace ray from viewer position to atmosphere
+            vec2 intersection = raySphereIntersect(origin, direction, vec3(0.0), atmosphereRadius);
+        
+            if (intersection.x > intersection.y)
+                return DefaultColor;
+        
+            float hitDistance = max(intersection.x, intersection.y);
+        
+            if (hitDistance < 0.0)
+                return DefaultColor;
+        
+            hitDistance = min(hitDistance, maxScatterDistance);
+        
+            // Calculate point where ray hit a sphere
+            vec3 hitPosition = direction * hitDistance;
+            vec3 rayStep = hitPosition / float(integralStepCount);
+            float stepHeight = length(rayStep);
+        
+            vec3 opticalDepth = vec3(0.0);
+            vec3 totalRayleight = vec3(0.0);
+            vec3 totalMie = vec3(0.0);
+        
+            // Solve first integral
+            for (int i = 0; i < integralStepCount; ++i)
+            {
+                // Calculate current ray step from VIEWER to SKY
+                vec3 integralPos = origin + rayStep * float(i);
+                float integralHeight = length(integralPos) - planetRadius;
+        
+                // Accumulate air density
+                vec3 density = calculateDensity(integralHeight, stepHeight);
+                opticalDepth += density;
+        
+                // Trace ray from current integral position to sun direction
+                vec2 sunIntersection = raySphereIntersect(integralPos, -sunDirection, vec3(0.0), atmosphereRadius);
+                float sunHitDistance = max(sunIntersection.x, sunIntersection.y);
+        
+                // Calculate point where ray hit a sphere
+                vec3 sunHitPosition = -sunDirection * sunHitDistance;
+                vec3 sunRayStep = sunHitPosition / float(lightIntegralStepCount);
+                float sunStepHeight = length(sunRayStep);
+        
+                vec3 sunOpticalDepth = vec3(0.0);
+        
+                // Solve second integral
+                for (int j = 0; j < lightIntegralStepCount; ++j)
+                {
+                    // Calculate position from INTEGRAL POSITION to SUN
+                    vec3 sunIntegralPos = integralPos + sunRayStep * float(j);
+                    float sunIntegralHeight = length(sunIntegralPos) - planetRadius;
+        
+                    // Accumulate sun density
+                    vec3 sunDensity = calculateDensity(sunIntegralHeight, sunStepHeight);
+                    sunOpticalDepth += sunDensity;
+                }
+        
+                // Calculate light attenuation
+                vec3 attenuation = exp(-(BetaRayleigh * (opticalDepth.x + sunOpticalDepth.x) + BetaMie * (opticalDepth.y + sunOpticalDepth.y) + BetaAbsorption * (opticalDepth.z + sunOpticalDepth.z)));
+        
+                // Accumulate Rayleight and Mie color
+                totalRayleight += density.x * attenuation;
+                totalMie += density.y * attenuation;
+            }
+        
+            // Angle between viewer direction and sun direction
+            float angle = dot(normalize(direction), -sunDirection);
+        
+            // Calculate total scattered color
+            vec3 rayleightColor = BaseIntencity * phaseRayleight(angle) * BetaRayleigh * totalRayleight;
+            vec3 mieColor = sunIntensity * phaseMie(angle, 0.45) * BetaMie * totalMie;
+            vec3 sunColor = sunIntensity * phaseMie(angle, 0.999) * BetaMie * totalMie;
+        
+            return rayleightColor + mieColor + sunColor;
+        }
+	""";
+}

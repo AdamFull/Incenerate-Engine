@@ -1,0 +1,315 @@
+{
+	version: 450;
+
+	enable_extensions: [
+		"GL_ARB_separate_shader_objects",
+		"GL_ARB_shading_language_420pack"
+	];
+
+	definitions: [];
+	require_extensions: [];
+	includes: ["shader_util", "math", "lighting_base", "atmosphere/constants"];
+
+	code: 
+	"""
+		layout(local_size_x = 32, local_size_y = 32) in;
+
+        layout(set = 1, binding = 0, rgba16f) uniform writeonly image2D writeColor;
+        layout(set = 1, binding = 1) uniform sampler2D atmosphereTex;
+        layout(set = 1, binding = 2) uniform sampler2D cloudsMap;
+        layout(set = 1, binding = 3) uniform sampler3D cloudsNoiseHighSampler;
+        layout(set = 1, binding = 4) uniform sampler3D cloudsNoiseLowSampler;
+        layout(set = 1, binding = 5) uniform sampler2D noiseSampler;
+        
+        layout(std140, set = 0, binding = 0) uniform FCameraData 
+        {
+          	mat4 view;
+          	mat4 invView;
+          	mat4 projection;
+          	mat4 invProjection;
+            mat4 invViewProjection;
+            float time;
+        } camera;
+        
+        layout(std140, set = 0, binding = 1) uniform FCloudsMarching
+        {
+          	float cloudsDensity;
+            float cloudsCoverage;
+            int scatteringSteps;
+            float scatteringDensity;
+            float scatteringIntensity;
+            float scatteringPhase;
+            float phaseInfluence1;
+            float phaseInfluence2;
+            float eccentrisy1;
+            float eccentrisy2;
+            float cloudsAttenuation1;
+            float cloudsAttenuation2;
+            float fog;
+            float ambient;
+        } clouds;
+        
+        layout(std140, set = 0, binding = 2) uniform FAtmosphereScattering 
+        {
+            int lightCount;
+        } scattering;
+        
+        layout(std430, set = 0, binding = 3) buffer readonly UBOLights
+        {
+        	FDirectionalLight directionalLights[MAX_DIRECTIONAL_LIGHTS_COUNT];
+        };
+        
+        
+        float PhaseHenyeyGreenstein(float a, float g) 
+        {
+            float g2 = g * g;
+            return (1.0f - g2) / (4.0f * 3.1415f * pow(1.0f + g2 - 2.0f * g * (a), 1.5f));
+        }
+        
+        vec3 calculateSunColor(vec3 sunDirection)
+        {
+            const vec3 ZenithIlluminance =  vec3(0.925, 0.861, 0.755);
+            const vec3 HalfIlluminance = vec3(0.6f, 0.4490196f, 0.1588f);
+            const vec3 GroundIlluminance = vec3(0.0499, 0.004, 4.10 * 0.00001) * 2;
+            
+            const float angle = dot(-sunDirection, vec3(0, 1, 0));
+            
+            const float border = 0.1f;
+            
+            const float artisticTune1 = clamp(pow((angle - border) / (1.0f - border), 0.5), 0, 1);
+            const float artisticTune2 = clamp(pow(angle / border, 3), 0, 1);
+            
+            vec3 color = angle > border ? mix(HalfIlluminance, ZenithIlluminance, artisticTune1) : 
+            mix(GroundIlluminance, HalfIlluminance, artisticTune2);
+            
+            return color;
+        }
+        
+        float getCloudsHeight(vec3 position)
+        {
+          return clamp(((length(position.y) -  cloudsStart) / (cloudsEnd - cloudsStart)), 0, 1);
+        }
+        
+        float sampleCloudDensity(vec3 position)
+        {   
+            position.xz+= vec2(0.1, 0.05) * camera.time;
+        
+            const vec3 shift1 = vec3(-0.0021, 0.0017, -0.02f) * camera.time * -0.5;
+            const vec3 shift2 = vec3(0.021, 0.017, 0.0f) * camera.time * -0.2;
+        
+            const float cloudsLow = pow(texture(cloudsNoiseLowSampler, shift1 + position.xyz / 9000.0f).r, 1.f);
+            const float cloudsHigh = pow(texture(cloudsNoiseHighSampler, shift2 + position.xyz / 1300.0f).r, 1.f);
+        
+            const vec2 uv = position.xz / 409600.0f + vec2(0.2f, 0.1f);
+        
+            const vec4 weather = texture(cloudsMap, uv);
+        
+            const float height = getCloudsHeight(position);
+        
+            const float SRb = clamp(remap(height, 0.0f, 0.07f, 0.f, 1.f), 0.0f, 1.0f);
+            const float SRt = clamp(remap(height, weather.b * 0.35f, weather.b, 1.0f, 0.0f), 0.0f, 1.0f);
+        
+            const float SA = SRb * SRt;
+        
+            const float DRb = height * clamp(remap(height, 0.0f, 0.15f, 0.0f, 1.0f), 0.0f, 1.0f);
+            const float DRt = height * clamp(remap(height, 0.9, 1.0f, 1.0f, 0.0f),  0.0f, 1.0f);
+        
+            const float DA = DRb * DRt * weather.a * 2.0f * clouds.cloudsDensity;
+        
+            const float SNsample = cloudsLow * 0.85f + cloudsHigh * 0.15f;
+        
+            const float WMc = max(weather.r, clamp(clouds.cloudsCoverage - 0.5f, 0.0f, 1.0f) * weather.g * 2.0f);
+        
+            return clamp(remap(SNsample * SA, 1 - clouds.cloudsCoverage * WMc, 1.0f, 0.0f, 1.0f), 0.0f, 1.0f) * DA;
+        }
+        
+        float sampleCloudsDirectDensity(vec3 position, vec3 dirToSun)
+        {
+            float avrStep = (cloudsEnd - cloudsStart) * 0.01f;
+            float sumDensity = 0.0;
+          
+            for(int i = 0; i < 4; i++)
+            {
+                float step = avrStep;
+                
+                if(i == 3)
+                {
+                    step = step * 6.0;
+                }
+                
+                position += dirToSun * step;
+                
+                float density = sampleCloudDensity(position) * step;
+                sumDensity += density;
+            }
+          
+            return sumDensity;
+        }
+        
+        vec4 cloudsMarching(vec3 origin, vec3 viewDir, vec3 dirToSun, float sunIntensity)
+        {
+            vec3 traceStart;
+            vec3 traceEnd;
+            const float originHeight = length(origin);
+        
+            vec2 cloudsStartIntersections = raySphereIntersect(origin, viewDir, vec3(0), cloudsStart);
+            vec2 cloudsEndIntersections = raySphereIntersect(origin, viewDir, vec3(0), cloudsEnd);
+        
+            const float shiftCloudsStart = cloudsStartIntersections.x < 0 ? max(0, cloudsStartIntersections.y) : cloudsStartIntersections.x;
+            const float shiftCloudsEnd = cloudsEndIntersections.x < 0 ? max(0, cloudsEndIntersections.y) : cloudsEndIntersections.x;
+        
+            if(originHeight < cloudsStart)
+            {
+                traceStart = origin + viewDir * shiftCloudsStart;
+                traceEnd = origin + viewDir * shiftCloudsEnd;
+            }
+            else if(originHeight > cloudsEnd)
+            {
+                traceStart = origin + viewDir * shiftCloudsEnd;
+                traceEnd = origin + viewDir * shiftCloudsStart;
+            }
+            else
+            {
+                traceStart = origin;
+                
+                if(shiftCloudsStart == 0)
+                {
+                    traceEnd = origin + viewDir * shiftCloudsEnd;
+                }
+                else if(shiftCloudsEnd == 0)
+                {
+                    traceEnd = origin + viewDir * shiftCloudsStart;
+                }
+                else
+                {
+                    traceEnd = origin + viewDir * min(shiftCloudsStart, shiftCloudsEnd);       
+                }
+            }
+        
+            const float BigDistance = 600000.0f;
+        
+            if(shiftCloudsStart > BigDistance)
+            {
+                return vec4(0);
+            }
+        
+            vec3 sunColor = calculateSunColor(-dirToSun);
+            float mu = max(0, dot(viewDir, dirToSun));
+            
+            float dA[10];
+            float dB[10];
+            float dC[10];
+        
+            for(int j = 0; j < clouds.scatteringSteps; j++)
+            {
+               dA[j] = pow(clouds.scatteringDensity, j);
+               dB[j] = pow(clouds.scatteringIntensity, j);
+               dC[j] = pow(clouds.scatteringPhase, j);
+            }
+        
+            const vec3 finalTrace = traceEnd;
+            const uint StepsHighDetail = 128;
+            const uint StepsLowDetail = 256;
+            
+            vec3 position = traceStart;
+            vec3 color = vec3(0.0);
+            vec3 colorLow = vec3(0.0);
+            float transmittance = 1.0;
+            float transmittanceLow = 1.0f;
+        
+            float avrStep = 150;
+        
+            position = traceStart;
+        
+            for(int i = 0; i < StepsHighDetail + StepsLowDetail; i++)
+            {
+                float density = sampleCloudDensity(position) * avrStep;
+        
+                if(density > 0)
+                {
+                    for(int j = 0; j < clouds.scatteringSteps; j++)
+                    {
+                        vec3 randomVec = vec3(0);
+                        if(j > 0)
+                        {
+                            randomVec = normalize(texture(noiseSampler, position.xz + j / 16.0f).xyz - 0.5f) * 10.0f;
+                        }
+                        
+                        vec3 localPosition = position + randomVec;
+                        
+                        float sunDensity = sampleCloudsDirectDensity(localPosition, dirToSun);
+                        
+                        float m11 = clouds.phaseInfluence1 * PhaseHenyeyGreenstein(mu, dC[j] * clouds.eccentrisy1);
+                        float m12 = clouds.phaseInfluence2 * PhaseHenyeyGreenstein(mu, dC[j] * clouds.eccentrisy2);
+                        float m2 = exp(-dA[j] * clouds.cloudsAttenuation1 * sunDensity);
+                        float m3 = clouds.cloudsAttenuation2 * density;
+                        
+                        vec2 intersections = raySphereIntersect(localPosition, dirToSun, vec3(0), planetRadius);
+                
+                        // No sun rays throw the Earth
+                        if(max(intersections.x, intersections.y) < 0)
+                        {
+                            colorLow += dB[j] * (m11 + m12) * m2 * m3 * transmittanceLow;
+                        }
+                        
+                        transmittanceLow *= exp(-dA[j] * clouds.cloudsAttenuation1 * density);
+                    }
+                }
+        
+                position += viewDir * avrStep;
+                const float height = length(position);
+                
+                if(transmittanceLow < 0.05 || height > cloudsEnd || height < cloudsStart)
+                {
+                    break;
+                }
+                
+                if(i >= StepsHighDetail)
+                {
+                    avrStep += 4;
+                }
+            }
+        
+            return vec4(sunIntensity * sunColor * colorLow, 1.0 - transmittanceLow);
+        }
+        
+        void main() 
+        {
+            ivec2 iUV = ivec2(gl_GlobalInvocationID.xy);
+        	vec2 inUV = (iUV + 0.5f) / vec2(imageSize(writeColor).xy);
+        
+            const vec3 viewerPosition = vec3(camera.invView[3]);
+            const vec3 origin = vec3(0, planetRadius, 0) + viewerPosition * 0.01;
+            vec3 dirWorldSpace = getPositionFromDepth(vec2(inUV.x, 1.0 - inUV.y), 1.0f, camera.invViewProjection).xyz;
+        
+            vec3 viewDir = normalize(dirWorldSpace.xyz);
+            float horizon = 1.0f;
+            horizon -= exp(-abs(dot(viewDir, vec3(0.0, 1.0, 0.0))) * clouds.fog);
+            horizon = horizon * horizon * horizon;
+            horizon += 1 - clamp((cloudsStart - length(origin)) / 500, 0, 1);
+            horizon = clamp(horizon, 0, 1);
+        
+            vec3 atmosphere = linearTosRGB(texture(atmosphereTex, inUV)).rgb;
+        
+            vec3 sky = vec3(atmosphere.b);
+            sky = sky / (1 + sky);
+        
+            vec4 finalColor = vec4(0.0);
+            for(int i = 0; i < scattering.lightCount; ++i)
+            {
+                const FDirectionalLight light = directionalLights[i];
+                const vec3 dirToSun = normalize(-light.direction);
+        
+                vec4 rawColor = cloudsMarching(origin, viewDir, dirToSun, light.intencity) + vec4(sky.xyz, 0.0f) * clouds.ambient;
+                vec3 tunedClouds = mix(atmosphere, rawColor.rgb, horizon);
+        
+                finalColor.rgb += tunedClouds;
+                finalColor.a += rawColor.a;
+            }
+            finalColor /= float(scattering.lightCount);
+            //finalColor = 1.0 - exp(-1.0 * finalColor);
+        
+            imageStore(writeColor, iUV, finalColor);
+        }
+	""";
+}

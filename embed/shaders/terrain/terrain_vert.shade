@@ -1,0 +1,41 @@
+{
+	version: 450;
+
+	enable_extensions: [
+		"GL_ARB_separate_shader_objects",
+		"GL_ARB_shading_language_420pack"
+	];
+
+	definitions: [];
+	require_extensions: [];
+	includes: ["shader_util", "shader_inputs"];
+
+	code: 
+	"""
+		layout(location = 0) in vec3 inPosition;
+		layout(location = 1) in vec3 inColor;
+		layout(location = 2) in vec3 inNormal;
+		layout(location = 3) in vec2 inTexCoord;
+		layout(location = 4) in vec4 inTangent;
+		layout (location = 5) in vec4 inJoint0;
+		layout (location = 6) in vec4 inWeight0;
+		
+		layout(location = 0) out vec2 outUV;
+		layout(location = 1) out vec3 outColor;
+		layout(location = 2) out vec3 outNormal;
+
+		void main() 
+		{
+			outUV = inTexCoord;
+		  	outColor = inColor;
+		
+			outNormal = mat3(meshData.normal) * inNormal;
+		
+		#ifdef USE_TESSELLATION
+			gl_Position = meshData.model * vec4(inPosition, 1.0);
+		#else
+			gl_Position = meshData.model * vec4(inPosition, 1.0);
+		#endif
+}
+	""";
+}
