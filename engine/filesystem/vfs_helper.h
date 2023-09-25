@@ -54,6 +54,7 @@ namespace engine
             static std::string get_ext(const std::string& path);
 
             static std::string get_filename(const std::string& path);
+            static std::string get_stem(const std::string& path); // Returns filename without extension
             static std::string parent_path(const std::string& path);
             static std::string path_append(const std::string& base_path, const std::string& relative_path);
             static std::string normalize(const std::string& path);

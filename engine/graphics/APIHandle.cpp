@@ -743,48 +743,20 @@ size_t CAPIHandle::addShader(const std::string& name, std::unique_ptr<CShaderObj
     return m_pShaderManager->add(name, std::move(shader));
 }
 
-size_t CAPIHandle::addShader(const std::string& shadertype, size_t mat_id)
+size_t CAPIHandle::addShader(const std::string& shadertype, const FShaderCreateInfo& specials)
 {
-    FShaderSpecials specials;
-
-    if (mat_id != invalid_index)
-    {
-        auto& pMaterial = getMaterial(mat_id);
-        auto& params = pMaterial->getParameters();
-        specials.usages = pMaterial->getUsageCount();
-        specials.doubleSided = params.doubleSided;
-        specials.alphaBlend = params.alphaMode;
-
-        for (auto& definition : params.vCompileDefinitions)
-            specials.defines.emplace(definition, "");
-    }
-
-    auto shader_id = addShader(shadertype, specials);
-    if (mat_id != invalid_index)
-    {
-        auto& pMaterial = getMaterial(mat_id);
-        pMaterial->setShader(shader_id);
-    }
-        
-    return shader_id;
-}
-
-size_t CAPIHandle::addShader(const std::string& shadertype, const FShaderSpecials& specials)
-{
-    std::vector<std::optional<FCachedShader>> compiledShaders;
-    FPipelineParams pipelineParams{};
-
-    auto shader_id_name = m_pShaderLoader->getShaderCreateInfo(shadertype, specials, compiledShaders, pipelineParams);
+    std::vector<FShaderModuleCreateInfo> modules_ci{};
+    auto shader_id_name = m_pShaderLoader->getShaderCreateInfo(shadertype, specials, modules_ci);
 
     size_t shader_id{ invalid_index };
     if (auto& shader = getShader(shader_id_name))
     {
         shader_id = getShaderID(shader_id_name);
-        shader->increaseUsage(pipelineParams.usages);
+        shader->increaseUsage(specials.usages);
         m_pShaderManager->increment(shader_id);
     }
     else
-        shader_id = addShader(shader_id_name, m_pShaderLoader->load(compiledShaders, pipelineParams));
+        shader_id = addShader(shader_id_name, m_pShaderLoader->load(modules_ci, specials));
 
     return shader_id;
 }
@@ -951,7 +923,11 @@ size_t CAPIHandle::computeBRDFLUT(uint32_t size)
 
     auto output_id = addImage("brdflut", std::move(brdfImage));
 
-    auto shader_id = addShader("brdflut_generator");
+    FShaderCreateInfo shader_ci{};
+    shader_ci.bind_point = vk::PipelineBindPoint::eCompute;
+    shader_ci.usages = 1;
+
+    auto shader_id = addShader("generators:brdflut_generator", shader_ci);
     auto& pShader = getShader(shader_id);
 
     pShader->addTexture("outColour", output_id);
@@ -980,7 +956,11 @@ size_t CAPIHandle::computeIrradiance(size_t origin, uint32_t size)
 
     auto output_id = addImage("irradiance", std::move(irradianceCubemap));
 
-    auto shader_id = addShader("irradiancecube_generator");
+    FShaderCreateInfo shader_ci{};
+    shader_ci.bind_point = vk::PipelineBindPoint::eCompute;
+    shader_ci.usages = 1;
+
+    auto shader_id = addShader("generators:irradiancecube_generator", shader_ci);
     auto& pShader = getShader(shader_id);
     pShader->addTexture("outColour", output_id);
     pShader->addTexture("samplerColor", origin);
@@ -1014,7 +994,11 @@ size_t CAPIHandle::computePrefiltered(size_t origin, uint32_t size)
     auto output_id = addImage("prefiltered", std::move(prefilteredCubemap));
     auto& target = getImage(output_id);
 
-    auto shader_id = addShader("prefilteredmap_generator");
+    FShaderCreateInfo shader_ci{};
+    shader_ci.bind_point = vk::PipelineBindPoint::eCompute;
+    shader_ci.usages = 1;
+
+    auto shader_id = addShader("generators:prefilteredmap_generator", shader_ci);
     auto& pShader = getShader(shader_id);
     auto& pPushConst = pShader->getPushBlock("object");
 
@@ -1080,7 +1064,11 @@ size_t CAPIHandle::compute2DNoise(const std::string& imageName, vk::Extent2D noi
 
     auto output_id = addImage(imageName, std::move(noiseTexture));
 
-    auto shader_id = addShader("2dnoisegen");
+    FShaderCreateInfo shader_ci{};
+    shader_ci.bind_point = vk::PipelineBindPoint::eCompute;
+    shader_ci.usages = 1;
+
+    auto shader_id = addShader("noise:2dnoisegen", shader_ci);
     auto& pShader = getShader(shader_id);
     pShader->addTexture("outNoise", output_id);
 
@@ -1111,7 +1099,11 @@ size_t CAPIHandle::compute3DNoise(const std::string& imageName, const std::strin
 
     auto output_id = addImage(imageName, std::move(noiseTexture));
 
-    auto shader_id = addShader(shaderName);
+    FShaderCreateInfo shader_ci{};
+    shader_ci.bind_point = vk::PipelineBindPoint::eGraphics;
+    shader_ci.usages = 1;
+
+    auto shader_id = addShader(shaderName, shader_ci);
     auto& pShader = getShader(shader_id);
     pShader->addTexture("outNoise", output_id);
 

@@ -3,10 +3,16 @@
 #include "Engine.h"
 
 using namespace engine::ecs;
+using namespace engine::graphics;
 
 void CPresentRenderSystem::__create()
 {
-	shader_id = graphics->addShader("through_pass");
+	FShaderCreateInfo specials;
+	specials.pipeline_stage = "present";
+	specials.cull_mode = vk::CullModeFlagBits::eBack;
+	specials.usages = 1;
+
+	shader_id = graphics->addShader("postprocess:through_pass", specials);
 }
 
 void CPresentRenderSystem::__update(float fDt)

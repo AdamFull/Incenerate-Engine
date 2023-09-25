@@ -12,10 +12,10 @@ namespace engine
 			CComputePipeline(CDevice* device);
 			virtual ~CComputePipeline() = default;
 
-			void create(CShaderObject* pShader) override;
+			void create(CShaderObject* pShader, const FShaderCreateInfo& specials) override;
 
 		protected:
-			void createPipeline(CShaderObject* pShader) override;
+			void createPipeline(CShaderObject* pShader, const FShaderCreateInfo& specials) override;
 			vk::PipelineBindPoint getBindPoint() { return vk::PipelineBindPoint::eCompute; }
 
 		};

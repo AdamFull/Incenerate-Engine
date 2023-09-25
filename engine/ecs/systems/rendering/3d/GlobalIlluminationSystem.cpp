@@ -22,12 +22,12 @@ void CGlobalIlluminationSystem::__create()
 	std::uniform_real_distribution<float> rndDist(0.0f, 1.0f);
 
 	{
-		FShaderSpecials specials;
-		specials.defines =
-		{
-			{"SSAO_KERNEL_SIZE", std::to_string(SSAO_KERNEL_SIZE)}
-		};
-		shader_id = graphics->addShader("ssdo_pass", specials);
+		FShaderCreateInfo specials;
+		specials.pipeline_stage = "global_illumination";
+		specials.cull_mode = vk::CullModeFlagBits::eBack;
+		specials.usages = 1;
+
+		shader_id = graphics->addShader("effects:ssdo", specials);
 	}
 
 	for (uint32_t i = 0; i < SSAO_KERNEL_SIZE; ++i)

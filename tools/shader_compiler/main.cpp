@@ -135,7 +135,7 @@ int main(int argc, char** argv)
 		log_error("Common shaders path is not set.");
 		return -1;
 	}
-
+	
 	std::string target_api_str{ "vk10" };
 	target_api_str = argparse.try_get("-api", target_api_str);
 	target_api = parse_api_type(target_api_str);

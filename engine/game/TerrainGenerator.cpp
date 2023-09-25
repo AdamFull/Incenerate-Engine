@@ -99,7 +99,7 @@ void CTerrainLoader::load(FTerrainComponent* terrain)
 		}
 	}
 
-	auto use_tess = shader->getTesselationFlag();
+	auto use_tess = false;// shader->getTesselationFlag();
 
 	generateIndices(indices, size, use_tess);
 
@@ -134,7 +134,7 @@ void CTerrainLoader::loadMaterial(ecs::FTerrainComponent* terrain)
 	material->incrementUsageCount();
 	terrain->material_id = graphics->addMaterial("terrain:" + terrain->source, std::move(material));
 
-	graphics->addShader("terrain_tessellation", terrain->material_id);
+	//graphics->addShader("terrain_tessellation", terrain->material_id);
 }
 
 void CTerrainLoader::loadHeightmap(FTerrainComponent* terrain)

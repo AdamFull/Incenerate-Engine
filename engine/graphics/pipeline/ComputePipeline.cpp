@@ -11,13 +11,13 @@ CComputePipeline::CComputePipeline(CDevice* device)
     pDevice = device;
 }
 
-void CComputePipeline::create(CShaderObject* pShader)
+void CComputePipeline::create(CShaderObject* pShader, const FShaderCreateInfo& specials)
 {
-    CPipeline::create(pShader);
-    createPipeline(pShader);
+    CPipeline::create(pShader, specials);
+    createPipeline(pShader, specials);
 }
 
-void CComputePipeline::createPipeline(CShaderObject* pShader)
+void CComputePipeline::createPipeline(CShaderObject* pShader, const FShaderCreateInfo& specials)
 {
     auto& shader = pShader->getShader();
     auto shaderStages = shader->getStageCreateInfo();

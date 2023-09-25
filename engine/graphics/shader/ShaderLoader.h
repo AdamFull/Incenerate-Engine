@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ShaderCompiler.h"
 #include "ShaderObject.h"
+#include "../../../tools/shader_compiler/shader_library_parse.hpp"
 
 namespace engine
 {
@@ -9,13 +9,10 @@ namespace engine
 
 	namespace graphics
 	{
-		struct FShaderSpecials
+		struct FShaderModuleCreateInfo
 		{
-			std::unordered_map<std::string, std::string> defines;
-			uint32_t subpass{ 0 };
-			size_t usages{ 512 };
-			bool doubleSided{ false };
-			EAlphaMode alphaBlend;
+			vk::ShaderStageFlagBits stage;
+			std::vector<uint32_t>* spirv{ nullptr };
 		};
 
 		class CShaderLoader
@@ -25,15 +22,14 @@ namespace engine
 			~CShaderLoader();
 
 			void create();
-			std::string getShaderCreateInfo(const std::string& shaderName, const FShaderSpecials& specials, std::vector<std::optional<FCachedShader>>& shaderCode, FPipelineParams& pipelineParams);
-			std::unique_ptr<CShaderObject> load(const std::vector<std::optional<FCachedShader>>& shaderCode, const FPipelineParams& pipelineParams);
+			std::string getShaderCreateInfo(const std::string& shader_name, const FShaderCreateInfo& specials, std::vector<FShaderModuleCreateInfo>& module_ci);
+			std::unique_ptr<CShaderObject> load(const std::vector<FShaderModuleCreateInfo>& module_ci, const FShaderCreateInfo& specials);
 
 		private:
 			CDevice* m_pDevice{ nullptr };
 			filesystem::IVirtualFileSystemInterface* m_pVFS{ nullptr };
 
-			std::unique_ptr<CShaderCompiler> m_pCompiler;
-			std::unordered_map<std::string, FProgramCreateInfo> programCI;
+			std::unordered_map<std::string, FCompiledLibrary> shader_libraries{};
 
 			bool bEditorMode{ false };
 		};

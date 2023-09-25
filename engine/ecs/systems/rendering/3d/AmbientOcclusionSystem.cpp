@@ -20,15 +20,24 @@ void CAmbientOcclusionSystem::__create()
 	std::uniform_real_distribution<float> rndDist(0.0f, 1.0f);
 
 	{
-		FShaderSpecials specials;
-		specials.defines = 
-		{
-			{"SSAO_KERNEL_SIZE", std::to_string(SSAO_KERNEL_SIZE)}
-		};
-		ssao_shader_id = graphics->addShader("ssao_pass", specials);
+		FShaderCreateInfo gfx_ci;
+		gfx_ci.pipeline_stage = "ssao";
+		gfx_ci.cull_mode = vk::CullModeFlagBits::eBack;
+		gfx_ci.usages = 1;
+
+		// TODO: Do it using constants
+		//specials.defines = 
+		//{
+		//	{"SSAO_KERNEL_SIZE", std::to_string(SSAO_KERNEL_SIZE)}
+		//};
+		ssao_shader_id = graphics->addShader("effects:ssao", gfx_ci);
 	}
 
-	gaussian_blur_shader_id = graphics->addShader("ambient_occlusion_blur");
+	FShaderCreateInfo comp_ci;
+	comp_ci.bind_point = vk::PipelineBindPoint::eCompute;
+	comp_ci.usages = 1;
+
+	gaussian_blur_shader_id = graphics->addShader("postprocess:ao_blur", comp_ci);
 	
 
 	for (uint32_t i = 0; i < SSAO_KERNEL_SIZE; ++i)

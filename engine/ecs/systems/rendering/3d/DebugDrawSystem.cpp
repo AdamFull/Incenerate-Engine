@@ -12,14 +12,23 @@ using namespace engine::graphics;
 
 void CDebugDrawSystem::__create()
 {
-	normals_shader_id = graphics->addShader("displaynormal");
+	FShaderCreateInfo specials;
+	specials.pipeline_stage = "deferred";
+	specials.vertex_type = EVertexType::eDefault;
+	specials.cull_mode = vk::CullModeFlagBits::eBack;
+	specials.front_face = vk::FrontFace::eCounterClockwise;
+	specials.depth_test = true;
+
+	normals_shader_id = graphics->addShader("debug:displaynormal", specials);
 
 	debug_vbo_id = graphics->addVertexBuffer("debug_draw_vbo");
 
 	auto& vbo = graphics->getVertexBuffer(debug_vbo_id);
 	vbo->reserve(sizeof(FSimpleVertex), DEBUG_DRAW_MAX_VERTICES, sizeof(uint32_t), 0);
 
-	debug_shader_id = graphics->addShader("debugdraw");
+	specials.vertex_type = EVertexType::eSmall;
+
+	debug_shader_id = graphics->addShader("debug:debugdraw", specials);
 }
 
 void CDebugDrawSystem::__update(float fDt)

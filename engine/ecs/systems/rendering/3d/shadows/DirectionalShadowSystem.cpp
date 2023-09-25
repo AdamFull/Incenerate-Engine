@@ -9,10 +9,15 @@ using namespace engine::ecs;
 
 void CDirectionalShadowSystem::__create()
 {
-	FShaderSpecials specials;
+	FShaderCreateInfo specials;
+	specials.pipeline_stage = "direct_shadow";
+	specials.vertex_type = EVertexType::eDefault;
+	specials.cull_mode = vk::CullModeFlagBits::eFront;
+	specials.front_face = vk::FrontFace::eCounterClockwise;
+	specials.depth_test = true;
 	specials.usages = MAX_SPOT_LIGHT_SHADOW_COUNT;
 	//specials.defines = { {"INVOCATION_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)} };
-	shader_id = graphics->addShader("directional_shadow_pass", specials);
+	shader_id = graphics->addShader("shadows:directional", specials);
 
 	CBaseGraphicsSystem::__create();
 }

@@ -12,10 +12,10 @@ namespace engine
 			CRayTracePipeline(CDevice* device);
 			virtual ~CRayTracePipeline() = default;
 
-			void create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass) override;
+			void create(CShaderObject* pShader, vk::RenderPass& renderPass, const FShaderCreateInfo& specials) override;
 
 		protected:
-			void createPipeline(CShaderObject* pShader) override;
+			void createPipeline(CShaderObject* pShader, const FShaderCreateInfo& specials) override;
 			vk::PipelineBindPoint getBindPoint() { return vk::PipelineBindPoint::eRayTracingKHR; }
 		};
 	}

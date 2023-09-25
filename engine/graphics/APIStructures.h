@@ -15,54 +15,27 @@ namespace engine
 
 		enum class EVertexType
 		{
+			eNone,
 			eDefault,
 			eSmall
 		};
 
-		struct FProgramCreateInfo
+		struct FShaderCreateInfo
 		{
-			std::string srStage{};
-			EVertexType vertexType{ EVertexType::eDefault };
-			bool vertexfree{ false };
-			vk::PipelineBindPoint bindPoint;
-			vk::PrimitiveTopology topology{ vk::PrimitiveTopology::eTriangleList };
-			vk::CullModeFlagBits  cullMode;
-			vk::FrontFace frontFace;
-			bool depthTest{ false };
-			std::vector<vk::DynamicState> dynamicStates;
-			bool tesselation{ false };
-			bool usesBindlessTextures{ false };
+			std::string pipeline_stage{};
+			EVertexType vertex_type{ EVertexType::eNone };
+			vk::PipelineBindPoint bind_point{ vk::PipelineBindPoint::eGraphics };
+			vk::PrimitiveTopology primitive_topology{ vk::PrimitiveTopology::eTriangleList };
+			vk::CullModeFlags cull_mode{ vk::CullModeFlagBits::eNone };
+			vk::FrontFace front_face{ vk::FrontFace::eClockwise };
+			bool depth_test{ false };
+			bool use_bindles_textures{ false };
 
-			std::vector<std::string> stages;
-			std::unordered_map<std::string, std::string> defines;
+			uint32_t subpass{ 0 };
+			size_t usages{ 512 };
+			bool double_sided{ false };
+			EAlphaMode alpha_blend;
 		};
-
-		void to_json(nlohmann::json& json, const FProgramCreateInfo& type);
-		void from_json(const nlohmann::json& json, FProgramCreateInfo& type);
-
-
-		struct FCachedShader
-		{
-			vk::ShaderStageFlagBits shaderStage;
-
-			std::vector<uint32_t> shaderCode;
-			size_t hash{};
-
-			bool operator==(const FCachedShader& rhs) const
-			{
-				return this->shaderStage == rhs.shaderStage && this->shaderCode == rhs.shaderCode;
-			}
-
-			bool operator!=(const FCachedShader& rhs) const
-			{
-				return this->shaderStage != rhs.shaderStage || this->shaderCode != rhs.shaderCode;
-			}
-		};
-
-		void to_json(nlohmann::json& json, const FCachedShader& type);
-		void from_json(const nlohmann::json& json, FCachedShader& type);
-
-
 
 		// For debug drawing
 		struct FSimpleVertex

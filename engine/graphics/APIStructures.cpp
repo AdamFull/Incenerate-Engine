@@ -205,64 +205,10 @@ namespace engine
 		(
 			EVertexType,
 			{
+				{EVertexType::eNone, nullptr},
 				{EVertexType::eDefault, "default"},
 				{EVertexType::eSmall, "small"}
 			}
 		);
-
-		void to_json(nlohmann::json& json, const FProgramCreateInfo& type)
-		{
-			json = nlohmann::json
-			{
-				{"stage", type.srStage},
-				{"vertex", type.vertexType},
-				{"vertex_free", type.srStage},
-				{"bind_point", type.srStage},
-				{"topology", type.srStage},
-				{"cull_mode", type.srStage},
-				{"front_face", type.srStage},
-				{"depth_test", type.srStage},
-				{"dynamic_states", type.srStage},
-				{"tesselation", type.tesselation},
-				{"uses_bindless_textures", type.usesBindlessTextures},
-				{"stages", type.srStage},
-				{"defines", type.srStage}
-			};
-		}
-
-		void from_json(const nlohmann::json& json, FProgramCreateInfo& type)
-		{
-			utl::parse_to("stage", json, type.srStage);
-			utl::parse_to("vertex", json, type.vertexType);
-			utl::parse_to("vertex_free", json, type.vertexfree);
-			utl::parse_to("bind_point", json, type.bindPoint);
-			utl::parse_to("topology", json, type.topology);
-			utl::parse_to("cull_mode", json, type.cullMode);
-			utl::parse_to("front_face", json, type.frontFace);
-			utl::parse_to("depth_test", json, type.depthTest);
-			utl::parse_to("dynamic_states", json, type.dynamicStates);
-			utl::parse_to("tesselation", json, type.tesselation);
-			utl::parse_to("uses_bindless_textures", json, type.usesBindlessTextures);
-			utl::parse_to("stages", json, type.stages);
-			utl::parse_to("defines", json, type.defines);
-		}
-
-
-		void to_json(nlohmann::json& json, const FCachedShader& type)
-		{
-			json = nlohmann::json
-			{
-				{"stage", type.shaderStage},
-				{"code", type.shaderCode},
-				{"hash", type.hash}
-			};
-		}
-
-		void from_json(const nlohmann::json& json, FCachedShader& type)
-		{
-			utl::parse_to("stage", json, type.shaderStage);
-			utl::parse_to("code", json, type.shaderCode);
-			utl::parse_to("hash", json, type.hash);
-		}
 	}
 }

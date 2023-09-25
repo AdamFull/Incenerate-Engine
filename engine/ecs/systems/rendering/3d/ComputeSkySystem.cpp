@@ -15,11 +15,15 @@ using namespace engine::graphics;
 
 void CComputeSkySystem::__create()
 {
-	FShaderSpecials specials;
-	specials.defines = {
-		{"MAX_DIRECTIONAL_LIGHTS_COUNT", std::to_string(MAX_DIRECTIONAL_LIGHT_COUNT)}
-	};
-	atmosphere_shader_id = graphics->addShader("sky_atmosphere_comp", specials);
+	FShaderCreateInfo specials;
+	specials.bind_point = vk::PipelineBindPoint::eCompute;
+	specials.usages = 1;
+
+	// TODO: Set this value as constants
+	//specials.defines = {
+	//	{"MAX_DIRECTIONAL_LIGHTS_COUNT", std::to_string(MAX_DIRECTIONAL_LIGHT_COUNT)}
+	//};
+	atmosphere_shader_id = graphics->addShader("skybox:atmosphere", specials);
 	atmosphere_tex_id = effectshared::createImage("sky_atmosphere_texture", vk::Format::eB10G11R11UfloatPack32);
 
 	//clouds_shader_id = graphics->addShader("sky_clouds_comp");

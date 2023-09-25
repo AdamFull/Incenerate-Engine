@@ -9,9 +9,14 @@ using namespace engine::ecs;
 
 void COmniShadowSystem::__create()
 {
-	FShaderSpecials specials;
+	FShaderCreateInfo specials;
+	specials.pipeline_stage = "omni_shadow";
+	specials.vertex_type = EVertexType::eDefault;
+	specials.cull_mode = vk::CullModeFlagBits::eFront;
+	specials.front_face = vk::FrontFace::eCounterClockwise;
+	specials.depth_test = true;
 	specials.usages = MAX_POINT_LIGHT_SHADOW_COUNT * 6;
-	shader_id = graphics->addShader("omni_shadow_pass", specials);
+	shader_id = graphics->addShader("shadows:omni", specials);
 
 	CBaseGraphicsSystem::__create();
 }

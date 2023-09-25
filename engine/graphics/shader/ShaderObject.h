@@ -25,27 +25,6 @@ namespace engine
 			std::unordered_map<std::string, std::unique_ptr<CHandler>> mBuffers;
 		};
 
-		struct FPipelineParams
-		{
-			vk::PipelineBindPoint bindPoint{};
-			vk::CullModeFlagBits cullMode{};
-			vk::FrontFace frontFace{};
-			vk::PrimitiveTopology primitiveTopology{};
-			std::vector<vk::DynamicState> dynamicStates{};
-			bool depthTest{ false };
-			bool enableTesselation{ false };
-			bool vertexFree{ false };
-			bool doubleSided{ false };
-			bool useBindlessTextures{ false };
-			EVertexType vertexType{};
-			EAlphaMode alphaMode{};
-			std::string renderStage{};
-
-			// init data
-			uint32_t subpass{0};
-			uint32_t usages{1};
-		};
-
 		class CShaderObject
 		{
 		public:
@@ -54,7 +33,7 @@ namespace engine
 			CShaderObject(CDevice* device);
 			~CShaderObject();
 
-			void create(uint32_t subpass = 0);
+			void create(const FShaderCreateInfo& specials);
 			void increaseUsage(size_t usages);
 
 			void bind(vk::CommandBuffer& commandBuffer);
@@ -75,18 +54,15 @@ namespace engine
 
 			const std::unique_ptr<CPipeline>& getPipeline() { return pPipeline; }
 
-			const FPipelineParams& getPipelineParams() const { return pipelineParams; }
-
-			vk::PipelineBindPoint getBindPoint() const { return pipelineParams.bindPoint; }
-			bool getTesselationFlag() const { return pipelineParams.enableTesselation; }
-			const std::string& getStage() const { return pipelineParams.renderStage; }
-			const bool isUsesBindlessTextures() const { return pipelineParams.useBindlessTextures; }
-
 			const std::unique_ptr<CShader>& getShader();
+
+			bool isUsesBindlessTextures() const;
 		private:
 			CDevice* pDevice{ nullptr };
 			size_t usageCount{ 0 };
 			size_t currentUsage{ 0 };
+
+			bool usesBindlessTextures{ false };
 
 			std::unique_ptr<CShader> pShader;
 			std::unique_ptr<CPipeline> pPipeline;
@@ -94,8 +70,6 @@ namespace engine
 			std::vector<std::unique_ptr<FShaderInstance>> vInstances;
 			
 			std::unordered_map<std::string, std::unique_ptr<CPushHandler>> mPushBlocks;
-
-			FPipelineParams pipelineParams{};
 		};
 	}
 }

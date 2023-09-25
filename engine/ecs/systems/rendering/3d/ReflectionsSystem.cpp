@@ -11,7 +11,12 @@ using namespace engine::graphics;
 
 void CReflectionsSystem::__create()
 {
-	shader_id = graphics->addShader("ssr_pass");
+	FShaderCreateInfo specials;
+	specials.pipeline_stage = "ssr";
+	specials.cull_mode = vk::CullModeFlagBits::eBack;
+	specials.usages = 1;
+
+	shader_id = graphics->addShader("effects:ssr", specials);
 
 	addSubresource("composition_tex");
 	addSubresource("global_illumination_tex");

@@ -178,8 +178,30 @@ void CGltfLoader::load(const const std::string& source, const entt::entity& root
             loadNode(root, node, node_idx, gltfModel, 1.0);
         }
 
+        FShaderCreateInfo specials;
+        specials.pipeline_stage = "deferred";
+        specials.vertex_type = EVertexType::eDefault;
+        specials.cull_mode = vk::CullModeFlagBits::eBack;
+        specials.front_face = vk::FrontFace::eCounterClockwise;
+        specials.use_bindles_textures = true;
+        specials.depth_test = true;
+
         for (auto& mat_id : vMaterials)
-            graphics->addShader("default", mat_id);
+        {
+            auto& material = graphics->getMaterial(mat_id);
+            auto& material_params = material->getParameters();
+
+            specials.double_sided = material_params.doubleSided;
+            specials.usages = material->getUsageCount();
+            specials.alpha_blend = material_params.alphaMode;
+
+            std::stringstream ss{};
+            ss << "default:default";
+            for (auto& definition : material_params.vCompileDefinitions)
+                ss << ":" << definition;
+
+            material->setShader(graphics->addShader(ss.str(), specials));
+        }
 
         if (gltfModel.animations.size() > 0)
             loadAnimations(gltfModel, component);
@@ -249,7 +271,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
     auto& graphics = EGEngine->getGraphics();
 
     auto& registry = EGEngine->getRegistry();
-    const tinygltf::Mesh mesh = model.meshes[node.mesh];
+    const tinygltf::Mesh& mesh = model.meshes[node.mesh];
 
     registry.emplace<FMeshComponent>(parent, FMeshComponent{});
     auto& meshComponent = registry.get<FMeshComponent>(parent);

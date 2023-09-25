@@ -15,9 +15,15 @@ using namespace engine::graphics;
 
 void CBillboardSystem::__create()
 {
-	FShaderSpecials specials;
+	FShaderCreateInfo specials;
+	specials.pipeline_stage = "deferred";
+	specials.vertex_type = EVertexType::eDefault;
+	specials.cull_mode = vk::CullModeFlagBits::eFront;
+	specials.front_face = vk::FrontFace::eCounterClockwise;
+	specials.depth_test = true;
 	specials.usages = 4;
-	shader_id = graphics->addShader("billboard", specials);
+
+	shader_id = graphics->addShader("billboard:billboard", specials);
 	vbo_id = graphics->addVertexBuffer("billboard");
 
 	auto& pVBO = graphics->getVertexBuffer(vbo_id);

@@ -17,19 +17,24 @@ void CCompositionSystem::__create()
 {
 	auto& device = graphics->getDevice();
 
-	FShaderSpecials specials;
-	specials.defines = { 
-		{"SHADOW_MAP_CASCADE_COUNT", std::to_string(CASCADE_SHADOW_MAP_CASCADE_COUNT)},
-		{"MAX_DIRECTIONAL_LIGHTS_COUNT", std::to_string(MAX_DIRECTIONAL_LIGHT_COUNT)},
-		{"MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT", std::to_string(MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT)},
+	FShaderCreateInfo specials;
+	specials.pipeline_stage = "composition";
+	specials.cull_mode = vk::CullModeFlagBits::eBack;
+	specials.usages = 1;
 
-		{"MAX_SPOT_LIGHTS_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)},
-		{"MAX_SPOT_LIGHT_SHADOW_COUNT", std::to_string(MAX_SPOT_LIGHT_SHADOW_COUNT)},
-
-		{"MAX_POINT_LIGHTS_COUNT", std::to_string(MAX_POINT_LIGHT_COUNT)},
-		{"MAX_POINT_LIGHT_SHADOW_COUNT", std::to_string(MAX_POINT_LIGHT_SHADOW_COUNT)},
-	};
-	shader_id = graphics->addShader("pbr_composition", specials);
+	// TODO: Set this values as constants
+	//specials.defines = { 
+	//	{"SHADOW_MAP_CASCADE_COUNT", std::to_string(CASCADE_SHADOW_MAP_CASCADE_COUNT)},
+	//	{"MAX_DIRECTIONAL_LIGHTS_COUNT", std::to_string(MAX_DIRECTIONAL_LIGHT_COUNT)},
+	//	{"MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT", std::to_string(MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT)},
+	//
+	//	{"MAX_SPOT_LIGHTS_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)},
+	//	{"MAX_SPOT_LIGHT_SHADOW_COUNT", std::to_string(MAX_SPOT_LIGHT_SHADOW_COUNT)},
+	//
+	//	{"MAX_POINT_LIGHTS_COUNT", std::to_string(MAX_POINT_LIGHT_COUNT)},
+	//	{"MAX_POINT_LIGHT_SHADOW_COUNT", std::to_string(MAX_POINT_LIGHT_SHADOW_COUNT)},
+	//};
+	shader_id = graphics->addShader("lighting:lighting", specials);
 	brdflut_id = graphics->computeBRDFLUT(1024);
 
 	addSubresource("albedo_tex");

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
+#include "APIStructures.h"
 
 namespace engine
 {
@@ -13,9 +13,9 @@ namespace engine
 			CPipeline(CDevice* device);
 			virtual ~CPipeline();
 
-			virtual void create(CShaderObject* pShader);
-			virtual void create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass);
-			virtual void reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t _subpass);
+			virtual void create(CShaderObject* pShader, const FShaderCreateInfo& specials);
+			virtual void create(CShaderObject* pShader, vk::RenderPass& renderPass, const FShaderCreateInfo& specials);
+			virtual void reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, const FShaderCreateInfo& specials);
 
 			void bind(vk::CommandBuffer& commandBuffer, uint32_t index = 0);
 			const size_t count() const { return vPipelines.size(); }
@@ -32,9 +32,9 @@ namespace engine
 		protected:
 			void createDescriptorSetLayout(CShaderObject* pShader);
 			void createDescriptorPool(CShaderObject* pShader);
-			void createPipelineLayout(CShaderObject* pShader);
+			void createPipelineLayout(CShaderObject* pShader, const FShaderCreateInfo& specials);
 
-			virtual void createPipeline(CShaderObject* pShader) { pShader; }
+			virtual void createPipeline(CShaderObject* pShader, const FShaderCreateInfo& specials) { pShader; }
 
 		protected:
 			CDevice* pDevice{ nullptr };

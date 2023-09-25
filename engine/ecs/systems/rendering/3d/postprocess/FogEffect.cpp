@@ -10,7 +10,12 @@ using namespace engine::ecs;
 void CFogEffect::create()
 {
 	graphics = EGEngine->getGraphics().get();
-	shader_fog = graphics->addShader("fog");
+
+	FShaderCreateInfo specials;
+	specials.bind_point = vk::PipelineBindPoint::eCompute;
+	specials.usages = 1;
+
+	shader_fog = graphics->addShader("postprocess:fog", specials);
 }
 
 size_t CFogEffect::render(FCameraComponent* camera, size_t depth_source, size_t in_source, size_t out_source)

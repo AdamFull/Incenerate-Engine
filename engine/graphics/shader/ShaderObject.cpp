@@ -29,19 +29,26 @@ const std::unique_ptr<CShader>& CShaderObject::getShader()
 	return pShader;
 }
 
-void CShaderObject::create(uint32_t subpass)
+bool CShaderObject::isUsesBindlessTextures() const
+{
+	return usesBindlessTextures;
+}
+
+void CShaderObject::create(const FShaderCreateInfo& specials)
 {
 	auto* graphics = pDevice->getAPI();
 
-	switch (pipelineParams.bindPoint)
+	usesBindlessTextures = specials.use_bindles_textures;
+
+	switch (specials.bind_point)
 	{
 	case vk::PipelineBindPoint::eGraphics: {
 		pPipeline = std::make_unique<CGraphicsPipeline>(pDevice);
-		pPipeline->create(this, graphics->getFramebuffer(pipelineParams.renderStage)->getRenderPass(), subpass);
+		pPipeline->create(this, graphics->getFramebuffer(specials.pipeline_stage)->getRenderPass(), specials);
 	} break;
 	case vk::PipelineBindPoint::eCompute: {
 		pPipeline = std::make_unique<CComputePipeline>(pDevice);
-		pPipeline->create(this);
+		pPipeline->create(this, specials);
 	} break;
 	}
 
@@ -51,6 +58,8 @@ void CShaderObject::create(uint32_t subpass)
 		pBlock->create(push);
 		mPushBlocks.emplace(name, std::move(pBlock));
 	}
+
+	increaseUsage(specials.usages);
 }
 
 void CShaderObject::increaseUsage(size_t usages)

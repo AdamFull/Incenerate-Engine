@@ -13,9 +13,16 @@ constexpr const float cascadeSplitOverlap = 0.9f;
 
 void CCascadeShadowSystem::__create()
 {
-	FShaderSpecials specials;
-	specials.defines = { {"INVOCATION_COUNT", std::to_string(CASCADE_SHADOW_MAP_CASCADE_COUNT)} };
-	shader_id = graphics->addShader("cascade_shadow_pass", specials);
+	FShaderCreateInfo specials;
+	specials.pipeline_stage = "cascade_shadow";
+	specials.vertex_type = EVertexType::eDefault;
+	specials.cull_mode = vk::CullModeFlagBits::eFront;
+	specials.front_face = vk::FrontFace::eCounterClockwise;
+	specials.depth_test = true;
+
+	// TODO: do it using constants
+	//specials.defines = { {"INVOCATION_COUNT", std::to_string(CASCADE_SHADOW_MAP_CASCADE_COUNT)} };
+	shader_id = graphics->addShader("shadows:cascaded", specials);
 
 	CBaseGraphicsSystem::__create();
 }

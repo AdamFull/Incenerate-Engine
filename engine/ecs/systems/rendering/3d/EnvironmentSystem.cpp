@@ -15,7 +15,13 @@ using namespace engine::graphics;
 
 void CEnvironmentSystem::__create()
 {
-	shader_id = graphics->addShader("skybox");
+	FShaderCreateInfo specials;
+	specials.pipeline_stage = "deferred";
+	specials.cull_mode = vk::CullModeFlagBits::eBack;
+	specials.front_face = vk::FrontFace::eCounterClockwise;
+	specials.usages = 1;
+
+	shader_id = graphics->addShader("skybox:skybox", specials);
 
 	CBaseGraphicsSystem::__create();
 }

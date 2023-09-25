@@ -11,7 +11,11 @@ void CFilmGrainEffect::create()
 {
 	graphics = EGEngine->getGraphics().get();
 
-	shader_grain = graphics->addShader("filmgrain");
+	FShaderCreateInfo specials;
+	specials.bind_point = vk::PipelineBindPoint::eCompute;
+	specials.usages = 1;
+
+	shader_grain = graphics->addShader("postprocess:filmgrain", specials);
 }
 
 size_t CFilmGrainEffect::render(FCameraComponent* camera, float time, size_t in_source, size_t out_source)

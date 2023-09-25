@@ -68,6 +68,13 @@ std::string fs::get_filename(const std::string& path)
 	return path.substr(path.find_last_of("/\\") + 1);
 }
 
+std::string fs::get_stem(const std::string& path)
+{
+	auto filename = get_filename(path);
+	auto ext = get_ext(filename);
+	return filename.erase(filename.size() - ext.size(), filename.size());
+}
+
 std::string fs::parent_path(const std::string& path)
 {
 	const size_t separator_pos = path.find_last_of("/\\");

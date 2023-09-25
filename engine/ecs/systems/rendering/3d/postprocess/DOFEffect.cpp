@@ -13,11 +13,12 @@ void CDOFEffect::create()
 	graphics = EGEngine->getGraphics().get();
 	init();
 
-	shader_dof = graphics->addShader("dof");
-
-	FShaderSpecials specials;
+	FShaderCreateInfo specials;
+	specials.bind_point = vk::PipelineBindPoint::eCompute;
 	specials.usages = 1;
-	shader_blur = graphics->addShader("bokeh_blur", specials);
+
+	shader_dof = graphics->addShader("postprocess:dof", specials);
+	shader_blur = graphics->addShader("postprocess:bokeh", specials);
 }
 
 void CDOFEffect::update()

@@ -25,12 +25,19 @@ void CBloomEffect::create()
 	init();
 	auto& image = graphics->getImage(bloom_image);
 
-	FShaderSpecials specials;
-	specials.usages = mipLevels;
-	shader_downsample = graphics->addShader("downsample", specials);
-	shader_upsample = graphics->addShader("upsample", specials);
-	shader_brightdetect = graphics->addShader("brightdetect");
-	shader_applybloom = graphics->addShader("applybloom");
+	FShaderCreateInfo upsample_downsample_ci;
+	upsample_downsample_ci.bind_point = vk::PipelineBindPoint::eCompute;
+	upsample_downsample_ci.usages = mipLevels;
+
+	shader_downsample = graphics->addShader("postprocess:downsample", upsample_downsample_ci);
+	shader_upsample = graphics->addShader("postprocess:upsample", upsample_downsample_ci);
+
+	FShaderCreateInfo other_ci;
+	other_ci.bind_point = vk::PipelineBindPoint::eCompute;
+	other_ci.usages = 1;
+
+	shader_brightdetect = graphics->addShader("postprocess:brightdetect", other_ci);
+	shader_applybloom = graphics->addShader("postprocess:applybloom", other_ci);
 }
 
 void CBloomEffect::update()

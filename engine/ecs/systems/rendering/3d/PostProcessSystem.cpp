@@ -30,7 +30,11 @@ void CPostProcessSystem::__create()
 	final_image = effectshared::createImage("postprocess_tex", vk::Format::eR32G32B32A32Sfloat);
 	auto& image = graphics->getImage(final_image);
 
-	shader_id = graphics->addShader("emptypass");
+	FShaderCreateInfo specials;
+	specials.bind_point = vk::PipelineBindPoint::eCompute;
+	specials.usages = 1;
+
+	shader_id = graphics->addShader("postprocess:emptypass", specials);
 
 	addSubresource("composition_tex");
 	addSubresource("global_illumination_tex");

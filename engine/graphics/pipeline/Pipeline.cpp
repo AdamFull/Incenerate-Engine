@@ -27,25 +27,25 @@ CPipeline::~CPipeline()
     pDevice = nullptr;
 }
 
-void CPipeline::create(CShaderObject* pShader)
+void CPipeline::create(CShaderObject* pShader, const FShaderCreateInfo& specials)
 {
     createDescriptorPool(pShader);
     createDescriptorSetLayout(pShader);
-    createPipelineLayout(pShader);
+    createPipelineLayout(pShader, specials);
 }
 
-void CPipeline::create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass)
+void CPipeline::create(CShaderObject* pShader, vk::RenderPass& renderPass, const FShaderCreateInfo& specials)
+{
+    this->renderPass = renderPass;
+    this->subpass = specials.subpass;
+    create(pShader, specials);
+}
+
+void CPipeline::reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, const FShaderCreateInfo& specials)
 {
     this->renderPass = renderPass;
     this->subpass = subpass;
-    create(pShader);
-}
-
-void CPipeline::reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass)
-{
-    this->renderPass = renderPass;
-    this->subpass = subpass;
-    createPipeline(pShader);
+    createPipeline(pShader, specials);
 }
 
 void CPipeline::bind(vk::CommandBuffer& commandBuffer, uint32_t index)
@@ -92,7 +92,7 @@ void CPipeline::createDescriptorPool(CShaderObject* pShader)
     log_cerror(APICompatibility::check(res), "Cannot create descriptor pool.");
 }
 
-void CPipeline::createPipelineLayout(CShaderObject* pShader)
+void CPipeline::createPipelineLayout(CShaderObject* pShader, const FShaderCreateInfo& specials)
 {
     auto& shader = pShader->getShader();
     auto pushConstantRanges = shader->getPushConstantRanges();
@@ -102,7 +102,7 @@ void CPipeline::createPipelineLayout(CShaderObject* pShader)
         vLayouts.emplace_back(layout);
 
     // TODO: bad practice
-    if (APICompatibility::bindlessSupport && pShader->isUsesBindlessTextures())
+    if (APICompatibility::bindlessSupport && specials.use_bindles_textures)
     {
         auto graphics = pDevice->getAPI();
         auto& bindlessDescriptor = graphics->getBindlessDescriptor();

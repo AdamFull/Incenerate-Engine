@@ -10,12 +10,12 @@ CRayTracePipeline::CRayTracePipeline(CDevice* device)
 	pDevice = device;
 }
 
-void CRayTracePipeline::create(CShaderObject* pShader, vk::RenderPass& renderPass, uint32_t subpass)
+void CRayTracePipeline::create(CShaderObject* pShader, vk::RenderPass& renderPass, const FShaderCreateInfo& specials)
 {
 
 }
 
-void CRayTracePipeline::createPipeline(CShaderObject* pShader)
+void CRayTracePipeline::createPipeline(CShaderObject* pShader, const FShaderCreateInfo& specials)
 {
 	auto& program = pShader->getShader();
 	auto shaderStages = program->getStageCreateInfo();

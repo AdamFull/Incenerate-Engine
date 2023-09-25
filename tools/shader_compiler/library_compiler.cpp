@@ -10,13 +10,6 @@
 #include <logger/logger.h>
 #include <json.hpp>
 
-std::string get_hex_string(size_t value)
-{
-	std::stringstream stream;
-	stream << std::hex << value;
-	return stream.str();
-}
-
 std::string emplace_data(std::string base_string, const std::string& target, const std::string& replacement)
 {
 	size_t start_pos = base_string.find(target);
@@ -24,30 +17,6 @@ std::string emplace_data(std::string base_string, const std::string& target, con
 		return base_string;
 	base_string.replace(start_pos, target.length(), replacement);
 	return base_string;
-}
-
-std::string get_shader_type(EShaderType type)
-{
-	switch (type)
-	{
-	case EShaderType::eUnknown: return ""; break;
-	case EShaderType::eVertex: return "vertex"; break;
-	case EShaderType::eControl: return "control"; break;
-	case EShaderType::eEvaluation: return "evaluation"; break;
-	case EShaderType::eGeometry: return "geometry"; break;
-	case EShaderType::eFragment: return "fragment"; break;
-	case EShaderType::eCompute: return "compute"; break;
-	case EShaderType::eRayGen: return "raygen"; break;
-	case EShaderType::eIntersection: return "intersection"; break;
-	case EShaderType::eAnyHit: return "anyhit"; break;
-	case EShaderType::eClosestHit: return "closesthit"; break;
-	case EShaderType::eMiss: return "miss"; break;
-	case EShaderType::eCallable: return "callable"; break;
-	case EShaderType::eTask: return "task"; break;
-	case EShaderType::eMesh: return "mesh"; break;
-	}
-
-	return "";
 }
 
 template<class _Ty>
@@ -118,13 +87,6 @@ std::vector<std::string> make_permutation(size_t mask, size_t total, const std::
 			permutation.emplace_back(source[j]);
 	}
 	return permutation;
-}
-
-std::string make_shader_unique_name(const std::string& lib_name, const std::string& shader_name, const std::vector<std::string>& definitions)
-{
-	std::vector<std::string> shader_name_tokens{ lib_name, shader_name };
-	shader_name_tokens.insert(shader_name_tokens.end(), definitions.begin(), definitions.end());
-	return make_shader_hashname(shader_name_tokens);
 }
 
 std::string generate_shader_code(const FShaderObject& sobject, const std::filesystem::path& includes_path, size_t depth = 0)
@@ -214,6 +176,9 @@ void CLibraryCompiler::compile(const std::filesystem::path& library_path, const 
 
 		FShaderDescription& shader_desc = found_shader_desc->second;
 
+		if (compile.name == "tonemap")
+			int iii = 0;
+
 		// Generate all shader permutations
 		bool generate_permutations = !compile.permutation_gen.definitions.empty();
 		size_t perm_n = compile.permutation_gen.definitions.size();
@@ -252,10 +217,10 @@ void CLibraryCompiler::compile(const std::filesystem::path& library_path, const 
 				FCompileInfo compile_info{ source.type, source.shader_name };
 
 				// Make unique shader name(key)
-				auto unique_shader_name = make_shader_unique_name(shader_library_ci.name, compile.name, definitions);
+				auto unique_module_name = make_module_unique_name(compile.name, definitions);
 
 				// Get shader module
-				std::vector<FShaderModule>& shader_modules = compiled_library.modules[unique_shader_name];
+				std::vector<FShaderModule>& shader_modules = compiled_library.modules[unique_module_name];
 
 				// Apply definitions for current permutation
 				std::stringstream ss{""};
@@ -277,14 +242,18 @@ void CLibraryCompiler::compile(const std::filesystem::path& library_path, const 
 				}
 
 				// Make hash for preprocessed data
-				auto hash_string = get_hex_string(preprocessed_hash);
+				auto hash_string = make_shader_unique_name(preprocessed_hash);
 				auto& compiled_spirv = shader_pool[hash_string];
 
 				bool is_compiling_first_time{ false };
 				FShaderModule* shader_module{ nullptr };
 
 				// Find existing shader or create new
-				auto found_module = std::find_if(shader_modules.begin(), shader_modules.end(), [type = source.type](const FShaderModule& sm) { return sm.type == type; });
+				auto found_module = std::find_if(shader_modules.begin(), shader_modules.end(), 
+					[type = source.type, link = hash_string](const FShaderModule& sm) 
+					{ 
+						return (sm.type == type) && (sm.link == link);
+					});
 				if (found_module != shader_modules.end())
 					shader_module = &(*found_module);
 				else

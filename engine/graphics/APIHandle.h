@@ -69,8 +69,7 @@ namespace engine
 			void copyImage(vk::CommandBuffer& commandBuffer, size_t src, size_t dst);
 
 			size_t addShader(const std::string& name, std::unique_ptr<CShaderObject>&& shader);
-			size_t addShader(const std::string& shadertype, size_t mat_id = invalid_index);
-			size_t addShader(const std::string& shadertype, const FShaderSpecials& specials);
+			size_t addShader(const std::string& shadertype, const FShaderCreateInfo& specials);
 			void removeShader(const std::string& name);
 			void removeShader(size_t id);
 			const std::unique_ptr<CShaderObject>& getShader(const std::string& name);

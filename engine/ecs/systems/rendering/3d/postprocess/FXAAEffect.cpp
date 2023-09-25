@@ -10,7 +10,12 @@ using namespace engine::ecs;
 void CFXAAEffect::create()
 {
 	graphics = EGEngine->getGraphics().get();
-	shader_fxaa = graphics->addShader("fxaa");
+
+	FShaderCreateInfo specials;
+	specials.bind_point = vk::PipelineBindPoint::eCompute;
+	specials.usages = 1;
+
+	shader_fxaa = graphics->addShader("postprocess:fxaa", specials);
 }
 
 size_t CFXAAEffect::render(FCameraComponent* camera, size_t in_source, size_t out_source)

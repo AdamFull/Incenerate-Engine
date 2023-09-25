@@ -111,7 +111,14 @@ void construct_skybox(entt::registry& reg, entt::entity entity)
 		skybox.irradiance = graphics->computeIrradiance(skybox.origin, 64);
 		skybox.prefiltred = graphics->computePrefiltered(skybox.origin, 1024);
 		skybox.vbo_id = graphics->addVertexBuffer(skybox.source);
-		skybox.shader_id = graphics->addShader("skybox");
+
+		FShaderCreateInfo specials;
+		specials.pipeline_stage = "deferred";
+		specials.vertex_type = EVertexType::eNone;
+		specials.cull_mode = vk::CullModeFlagBits::eBack;
+		specials.front_face = vk::FrontFace::eCounterClockwise;
+		specials.usages = 1;
+		skybox.shader_id = graphics->addShader("skybox:skybox", specials);
 		skybox.loaded = true;
 
 		auto& pVBO = graphics->getVertexBuffer(skybox.vbo_id);
