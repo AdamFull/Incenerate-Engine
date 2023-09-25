@@ -73,8 +73,8 @@ bool CEditorProject::open(const std::string& path)
     EGFilesystem->mount("/project", std::make_unique<CNativeFileSystem>(fs::parent_path(path)));
     projectpath = fs::path_append("/project", fs::get_filename(path));
 
-    //project.assets = "assets";
-    //project.last_scene = "scene.iescene";
+    project.assets = "assets";
+    project.last_scene = "scene.iescene";
     //if (EGFilesystem->writeBson(fs::path_append("/project", fs::get_filename(path)), project))
     //{
     //    //createOrLoadEditorCamera();

@@ -566,6 +566,8 @@ void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma:
     alloc_create_info.usage = usage;
 
     auto res = vmaAlloc.createImage(&createInfo, &alloc_create_info, &image, &allocation, nullptr);
+    if (res != vk::Result::eSuccess)
+        int iiiii = 0;
     log_cerror(APICompatibility::check(res), "Image was not created");
 }
 

@@ -152,7 +152,7 @@ void CEditorContentBrowser::__draw(float fDt)
 	if (columnCount < 1)
 		columnCount = 1;
 
-	if (ImGui::BeginTable("files", columnCount > 0 ? columnCount - 1 : columnCount))
+	if (ImGui::BeginTable("files", columnCount))
 	{
 		int currentColumn{ 0 };
 		auto pLargeIcons = EGEditor->getLargeIcons();

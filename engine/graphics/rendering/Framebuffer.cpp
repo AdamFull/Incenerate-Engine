@@ -178,6 +178,8 @@ void CFramebuffer::setRenderArea(int32_t offset_x, int32_t offset_y, uint32_t wi
 
 void CFramebuffer::setRenderArea(vk::Offset2D offset, vk::Extent2D extent)
 {
+    extent.width = extent.width ? extent.width : 1;
+    extent.height = extent.height ? extent.height : 1;
     setRenderArea(vk::Rect2D{ offset, extent });
 }
 

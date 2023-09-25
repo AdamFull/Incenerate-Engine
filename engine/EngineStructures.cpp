@@ -8,10 +8,10 @@ namespace engine
 	(
 		ERenderApi,
 		{
-			{ERenderApi::eVulkan_1_0, "vk_1_0"},
-			{ERenderApi::eVulkan_1_1, "vk_1_1"},
-			{ERenderApi::eVulkan_1_2, "vk_1_2"},
-			{ERenderApi::eVulkan_1_3, "vk_1_3"}
+			{ERenderApi::eVulkan_1_0, "vk10"},
+			{ERenderApi::eVulkan_1_1, "vk11"},
+			{ERenderApi::eVulkan_1_2, "vk12"},
+			{ERenderApi::eVulkan_1_3, "vk13"}
 		}
 	);
 

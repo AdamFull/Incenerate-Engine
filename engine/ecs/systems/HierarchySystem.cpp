@@ -18,6 +18,9 @@ void CHierarchySystem::__update(float fDt)
 	fDt;
 	auto root = EGSceneManager->getRoot();
 
+	if (!registry->valid(root))
+		return;
+
 	build_hierarchy(registry, root);
 }
 
