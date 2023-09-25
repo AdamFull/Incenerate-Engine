@@ -1,5 +1,5 @@
 {
-	name: "postprocess";
+	name: "effects";
 
 	shaders: [
 		{
@@ -63,19 +63,31 @@
 	compile: [
 		{ 
 			shader_name: "hbao";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "ssao";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "ssdo";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "ssr";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		}
 	];
 }

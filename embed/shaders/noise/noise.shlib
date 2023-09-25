@@ -34,15 +34,24 @@
 	compile: [
 		{ 
 			shader_name: "2dnoise";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "clouds_noise_high";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "clouds_noise_low";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		}
 	];
 }

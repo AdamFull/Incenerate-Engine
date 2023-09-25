@@ -8,7 +8,17 @@
 		"GL_ARB_texture_cube_map_array"
 	];
 
-	definitions: [];
+	definitions: [
+		"MAX_DIRECTIONAL_LIGHTS_COUNT 3",
+		"MAX_SPOT_LIGHTS_COUNT 64",
+		"MAX_POINT_LIGHTS_COUNT 64",
+
+		"MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT 1",
+		"SHADOW_MAP_CASCADE_COUNT 8",
+		"MAX_SPOT_LIGHT_SHADOW_COUNT 16",
+		"MAX_POINT_LIGHT_SHADOW_COUNT 16"
+	];
+
 	require_extensions: [];
 	includes: ["shadows/cascade_shadows", "shadows/directional_shadows", "shadows/omni_shadows", "lighting_base", "lighting_base", "shader_util"];
 

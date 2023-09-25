@@ -1,5 +1,5 @@
 {
-	name: "billboard";
+	name: "skybox";
 
 	shaders: [
 		{
@@ -57,16 +57,23 @@
 		{ 
 			shader_name: "atmosphere";
 			permutations: [
-				{ definitions: ["MAX_DIRECTIONAL_LIGHTS_COUNT 3"] }
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
 			];
 		},
 		{ 
 			shader_name: "clouds";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "compose";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		//{ 
 		//	shader_name: "sun";

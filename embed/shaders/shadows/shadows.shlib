@@ -1,5 +1,5 @@
 {
-	name: "postprocess";
+	name: "shadows";
 
 	shaders: [
 		{
@@ -8,11 +8,11 @@
 				{
 					type: "vertex";
 					shader_name: "cascade_shadow_vert";
-				},
-				{
-					type: "fragment";
-					shader_name: "cascade_shadow_frag";
 				}
+				//{
+				//	type: "fragment";
+				//	shader_name: "cascade_shadow_frag";
+				//}
 			];
 		},
 		{
@@ -42,15 +42,24 @@
 	compile: [
 		{ 
 			shader_name: "cascaded";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "directional";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "omni";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		}
 	];
 }

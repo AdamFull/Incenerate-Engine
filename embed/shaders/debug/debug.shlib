@@ -37,11 +37,17 @@
 	compile: [
 		{ 
 			shader_name: "debugdraw";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "displaynormal";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		}
 	];
 }

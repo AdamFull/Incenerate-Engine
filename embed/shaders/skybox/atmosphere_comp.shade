@@ -6,7 +6,10 @@
 		"GL_ARB_shading_language_420pack"
 	];
 
-	definitions: [];
+	definitions: [
+        "MAX_DIRECTIONAL_LIGHTS_COUNT 3"
+    ];
+
 	require_extensions: [];
 	includes: ["shader_util", "lighting_base", "atmosphere/common", "compute_common"];
 

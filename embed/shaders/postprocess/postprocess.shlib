@@ -48,24 +48,6 @@
 			];
 		},
 		{
-			name: "comp_average_brightness";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "comp_average_brightness_comp";
-				}
-			];
-		},
-		{
-			name: "comp_histogram";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "comp_histogram_comp";
-				}
-			];
-		},
-		{
 			name: "dof";
 			sources: [
 				{
@@ -160,6 +142,14 @@
 			sources: [
 				{
 					type: "compute";
+					shader_name: "comp_histogram_comp";
+				},
+				{
+					type: "compute";
+					shader_name: "comp_average_brightness_comp";
+				},
+				{
+					type: "compute";
 					shader_name: "tonemap_comp";
 				}
 			];
@@ -187,55 +177,80 @@
 	compile: [
 		{ 
 			shader_name: "ao_blur";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "applybloom";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "bokeh";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "brightdetect";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "chromatic_aberration";
-			permutations: [{}];
-		},
-		{ 
-			shader_name: "comp_average_brightness";
-			permutations: [{}];
-		},
-		{ 
-			shader_name: "comp_histogram";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "dof";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "downsample";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "emptypass";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "filmgrain";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "fog";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "fxaa";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{
 			shader_name: "gaussianblur";
@@ -247,23 +262,38 @@
 		},
 		{ 
 			shader_name: "lensflare";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "throughpass";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "tonemap";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "upsample";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		},
 		{ 
 			shader_name: "vignette";
-			permutations: [{}];
+			permutations: [
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
+			];
 		}
 	];
 }
