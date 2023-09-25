@@ -1,0 +1,39 @@
+cmake_minimum_required(VERSION 3.18.0)
+project(IncenerateTemplateLibrary LANGUAGES CXX)
+
+include(GenerateExportHeader)
+
+option(INCENERATE_STD_BUILD_SHARED "Build incenerate template library as a shared library" ON)
+
+file(GLOB IESTD_SOURCES_HEAD "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(IESTD_SOURCE_FILES ${IESTD_SOURCES_HEAD})
+
+file(GLOB IESTD_HEADERS_HEAD "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+set(IESTD_HEADER_FILES ${IESTD_HEADERS_HEAD})
+
+
+if(INCENERATE_FILESYSTEM_BUILD_SHARED)
+    add_library(${PROJECT_NAME} SHARED ${IESTD_SOURCE_FILES} ${IESTD_HEADER_FILES})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DIncenerateTemplateLibrary_EXPORTS)
+else()
+    add_library(${PROJECT_NAME} STATIC ${IESTD_SOURCE_FILES} ${IESTD_HEADER_FILES})
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DINCENERATETEMPLATELIBRARY_STATIC_DEFINE)
+endif()
+
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+)
+
+generate_export_header(${PROJECT_NAME} 
+              EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/ie_itl_exports.h
+              EXPORT_MACRO_NAME INCENERATE_TEMPLATE_LIB_EXPORT
+              NO_EXPORT_MACRO_NAME INCENERATE_TEMPLATE_LIB_NO_EXPORT
+              DEPRECATED_MACRO_NAME INCENERATE_TEMPLATE_LIB_DEPRECATED
+              NO_DEPRECATED_MACRO_NAME INCENERATE_TEMPLATE_LIB_NO_DEPRECATED
+              )
+
+target_include_directories(${PROJECT_NAME}  
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+)

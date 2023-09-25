@@ -5,15 +5,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-
 set(MAIN_PROJECT_DIRECTORY_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(OUT_BINARIES_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+set(ENGINE_BINARIES_PATH ${OUT_BINARIES_PATH}/${CMAKE_BUILD_TYPE}/engine)
+set(TOOLS_BINARIES_PATH ${OUT_BINARIES_PATH}/${CMAKE_BUILD_TYPE}/tools)
 
-file(MAKE_DIRECTORY ${MAIN_PROJECT_DIRECTORY_PATH}/bin)
+file(MAKE_DIRECTORY ${OUT_BINARIES_PATH})
 
 #sdl
 set(SDL_TEST OFF CACHE BOOL "Build the SDL2_test library" FORCE)
@@ -145,24 +142,13 @@ add_subdirectory(engine)
 add_subdirectory(project)
 add_subdirectory(editor)
 
-add_custom_target(copy_embedded_files ALL)
+add_subdirectory(tools/shader_compiler)
 
-add_custom_command(
-    TARGET copy_embedded_files POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/embed/font" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed/font"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/embed/icon" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed/icon"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/embed/shaders" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed/shaders"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/embed/config.json" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/embed/materialeditor.json" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/embed/shaders.json" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed"
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/embed/imgui.ini" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-    COMMENT "Copying embedded files to runtime output directory..."
-)
-
-#file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/embed/font" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed")
-#file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/embed/icon" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed")
-#file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/embed/shaders" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed")
-#file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/embed/config.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed")
-#file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/embed/materialeditor.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed")
-#file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/embed/shaders.json" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/embed")
-#file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/embed/imgui.ini" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+#add_custom_target(execute_resource_generation_target ALL)
+#add_dependencies(execute_resource_generation_target engine_project engine_editor shader_compiler)
+#
+#add_custom_command(
+#    TARGET execute_resource_generation_target POST_BUILD
+#    COMMAND python ARGS ${CMAKE_CURRENT_SOURCE_DIR}/make_project.py -ex ${TOOLS_BINARIES_PATH}/shader_compiler/shader_compiler -wd ${CMAKE_CURRENT_SOURCE_DIR} -bd ${ENGINE_BINARIES_PATH}
+#    COMMENT "Copying embedded files to runtime output directory..."
+#)
