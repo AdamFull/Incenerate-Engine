@@ -3,10 +3,6 @@
 
 	code: 
 	"""
-		#ifndef MAX_DIRECTIONAL_LIGHTS_COUNT
-		#define MAX_DIRECTIONAL_LIGHTS_COUNT 1
-		#endif
-		
 		struct FDirectionalLight
 		{
 			vec3 direction;
@@ -15,15 +11,6 @@
 			int shadowIndex;
 			int castShadows;
 		};
-		
-		#ifdef SHADOW_MAP_CASCADE_COUNT
-		struct FCascadeShadow
-		{
-			float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
-			mat4 cascadeViewProjMat[SHADOW_MAP_CASCADE_COUNT];
-			float farClip;
-		};
-		#endif
 		
 		struct FSpotLight
 		{
@@ -38,12 +25,6 @@
 			int castShadows;
 		};
 		
-		struct FSpotShadow
-		{
-			mat4 shadowView;
-			int layer;
-		};
-		
 		struct FPointLight
 		{
 			vec3 position;
@@ -52,12 +33,6 @@
 			float radius;
 			int shadowIndex;
 			int castShadows;
-		};
-		
-		struct FOmniShadow
-		{
-			float farClip;
-			int layer;
 		};
 	""";
 }

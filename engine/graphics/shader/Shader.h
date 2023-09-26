@@ -31,6 +31,10 @@ namespace engine
 			std::vector<vk::DescriptorPoolSize> vDescriptorPools;
 
 			std::vector<vk::PipelineShaderStageCreateInfo> vShaderModules;
+
+			std::unordered_map<vk::ShaderStageFlagBits, std::vector<vk::SpecializationMapEntry>> specializationEntries{};
+			std::unordered_map<vk::ShaderStageFlagBits, vk::SpecializationInfo> specializationInfos{};
+			std::unordered_map<vk::ShaderStageFlagBits, std::unique_ptr<char[]>> specializationData{};
 		};
 	}
 }

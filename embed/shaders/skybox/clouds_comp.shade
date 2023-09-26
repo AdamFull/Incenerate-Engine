@@ -1,5 +1,5 @@
 {
-	version: 450;
+	version: 460;
 
 	enable_extensions: [
 		"GL_ARB_separate_shader_objects",
@@ -20,6 +20,9 @@
         layout(set = 1, binding = 3) uniform sampler3D cloudsNoiseHighSampler;
         layout(set = 1, binding = 4) uniform sampler3D cloudsNoiseLowSampler;
         layout(set = 1, binding = 5) uniform sampler2D noiseSampler;
+
+        //-----------------------Constants------------------------
+		layout (constant_id = 0) const uint MAX_DIRECTIONAL_LIGHTS_COUNT = 3;
         
         layout(std140, set = 0, binding = 0) uniform FCameraData 
         {

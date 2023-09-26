@@ -1,12 +1,12 @@
 {
-	version: 450;
+	version: 460;
 
 	enable_extensions: [
 		"GL_ARB_separate_shader_objects",
 		"GL_ARB_shading_language_420pack"
 	];
 
-	definitions: ["VK_FRAGMENT_SHADER", "SSAO_KERNEL_SIZE 64"];
+	definitions: ["VK_FRAGMENT_SHADER"];
 	require_extensions: [];
 	includes: ["shader_util", "math"];
 
@@ -21,6 +21,9 @@
 		//--------------------In/Out locations--------------------
 		layout (location = 0) in vec2 inUV;
 		layout (location = 0) out vec4 outFragcolor;
+
+		//-----------------------Constants------------------------
+		layout (constant_id = 0) const uint SSAO_KERNEL_SIZE = 64;
 		
 		//--------------------Uniforms--------------------
 		layout (std140, binding = 0) uniform UBODirectionalOcclusion

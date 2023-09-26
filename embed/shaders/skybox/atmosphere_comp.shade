@@ -1,14 +1,12 @@
 {
-	version: 450;
+	version: 460;
 
 	enable_extensions: [
 		"GL_ARB_separate_shader_objects",
 		"GL_ARB_shading_language_420pack"
 	];
 
-	definitions: [
-        "MAX_DIRECTIONAL_LIGHTS_COUNT 3"
-    ];
+	definitions: [];
 
 	require_extensions: [];
 	includes: ["shader_util", "lighting_base", "atmosphere/common", "compute_common"];
@@ -18,6 +16,9 @@
 		layout(local_size_x = 8, local_size_y = 8) in;
 
         layout(set = 1, binding = 0, r11f_g11f_b10f) uniform writeonly image2D writeColor;
+
+        //-----------------------Constants------------------------
+		layout (constant_id = 0) const uint MAX_DIRECTIONAL_LIGHTS_COUNT = 3;
         
         layout(std140, set = 0, binding = 0) uniform FCameraData 
         {

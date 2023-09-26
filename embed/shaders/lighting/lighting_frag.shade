@@ -1,5 +1,5 @@
 {
-	version: 450;
+	version: 460;
 
 	enable_extensions: [
 		"GL_ARB_separate_shader_objects",
@@ -8,19 +8,10 @@
 		"GL_ARB_texture_cube_map_array"
 	];
 
-	definitions: [
-		"MAX_DIRECTIONAL_LIGHTS_COUNT 3",
-		"MAX_SPOT_LIGHTS_COUNT 64",
-		"MAX_POINT_LIGHTS_COUNT 64",
-
-		"MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT 1",
-		"SHADOW_MAP_CASCADE_COUNT 8",
-		"MAX_SPOT_LIGHT_SHADOW_COUNT 16",
-		"MAX_POINT_LIGHT_SHADOW_COUNT 16"
-	];
+	definitions: [];
 
 	require_extensions: [];
-	includes: ["shadows/cascade_shadows", "shadows/directional_shadows", "shadows/omni_shadows", "lighting_base", "lighting_base", "shader_util"];
+	includes: ["lighting_base", "shader_util", "shadows/cascade_shadows", "shadows/directional_shadows", "shadows/omni_shadows"];
 
 	code: 
 	"""
@@ -46,6 +37,35 @@
 		//--------------------In/Out locations--------------------
 		layout (location = 0) in vec2 inUV;
 		layout (location = 0) out vec4 outFragcolor;
+
+		//-----------------------Constants------------------------
+		layout (constant_id = 0) const uint MAX_DIRECTIONAL_LIGHTS_COUNT = 3;
+		layout (constant_id = 1) const uint MAX_SPOT_LIGHTS_COUNT = 64;
+		layout (constant_id = 2) const uint MAX_POINT_LIGHTS_COUNT = 64;
+
+		layout (constant_id = 3) const uint MAX_DIRECTIONAL_LIGHT_SHADOW_COUNT = 1;
+		layout (constant_id = 4) const uint SHADOW_MAP_CASCADE_COUNT = 8;
+		layout (constant_id = 5) const uint MAX_SPOT_LIGHT_SHADOW_COUNT = 16;
+		layout (constant_id = 6) const uint MAX_POINT_LIGHT_SHADOW_COUNT = 16;
+
+		struct FCascadeShadow
+		{
+			float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
+			mat4 cascadeViewProjMat[SHADOW_MAP_CASCADE_COUNT];
+			float farClip;
+		};
+
+		struct FSpotShadow
+		{
+			mat4 shadowView;
+			int layer;
+		};
+		
+		struct FOmniShadow
+		{
+			float farClip;
+			int layer;
+		};
 		
 		//--------------------Uniforms--------------------
 		layout(std140, set = 0, binding = 0) uniform UBODeferred
@@ -84,6 +104,68 @@
 		} debug;
 		
 		#define SHADING_MODEL_CUSTOM
+
+		float getCascadeShadow(sampler2DArrayShadow shadomwap_tex, vec3 viewPosition, vec3 worldPosition, vec3 L, vec3 N, vec2 inUV, FCascadeShadow light)
+		{
+			uint cascadeIndex = 0;
+			for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
+			{
+				if (viewPosition.z < light.cascadeSplits[i])
+					cascadeIndex = i + 1;
+			}
+		
+			const float biasScale = 0.0001f;
+			float depth = -viewPosition.z;
+			float bias = biasScale * depth;
+		
+			vec4 offsetPos = vec4(worldPosition + 0.05 * N, 1.0);
+			vec4 shadowCoord = (biasMat * light.cascadeViewProjMat[cascadeIndex]) * offsetPos;
+			shadowCoord = shadowCoord / shadowCoord.w;
+		
+			float shadow = 1.f;
+			if (enableCascadedPCF)
+				shadow = cascadeShadowFilterPCF(shadomwap_tex, shadowCoord, cascadeIndex, bias);
+			else
+				shadow = cascadeShadowProjection(shadomwap_tex, shadowCoord, vec2(0.0), cascadeIndex, bias);
+		
+			return shadow;
+		}
+
+		float getDirectionalShadow(sampler2DArrayShadow shadomwap_tex, vec3 fragpos, vec3 N, vec3 dir, FSpotShadow light)
+		{
+		    float shadow = 1.0;
+			vec4 shadowClip	= light.shadowView * vec4(fragpos, 1.0);
+		
+			float cosTheta = dot(N, dir);
+			const float max_bias = 0.005f;
+			const float min_bias = 0.001f;
+			float bias = max(max_bias * (1.0 - cosTheta), min_bias);
+		
+			bool enablePCF = true;
+			if (enablePCF)
+				shadow = directionalShadowFilterPCF(shadomwap_tex, shadowClip, bias, light.layer);
+			else
+				shadow = directionalShadowProjection(shadomwap_tex, shadowClip, vec2(0.0), bias, light.layer);
+			return shadow;
+		}
+
+		float getOmniShadow(samplerCubeArrayShadow shadowmap_tex, vec3 fragPos, vec3 lightPos, vec3 N, FOmniShadow light)
+		{
+			float shadow = 1.0;
+			vec3 shadowClip = fragPos - lightPos;
+		
+			float cosTheta = dot(N, normalize(lightPos - fragPos));
+			float bias = 0.1 * tan(acos(cosTheta));
+			bias = clamp(bias, 0.0, 0.003);
+		
+			bool enablePCF = true;
+			if (enablePCF)
+				shadow = omniShadowFilterPCF(shadowmap_tex, shadowClip, bias, light.farClip, light.layer);
+			else
+				shadow = omniShadowProjection(shadowmap_tex, shadowClip, vec3(0.0), bias, light.farClip, light.layer);
+		
+			return shadow;
+		}
 		
 		vec3 lightContribution(vec3 albedo, vec3 L, vec3 V, vec3 N, vec3 F0, float metallic, float roughness)
 		{
@@ -270,56 +352,56 @@
 			}
 			else if(debug.mode == 12)
 			{
-				vec3 viewPosition = (ubo.view * vec4(inWorldPos, 1.0)).xyz;
-				//float viewPosition = length(ubo.viewPos.xyz - inWorldPos);
-				float distanceToCamera = viewPosition.z;
-		
-				for(int i = 0; i < ubo.directionalLightCount; i++)
-				{
-					FDirectionalLight light = lights.directionalLights[i];
-		
-					if(light.castShadows > 0 && light.shadowIndex != -1)
-					{
-						FCascadeShadow shadow = shadows.directionalShadows[light.shadowIndex];
-						uint cascadeIndex = 0;
-						for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
-						{
-							if (viewPosition.z < shadow.cascadeSplits[i])
-								cascadeIndex = i + 1;
-						}
-		
-						switch(cascadeIndex) 
-						{
-						case 0 : 
-							fragcolor *= vec3(1.0f, 0.25f, 0.25f);
-							break;
-						case 1 : 
-							fragcolor *= vec3(0.25f, 1.0f, 0.25f);
-							break;
-						case 2 : 
-							fragcolor *= vec3(0.25f, 0.25f, 1.0f);
-							break;
-						case 3 : 
-							fragcolor *= vec3(1.0f, 1.0f, 0.25f);
-							break;
-						case 4 : 
-							fragcolor *= vec3(0.25f, 1.0f, 1.0f);
-							break;
-						case 5 : 
-							fragcolor *= vec3(1.0f, 0.25f, 1.0f);
-							break;
-						case 6 : 
-							fragcolor *= vec3(1.0f, 0.5f, 0.5f);
-							break;
-						case 7 : 
-							fragcolor *= vec3(0.5f, 1.0f, 0.5f);
-							break;
-						default:
-							fragcolor *= vec3(1.0f, 1.0f, 1.0f);
-							break;
-						}
-					}
-				}
+				//vec3 viewPosition = (ubo.view * vec4(inWorldPos, 1.0)).xyz;
+				////float viewPosition = length(ubo.viewPos.xyz - inWorldPos);
+				//float distanceToCamera = viewPosition.z;
+				//
+				//for(int i = 0; i < ubo.directionalLightCount; i++)
+				//{
+				//	FDirectionalLight light = lights.directionalLights[i];
+				//
+				//	if(light.castShadows > 0 && light.shadowIndex != -1)
+				//	{
+				//		FCascadeShadow shadow = shadows.directionalShadows[light.shadowIndex];
+				//		uint cascadeIndex = 0;
+				//		for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
+				//		{
+				//			if (viewPosition.z < shadow.cascadeSplits[i])
+				//				cascadeIndex = i + 1;
+				//		}
+				//
+				//		switch(cascadeIndex) 
+				//		{
+				//		case 0 : 
+				//			fragcolor *= vec3(1.0f, 0.25f, 0.25f);
+				//			break;
+				//		case 1 : 
+				//			fragcolor *= vec3(0.25f, 1.0f, 0.25f);
+				//			break;
+				//		case 2 : 
+				//			fragcolor *= vec3(0.25f, 0.25f, 1.0f);
+				//			break;
+				//		case 3 : 
+				//			fragcolor *= vec3(1.0f, 1.0f, 0.25f);
+				//			break;
+				//		case 4 : 
+				//			fragcolor *= vec3(0.25f, 1.0f, 1.0f);
+				//			break;
+				//		case 5 : 
+				//			fragcolor *= vec3(1.0f, 0.25f, 1.0f);
+				//			break;
+				//		case 6 : 
+				//			fragcolor *= vec3(1.0f, 0.5f, 0.5f);
+				//			break;
+				//		case 7 : 
+				//			fragcolor *= vec3(0.5f, 1.0f, 0.5f);
+				//			break;
+				//		default:
+				//			fragcolor *= vec3(1.0f, 1.0f, 1.0f);
+				//			break;
+				//		}
+				//	}
+				//}
 			}
 		
 		  	outFragcolor = vec4(fragcolor, 1.0);

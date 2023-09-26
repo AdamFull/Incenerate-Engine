@@ -255,9 +255,8 @@
 		{
 			shader_name: "gaussianblur";
 			permutations: [
-				{ definitions: ["BLUR_TYPE 5"] },
-				{ definitions: ["BLUR_TYPE 9"] },
-				{ definitions: ["BLUR_TYPE 13"] }
+				{ definitions: [] },
+				{ definitions: ["EDITOR_MODE"] }
 			];
 		},
 		{ 

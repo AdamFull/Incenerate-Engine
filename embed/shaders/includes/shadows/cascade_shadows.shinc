@@ -1,5 +1,5 @@
 {
-	includes: ["lighting_base"];
+	includes: [];
 
 	code: 
 	"""
@@ -37,32 +37,6 @@
 				}
 			}
 			return shadowFactor / count;
-		}
-		
-		float getCascadeShadow(sampler2DArrayShadow shadomwap_tex, vec3 viewPosition, vec3 worldPosition, vec3 L, vec3 N, vec2 inUV, FCascadeShadow light)
-		{
-			uint cascadeIndex = 0;
-			for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
-			{
-				if (viewPosition.z < light.cascadeSplits[i])
-					cascadeIndex = i + 1;
-			}
-		
-			const float biasScale = 0.0001f;
-			float depth = -viewPosition.z;
-			float bias = biasScale * depth;
-		
-			vec4 offsetPos = vec4(worldPosition + 0.05 * N, 1.0);
-			vec4 shadowCoord = (biasMat * light.cascadeViewProjMat[cascadeIndex]) * offsetPos;
-			shadowCoord = shadowCoord / shadowCoord.w;
-		
-			float shadow = 1.f;
-			if (enableCascadedPCF)
-				shadow = cascadeShadowFilterPCF(shadomwap_tex, shadowCoord, cascadeIndex, bias);
-			else
-				shadow = cascadeShadowProjection(shadomwap_tex, shadowCoord, vec2(0.0), cascadeIndex, bias);
-		
-			return shadow;
 		}
 	""";
 }
