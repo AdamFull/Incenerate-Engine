@@ -58,6 +58,16 @@ void CShaderReflect::processReflection(const std::vector<uint32_t>& spirv, vk::S
             }
         });
 
+    for (const auto& spec_const : compiler.get_specialization_constants())
+    {
+        const std::string& name = compiler.get_name(spec_const.id);
+        auto it = mSpecializationConstants.find(name);
+        if (it != mSpecializationConstants.end())
+            it->second.stageFlags |= stageFlag;
+        else
+            mSpecializationConstants.emplace(name, buildSpecConstant(&compiler, spec_const, stageFlag));
+    }
+
     //Parsing uniform buffers
     for (const auto& res : resources.uniform_buffers)
     {
@@ -127,7 +137,7 @@ void CShaderReflect::processReflection(const std::vector<uint32_t>& spirv, vk::S
         else
             mUniforms.emplace(res.name, buildUnifrom(&compiler, res, stageFlag, vk::DescriptorType::eStorageImage));
     }
-
+    
     for (const auto& res : resources.subpass_inputs)
     {
         auto it = mUniforms.find(res.name);
@@ -200,4 +210,54 @@ CPushConstBlock CShaderReflect::buildPushBlock(spirv_cross::CompilerGLSL* compil
 
 	pushBlock.size = compiler->get_declared_struct_size(type);
 	return pushBlock;
+}
+
+CSpecializationConstant CShaderReflect::buildSpecConstant(spirv_cross::CompilerGLSL* compiler, const spirv_cross::SpecializationConstant& spec_const, vk::ShaderStageFlagBits stageFlag)
+{
+    auto& constant = compiler->get_constant(spec_const.id);
+    auto& type = compiler->get_type(constant.constant_type);
+
+    CSpecializationConstant specialization_constant{};
+    specialization_constant.constant_id = spec_const.constant_id;
+    specialization_constant.stageFlags = stageFlag;
+    specialization_constant.size = getTypeSize(compiler, type);
+
+    switch (type.basetype)
+    {
+    case spirv_cross::SPIRType::Boolean: specialization_constant.setDefaultValue(static_cast<bool>(constant.scalar_i32())); break;
+    case spirv_cross::SPIRType::Char:
+    case spirv_cross::SPIRType::SByte: specialization_constant.setDefaultValue(constant.scalar_i8()); break;
+    case spirv_cross::SPIRType::UByte: specialization_constant.setDefaultValue(constant.scalar_u8()); break;
+    case spirv_cross::SPIRType::Short: specialization_constant.setDefaultValue(constant.scalar_i16()); break;
+    case spirv_cross::SPIRType::UShort: specialization_constant.setDefaultValue(constant.scalar_u16()); break;
+    case spirv_cross::SPIRType::Int:
+    case spirv_cross::SPIRType::UInt: specialization_constant.setDefaultValue(constant.scalar_i32()); break;
+    case spirv_cross::SPIRType::Int64: specialization_constant.setDefaultValue(constant.scalar_i64()); break;
+    case spirv_cross::SPIRType::UInt64: specialization_constant.setDefaultValue(constant.scalar_u64()); break;
+    case spirv_cross::SPIRType::Half: specialization_constant.setDefaultValue(static_cast<int16_t>(constant.scalar_f16())); break;
+    case spirv_cross::SPIRType::Float: specialization_constant.setDefaultValue(constant.scalar_f32()); break;
+    case spirv_cross::SPIRType::Double: specialization_constant.setDefaultValue(constant.scalar_f64()); break;
+    //case spirv_cross::SPIRType::Struct: 
+    //{
+    //    std::vector<uint8_t> struct_data{};
+    //    for (uint32_t i = 0; i < type.member_types.size(); ++i) 
+    //    {
+    //        auto& memberType = compiler->get_type(type.member_types[i]);
+    //        auto& memberConstant = compiler->get_constant(constant.subconstants[i]);
+    //        auto memberValue = getDefaultValue(memberConstant, memberType, comp);
+    //    }
+    //} break;
+    default:
+        break;
+    }
+
+    return specialization_constant;
+}
+
+std::size_t CShaderReflect::getTypeSize(spirv_cross::CompilerGLSL* compiler, const spirv_cross::SPIRType& type)
+{
+    if(type.basetype == spirv_cross::SPIRType::Struct)
+        return compiler->get_declared_struct_size(type);
+
+    return type.width / 8;
 }

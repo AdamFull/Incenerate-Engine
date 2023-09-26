@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 #include <spirvcross/spirv_cross.hpp>
 #include <spirvcross/spirv_glsl.hpp>
+#include <variant>
 
 namespace engine
 {
@@ -83,6 +84,48 @@ namespace engine
 			std::unordered_map<std::string, CUniform> mUniforms{};
 		};
 
+		class CSpecializationConstant
+		{
+		public:
+			friend class CShaderReflect;
+			CSpecializationConstant() = default;
+
+			uint32_t getConstantId() const { return constant_id; }
+			std::size_t getSize() const { return size; }
+			vk::ShaderStageFlags getStageFlags() const { return stageFlags; }
+
+			template<class _Ty>
+			void setDefaultValue(const _Ty& value)
+			{
+				if (!base_value)
+					base_value = std::make_unique<char[]>(size);
+				memcpy(base_value.get(), &value, size);
+			}
+
+			template<class _Ty>
+			_Ty getDefaultValue() const
+			{
+				if (sizeof(_Ty) != size)
+					throw std::runtime_error("Invalid constant value size.");
+
+				if (base_value)
+					return *static_cast<_Ty*>(base_value);
+
+				return static_cast<_Ty>(0);
+			}
+
+			const std::unique_ptr<char[]>& getRawData() const
+			{
+				return base_value;
+			}
+
+		private:
+			uint32_t constant_id{ 0 };
+			std::size_t size{ 0 };
+			vk::ShaderStageFlags stageFlags{ vk::ShaderStageFlagBits::eAll };
+			std::unique_ptr<char[]> base_value{};
+		};
+
 		class CShaderReflect
 		{
 		public:
@@ -104,6 +147,7 @@ namespace engine
 			const std::unordered_map<std::string, CUniform>& getUniforms() const { return mUniforms; }
 			const std::unordered_map<std::string, CUniformBlock>& getUniformBlocks() const { return mUniformBlocks; }
 			const std::unordered_map<std::string, CPushConstBlock>& getPushBlocks() const { return mPushBlocks; }
+			const std::unordered_map<std::string, CSpecializationConstant>& getSpecializationConstants() { return mSpecializationConstants; }
 
 		protected:
 			void processReflection(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stageFlag);
@@ -111,6 +155,8 @@ namespace engine
 			static CUniformBlock buildUniformBlock(spirv_cross::CompilerGLSL* compiler, const spirv_cross::Resource& res, vk::ShaderStageFlagBits stageFlag, vk::DescriptorType descriptorType);
 			static CUniform buildUnifrom(spirv_cross::CompilerGLSL* compiler, const spirv_cross::Resource& res, vk::ShaderStageFlagBits stageFlag, vk::DescriptorType descriptorType);
 			static CPushConstBlock buildPushBlock(spirv_cross::CompilerGLSL* compiler, const spirv_cross::Resource& res, vk::ShaderStageFlagBits stageFlag);
+			static CSpecializationConstant buildSpecConstant(spirv_cross::CompilerGLSL* compiler, const spirv_cross::SpecializationConstant& spec_const, vk::ShaderStageFlagBits stageFlag);
+			static std::size_t getTypeSize(spirv_cross::CompilerGLSL* compiler, const spirv_cross::SPIRType& type);
 		protected:
 			uint32_t descriptorMultiplier{ 1 };
 
@@ -121,6 +167,7 @@ namespace engine
 			std::unordered_map<std::string, CUniform> mUniforms;
 			std::unordered_map<std::string, CUniformBlock> mUniformBlocks;
 			std::unordered_map<std::string, CPushConstBlock> mPushBlocks;
+			std::unordered_map<std::string, CSpecializationConstant> mSpecializationConstants;
 		};
 	}
 }

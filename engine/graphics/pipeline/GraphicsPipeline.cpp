@@ -128,7 +128,7 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader, const FShaderCrea
     vk::PipelineTessellationStateCreateInfo tessellationState{};
     tessellationState.patchControlPoints = false ? shader->getControlPoints() : 0;
 
-    auto shaderStages = shader->getStageCreateInfo();
+    auto& shaderStages = shader->getStageCreateInfo();
 
     vk::GraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.stageCount = shaderStages.size();
