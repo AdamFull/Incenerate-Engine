@@ -11,7 +11,6 @@ add_subdirectory("filesystem")
 add_subdirectory("scripting")
 add_subdirectory("audio")
 add_subdirectory("event")
-add_subdirectory("itl")
 
 file(GLOB_RECURSE ENGINE_LOADERS_SOURCE "loaders/*.cpp" "loaders/*.c" "loaders/*.cc" "loaders/*.h" "loaders/*.hpp")
 file(GLOB_RECURSE ENGINE_PHYSICS_SOURCE "physics/*.cpp" "physics/*.c" "physics/*.cc" "physics/*.h" "physics/*.hpp")
@@ -40,7 +39,6 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC IncenerateScripting
     PUBLIC IncenerateAudio
     PUBLIC IncenerateEvents
-    PUBLIC IncenerateTemplateLibrary
 )
 
 #target_link_options(${PROJECT_NAME}  PRIVATE "-Wl,--export-all-symbols")

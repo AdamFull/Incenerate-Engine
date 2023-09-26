@@ -3,7 +3,6 @@
 #include "Device.h"
 #include "APICompatibility.h"
 
-#include <IE_Hash.h>
 #include "Helpers.h"
 
 using namespace engine;
@@ -64,7 +63,7 @@ void CDebugUtils::beginLabel(vk::CommandBuffer& commandBuffer, const char* label
 	if (!bDebugUtils)
 		return;
 
-	auto dbgcolor = encodeIdToColor(itl::cexp_color32(label));
+	auto dbgcolor = encodeIdToColor(utl::const_hash(label));
 	beginLabel(commandBuffer, label, dbgcolor);
 }
 
@@ -84,7 +83,7 @@ void CDebugUtils::insertLabel(vk::CommandBuffer& commandBuffer, const char* labe
 	if (!bDebugUtils)
 		return;
 
-	auto dbgcolor = encodeIdToColor(itl::cexp_color32(label));
+	auto dbgcolor = encodeIdToColor(utl::const_hash(label));
 	insertLabel(commandBuffer, label, dbgcolor);
 }
 
@@ -112,7 +111,7 @@ void CDebugUtils::queueBeginLabel(vk::Queue& queue, const char* label)
 	if (!bDebugUtils)
 		return;
 
-	auto dbgcolor = encodeIdToColor(itl::cexp_color32(label));
+	auto dbgcolor = encodeIdToColor(utl::const_hash(label));
 	queueBeginLabel(queue, label, dbgcolor);
 }
 
@@ -121,7 +120,7 @@ void CDebugUtils::queueInsertLabel(vk::Queue& queue, const char* label)
 	if (!bDebugUtils)
 		return;
 
-	auto dbgcolor = encodeIdToColor(itl::cexp_color32(label));
+	auto dbgcolor = encodeIdToColor(utl::const_hash(label));
 	queueBeginLabel(queue, label, dbgcolor);
 }
 
