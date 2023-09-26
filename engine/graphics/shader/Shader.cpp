@@ -64,45 +64,25 @@ void CShader::buildReflection()
 
     for (auto& module : vShaderModules)
     {
-        auto& entries = specializationEntries[module.stage];
-        uint32_t whole_size{ 0u };
+        auto& constants_data = mSpecConstantData[module.stage];
         for (auto& [name, constant] : mSpecializationConstants)
         {
             auto constant_stage_flags = constant.getStageFlags();
             if (constant_stage_flags & module.stage)
             {
-                entries.emplace_back();
-                auto& entry = entries.back();
+                constants_data.entries.emplace_back();
+                auto& entry = constants_data.entries.back();
                 entry.constantID = constant.getConstantId();
                 entry.size = constant.getSize();
-                entry.offset = whole_size;
-                whole_size += entry.size;
+                entry.offset = constant.getOffset();
             }
         }
 
-        if (!entries.empty())
-        {
-            auto& buffer = specializationData[module.stage];
-            buffer = std::make_unique<char[]>(whole_size);
-
-            uint32_t offset{ 0u };
-            for (auto& [name, constant] : mSpecializationConstants)
-            {
-                auto constant_stage_flags = constant.getStageFlags();
-                if (constant_stage_flags & module.stage)
-                {
-                    std::memcpy(buffer.get() + offset, constant.getRawData().get(), constant.getSize());
-                    offset += constant.getSize();
-                }
-            }
-
-            auto& specializationInfo = specializationInfos[module.stage];
-            specializationInfo.mapEntryCount = static_cast<uint32_t>(entries.size());
-            specializationInfo.pMapEntries = entries.data();
-            specializationInfo.dataSize = whole_size;
-            specializationInfo.pData = buffer.get();
-            module.pSpecializationInfo = &specializationInfo;
-        }
+        constants_data.info.mapEntryCount = static_cast<uint32_t>(constants_data.entries.size());
+        constants_data.info.pMapEntries = constants_data.entries.data();
+        constants_data.info.dataSize = static_cast<uint32_t>(vSpecializationBuffer.size());
+        constants_data.info.pData = vSpecializationBuffer.data();
+        module.pSpecializationInfo = &constants_data.info;
     }
 
     // Gets the last descriptors binding.
