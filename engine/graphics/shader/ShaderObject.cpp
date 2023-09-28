@@ -64,7 +64,11 @@ void CShaderObject::create(const FShaderCreateInfo& specials)
 
 void CShaderObject::increaseUsage(size_t usages)
 {
-	for (size_t usage = 0; usage < usages; usage++)
+	vInstances.clear();
+	usageCount += usages;
+	pPipeline->updateDescriptorPool(this, usageCount);
+
+	for (size_t usage = 0; usage < usageCount; usage++)
 	{
 		auto pInstance = std::make_unique<FShaderInstance>();
 		pInstance->pDescriptorSet = std::make_unique<CDescriptorHandler>(pDevice, pShader.get());
@@ -89,8 +93,6 @@ void CShaderObject::increaseUsage(size_t usages)
 		}
 		vInstances.emplace_back(std::move(pInstance));
 	}
-
-	usageCount += usages;
 }
 
 void CShaderObject::bind(vk::CommandBuffer& commandBuffer)
