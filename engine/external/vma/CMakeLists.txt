@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.18.0)
 project(VulkanMemoryAllocator)
 
-find_package(Vulkan REQUIRED)
 include_directories(${Vulkan_INCLUDE_DIR})
 
 option(VMA_STATIC_VULKAN_FUNCTIONS "Link statically with Vulkan API" OFF)
