@@ -15,7 +15,7 @@ void COmniShadowSystem::__create()
 	specials.cull_mode = vk::CullModeFlagBits::eFront;
 	specials.front_face = vk::FrontFace::eCounterClockwise;
 	specials.depth_test = true;
-	specials.usages = MAX_POINT_LIGHT_SHADOW_COUNT * 6;
+	specials.usages = MAX_POINT_LIGHT_SHADOW_COUNT * 6 * 128;
 	shader_id = graphics->addShader("shadows:omni", specials);
 
 	CBaseGraphicsSystem::__create();
@@ -71,7 +71,8 @@ void COmniShadowSystem::__update(float fDt)
 				auto shadowViewProj = shadowProj * point_light_view_matrices[i];
 				point_light_frustums[i].update(point_light_view_matrices[i], shadowProj);
 
-				auto& pPush = graphics->getPushBlockHandle("modelData");
+				auto& pPush = graphics->getPushBlockHandle("shadowData");
+				auto& pModel = graphics->getUniformHandle("UBOMeshData");
 				pPush->set("viewProjMat", shadowViewProj);
 				pPush->set("position", glm::vec4(ltransform.rposition, 1.f));
 				pPush->set("farPlane", light.radius);
@@ -83,8 +84,8 @@ void COmniShadowSystem::__update(float fDt)
 					if (!graphics->bindVertexBuffer(mesh.vbo_id))
 						continue;
 
-					pPush->set("model", mtransform.model);
-					graphics->flushConstantRanges(pPush);
+					pModel->set("model", mtransform.model);
+					graphics->flushShader();
 
 					auto& head = registry->get<FSceneComponent>(mesh.head);
 

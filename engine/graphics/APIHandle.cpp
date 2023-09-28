@@ -1270,13 +1270,13 @@ void CAPIHandle::bindTexture(const std::string& name, size_t id, uint32_t mip_le
 
 void CAPIHandle::bindObjectData(const glm::mat4& model, const glm::mat4& normal, uint32_t object_id)
 {
-    auto& pMesh = getPushBlockHandle("meshData");
+    auto& pMesh = getUniformHandle("UBOMeshData");
     if (pMesh)
     {
         pMesh->set("model", model);
         pMesh->set("normal", normal);
         pMesh->set("object_id", encodeIdToColor(object_id));
-        flushConstantRanges(pMesh);
+        //flushConstantRanges(pMesh);
     }
 }
 

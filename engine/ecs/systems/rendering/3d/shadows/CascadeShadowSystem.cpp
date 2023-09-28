@@ -167,7 +167,8 @@ void CCascadeShadowSystem::__update(float fDt)
 	graphics->bindShader(shader_id);
 	graphics->setManualShaderControlFlag(true);
 
-	auto& pPush = graphics->getPushBlockHandle("modelData");
+	auto& pPush = graphics->getPushBlockHandle("shadowData");
+	auto& pModel = graphics->getUniformHandle("UBOMeshData");
 
 	auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 	for (auto [entity, mtransform, mesh] : meshes.each())
@@ -180,7 +181,7 @@ void CCascadeShadowSystem::__update(float fDt)
 		bool bHasSkin{ mesh.skin > -1 };
 
 		pPush->set("hasSkin", bHasSkin ? 1 : -1);
-		pPush->set("model", mtransform.model);
+		pModel->set("model", mtransform.model);
 
 		auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
 		if (pInstanceUBO)

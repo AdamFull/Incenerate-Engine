@@ -8,6 +8,11 @@
 			mat4 jointMatrices[128];
 		};
 
+		layout(std140, set = 0, binding = 1) uniform UBOMeshData
+		{
+			mat4 model;
+		} modelData;
+
 		layout(std140, set = 0, binding = 2) uniform UBOMaterial
 		{
 			vec4 baseColorFactor;

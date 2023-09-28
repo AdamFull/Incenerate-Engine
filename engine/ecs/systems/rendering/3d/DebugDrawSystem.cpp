@@ -56,12 +56,12 @@ void CDebugDrawSystem::__update(float fDt)
 				bool needToRender = camera->frustum.checkBox(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
 				if (needToRender)
 				{
-					auto& pPush = graphics->getPushBlockHandle("debug");
+					auto& pPush = graphics->getUniformHandle("UBODisplayNormal");
 					pPush->set("projection", camera->projection);
 					pPush->set("view", camera->view);
 					pPush->set("model", transform.model);
 					pPush->set("normal", transform.normal);
-					graphics->flushConstantRanges(pPush);
+					graphics->flushShader();
 
 					auto& lod = meshlet.levels_of_detail[0];
 					graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count);

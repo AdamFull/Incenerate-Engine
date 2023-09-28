@@ -5,7 +5,7 @@
 
 	definitions: [];
 	require_extensions: [ "GL_ARB_shader_viewport_layer_array" ];
-	includes: [];
+	includes: ["shadow_inputs"];
 
 	code: 
 	"""
@@ -20,21 +20,20 @@
 		layout(push_constant) uniform UBOShadowmapModelData
 		{
 			mat4 viewProjMat;
-			mat4 model;
 			vec4 position;
 			int stride;
 		    float farPlane;
-		} modelData;
+		} shadowData;
 		
 		layout(location = 0) out vec4 outPosition;
 		layout(location = 1) out vec4 outLightPos;
 		
 		void main()
 		{
-			gl_Layer = modelData.stride;
+			gl_Layer = shadowData.stride;
 			outPosition = modelData.model * vec4(inPosition, 1.0);
-			outLightPos = modelData.position;
-			gl_Position = modelData.viewProjMat * outPosition;
+			outLightPos = shadowData.position;
+			gl_Position = shadowData.viewProjMat * outPosition;
 		}
 	""";
 }

@@ -15,7 +15,7 @@ void CDirectionalShadowSystem::__create()
 	specials.cull_mode = vk::CullModeFlagBits::eFront;
 	specials.front_face = vk::FrontFace::eCounterClockwise;
 	specials.depth_test = true;
-	specials.usages = MAX_SPOT_LIGHT_SHADOW_COUNT;
+	specials.usages = MAX_SPOT_LIGHT_SHADOW_COUNT * 128;
 	//specials.defines = { {"INVOCATION_COUNT", std::to_string(MAX_SPOT_LIGHT_COUNT)} };
 	shader_id = graphics->addShader("shadows:directional", specials);
 
@@ -60,7 +60,8 @@ void CDirectionalShadowSystem::__update(float fDt)
 			graphics->bindShader(shader_id);
 			graphics->setManualShaderControlFlag(true);
 
-			auto& pPush = graphics->getPushBlockHandle("modelData");
+			auto& pPush = graphics->getPushBlockHandle("shadowData");
+			auto& pModel = graphics->getUniformHandle("UBOMeshData");
 			pPush->set("viewProjMat", shadow_commit.shadowView);
 			pPush->set("stride", lightStride);
 
@@ -75,8 +76,8 @@ void CDirectionalShadowSystem::__update(float fDt)
 				if (!graphics->bindVertexBuffer(mesh.vbo_id))
 					continue;
 
-				pPush->set("model", mtransform.model);
-				graphics->flushConstantRanges(pPush);
+				pModel->set("model", mtransform.model);
+				graphics->flushShader();
 
 				for (auto& meshlet : mesh.vMeshlets)
 				{

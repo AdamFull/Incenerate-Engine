@@ -32,14 +32,14 @@
 		#endif // HAS_HEIGHTMAP
 		#endif // BINDLESS_TEXTURES
 		
-		layout(push_constant) uniform UBOMeshData
+		layout(std140, set = 0, binding = 0) uniform UBOMeshData
 		{
 			mat4 model;
 			mat4 normal;
 			vec4 object_id;
 		} meshData;
 		
-		layout(std140, set = 0, binding = 0) uniform FUniformData
+		layout(std140, set = 0, binding = 1) uniform FUniformData
 		{
 			mat4 view;
 			mat4 projection;
@@ -49,13 +49,13 @@
 		} data;
 		
 		#ifdef HAS_SKIN
-		layout(std140, set = 0, binding = 1) uniform FSkinning
+		layout(std140, set = 0, binding = 2) uniform FSkinning
 		{
 			mat4 jointMatrices[128];
 		};
 		#endif
 		
-		layout(std140, set = 0, binding = 2) uniform UBOMaterial
+		layout(std140, set = 0, binding = 3) uniform UBOMaterial
 		{
 			vec4 baseColorFactor;
 			vec3 emissiveFactor;
@@ -71,7 +71,7 @@
 		} material;
 		
 		#ifdef BINDLESS_TEXTURES
-		layout(std140, set = 0, binding = 3) uniform UBOMaterialTextures
+		layout(std140, set = 0, binding = 4) uniform UBOMaterialTextures
 		{
 			uint color_tex;
 			uint rmah_tex;
@@ -88,7 +88,7 @@
 			vec4 color;
 		};
 		
-		layout(std430, set = 0, binding = 4) buffer readonly UBOInstancing
+		layout(std430, set = 0, binding = 5) buffer readonly UBOInstancing
 		{
 			FInstance instances[512];
 		} instancing;
