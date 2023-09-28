@@ -29,7 +29,7 @@ CPipeline::~CPipeline()
 
 void CPipeline::create(CShaderObject* pShader, const FShaderCreateInfo& specials)
 {
-    createDescriptorPool(pShader);
+    createDescriptorPool(pShader, specials);
     createDescriptorSetLayout(pShader);
     createPipelineLayout(pShader, specials);
 }
@@ -78,14 +78,23 @@ void CPipeline::createDescriptorSetLayout(CShaderObject* pShader)
     }
 }
 
-void CPipeline::createDescriptorPool(CShaderObject* pShader)
+void CPipeline::createDescriptorPool(CShaderObject* pShader, const FShaderCreateInfo& specials)
 {
     auto& shader = pShader->getShader();
-    auto& descriptorPools = shader->getDescriptorPools();
+    auto descriptorPools = shader->getDescriptorPools();
+
+    auto framesInFlight = pDevice->getFramesInFlight();
+
+    uint32_t maxSets{ 256u };
+    for (auto& poolSize : descriptorPools)
+    {
+        poolSize.descriptorCount *= specials.usages * framesInFlight;
+        maxSets += poolSize.descriptorCount;
+    }
 
     vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
     descriptorPoolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
-    descriptorPoolCreateInfo.maxSets = 8192; // 16384;
+    descriptorPoolCreateInfo.maxSets = maxSets;
     descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPools.size());
     descriptorPoolCreateInfo.pPoolSizes = descriptorPools.data();
     vk::Result res = pDevice->create(descriptorPoolCreateInfo, &descriptorPool);

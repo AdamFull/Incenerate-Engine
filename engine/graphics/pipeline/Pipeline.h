@@ -31,7 +31,7 @@ namespace engine
 
 		protected:
 			void createDescriptorSetLayout(CShaderObject* pShader);
-			void createDescriptorPool(CShaderObject* pShader);
+			void createDescriptorPool(CShaderObject* pShader, const FShaderCreateInfo& specials);
 			void createPipelineLayout(CShaderObject* pShader, const FShaderCreateInfo& specials);
 
 			virtual void createPipeline(CShaderObject* pShader, const FShaderCreateInfo& specials) { pShader; }

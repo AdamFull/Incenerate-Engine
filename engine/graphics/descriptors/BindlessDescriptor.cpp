@@ -101,11 +101,20 @@ const vk::DescriptorPool& CBindlessDescriptor::getDescriptorPool() const
 
 void CBindlessDescriptor::createDescriptorPool()
 {
-    std::vector<vk::DescriptorPoolSize> descriptorPoolSizes{ {vk::DescriptorType::eCombinedImageSampler, k_max_bindless_resources} };
+    std::vector<vk::DescriptorPoolSize> descriptorPoolSizes{ {vk::DescriptorType::eCombinedImageSampler, k_max_bindless_resources } };
+
+    auto framesInFlight = pDevice->getFramesInFlight();
+
+    uint32_t maxSets{ 0u };
+    for (auto& poolSize : descriptorPoolSizes)
+    {
+        poolSize.descriptorCount *= framesInFlight;
+        maxSets += poolSize.descriptorCount;
+    }
 
     vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
     descriptorPoolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eUpdateAfterBindEXT;
-    descriptorPoolCreateInfo.maxSets = k_max_bindless_resources * descriptorPoolSizes.size();
+    descriptorPoolCreateInfo.maxSets = maxSets;
     descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
     descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
     vk::Result res = pDevice->create(descriptorPoolCreateInfo, &m_pDescriptorPool);

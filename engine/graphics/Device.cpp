@@ -218,8 +218,11 @@ void CDevice::selectPhysicalDeviceAndExtensions()
 
     if (!vkPhysical)
     {
-        if(!fallbackDevice)
+        if (!fallbackDevice)
+        {
+            log_error("Not found any avaliable physical device.");
             throw std::runtime_error("Not found any avaliable physical device.");
+        }
         vkPhysical = fallbackDevice;
     }
 
@@ -288,7 +291,7 @@ void CDevice::createDevice()
     timelineSemaphoreFeatures.pNext = &shaderDemoteToHelperInvocationFeature;
 
     vk::PhysicalDeviceGraphicsPipelineLibraryFeaturesEXT pipelineLibraryFeatures{};
-    pipelineLibraryFeatures.graphicsPipelineLibrary = true;
+    pipelineLibraryFeatures.graphicsPipelineLibrary = false;
     pipelineLibraryFeatures.pNext = &timelineSemaphoreFeatures;
 
     vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
@@ -327,10 +330,10 @@ void CDevice::createDevice()
     log_cerror(qGraphicsQueue, "Failed while getting graphics queue.");
     qPresentQueue = queueFamilies.createQueue(family::present, vkDevice);
     log_cerror(qPresentQueue, "Failed while getting present queue.");
-    qComputeQueue = queueFamilies.createQueue(family::compute, vkDevice);
-    log_cerror(qComputeQueue, "Failed while getting compute queue.");
-    qTransferQueue = queueFamilies.createQueue(family::transfer, vkDevice);
-    log_cerror(qTransferQueue, "Failed while getting transfer queue.");
+    //qComputeQueue = queueFamilies.createQueue(family::compute, vkDevice);
+    //log_cerror(qComputeQueue, "Failed while getting compute queue.");
+    //qTransferQueue = queueFamilies.createQueue(family::transfer, vkDevice);
+    //log_cerror(qTransferQueue, "Failed while getting transfer queue.");
 }
 
 void CDevice::createPipelineCache()
@@ -922,8 +925,8 @@ void CDevice::takeScreenshot(const std::filesystem::path& filepath)
     barrier.image = dstImage;
     transitionImageLayoutTransfer(commandBuffer, barrier);
 
-    barrier.srcQueueFamilyIndex = getQueueFamilyIndex(family::transfer);
-    barrier.dstQueueFamilyIndex = getQueueFamilyIndex(family::present);
+    //barrier.srcQueueFamilyIndex = getQueueFamilyIndex(family::transfer);
+    //barrier.dstQueueFamilyIndex = getQueueFamilyIndex(family::present);
     barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
     barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
     barrier.image = srcImage;
@@ -1111,7 +1114,7 @@ const std::shared_ptr<CCommandPool>& CDevice::getCommandPool(vk::QueueFlags queu
 
 vk::Queue& CDevice::getQueue(vk::QueueFlags flags)
 {
-    if(flags & vk::QueueFlagBits::eGraphics)
+    if((flags & vk::QueueFlagBits::eGraphics) || (flags & vk::QueueFlagBits::eCompute) || (flags & vk::QueueFlagBits::eTransfer))
         return qGraphicsQueue;
     else if(flags & vk::QueueFlagBits::eCompute)
         return qComputeQueue;
