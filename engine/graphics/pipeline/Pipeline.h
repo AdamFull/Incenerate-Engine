@@ -17,6 +17,8 @@ namespace engine
 			virtual void create(CShaderObject* pShader, vk::RenderPass& renderPass, const FShaderCreateInfo& specials);
 			virtual void reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, const FShaderCreateInfo& specials);
 
+			void updateDescriptorPool(CShaderObject* pShader, uint32_t usages);
+
 			void bind(vk::CommandBuffer& commandBuffer, uint32_t index = 0);
 			const size_t count() const { return vPipelines.size(); }
 
@@ -31,7 +33,7 @@ namespace engine
 
 		protected:
 			void createDescriptorSetLayout(CShaderObject* pShader);
-			void createDescriptorPool(CShaderObject* pShader);
+			void createDescriptorPool(CShaderObject* pShader, const FShaderCreateInfo& specials);
 			void createPipelineLayout(CShaderObject* pShader, const FShaderCreateInfo& specials);
 
 			virtual void createPipeline(CShaderObject* pShader, const FShaderCreateInfo& specials) { pShader; }

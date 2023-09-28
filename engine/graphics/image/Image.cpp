@@ -318,8 +318,9 @@ void CImage::writeImageData(std::unique_ptr<FImageCreateInfo>& info, vk::Format 
     auto buffer = stagingBuffer->getBuffer();
     pDevice->copyBufferToImage(transferBuffer, buffer, _image, vRegions);
 
-    barrier.srcQueueFamilyIndex = pDevice->getQueueFamilyIndex(family::transfer);
-    barrier.dstQueueFamilyIndex = pDevice->getQueueFamilyIndex(family::graphics);
+    // TODO: Fix transfer ownership
+    //barrier.srcQueueFamilyIndex = pDevice->getQueueFamilyIndex(family::transfer);
+    //barrier.dstQueueFamilyIndex = pDevice->getQueueFamilyIndex(family::graphics);
     barrier.oldLayout = barrier.newLayout;
 
     // Transfer family ownership

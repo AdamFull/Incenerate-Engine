@@ -19,11 +19,10 @@
 		
 		layout(push_constant) uniform UBOShadowmapModelData
 		{
-			mat4 model;
 			mat4 viewProjMat;
 			int layer;
 			int hasSkin;
-		} modelData;
+		} shadowData;
 		
 		void main()
 		{
@@ -34,7 +33,7 @@
 			//mat4 modelMatrix = modelData.model;
 		
 			vec4 localPos;
-			if(modelData.hasSkin > 0)
+			if(shadowData.hasSkin > 0)
 			{
 				mat4 skinMat = 
 				inWeight0.x * jointMatrices[int(inJoint0.x)] +
@@ -51,8 +50,8 @@
 		
 			localPos = vec4(localPos.xyz / localPos.w, 1.0);
 		
-			gl_Layer = modelData.layer;
-			gl_Position = modelData.viewProjMat * localPos;
+			gl_Layer = shadowData.layer;
+			gl_Position = shadowData.viewProjMat * localPos;
 		}
 	""";
 }

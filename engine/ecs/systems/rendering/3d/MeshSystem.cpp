@@ -72,14 +72,14 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 						auto& skin = scene.skins[mesh.skin];
 						pJoints->set("jointMatrices", skin.jointMatrices);
 					}
+
+					graphics->bindObjectData(transform.model, transform.normal, static_cast<uint32_t>(entity));
 		
 					graphics->flushShader();
 				}
 		
 				auto& lod = meshlet.levels_of_detail[lod_level];
 				debug_draw->drawDebugAABB(transform.rposition + meshlet.dimensions.min * transform.rscale, transform.rposition + meshlet.dimensions.max * transform.rscale);
-		
-				graphics->bindObjectData(transform.model, transform.normal, static_cast<uint32_t>(entity));
 					
 				graphics->draw(lod.begin_vertex, lod.vertex_count, lod.begin_index, lod.index_count, mesh.instanceCount == 0 ? 1 : mesh.instanceCount);
 			}

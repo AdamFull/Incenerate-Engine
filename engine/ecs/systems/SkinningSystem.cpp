@@ -39,6 +39,9 @@ void CSkinningSystem::debugDrawSkeleton(entt::entity& node, glm::mat4 parentMatr
 	auto& graphics = EGEngine->getGraphics();
 	auto& debug_draw = graphics->getDebugDraw();
 
+	if (!registry->valid(node))
+		return;
+
 	auto& nodeTransform = registry->get<FTransformComponent>(node);
 	auto& nodeHierarchy = registry->get<FHierarchyComponent>(node);
 

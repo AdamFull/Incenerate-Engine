@@ -25,7 +25,10 @@ namespace engine
 
 			const std::any& value = it->second;
 			if (typeid(T) != value.type())
+			{
+				log_error("Type mismatch for key: {}", key);
 				throw std::runtime_error("Type mismatch for key: " + key);
+			}
 
 			return std::any_cast<T>(value);
 		}

@@ -29,6 +29,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC imgui)
 add_subdirectory(tinyfiledialogs)
 target_link_libraries(${PROJECT_NAME} PUBLIC tfd)
 
+set(Vulkan_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/include)
+
 add_subdirectory(vulkan)
 target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan-Headers)
 

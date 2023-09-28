@@ -12,7 +12,7 @@
 		layout (triangles) in;
 		layout (line_strip, max_vertices = 6) out;
 		
-		layout(push_constant) uniform UBODisplayNormal
+		layout(std140, set = 0, binding = 1) uniform UBODisplayNormal
 		{
 		  mat4 model;
 		  mat4 view;

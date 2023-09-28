@@ -28,31 +28,49 @@ void CQueueFamilies::initialize(const vk::PhysicalDevice& vkPhysical, vk::Surfac
 		const bool has_transfer = static_cast<bool>(prop.queueFlags & vk::QueueFlagBits::eTransfer);
 
 		// Looking for suitable graphics family
-		if (has_graphics && !isFamilySelected(family::graphics))
+		if (has_graphics && !isFamilySelected(family::graphics) && mFamilyUsages[index] < mQueueFamilies[index].queueCount)
+		{
 			mSelectedFamilies[family::graphics] = index;
+			mFamilyUsages[index]++;
+		}
 
 		// Looking for family that support graphics and compute
-		if (has_graphics && has_compute && !isFamilySelected(family::graphics_compute))
+		if (has_graphics && has_compute && !isFamilySelected(family::graphics_compute) && mFamilyUsages[index] < mQueueFamilies[index].queueCount)
+		{
 			mSelectedFamilies[family::graphics_compute] = index;
+			mFamilyUsages[index]++;
+		}
 
 		// Looking for family that support graphics and transfer
-		if (has_graphics && has_transfer && !isFamilySelected(family::graphics_transfer))
+		if (has_graphics && has_transfer && !isFamilySelected(family::graphics_transfer) && mFamilyUsages[index] < mQueueFamilies[index].queueCount)
+		{
 			mSelectedFamilies[family::graphics_transfer] = index;
+			mFamilyUsages[index]++;
+		}
 
 		if (!ignore)
 		{
 			// Looking for compute only family
-			if (has_compute && !has_graphics && !isFamilySelected(family::compute))
+			if (has_compute && !has_graphics && !isFamilySelected(family::compute) && mFamilyUsages[index] < mQueueFamilies[index].queueCount)
+			{
 				mSelectedFamilies[family::compute] = index;
+				mFamilyUsages[index]++;
+			}
 
 			// Looking for transfer only family
-			if (has_transfer && !has_graphics && !has_compute && !isFamilySelected(family::transfer))
+			if (has_transfer && !has_graphics && !has_compute && !isFamilySelected(family::transfer) && mFamilyUsages[index] < mQueueFamilies[index].queueCount)
+			{
 				mSelectedFamilies[family::transfer] = index;
+				mFamilyUsages[index]++;
+			}
 		}
 
 		// Looking for present family
-		if (vkPhysical.getSurfaceSupportKHR(index, vkSurface) && !isFamilySelected(family::present))
+		if (vkPhysical.getSurfaceSupportKHR(index, vkSurface) && !isFamilySelected(family::present) && mFamilyUsages[index] < mQueueFamilies[index].queueCount)
+		{
 			mSelectedFamilies[family::present] = index;
+			mFamilyUsages[index]++;
+		}
 	}
 
 	// Check graphics family
@@ -60,12 +78,12 @@ void CQueueFamilies::initialize(const vk::PhysicalDevice& vkPhysical, vk::Surfac
 		log_error("No suitable queue families found for vk::QueueFlagBits::eGraphics.");
 
 	// Check graphics + compute family
-	if (!isFamilySelected(family::graphics_compute))
-		log_error("No suitable queue families found for vk::QueueFlagBits::eGraphics and vk::QueueFlagBits::eCompute.");
+	//if (!isFamilySelected(family::graphics_compute))
+	//	log_error("No suitable queue families found for vk::QueueFlagBits::eGraphics and vk::QueueFlagBits::eCompute.");
 
 	// Check graphics + transfer family
-	if (!isFamilySelected(family::graphics_transfer))
-		log_error("No suitable queue families found for vk::QueueFlagBits::eGraphics and vk::QueueFlagBits::eTransfer.");
+	//if (!isFamilySelected(family::graphics_transfer))
+	//	log_error("No suitable queue families found for vk::QueueFlagBits::eGraphics and vk::QueueFlagBits::eTransfer.");
 
 	// Check present family
 	if (!isFamilySelected(family::present))
@@ -78,28 +96,31 @@ void CQueueFamilies::initialize(const vk::PhysicalDevice& vkPhysical, vk::Surfac
 			continue;
 
 		// Looking for compute only family
-		if ((prop.queueFlags & vk::QueueFlagBits::eCompute) && !isFamilySelected(family::compute))
+		if ((prop.queueFlags & vk::QueueFlagBits::eCompute) && !isFamilySelected(family::compute) && mFamilyUsages[index] < prop.queueCount)
+		{
 			mSelectedFamilies[family::compute] = index;
+			mFamilyUsages[index]++;
+		}
 		// Looking for transfer only family
-		if ((prop.queueFlags & vk::QueueFlagBits::eTransfer) && !isFamilySelected(family::transfer))
+		if ((prop.queueFlags & vk::QueueFlagBits::eTransfer) && !isFamilySelected(family::transfer) && mFamilyUsages[index] < prop.queueCount)
+		{
 			mSelectedFamilies[family::transfer] = index;
+			mFamilyUsages[index]++;
+		}
 	}
 
 	// Check for compute family
-	if (!isFamilySelected(family::compute))
-		log_error("No suitable queue families found for vk::QueueFlagBits::eCompute.");
-
-	// Check for transfer family
-	if (!isFamilySelected(family::transfer))
-		log_error("No suitable queue families found for vk::QueueFlagBits::eTransfer.");
+	//if (!isFamilySelected(family::compute))
+	//	log_error("No suitable queue families found for vk::QueueFlagBits::eCompute.");
+	//
+	//// Check for transfer family
+	//if (!isFamilySelected(family::transfer))
+	//	log_error("No suitable queue families found for vk::QueueFlagBits::eTransfer.");
 
 	// Counting family usages and unique families
 	std::set<uint32_t> uniqueFamilies;
 	for (auto& [family, index] : mSelectedFamilies)
-	{
-		mFamilyUsages[index]++;
 		uniqueFamilies.emplace(index);
-	}
 
 	vUniqueFamilies = std::vector<uint32_t>(uniqueFamilies.begin(), uniqueFamilies.end());
 }

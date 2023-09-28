@@ -29,7 +29,7 @@ CPipeline::~CPipeline()
 
 void CPipeline::create(CShaderObject* pShader, const FShaderCreateInfo& specials)
 {
-    createDescriptorPool(pShader);
+    //createDescriptorPool(pShader, specials);
     createDescriptorSetLayout(pShader);
     createPipelineLayout(pShader, specials);
 }
@@ -46,6 +46,32 @@ void CPipeline::reCreate(CShaderObject* pShader, vk::RenderPass& renderPass, con
     this->renderPass = renderPass;
     this->subpass = subpass;
     createPipeline(pShader, specials);
+}
+
+void CPipeline::updateDescriptorPool(CShaderObject* pShader, uint32_t usages)
+{
+    if (descriptorPool)
+        pDevice->destroy(&descriptorPool);
+
+    auto& shader = pShader->getShader();
+    auto descriptorPools = shader->getDescriptorPools();
+
+    auto framesInFlight = pDevice->getFramesInFlight();
+
+    uint32_t maxSets{ 256u };
+    for (auto& poolSize : descriptorPools)
+    {
+        poolSize.descriptorCount *= usages * framesInFlight;
+        maxSets += poolSize.descriptorCount;
+    }
+
+    vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
+    descriptorPoolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
+    descriptorPoolCreateInfo.maxSets = maxSets;
+    descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPools.size());
+    descriptorPoolCreateInfo.pPoolSizes = descriptorPools.data();
+    vk::Result res = pDevice->create(descriptorPoolCreateInfo, &descriptorPool);
+    log_cerror(APICompatibility::check(res), "Cannot create descriptor pool.");
 }
 
 void CPipeline::bind(vk::CommandBuffer& commandBuffer, uint32_t index)
@@ -78,18 +104,9 @@ void CPipeline::createDescriptorSetLayout(CShaderObject* pShader)
     }
 }
 
-void CPipeline::createDescriptorPool(CShaderObject* pShader)
+void CPipeline::createDescriptorPool(CShaderObject* pShader, const FShaderCreateInfo& specials)
 {
-    auto& shader = pShader->getShader();
-    auto& descriptorPools = shader->getDescriptorPools();
-
-    vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
-    descriptorPoolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
-    descriptorPoolCreateInfo.maxSets = 8192; // 16384;
-    descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPools.size());
-    descriptorPoolCreateInfo.pPoolSizes = descriptorPools.data();
-    vk::Result res = pDevice->create(descriptorPoolCreateInfo, &descriptorPool);
-    log_cerror(APICompatibility::check(res), "Cannot create descriptor pool.");
+    updateDescriptorPool(pShader, specials.usages);
 }
 
 void CPipeline::createPipelineLayout(CShaderObject* pShader, const FShaderCreateInfo& specials)

@@ -21,7 +21,7 @@ void CBillboardSystem::__create()
 	specials.cull_mode = vk::CullModeFlagBits::eFront;
 	specials.front_face = vk::FrontFace::eCounterClockwise;
 	specials.depth_test = true;
-	specials.usages = 4;
+	//specials.usages = 128;
 
 	shader_id = graphics->addShader("billboard:billboard", specials);
 	vbo_id = graphics->addVertexBuffer("billboard");
@@ -68,7 +68,7 @@ void CBillboardSystem::__update(float fDt)
 		return;
 	}
 
-	auto& pPush = graphics->getPushBlockHandle("billboard");
+	auto& pPush = graphics->getUniformHandle("UBOBillboard");
 	pPush->set("projection", camera->projection);
 	pPush->set("view", camera->view);
 
@@ -76,7 +76,6 @@ void CBillboardSystem::__update(float fDt)
 	{
 		{
 			graphics->bindTexture("color_tex", audio_icon);
-			graphics->flushShader();
 
 			auto view = registry->view<FTransformComponent, FAudioComponent>();
 			for (auto [entity, transform, audio] : view.each())
@@ -85,7 +84,6 @@ void CBillboardSystem::__update(float fDt)
 
 		{
 			graphics->bindTexture("color_tex", camera_icon);
-			graphics->flushShader();
 
 			auto view = registry->view<FTransformComponent, FCameraComponent>();
 			for (auto [entity, transform, cam] : view.each())
@@ -94,7 +92,6 @@ void CBillboardSystem::__update(float fDt)
 
 		{
 			graphics->bindTexture("color_tex", environment_icon);
-			graphics->flushShader();
 
 			auto view = registry->view<FTransformComponent, FEnvironmentComponent>();
 			for (auto [entity, transform, env] : view.each())
@@ -103,7 +100,6 @@ void CBillboardSystem::__update(float fDt)
 
 		{
 			graphics->bindTexture("color_tex", light_icon);
-			graphics->flushShader();
 
 			auto dir = registry->view<FTransformComponent, FDirectionalLightComponent>();
 			for (auto [entity, transform, light] : dir.each())
@@ -126,7 +122,7 @@ void CBillboardSystem::__update(float fDt)
 
 void CBillboardSystem::draw(FCameraComponent* camera, const glm::vec3& position, const glm::vec3& color, entt::entity entity)
 {
-	auto& pPush = graphics->getPushBlockHandle("billboard");
+	auto& pPush = graphics->getUniformHandle("UBOBillboard");
 
 	auto needToDraw = camera->frustum.checkPoint(position);
 	if (needToDraw)
@@ -134,7 +130,7 @@ void CBillboardSystem::draw(FCameraComponent* camera, const glm::vec3& position,
 		pPush->set("billboardPosition", position);
 		pPush->set("color", color);
 		pPush->set("object_id", encodeIdToColor(static_cast<uint32_t>(entity)));
-		graphics->flushConstantRanges(pPush);
+		graphics->flushShader();
 
 		graphics->draw();
 	}
