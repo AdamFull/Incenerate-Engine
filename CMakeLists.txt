@@ -13,6 +13,7 @@ set(TOOLS_BINARIES_PATH ${OUT_BINARIES_PATH}/${CMAKE_BUILD_TYPE}/tools)
 file(MAKE_DIRECTORY ${OUT_BINARIES_PATH})
 
 #sdl
+set(SDL_SHARED ON CACHE BOOL "Build a shared version of the library" FORCE)
 set(SDL_TEST OFF CACHE BOOL "Build the SDL2_test library" FORCE)
 set(SDL_3DNOW OFF CACHE BOOL "Use 3Dnow! MMX assembly routines" FORCE)
 set(SDL_DISKAUDIO OFF CACHE BOOL "Support the disk writer audio driver" FORCE)

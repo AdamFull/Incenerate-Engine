@@ -148,7 +148,7 @@ void CImage::initializeTexture(std::unique_ptr<FImageCreateInfo>& info, vk::Form
     if (!isSupportedDimension(info))
         log_error("Unsupported texture dimension.");
 
-    _extent = vk::Extent3D{ info->baseWidth, info->baseHeight, info->baseDepth };
+    _extent = vk::Extent3D{ info->baseWidth ? info->baseWidth : 1, info->baseHeight ? info->baseHeight : 1, info->baseDepth ? info->baseDepth : 1 };
     _mipLevels = info->numLevels;
     _layerCount = info->numLayers;
 

@@ -123,11 +123,11 @@ void CTerrainLoader::loadMaterial(ecs::FTerrainComponent* terrain)
 
 	if (terrain->heightmap_id != invalid_index)
 	{
-		params.vCompileDefinitions.emplace_back("HAS_HEIGHTMAP");
+		params.vCompileDefinitions.emplace("HAS_HEIGHTMAP");
 		material->addTexture("height_tex", terrain->heightmap_id);
 	}
 
-	params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP");
+	params.vCompileDefinitions.emplace("HAS_BASECOLORMAP");
 	material->addTexture("color_tex", graphics->addImage("terrain_texture", "/assets/textures/terrain/terrain_diffuse.ktx2"));
 
 	material->setParameters(std::move(params));

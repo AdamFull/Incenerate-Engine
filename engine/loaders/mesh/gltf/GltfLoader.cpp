@@ -461,9 +461,9 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             auto& pMaterial = graphics->getMaterial(material);
             pMaterial->incrementUsageCount();
             auto& params = pMaterial->getParameters();
-            if (bHasSkin) params.vCompileDefinitions.emplace_back("HAS_SKIN");
-            if (bHasNormals) params.vCompileDefinitions.emplace_back("HAS_NORMALS");
-            if (bHasTangents) params.vCompileDefinitions.emplace_back("HAS_TANGENTS");
+            if (bHasSkin) params.vCompileDefinitions.emplace("HAS_SKIN");
+            if (bHasNormals) params.vCompileDefinitions.emplace("HAS_NORMALS");
+            if (bHasTangents) params.vCompileDefinitions.emplace("HAS_TANGENTS");
             meshlet.material = material;
         }
 
@@ -622,14 +622,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         {
             auto texture = mat.values.at("baseColorTexture");
             pMaterial->addTexture("color_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Srgb));
-            params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP");
+            params.vCompileDefinitions.emplace("HAS_BASECOLORMAP");
         }
 
         if (mat.values.find("metallicRoughnessTexture") != mat.values.end())
         {
             auto texture = mat.values.at("metallicRoughnessTexture");
             pMaterial->addTexture("rmah_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
-            params.vCompileDefinitions.emplace_back("HAS_METALLIC_ROUGHNESS");
+            params.vCompileDefinitions.emplace("HAS_METALLIC_ROUGHNESS");
         }
 
         if (mat.additionalValues.find("normalTexture") != mat.additionalValues.end())
@@ -637,7 +637,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
             auto texture = mat.additionalValues.at("normalTexture");
             params.normalScale = static_cast<float>(texture.TextureScale());
             pMaterial->addTexture("normal_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
-            params.vCompileDefinitions.emplace_back("HAS_NORMALMAP");
+            params.vCompileDefinitions.emplace("HAS_NORMALMAP");
         }
 
         if (mat.additionalValues.find("occlusionTexture") != mat.additionalValues.end())
@@ -645,7 +645,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
             auto texture = mat.additionalValues.at("occlusionTexture");
             params.occlusionStrenth = static_cast<float>(texture.TextureStrength());
             pMaterial->addTexture("occlusion_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
-            params.vCompileDefinitions.emplace_back("HAS_OCCLUSIONMAP");
+            params.vCompileDefinitions.emplace("HAS_OCCLUSIONMAP");
         }
 
         if (mat.additionalValues.find("displacementGeometryTexture") != mat.additionalValues.end())
@@ -660,14 +660,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 params.displacementStrength = strength->second;
 
             pMaterial->addTexture("height_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
-            params.vCompileDefinitions.emplace_back("HAS_HEIGHTMAP");
+            params.vCompileDefinitions.emplace("HAS_HEIGHTMAP");
         }
 
         if (mat.additionalValues.find("emissiveTexture") != mat.additionalValues.end())
         {
             auto texture = mat.additionalValues.at("emissiveTexture");
             pMaterial->addTexture("emissive_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Srgb));
-            params.vCompileDefinitions.emplace_back("HAS_EMISSIVEMAP");
+            params.vCompileDefinitions.emplace("HAS_EMISSIVEMAP");
         }
 
         if (mat.additionalValues.find("emissiveFactor") != mat.additionalValues.end())
@@ -717,21 +717,21 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (clearcoatTexture >= 0)
                 {
                     pMaterial->addTexture("clearcoat_tex", loadTexture(vTextures.at(clearcoatTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_CLEARCOAT_TEX");
+                    params.vCompileDefinitions.emplace("HAS_CLEARCOAT_TEX");
                 }
 
                 auto clearcoatRoughnessTexture = getTextureIndex("clearcoatRoughnessTexture", data);
                 if (clearcoatRoughnessTexture >= 0)
                 {
                     pMaterial->addTexture("clearcoat_rough_tex", loadTexture(vTextures.at(clearcoatRoughnessTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_CLEARCOAT_ROUGH_TEX");
+                    params.vCompileDefinitions.emplace("HAS_CLEARCOAT_ROUGH_TEX");
                 }
 
                 auto clearcoatNormalTexture = getTextureIndex("clearcoatNormalTexture", data);
                 if (clearcoatNormalTexture >= 0)
                 {
                     pMaterial->addTexture("clearcoat_normal_tex", loadTexture(vTextures.at(clearcoatNormalTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_CLEARCOAT_NORMAL_TEX");
+                    params.vCompileDefinitions.emplace("HAS_CLEARCOAT_NORMAL_TEX");
                 }
             } break;
 
@@ -753,14 +753,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (iridescenceTexture >= 0)
                 {
                     pMaterial->addTexture("iridescence_tex", loadTexture(vTextures.at(iridescenceTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_IRIDESCENCE_TEX");
+                    params.vCompileDefinitions.emplace("HAS_IRIDESCENCE_TEX");
                 }
 
                 auto iridescenceThicknessTexture = getTextureIndex("iridescenceThicknessTexture", data);
                 if (iridescenceThicknessTexture >= 0)
                 {
                     pMaterial->addTexture("iridescence_thickness_tex", loadTexture(vTextures.at(iridescenceThicknessTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_IRIDESCENCE_THICKNESS_TEX");
+                    params.vCompileDefinitions.emplace("HAS_IRIDESCENCE_THICKNESS_TEX");
                 }
             } break;
 
@@ -772,14 +772,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (sheenColorTexture >= 0)
                 {
                     pMaterial->addTexture("sheen_tex", loadTexture(vTextures.at(sheenColorTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_SHEEN_TEX");
+                    params.vCompileDefinitions.emplace("HAS_SHEEN_TEX");
                 }
 
                 auto sheenRoughnessTexture = getTextureIndex("sheenRoughnessTexture", data);
                 if (sheenRoughnessTexture >= 0)
                 {
                     pMaterial->addTexture("sheen_rough_tex", loadTexture(vTextures.at(sheenRoughnessTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_SHEEN_ROUGH_TEX");
+                    params.vCompileDefinitions.emplace("HAS_SHEEN_ROUGH_TEX");
                 }
             } break;
 
@@ -791,14 +791,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (specularTexture >= 0)
                 {
                     pMaterial->addTexture("specular_tex", loadTexture(vTextures.at(specularTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_SPECULAR_TEX");
+                    params.vCompileDefinitions.emplace("HAS_SPECULAR_TEX");
                 }
 
                 auto specularColorTexture = getTextureIndex("specularColorTexture", data);
                 if (specularColorTexture >= 0)
                 {
                     pMaterial->addTexture("specular_color_tex", loadTexture(vTextures.at(specularColorTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_SPECULAR_COLOR_TEX");
+                    params.vCompileDefinitions.emplace("HAS_SPECULAR_COLOR_TEX");
                 }
             } break;
 
@@ -809,7 +809,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (transmissionTexture >= 0)
                 {
                     pMaterial->addTexture("transmission_tex", loadTexture(vTextures.at(transmissionTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_TRANSMISSION_TEX");
+                    params.vCompileDefinitions.emplace("HAS_TRANSMISSION_TEX");
                 }
             } break;
 
@@ -828,7 +828,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (thicknessTexture >= 0)
                 {
                     pMaterial->addTexture("thickness_tex", loadTexture(vTextures.at(thicknessTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_THICKNESS_TEX");
+                    params.vCompileDefinitions.emplace("HAS_THICKNESS_TEX");
                 }
             } break;
 
