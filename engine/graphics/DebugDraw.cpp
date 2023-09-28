@@ -13,14 +13,20 @@ CDebugDraw::CDebugDraw(CAPIHandle* gapi)
 
 #if !defined(INCENERATE_RELEASE_APP)
 
-const std::vector<FSimpleVertex>& CDebugDraw::getDrawList() const
+const std::vector<glm::vec3>& CDebugDraw::getPosDrawList() const
 {
-	return vDrawData;
+	return positionData;
+}
+
+const std::vector<glm::vec3>& CDebugDraw::getColDrawList() const
+{
+	return colorData;
 }
 
 void CDebugDraw::clear()
 {
-	vDrawData.clear();
+	positionData.clear();
+	colorData.clear();
 }
 
 void CDebugDraw::drawDebugPoint(const glm::vec3& pos, const float size, const glm::vec3& color)
@@ -30,8 +36,10 @@ void CDebugDraw::drawDebugPoint(const glm::vec3& pos, const float size, const gl
 
 void CDebugDraw::drawDebugLine(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color)
 {
-	vDrawData.emplace_back(FSimpleVertex{ from, color });
-	vDrawData.emplace_back(FSimpleVertex{ to, color });
+	positionData.emplace_back(from);
+	colorData.emplace_back(color);
+	positionData.emplace_back(to);
+	colorData.emplace_back(color);
 }
 
 void CDebugDraw::drawDebugVector(const glm::vec3& origin, const glm::vec3& to, const float length, const glm::vec3& color)

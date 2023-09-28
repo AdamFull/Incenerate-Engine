@@ -16,7 +16,7 @@ namespace engine
 			glm::vec4 baseColorFactor{ 1.0f };
 			float metallicFactor{ 1.f };
 			float roughnessFactor{ 1.f };
-			std::vector<std::string> vCompileDefinitions;
+			std::set<std::string> vCompileDefinitions;
 			bool doubleSided{ false };
 
 			// Custom extension

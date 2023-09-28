@@ -53,14 +53,20 @@ namespace engine
 					color == other.color;
 			}
 
-			static vk::VertexInputBindingDescription getBindingDescription()
+			static std::vector<vk::VertexInputBindingDescription> getBindingDescription()
 			{
-				vk::VertexInputBindingDescription bindingDescription = {};
-				bindingDescription.binding = 0;
-				bindingDescription.stride = sizeof(FSimpleVertex);
-				bindingDescription.inputRate = vk::VertexInputRate::eVertex;
+				std::vector<vk::VertexInputBindingDescription> bindingDescriptions{};
+				bindingDescriptions.resize(2);
 
-				return bindingDescription;
+				bindingDescriptions[0].binding = 0;
+				bindingDescriptions[0].stride = sizeof(glm::vec3);
+				bindingDescriptions[0].inputRate = vk::VertexInputRate::eVertex;
+
+				bindingDescriptions[1].binding = 1;
+				bindingDescriptions[1].stride = sizeof(glm::vec3);
+				bindingDescriptions[1].inputRate = vk::VertexInputRate::eVertex;
+
+				return bindingDescriptions;
 			}
 
 			static std::vector<vk::VertexInputAttributeDescription> getAttributeDescriptions()
@@ -71,12 +77,12 @@ namespace engine
 				attributeDescriptions[0].binding = 0;
 				attributeDescriptions[0].location = 0;
 				attributeDescriptions[0].format = vk::Format::eR32G32B32Sfloat;
-				attributeDescriptions[0].offset = offsetof(FSimpleVertex, pos);
+				attributeDescriptions[0].offset = 0;
 
-				attributeDescriptions[1].binding = 0;
+				attributeDescriptions[1].binding = 1;
 				attributeDescriptions[1].location = 1;
 				attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
-				attributeDescriptions[1].offset = offsetof(FSimpleVertex, color);
+				attributeDescriptions[1].offset = 0;
 
 				return attributeDescriptions;
 			}
@@ -110,14 +116,34 @@ namespace engine
 					weight0 == other.weight0;
 			}
 
-			static vk::VertexInputBindingDescription getBindingDescription()
+			static std::vector<vk::VertexInputBindingDescription> getBindingDescription()
 			{
-				vk::VertexInputBindingDescription bindingDescription = {};
-				bindingDescription.binding = 0;
-				bindingDescription.stride = sizeof(FVertex);
-				bindingDescription.inputRate = vk::VertexInputRate::eVertex;
+				std::vector<vk::VertexInputBindingDescription> bindingDescriptions{};
+				bindingDescriptions.resize(7);
 
-				return bindingDescription;
+				bindingDescriptions[0].binding = 0;
+				bindingDescriptions[0].stride = sizeof(glm::vec3);
+				bindingDescriptions[0].inputRate = vk::VertexInputRate::eVertex;
+				bindingDescriptions[1].binding = 1;
+				bindingDescriptions[1].stride = sizeof(glm::vec3);
+				bindingDescriptions[1].inputRate = vk::VertexInputRate::eVertex;
+				bindingDescriptions[2].binding = 2;
+				bindingDescriptions[2].stride = sizeof(glm::vec3);
+				bindingDescriptions[2].inputRate = vk::VertexInputRate::eVertex;
+				bindingDescriptions[3].binding = 3;
+				bindingDescriptions[3].stride = sizeof(glm::vec2);
+				bindingDescriptions[3].inputRate = vk::VertexInputRate::eVertex;
+				bindingDescriptions[4].binding = 4;
+				bindingDescriptions[4].stride = sizeof(glm::vec4);
+				bindingDescriptions[4].inputRate = vk::VertexInputRate::eVertex;
+				bindingDescriptions[5].binding = 5;
+				bindingDescriptions[5].stride = sizeof(glm::vec4);
+				bindingDescriptions[5].inputRate = vk::VertexInputRate::eVertex;
+				bindingDescriptions[6].binding = 6;
+				bindingDescriptions[6].stride = sizeof(glm::vec4);
+				bindingDescriptions[6].inputRate = vk::VertexInputRate::eVertex;
+
+				return bindingDescriptions;
 			}
 
 			static std::vector<vk::VertexInputAttributeDescription> getAttributeDescriptions()
@@ -128,37 +154,37 @@ namespace engine
 				attributeDescriptions[0].binding = 0;
 				attributeDescriptions[0].location = 0;
 				attributeDescriptions[0].format = vk::Format::eR32G32B32Sfloat;
-				attributeDescriptions[0].offset = offsetof(FVertex, pos);
+				attributeDescriptions[0].offset = 0;
 
-				attributeDescriptions[1].binding = 0;
+				attributeDescriptions[1].binding = 1;
 				attributeDescriptions[1].location = 1;
 				attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
-				attributeDescriptions[1].offset = offsetof(FVertex, color);
+				attributeDescriptions[1].offset = 0;
 
-				attributeDescriptions[2].binding = 0;
+				attributeDescriptions[2].binding = 2;
 				attributeDescriptions[2].location = 2;
 				attributeDescriptions[2].format = vk::Format::eR32G32B32Sfloat;
-				attributeDescriptions[2].offset = offsetof(FVertex, normal);
+				attributeDescriptions[2].offset = 0;
 
-				attributeDescriptions[3].binding = 0;
+				attributeDescriptions[3].binding = 3;
 				attributeDescriptions[3].location = 3;
 				attributeDescriptions[3].format = vk::Format::eR32G32Sfloat;
-				attributeDescriptions[3].offset = offsetof(FVertex, texcoord);
+				attributeDescriptions[3].offset = 0;
 
-				attributeDescriptions[4].binding = 0;
+				attributeDescriptions[4].binding = 4;
 				attributeDescriptions[4].location = 4;
 				attributeDescriptions[4].format = vk::Format::eR32G32B32A32Sfloat;
-				attributeDescriptions[4].offset = offsetof(FVertex, tangent);
+				attributeDescriptions[4].offset = 0;
 
-				attributeDescriptions[5].binding = 0;
+				attributeDescriptions[5].binding = 5;
 				attributeDescriptions[5].location = 5;
 				attributeDescriptions[5].format = vk::Format::eR32G32B32A32Sfloat;
-				attributeDescriptions[5].offset = offsetof(FVertex, joint0);
+				attributeDescriptions[5].offset = 0;
 
-				attributeDescriptions[6].binding = 0;
+				attributeDescriptions[6].binding = 6;
 				attributeDescriptions[6].location = 6;
 				attributeDescriptions[6].format = vk::Format::eR32G32B32A32Sfloat;
-				attributeDescriptions[6].offset = offsetof(FVertex, weight0);
+				attributeDescriptions[6].offset = 0;
 
 				return attributeDescriptions;
 			}

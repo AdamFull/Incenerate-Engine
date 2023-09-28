@@ -32,25 +32,25 @@ void CGraphicsPipeline::createPipeline(CShaderObject* pShader, const FShaderCrea
     vertexInputCI.vertexAttributeDescriptionCount = 0;
 
     std::vector<vk::VertexInputAttributeDescription> attributeDescription;
-    vk::VertexInputBindingDescription bindingDescription;
+    std::vector<vk::VertexInputBindingDescription> bindingDescriptions;
 
     if (specials.vertex_type != EVertexType::eNone)
     {
         if (specials.vertex_type == EVertexType::eDefault)
         {
             attributeDescription = FVertex::getAttributeDescriptions();
-            bindingDescription = FVertex::getBindingDescription();
+            bindingDescriptions = FVertex::getBindingDescription();
         }
         else if (specials.vertex_type == EVertexType::eSmall)
         {
             attributeDescription = FSimpleVertex::getAttributeDescriptions();
-            bindingDescription = FSimpleVertex::getBindingDescription();
+            bindingDescriptions = FSimpleVertex::getBindingDescription();
         }
         
-        vertexInputCI.vertexBindingDescriptionCount = attributeDescription.size() > 0 ? 1 : 0;
         vertexInputCI.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());
-        vertexInputCI.pVertexBindingDescriptions = &bindingDescription;
         vertexInputCI.pVertexAttributeDescriptions = attributeDescription.data();
+        vertexInputCI.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+        vertexInputCI.pVertexBindingDescriptions = bindingDescriptions.data();
     }
 
     uint32_t colorAttachmentCount{ 0 };

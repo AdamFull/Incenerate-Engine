@@ -208,7 +208,14 @@ void CGltfLoader::load(const const std::string& source, const entt::entity& root
         loadSkins(gltfModel, component);
 
         auto& vbo = graphics->getVertexBuffer(vbo_id);
-        vbo->addMeshData(vVertexBuffer, vIndexBuffer);
+        vbo->addVertices(vPositionBuffer, 0);
+        vbo->addVertices(vColorBuffer, 1);
+        vbo->addVertices(vNormalBuffer, 2);
+        vbo->addVertices(vTexcoordBuffer, 3);
+        vbo->addVertices(vTangentBuffer, 4);
+        vbo->addVertices(vJointBuffer, 5);
+        vbo->addVertices(vWeightBuffer, 6);
+        vbo->addIndices(vIndexBuffer);
         vbo->setLoaded();
     }
 }
@@ -281,14 +288,20 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
     for (size_t j = 0; j < mesh.primitives.size(); j++)
     {
         std::vector<uint32_t> indexBuffer;
-        std::vector<FVertex> vertexBuffer;
+        std::vector<glm::vec3> positionBuffer;
+        std::vector<glm::vec3> colorBuffer;
+        std::vector<glm::vec3> normalBuffer;
+        std::vector<glm::vec2> texcoordBuffer;
+        std::vector<glm::vec4> tangentBuffer;
+        std::vector<glm::vec4> jointBuffer;
+        std::vector<glm::vec4> weightBuffer;
 
         const tinygltf::Primitive& primitive = mesh.primitives[j];
         //if (primitive.indices < 0)
         //    continue;
 
         uint32_t indexStart = static_cast<uint32_t>(vIndexBuffer.size());
-        uint32_t vertexStart = static_cast<uint32_t>(vVertexBuffer.size());
+        uint32_t vertexStart = static_cast<uint32_t>(vPositionBuffer.size());
         uint32_t indexCount = 0;
         uint32_t vertexCount = 0;
         glm::vec3 posMin{};
@@ -372,33 +385,31 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
 
             for (size_t v = 0; v < posAccessor.count; v++)
             {
-                FVertex vert{};
-                vert.pos = glm::vec4(glm::make_vec3(&bufferPos[v * 3]), 1.0f);
-                vert.normal = glm::normalize(glm::vec3(bufferNormals ? glm::make_vec3(&bufferNormals[v * 3]) : glm::vec3(0.0f)));
+                positionBuffer.emplace_back(glm::make_vec3(&bufferPos[v * 3]));
+                normalBuffer.emplace_back(glm::normalize(glm::vec3(bufferNormals ? glm::make_vec3(&bufferNormals[v * 3]) : glm::vec3(0.0f))));
                 //vert.normal = glm::vec3(0.f);
-                vert.texcoord = bufferTexCoords ? glm::make_vec2(&bufferTexCoords[v * 2]) : glm::vec3(0.0f);
+                texcoordBuffer.emplace_back(bufferTexCoords ? glm::make_vec2(&bufferTexCoords[v * 2]) : glm::vec3(0.0f));
                 if (bufferColors)
                 {
                     switch (numColorComponents)
                     {
                     case 3:
-                        vert.color = glm::vec4(glm::make_vec3(&bufferColors[v * 3]), 1.0f);
+                        colorBuffer.emplace_back(glm::make_vec3(&bufferColors[v * 3]));
                         break;
                     case 4:
-                        vert.color = glm::make_vec4(&bufferColors[v * 4]);
+                        colorBuffer.emplace_back(glm::vec3(glm::make_vec4(&bufferColors[v * 4])));
                         break;
                     }
                 }
                 else
                 {
-                    vert.color = glm::vec4(1.0f);
+                    colorBuffer.emplace_back(glm::vec3(1.0f));
                 }
-                vert.tangent = bufferTangents ? glm::vec4(glm::make_vec4(&bufferTangents[v * 4])) : glm::vec4(0.0f);
+                tangentBuffer.emplace_back(bufferTangents ? glm::vec4(glm::make_vec4(&bufferTangents[v * 4])) : glm::vec4(0.f));
                 //vert.tangent = glm::vec4(0.f);
                 // TODO: Add skinning
-                vert.joint0 = bHasSkin ? glm::vec4(glm::make_vec4(&bufferJoints[v * 4])) : glm::vec4(0.0f);
-                vert.weight0 = bHasSkin ? glm::make_vec4(&bufferWeights[v * 4]) : glm::vec4(0.0f);
-                vertexBuffer.push_back(vert);
+                jointBuffer.emplace_back(bHasSkin ? glm::vec4(glm::make_vec4(&bufferJoints[v * 4])) : glm::vec4(0.0f));
+                weightBuffer.emplace_back(bHasSkin ? glm::make_vec4(&bufferWeights[v * 4]) : glm::vec4(0.0f));
             }
         }
 
@@ -461,9 +472,9 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             auto& pMaterial = graphics->getMaterial(material);
             pMaterial->incrementUsageCount();
             auto& params = pMaterial->getParameters();
-            if (bHasSkin) params.vCompileDefinitions.emplace_back("HAS_SKIN");
-            if (bHasNormals) params.vCompileDefinitions.emplace_back("HAS_NORMALS");
-            if (bHasTangents) params.vCompileDefinitions.emplace_back("HAS_TANGENTS");
+            if (bHasSkin) params.vCompileDefinitions.emplace("HAS_SKIN");
+            if (bHasNormals) params.vCompileDefinitions.emplace("HAS_NORMALS");
+            if (bHasTangents) params.vCompileDefinitions.emplace("HAS_TANGENTS");
             meshlet.material = material;
         }
 
@@ -471,12 +482,31 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
         for (auto& index : indexBuffer)
             index -= vertexStart;
         
-        auto* vertices = reinterpret_cast<float*>(vertexBuffer.data());
+        auto* positionStream = reinterpret_cast<float*>(positionBuffer.data());
+        meshopt_optimizeVertexFetch(positionStream, indexBuffer.data(), indexCount, positionStream, positionBuffer.size(), sizeof(glm::vec3));
+
+        //auto* colorStream = reinterpret_cast<float*>(colorBuffer.data());
+        //meshopt_optimizeVertexFetch(colorStream, indexBuffer.data(), indexCount, colorStream, colorBuffer.size(), sizeof(glm::vec3));
+        //
+        //auto* normalStream = reinterpret_cast<float*>(normalBuffer.data());
+        //meshopt_optimizeVertexFetch(normalStream, indexBuffer.data(), indexCount, normalStream, normalBuffer.size(), sizeof(glm::vec3));
+        //
+        //auto* texcoordStream = reinterpret_cast<float*>(texcoordBuffer.data());
+        //meshopt_optimizeVertexFetch(texcoordStream, indexBuffer.data(), indexCount, texcoordStream, texcoordBuffer.size(), sizeof(glm::vec2));
+        //
+        //auto* tangentStream = reinterpret_cast<float*>(tangentBuffer.data());
+        //meshopt_optimizeVertexFetch(tangentStream, indexBuffer.data(), indexCount, tangentStream, tangentBuffer.size(), sizeof(glm::vec4));
+        //
+        //auto* jointStream = reinterpret_cast<float*>(jointBuffer.data());
+        //meshopt_optimizeVertexFetch(jointStream, indexBuffer.data(), indexCount, jointStream, jointBuffer.size(), sizeof(glm::vec4));
+        //
+        //auto* weightStream = reinterpret_cast<float*>(weightBuffer.data());
+        //meshopt_optimizeVertexFetch(weightStream, indexBuffer.data(), indexCount, weightStream, weightBuffer.size(), sizeof(glm::vec4));
 
         // Optimize mesh
         //meshopt_optimizeOverdraw(temp_indexBuffer.data(), temp_indexBuffer.data(), indexCount, vertices, vertexBuffer.size(), sizeof(FVertex), 1.05f);
-        meshopt_optimizeVertexFetch(vertices, indexBuffer.data(), indexCount, vertices, vertexBuffer.size(), sizeof(FVertex));
-        meshopt_optimizeVertexCache(indexBuffer.data(), indexBuffer.data(), indexBuffer.size(), vertexBuffer.size());
+        
+        meshopt_optimizeVertexCache(indexBuffer.data(), indexBuffer.data(), indexBuffer.size(), positionBuffer.size());
 
         // Generating lod
         for (uint32_t lod = 0; lod < MAX_LEVEL_OF_DETAIL; ++lod)
@@ -494,7 +524,7 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
             unsigned int options = lock_borders ? meshopt_SimplifyLockBorder : 0;
         
             float lod_error = 0.f;
-            indexBufferCpy.resize(meshopt_simplify<uint32_t>(indexBufferCpy.data(), indexBuffer.data(), indexBuffer.size(), reinterpret_cast<float*>(vertexBuffer.data()), vertexBuffer.size(), sizeof(FVertex),
+            indexBufferCpy.resize(meshopt_simplify<uint32_t>(indexBufferCpy.data(), indexBuffer.data(), indexBuffer.size(), positionStream, positionBuffer.size(), sizeof(glm::vec3),
                 target_index_count, target_error, options, &lod_error));
         
             indexCount = indexBufferCpy.size();
@@ -511,7 +541,13 @@ void CGltfLoader::loadMeshComponent(const entt::entity& parent, const tinygltf::
 
         meshComponent.vMeshlets.emplace_back(meshlet);
 
-        vVertexBuffer.insert(vVertexBuffer.end(), vertexBuffer.begin(), vertexBuffer.end());
+        vPositionBuffer.insert(vPositionBuffer.end(), positionBuffer.begin(), positionBuffer.end());
+        vColorBuffer.insert(vColorBuffer.end(), colorBuffer.begin(), colorBuffer.end());
+        vNormalBuffer.insert(vNormalBuffer.end(), normalBuffer.begin(), normalBuffer.end());
+        vTexcoordBuffer.insert(vTexcoordBuffer.end(), texcoordBuffer.begin(), texcoordBuffer.end());
+        vTangentBuffer.insert(vTangentBuffer.end(), tangentBuffer.begin(), tangentBuffer.end());
+        vJointBuffer.insert(vJointBuffer.end(), jointBuffer.begin(), jointBuffer.end());
+        vWeightBuffer.insert(vWeightBuffer.end(), weightBuffer.begin(), weightBuffer.end());
     }
 
     meshComponent.vbo_id = vbo_id;
@@ -622,14 +658,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
         {
             auto texture = mat.values.at("baseColorTexture");
             pMaterial->addTexture("color_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Srgb));
-            params.vCompileDefinitions.emplace_back("HAS_BASECOLORMAP");
+            params.vCompileDefinitions.emplace("HAS_BASECOLORMAP");
         }
 
         if (mat.values.find("metallicRoughnessTexture") != mat.values.end())
         {
             auto texture = mat.values.at("metallicRoughnessTexture");
             pMaterial->addTexture("rmah_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
-            params.vCompileDefinitions.emplace_back("HAS_METALLIC_ROUGHNESS");
+            params.vCompileDefinitions.emplace("HAS_METALLIC_ROUGHNESS");
         }
 
         if (mat.additionalValues.find("normalTexture") != mat.additionalValues.end())
@@ -637,7 +673,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
             auto texture = mat.additionalValues.at("normalTexture");
             params.normalScale = static_cast<float>(texture.TextureScale());
             pMaterial->addTexture("normal_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
-            params.vCompileDefinitions.emplace_back("HAS_NORMALMAP");
+            params.vCompileDefinitions.emplace("HAS_NORMALMAP");
         }
 
         if (mat.additionalValues.find("occlusionTexture") != mat.additionalValues.end())
@@ -645,7 +681,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
             auto texture = mat.additionalValues.at("occlusionTexture");
             params.occlusionStrenth = static_cast<float>(texture.TextureStrength());
             pMaterial->addTexture("occlusion_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
-            params.vCompileDefinitions.emplace_back("HAS_OCCLUSIONMAP");
+            params.vCompileDefinitions.emplace("HAS_OCCLUSIONMAP");
         }
 
         if (mat.additionalValues.find("displacementGeometryTexture") != mat.additionalValues.end())
@@ -660,14 +696,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 params.displacementStrength = strength->second;
 
             pMaterial->addTexture("height_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Unorm));
-            params.vCompileDefinitions.emplace_back("HAS_HEIGHTMAP");
+            params.vCompileDefinitions.emplace("HAS_HEIGHTMAP");
         }
 
         if (mat.additionalValues.find("emissiveTexture") != mat.additionalValues.end())
         {
             auto texture = mat.additionalValues.at("emissiveTexture");
             pMaterial->addTexture("emissive_tex", loadTexture(vTextures.at(texture.TextureIndex()), vk::Format::eR8G8B8A8Srgb));
-            params.vCompileDefinitions.emplace_back("HAS_EMISSIVEMAP");
+            params.vCompileDefinitions.emplace("HAS_EMISSIVEMAP");
         }
 
         if (mat.additionalValues.find("emissiveFactor") != mat.additionalValues.end())
@@ -717,21 +753,21 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (clearcoatTexture >= 0)
                 {
                     pMaterial->addTexture("clearcoat_tex", loadTexture(vTextures.at(clearcoatTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_CLEARCOAT_TEX");
+                    params.vCompileDefinitions.emplace("HAS_CLEARCOAT_TEX");
                 }
 
                 auto clearcoatRoughnessTexture = getTextureIndex("clearcoatRoughnessTexture", data);
                 if (clearcoatRoughnessTexture >= 0)
                 {
                     pMaterial->addTexture("clearcoat_rough_tex", loadTexture(vTextures.at(clearcoatRoughnessTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_CLEARCOAT_ROUGH_TEX");
+                    params.vCompileDefinitions.emplace("HAS_CLEARCOAT_ROUGH_TEX");
                 }
 
                 auto clearcoatNormalTexture = getTextureIndex("clearcoatNormalTexture", data);
                 if (clearcoatNormalTexture >= 0)
                 {
                     pMaterial->addTexture("clearcoat_normal_tex", loadTexture(vTextures.at(clearcoatNormalTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_CLEARCOAT_NORMAL_TEX");
+                    params.vCompileDefinitions.emplace("HAS_CLEARCOAT_NORMAL_TEX");
                 }
             } break;
 
@@ -753,14 +789,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (iridescenceTexture >= 0)
                 {
                     pMaterial->addTexture("iridescence_tex", loadTexture(vTextures.at(iridescenceTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_IRIDESCENCE_TEX");
+                    params.vCompileDefinitions.emplace("HAS_IRIDESCENCE_TEX");
                 }
 
                 auto iridescenceThicknessTexture = getTextureIndex("iridescenceThicknessTexture", data);
                 if (iridescenceThicknessTexture >= 0)
                 {
                     pMaterial->addTexture("iridescence_thickness_tex", loadTexture(vTextures.at(iridescenceThicknessTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_IRIDESCENCE_THICKNESS_TEX");
+                    params.vCompileDefinitions.emplace("HAS_IRIDESCENCE_THICKNESS_TEX");
                 }
             } break;
 
@@ -772,14 +808,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (sheenColorTexture >= 0)
                 {
                     pMaterial->addTexture("sheen_tex", loadTexture(vTextures.at(sheenColorTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_SHEEN_TEX");
+                    params.vCompileDefinitions.emplace("HAS_SHEEN_TEX");
                 }
 
                 auto sheenRoughnessTexture = getTextureIndex("sheenRoughnessTexture", data);
                 if (sheenRoughnessTexture >= 0)
                 {
                     pMaterial->addTexture("sheen_rough_tex", loadTexture(vTextures.at(sheenRoughnessTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_SHEEN_ROUGH_TEX");
+                    params.vCompileDefinitions.emplace("HAS_SHEEN_ROUGH_TEX");
                 }
             } break;
 
@@ -791,14 +827,14 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (specularTexture >= 0)
                 {
                     pMaterial->addTexture("specular_tex", loadTexture(vTextures.at(specularTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_SPECULAR_TEX");
+                    params.vCompileDefinitions.emplace("HAS_SPECULAR_TEX");
                 }
 
                 auto specularColorTexture = getTextureIndex("specularColorTexture", data);
                 if (specularColorTexture >= 0)
                 {
                     pMaterial->addTexture("specular_color_tex", loadTexture(vTextures.at(specularColorTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_SPECULAR_COLOR_TEX");
+                    params.vCompileDefinitions.emplace("HAS_SPECULAR_COLOR_TEX");
                 }
             } break;
 
@@ -809,7 +845,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (transmissionTexture >= 0)
                 {
                     pMaterial->addTexture("transmission_tex", loadTexture(vTextures.at(transmissionTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_TRANSMISSION_TEX");
+                    params.vCompileDefinitions.emplace("HAS_TRANSMISSION_TEX");
                 }
             } break;
 
@@ -828,7 +864,7 @@ void CGltfLoader::loadMaterials(const tinygltf::Model& model)
                 if (thicknessTexture >= 0)
                 {
                     pMaterial->addTexture("thickness_tex", loadTexture(vTextures.at(thicknessTexture), vk::Format::eR8G8B8A8Unorm));
-                    params.vCompileDefinitions.emplace_back("HAS_THICKNESS_TEX");
+                    params.vCompileDefinitions.emplace("HAS_THICKNESS_TEX");
                 }
             } break;
 

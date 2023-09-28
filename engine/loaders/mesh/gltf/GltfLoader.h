@@ -95,7 +95,13 @@ namespace engine
 			entt::entity head{ entt::null };
 
 			std::vector<uint32_t> vIndexBuffer;
-			std::vector<graphics::FVertex> vVertexBuffer;
+			std::vector<glm::vec3> vPositionBuffer;
+			std::vector<glm::vec3> vColorBuffer;
+			std::vector<glm::vec3> vNormalBuffer;
+			std::vector<glm::vec2> vTexcoordBuffer;
+			std::vector<glm::vec4> vTangentBuffer;
+			std::vector<glm::vec4> vJointBuffer;
+			std::vector<glm::vec4> vWeightBuffer;
 
 			size_t vbo_id{ invalid_index };
 			uint32_t current_primitive{ 0 };

@@ -98,7 +98,7 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
     bEditorMode = CSessionStorage::getInstance()->get<bool>("editor_mode");
 
 #ifdef _DEBUG
-    bValidation = true;
+    bValidation = false;
 #endif
 
     log_debug("Validation state: {}", bValidation);

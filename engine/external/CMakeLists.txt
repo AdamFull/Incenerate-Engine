@@ -49,7 +49,7 @@ target_include_directories(${PROJECT_NAME}
 	PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-set_target_properties(mimalloc SDL2 SDL2main ktx ktx_read BulletCollision BulletDynamics LinearMath PROPERTIES
+set_target_properties(mimalloc ktx ktx_read BulletCollision BulletDynamics LinearMath PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${ENGINE_BINARIES_PATH}
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${ENGINE_BINARIES_PATH}
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${ENGINE_BINARIES_PATH}

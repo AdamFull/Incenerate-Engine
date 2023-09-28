@@ -16,7 +16,8 @@ namespace engine
 			CDebugDraw(CAPIHandle* gapi);
 			~CDebugDraw() override = default;
 
-			const std::vector<FSimpleVertex>& getDrawList() const override;
+			const std::vector<glm::vec3>& getPosDrawList() const override;
+			const std::vector<glm::vec3>& getColDrawList() const override;
 			void clear() override;
 
 			void drawDebugPoint(const glm::vec3& pos, const float size = 1.f, const glm::vec3& color = glm::vec3(1.f)) override;
@@ -37,7 +38,8 @@ namespace engine
 			
 		private:
 			CAPIHandle* graphics{ nullptr };
-			std::vector<FSimpleVertex> vDrawData;
+			std::vector<glm::vec3> positionData{};
+			std::vector<glm::vec3> colorData{};
 
 			size_t vbo_id{ invalid_index };
 			size_t shader_id{ invalid_index };

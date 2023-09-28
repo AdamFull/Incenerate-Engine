@@ -24,7 +24,8 @@ void CDebugDrawSystem::__create()
 	debug_vbo_id = graphics->addVertexBuffer("debug_draw_vbo");
 
 	auto& vbo = graphics->getVertexBuffer(debug_vbo_id);
-	vbo->reserve(sizeof(FSimpleVertex), DEBUG_DRAW_MAX_VERTICES, sizeof(uint32_t), 0);
+	vbo->set_usage_mask(VERTEX_BUFFER_ATTRIBUTE_POSITION_BIT | VERTEX_BUFFER_ATTRIBUTE_COLOR_BIT);
+	vbo->reserve(sizeof(glm::vec3), sizeof(glm::vec3), 0, 0, 0, 0, 0, DEBUG_DRAW_MAX_VERTICES, sizeof(uint32_t), 0);
 
 	specials.vertex_type = EVertexType::eSmall;
 
@@ -85,11 +86,13 @@ void CDebugDrawSystem::__update(float fDt)
 	if(!debugEnabled)
 		debug_draw->clear();
 
-	auto& draw_list = debug_draw->getDrawList();
-	if (!draw_list.empty())
+	auto& position_list = debug_draw->getPosDrawList();
+	auto& color_list = debug_draw->getColDrawList();
+	if (!position_list.empty())
 	{
 		pVBO->clear();
-		pVBO->addVertices(draw_list);
+		pVBO->addVertices(position_list, 0);
+		pVBO->addVertices(color_list, 1);
 		pVBO->setLoaded();
 
 		graphics->bindShader(debug_shader_id);
