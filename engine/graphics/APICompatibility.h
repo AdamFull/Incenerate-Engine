@@ -15,6 +15,7 @@ namespace engine
 			static void printDeviceExtensions(const vk::PhysicalDevice& physicalDevice);
 
 			static bool check(vk::Result result);
+			static std::string get_error(vk::Result);
 
 			static bool checkValidationLayerSupport(const std::vector<const char*>& validationLayers);
 

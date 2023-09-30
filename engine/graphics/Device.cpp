@@ -91,7 +91,7 @@ void CDevice::create(const FEngineCreateInfo& createInfo, IWindowAdapter* window
 
     if (vkVersion < VK_API_VERSION_1_1)
     {
-        log_cerror(false, "Vulkan version 1.0 is not supported.");
+        log_error("Vulkan version 1.0 is not supported.");
         return;
     }
 
@@ -169,7 +169,10 @@ void CDevice::createInstance(const FEngineCreateInfo& createInfo, IWindowAdapter
     }
 
     vk::Result res = create(instanceCI, &vkInstance);
-    log_cerror(APICompatibility::check(res), "Cannot create vulkan instance.");
+    if (APICompatibility::check(res))
+        log_info("Vulkan instance was successfully created.");
+    else
+        log_error("Failed to create vulkan instance. Reason: {}.", vk::to_string(res));
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkInstance);
 }
 
@@ -197,13 +200,19 @@ void CDevice::selectPhysicalDeviceAndExtensions()
         for (auto& extensionName : requiredExtensions)
         {
             if (!APICompatibility::checkDeviceExtensionSupport(physicalDevice, extensionName))
+            {
+                log_warning("Extension: {} is not supported for device {}.", extensionName, deviceProperties.deviceName.data());
                 continue;
+            }
         }
 
         // Check all required device queue family indicies
         queueFamilies.initialize(physicalDevice, vkSurface);
         if (!queueFamilies.isValid())
+        {
+            log_warning("Device is not support all required queue families.", deviceProperties.deviceName.data());
             continue;
+        }
 
         // Check is device type is discrete gpu
         if (deviceProperties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu)
@@ -321,7 +330,10 @@ void CDevice::createDevice()
     }
 
     vk::Result res = create(createInfo, &vkDevice);
-    log_cerror(APICompatibility::check(res), "Failed to create logical device.");
+    if (APICompatibility::check(res))
+        log_info("Vulkan logical device was successfully created.");
+    else
+        log_error("Failed to create vulkan device. Reason: {}.", vk::to_string(res));
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkDevice);
 
     queueFamilies.clearCreateInfo();
@@ -395,11 +407,17 @@ void CDevice::createSwapchain(int32_t width, int32_t height)
     createInfo.oldSwapchain = oldSwapchain;
 
     res = create(createInfo, &swapChain);
-    log_cerror(APICompatibility::check(res), "Swap chain was not created");
+    if (APICompatibility::check(res))
+        log_info("Vulkan swapchain was successfully created.");
+    else
+        log_error("Failed to create vulkan swapchain. Reason: {}.", vk::to_string(res));
 
     vImages.resize(imageCount);
     res = vkDevice.getSwapchainImagesKHR(swapChain, &imageCount, vImages.data());
-    log_cerror(APICompatibility::check(res), "Swap chain images was not created");
+    if (APICompatibility::check(res))
+        log_info("Vulkan swapchain images was successfully created.");
+    else
+        log_error("Failed to create swapchain images. Reason: {}.", vk::to_string(res));
 
     imageFormat = surfaceFormat.format;
 
@@ -426,7 +444,7 @@ void CDevice::createSwapchain(int32_t width, int32_t height)
         {
             viewInfo.image = vImages[i];
             res = create(viewInfo, &vImageViews[i]);
-            log_cerror(APICompatibility::check(res), "Cannot create image view");
+            log_cerror(APICompatibility::check(res), "Failed to create swapchain image view. Reason: {}.", vk::to_string(res));
         }
     }
 
@@ -444,11 +462,11 @@ void CDevice::createSwapchain(int32_t width, int32_t height)
             for (size_t i = 0; i < imageCount; i++)
             {
                 res = create(semaphoreCI, &vImageAvailableSemaphores[i]);
-                log_cerror(APICompatibility::check(res), "Cannot create semaphore");
+                log_cerror(APICompatibility::check(res), "Failed to create image avaliable semaphore. Reason: {}.", vk::to_string(res));
                 res = create(semaphoreCI, &vRenderFinishedSemaphores[i]);
-                log_cerror(APICompatibility::check(res), "Cannot create semaphore");
+                log_cerror(APICompatibility::check(res), "Failed to create render finished semaphore. Reason: {}.", vk::to_string(res));
                 res = create(fenceCI, &vInFlightFences[i]);
-                log_cerror(APICompatibility::check(res), "Cannot create fence");
+                log_cerror(APICompatibility::check(res), "Failed to create in flight fence semaphore. Reason: {}.", vk::to_string(res));
             }
         }
         catch (vk::SystemError err)
@@ -559,17 +577,17 @@ void CDevice::copyOnDeviceBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk:
 
 void CDevice::createImage(vk::Image& image, vk::ImageCreateInfo createInfo, vma::Allocation& allocation, vma::MemoryUsage usage)
 {
-    //log_debug("Creating image: [extent {}x{}x{}, type {}, format {}, mips {}, layers {}, samples {}, tiling {}, sharing {}, layout {}]", 
-    //    createInfo.extent.width, createInfo.extent.height, createInfo.extent.depth,
-    //    vk::to_string(createInfo.imageType), vk::to_string(createInfo.format), createInfo.mipLevels, createInfo.arrayLayers,
-    //    vk::to_string(createInfo.samples), vk::to_string(createInfo.tiling), vk::to_string(createInfo.sharingMode), vk::to_string(createInfo.initialLayout));
     log_cerror(vkDevice, "Trying to create image, byt logical device is not valid.");
 
     vma::AllocationCreateInfo alloc_create_info = {};
     alloc_create_info.usage = usage;
 
     auto res = vmaAlloc.createImage(&createInfo, &alloc_create_info, &image, &allocation, nullptr);
-    log_cerror(APICompatibility::check(res), "Image was not created");
+    log_cerror(APICompatibility::check(res), "Failed to create image [extent({},{},{}), image_type({}), format({}), mip_levels({}), array_layers({}), multisampling({}), tiling_mode({}), sharing_mode({}), initial_layout({})]. Reason: {}.", 
+        createInfo.extent.width, createInfo.extent.height, createInfo.extent.depth, 
+        vk::to_string(createInfo.imageType), vk::to_string(createInfo.format), createInfo.mipLevels, createInfo.arrayLayers,
+        vk::to_string(createInfo.samples), vk::to_string(createInfo.tiling), vk::to_string(createInfo.sharingMode), vk::to_string(createInfo.initialLayout),
+        vk::to_string(res));
 }
 
 void CDevice::makeMemoryBarrier(vk::CommandBuffer& commandBuffer, const vk::MemoryBarrier2KHR& barrier2KHR)
@@ -667,7 +685,8 @@ void CDevice::createSampler(vk::Sampler& sampler, vk::Filter magFilter, vk::Samp
 
     // TODO: Result handle
     vk::Result res = create(samplerInfo, &sampler);
-    log_cerror(APICompatibility::check(res), "Texture sampler was not created");
+    log_cerror(APICompatibility::check(res), "Failed to create image sampler [mag_filter({}), addres_mode({}), enable_anisotropy({}), compate_op({}), mip_levels({})]. Reason: {}.",
+        vk::to_string(magFilter), vk::to_string(eAddressMode), anisotropy, compareOp, mipLevels, vk::to_string(res));
 }
 
 vk::Format CDevice::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
@@ -685,7 +704,7 @@ vk::Format CDevice::findSupportedFormat(const std::vector<vk::Format>& candidate
     }
 
     // TODO: Handle null result
-    log_error("Failed to find supported format!");
+    log_error("Failed to find supported format with tiling_mode({})!", vk::to_string(tiling));
 }
 
 std::vector<vk::Format> CDevice::findSupportedFormats(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
@@ -1004,6 +1023,7 @@ void CDevice::readPixel(size_t id, uint32_t x, uint32_t y, void* pixel)
 vk::Result CDevice::acquireNextImage(uint32_t* imageIndex)
 {
     vk::Result res = vkDevice.acquireNextImageKHR(swapChain, (std::numeric_limits<uint64_t>::max)(), vImageAvailableSemaphores[currentFrame], nullptr, imageIndex);
+    log_cerror(APICompatibility::check(res), "Failed to acquire next image. Reason: {}.", vk::to_string(res));
     return res;
 }
 
@@ -1012,7 +1032,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
     vk::Result res;
 
     res = vkDevice.resetFences(1, &vInFlightFences[currentFrame]);
-    log_cerror(APICompatibility::check(res), "Cannot reset fences.");
+    log_cerror(APICompatibility::check(res), "Failed to reset fences. Reason: {}.", vk::to_string(res));
 
     try
     {
@@ -1058,6 +1078,7 @@ vk::Result CDevice::submitCommandBuffers(const vk::CommandBuffer* commandBuffer,
 
     auto& present = qPresentQueue;
     res = present.presentKHR(presentInfo);
+    log_cerror(APICompatibility::check(res), "Failed to present frame. Reason: {}.", vk::to_string(res));
 
     res = vkDevice.waitForFences(1, &vInFlightFences[currentFrame], VK_TRUE, (std::numeric_limits<uint64_t>::max)());
     log_cerror(APICompatibility::check(res), "Waiting for fences error.");

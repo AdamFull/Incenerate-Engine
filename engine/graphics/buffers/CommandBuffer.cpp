@@ -77,14 +77,14 @@ vk::Result CCommandBuffer::submitIdle()
     vk::FenceCreateInfo fenceCreateInfo{};
     vk::Fence fence;
     res = pDevice->create(fenceCreateInfo, &fence);
-    log_cerror(APICompatibility::check(res), "Cannot create fence.");
+    log_cerror(APICompatibility::check(res), "Failed to create fence. Reason: {}.", APICompatibility::get_error(res));
     res = vkDevice.resetFences(1, &fence);
-    log_cerror(APICompatibility::check(res), "Cannot reset fence.");
+    log_cerror(APICompatibility::check(res), "Failed to reset fence. Reason: {}.", APICompatibility::get_error(res));
 
     auto& queue = pDevice->getQueue(queueFlags);
     queue.submit(submitInfo, fence);
     res = vkDevice.waitForFences(1, &fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
-    log_cerror(APICompatibility::check(res), "Wait for fences error.");
+    log_cerror(APICompatibility::check(res), "Failed to wait for fences. Reason: {}.", APICompatibility::get_error(res));
     pDevice->destroy(&fence);
     return res;
 }

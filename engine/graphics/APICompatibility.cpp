@@ -38,6 +38,51 @@ bool APICompatibility::check(vk::Result result)
 	return result == vk::Result::eSuccess;
 }
 
+std::string APICompatibility::get_error(vk::Result result)
+{
+	switch (result)
+	{
+	case vk::Result::eNotReady: return "Not ready"; break;
+	case vk::Result::eTimeout: return "Timeout"; break;
+	case vk::Result::eIncomplete: return "Incomplete"; break;
+	case vk::Result::eErrorOutOfHostMemory: return "Out of host memory"; break;
+	case vk::Result::eErrorOutOfDeviceMemory: return "Out of device memory"; break;
+	case vk::Result::eErrorInitializationFailed: return "Initialization failed"; break;
+	case vk::Result::eErrorDeviceLost: return "Device lost"; break;
+	case vk::Result::eErrorMemoryMapFailed: return "Memory map failed"; break;
+	case vk::Result::eErrorLayerNotPresent: return "Layer not present"; break;
+	case vk::Result::eErrorExtensionNotPresent: return "Extension not present"; break;
+	case vk::Result::eErrorFeatureNotPresent: return "Feature not present"; break;
+	case vk::Result::eErrorIncompatibleDriver: return "Incompatible driver"; break;
+	case vk::Result::eErrorTooManyObjects: return "Too many objects"; break;
+	case vk::Result::eErrorFormatNotSupported: return "Format not supported"; break;
+	case vk::Result::eErrorFragmentedPool: return "Fragment pool"; break;
+	case vk::Result::eErrorUnknown: return "Unknown"; break;
+	case vk::Result::eErrorOutOfPoolMemory: return "Out of pool memory"; break;
+	case vk::Result::eErrorInvalidExternalHandle: return "Invalid external handle"; break;
+	case vk::Result::eErrorFragmentation: return "Fragmentation"; break;
+	case vk::Result::eErrorInvalidOpaqueCaptureAddress: return "Invalid opaque capture address"; break;
+	case vk::Result::ePipelineCompileRequired: return "Pipeline compile required"; break;
+	case vk::Result::eErrorSurfaceLostKHR: return "Surface lost"; break;
+	case vk::Result::eErrorNativeWindowInUseKHR: return "Native window in use"; break;
+	case vk::Result::eSuboptimalKHR: return "Suboptimal"; break;
+	case vk::Result::eErrorOutOfDateKHR: return "Out of date"; break;
+	case vk::Result::eErrorIncompatibleDisplayKHR: return "Incompatible display"; break;
+	case vk::Result::eErrorValidationFailedEXT: return "Validation failed"; break;
+	case vk::Result::eErrorInvalidShaderNV: return "Invalid shader"; break;
+	case vk::Result::eErrorImageUsageNotSupportedKHR: return "Image usage not supported"; break;
+	case vk::Result::eErrorVideoPictureLayoutNotSupportedKHR: return "Video picture layout not supported"; break;
+	case vk::Result::eErrorVideoProfileOperationNotSupportedKHR: return "Video profile operation not supported"; break;
+	case vk::Result::eErrorVideoProfileFormatNotSupportedKHR: return "Video profile format not supported"; break;
+	case vk::Result::eErrorVideoProfileCodecNotSupportedKHR: return "Video profile codec not supported"; break;
+	case vk::Result::eErrorVideoStdVersionNotSupportedKHR: return "Video std version not supported"; break;
+	case vk::Result::eErrorInvalidDrmFormatModifierPlaneLayoutEXT: return "Invalid drm format modifier plane layout"; break;
+	case vk::Result::eErrorCompressionExhaustedEXT: return "Compression exhausted"; break;
+	case vk::Result::eErrorIncompatibleShaderBinaryEXT: return "Incompatible shader binary"; break;
+	default: return ""; break;
+	}
+}
+
 bool APICompatibility::checkValidationLayerSupport(const std::vector<const char*>& validationLayers)
 {
 	auto availableLayers = vk::enumerateInstanceLayerProperties();
