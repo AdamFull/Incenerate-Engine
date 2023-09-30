@@ -7,7 +7,7 @@
 			sources: [
 				{
 					type: "vertex";
-					shader_name: "cascade_shadow_vert";
+					shader_name: "base_directional_shadow_vert";
 				}
 				//{
 				//	type: "fragment";
@@ -20,7 +20,7 @@
 			sources: [
 				{
 					type: "vertex";
-					shader_name: "directional_shadow_vert";
+					shader_name: "base_directional_shadow_vert";
 				}
 			];
 		},

@@ -72,7 +72,6 @@ void COmniShadowSystem::__update(float fDt)
 				point_light_frustums[i].update(point_light_view_matrices[i], shadowProj);
 
 				auto& pPush = graphics->getPushBlockHandle("shadowData");
-				auto& pModel = graphics->getUniformHandle("UBOMeshData");
 				pPush->set("viewProjMat", shadowViewProj);
 				pPush->set("position", glm::vec4(ltransform.rposition, 1.f));
 				pPush->set("farPlane", light.radius);
@@ -81,13 +80,28 @@ void COmniShadowSystem::__update(float fDt)
 				auto meshes = registry->view<FTransformComponent, FMeshComponent>();
 				for (auto [entity, mtransform, mesh] : meshes.each())
 				{
+					auto& head = registry->get<FSceneComponent>(mesh.head);
+
 					if (!graphics->bindVertexBuffer(mesh.vbo_id))
 						continue;
 
-					pModel->set("model", mtransform.model);
-					graphics->flushShader();
+					bool bHasSkin{ mesh.skin > -1 };
 
-					auto& head = registry->get<FSceneComponent>(mesh.head);
+					pPush->set("hasSkin", static_cast<int32_t>(bHasSkin));
+					pPush->set("model", mtransform.model);
+
+					auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
+					if (pInstanceUBO)
+						pInstanceUBO->set("instances", mesh.vInstances);
+
+					auto& pJoints = graphics->getUniformHandle("FSkinning");
+					if (pJoints && bHasSkin)
+					{
+						auto& skin = head.skins[mesh.skin];
+						pJoints->set("jointMatrices", skin.jointMatrices);
+					}
+
+					graphics->flushShader();
 
 					for (auto& meshlet : mesh.vMeshlets)
 					{

@@ -61,9 +61,8 @@ void CDirectionalShadowSystem::__update(float fDt)
 			graphics->setManualShaderControlFlag(true);
 
 			auto& pPush = graphics->getPushBlockHandle("shadowData");
-			auto& pModel = graphics->getUniformHandle("UBOMeshData");
 			pPush->set("viewProjMat", shadow_commit.shadowView);
-			pPush->set("stride", lightStride);
+			pPush->set("layer", lightStride);
 
 			auto distance = glm::distance(camera->viewPos, ltransform.rposition);
 			auto lod_level = getLodLevel(camera->nearPlane, camera->farPlane, distance);
@@ -76,7 +75,22 @@ void CDirectionalShadowSystem::__update(float fDt)
 				if (!graphics->bindVertexBuffer(mesh.vbo_id))
 					continue;
 
-				pModel->set("model", mtransform.model);
+				bool bHasSkin{ mesh.skin > -1 };
+
+				pPush->set("hasSkin", static_cast<int32_t>(bHasSkin));
+				pPush->set("model", mtransform.model);
+				
+				auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
+				if (pInstanceUBO)
+					pInstanceUBO->set("instances", mesh.vInstances);
+
+				auto& pJoints = graphics->getUniformHandle("FSkinning");
+				if (pJoints && bHasSkin)
+				{
+					auto& skin = head.skins[mesh.skin];
+					pJoints->set("jointMatrices", skin.jointMatrices);
+				}
+
 				graphics->flushShader();
 
 				for (auto& meshlet : mesh.vMeshlets)
