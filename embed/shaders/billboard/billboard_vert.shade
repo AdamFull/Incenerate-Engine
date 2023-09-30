@@ -20,7 +20,7 @@
 		layout(location = 0) out vec2 fragOffset;
 		layout(location = 1) out vec2 outUV;
 		
-		layout(std140, set = 0, binding = 1) uniform UBOBillboard
+		layout(push_constant) uniform UBOBillboard
 		{
 			mat4 projection;
 			mat4 view;
