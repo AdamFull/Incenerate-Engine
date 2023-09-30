@@ -12,47 +12,11 @@
 			];
 		},
 		{
-			name: "applybloom";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "applybloom_comp";
-				}
-			];
-		},
-		{
 			name: "bokeh";
 			sources: [
 				{
 					type: "compute";
 					shader_name: "bokeh_comp";
-				}
-			];
-		},
-		{
-			name: "brightdetect";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "brightdetect_comp";
-				}
-			];
-		},
-		{
-			name: "chromatic_aberration";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "chromatic_aberration_comp";
-				}
-			];
-		},
-		{
-			name: "dof";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "dof_comp";
 				}
 			];
 		},
@@ -75,47 +39,20 @@
 			];
 		},
 		{
-			name: "filmgrain";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "filmgrain_comp";
-				}
-			];
-		},
-		{
-			name: "fog";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "fog_comp";
-				}
-			];
-		},
-		{
-			name: "fxaa";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "fxaa_comp";
-				}
-			];
-		},
-		{
-			name: "fxaa";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "fxaa_comp";
-				}
-			];
-		},
-		{
 			name: "gaussianblur";
 			sources: [
 				{
 					type: "compute";
 					shader_name: "gaussianblur_comp";
+				}
+			];
+		},
+		{
+			name: "high_pass";
+			sources: [
+				{
+					type: "compute";
+					shader_name: "high_pass_comp";
 				}
 			];
 		},
@@ -138,7 +75,7 @@
 			];
 		},
 		{
-			name: "tonemap";
+			name: "avg_brightness";
 			sources: [
 				{
 					type: "compute";
@@ -147,10 +84,6 @@
 				{
 					type: "compute";
 					shader_name: "comp_average_brightness_comp";
-				},
-				{
-					type: "compute";
-					shader_name: "tonemap_comp";
 				}
 			];
 		},
@@ -160,15 +93,6 @@
 				{
 					type: "compute";
 					shader_name: "upsample_comp";
-				}
-			];
-		},
-		{
-			name: "vignette";
-			sources: [
-				{
-					type: "compute";
-					shader_name: "vignette_comp";
 				}
 			];
 		}
@@ -183,35 +107,7 @@
 			];
 		},
 		{ 
-			shader_name: "applybloom";
-			permutations: [
-				{ definitions: [] },
-				{ definitions: ["EDITOR_MODE"] }
-			];
-		},
-		{ 
 			shader_name: "bokeh";
-			permutations: [
-				{ definitions: [] },
-				{ definitions: ["EDITOR_MODE"] }
-			];
-		},
-		{ 
-			shader_name: "brightdetect";
-			permutations: [
-				{ definitions: [] },
-				{ definitions: ["EDITOR_MODE"] }
-			];
-		},
-		{ 
-			shader_name: "chromatic_aberration";
-			permutations: [
-				{ definitions: [] },
-				{ definitions: ["EDITOR_MODE"] }
-			];
-		},
-		{ 
-			shader_name: "dof";
 			permutations: [
 				{ definitions: [] },
 				{ definitions: ["EDITOR_MODE"] }
@@ -231,29 +127,15 @@
 				{ definitions: ["EDITOR_MODE"] }
 			];
 		},
-		{ 
-			shader_name: "filmgrain";
-			permutations: [
-				{ definitions: [] },
-				{ definitions: ["EDITOR_MODE"] }
-			];
-		},
-		{ 
-			shader_name: "fog";
-			permutations: [
-				{ definitions: [] },
-				{ definitions: ["EDITOR_MODE"] }
-			];
-		},
-		{ 
-			shader_name: "fxaa";
+		{
+			shader_name: "gaussianblur";
 			permutations: [
 				{ definitions: [] },
 				{ definitions: ["EDITOR_MODE"] }
 			];
 		},
 		{
-			shader_name: "gaussianblur";
+			shader_name: "high_pass";
 			permutations: [
 				{ definitions: [] },
 				{ definitions: ["EDITOR_MODE"] }
@@ -274,7 +156,7 @@
 			];
 		},
 		{ 
-			shader_name: "tonemap";
+			shader_name: "avg_brightness";
 			permutations: [
 				{ definitions: [] },
 				{ definitions: ["EDITOR_MODE"] }
@@ -282,13 +164,6 @@
 		},
 		{ 
 			shader_name: "upsample";
-			permutations: [
-				{ definitions: [] },
-				{ definitions: ["EDITOR_MODE"] }
-			];
-		},
-		{ 
-			shader_name: "vignette";
 			permutations: [
 				{ definitions: [] },
 				{ definitions: ["EDITOR_MODE"] }

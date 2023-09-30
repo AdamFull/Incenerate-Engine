@@ -309,8 +309,10 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         m_mStageInfos["composition"].viewport.offset = vk::Offset2D(0, 0);
         m_mStageInfos["composition"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["composition"].bViewportDependent = true;
-        m_mStageInfos["composition"].vImages.emplace_back(FCIImage{ "composition_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["composition"].vImages.emplace_back(FCIImage{ "composition_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["composition"].vImages.emplace_back(FCIImage{ "brightcolor_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["composition"].vOutputs.emplace_back("composition_tex");
+        m_mStageInfos["composition"].vOutputs.emplace_back("brightcolor_tex");
         m_mStageInfos["composition"].vDescriptions.emplace_back("");
         m_mStageInfos["composition"].vDependencies.emplace_back(
             FCIDependency(
@@ -352,7 +354,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         m_mStageInfos["global_illumination"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["global_illumination"].bFlipViewport = false;
         m_mStageInfos["global_illumination"].bViewportDependent = true;
-        m_mStageInfos["global_illumination"].vImages.emplace_back(FCIImage{ "global_illumination_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["global_illumination"].vImages.emplace_back(FCIImage{ "global_illumination_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["global_illumination"].vDescriptions.emplace_back("");
         m_mStageInfos["global_illumination"].vOutputs.emplace_back("global_illumination_tex");
 
@@ -396,7 +398,7 @@ void CAPIHandle::create(const FEngineCreateInfo& createInfo)
         m_mStageInfos["ssr"].viewport.extent = m_pDevice->getExtent(true);
         m_mStageInfos["ssr"].bFlipViewport = false;
         m_mStageInfos["ssr"].bViewportDependent = true;
-        m_mStageInfos["ssr"].vImages.emplace_back(FCIImage{ "reflections_tex", vk::Format::eR32G32B32A32Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled });
+        m_mStageInfos["ssr"].vImages.emplace_back(FCIImage{ "reflections_tex", vk::Format::eR16G16B16A16Sfloat, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled });
         m_mStageInfos["ssr"].vDescriptions.emplace_back("");
         m_mStageInfos["ssr"].vOutputs.emplace_back("reflections_tex");
 
@@ -1276,7 +1278,6 @@ void CAPIHandle::bindObjectData(const glm::mat4& model, const glm::mat4& normal,
         pMesh->set("model", model);
         pMesh->set("normal", normal);
         pMesh->set("object_id", encodeIdToColor(object_id));
-        //flushConstantRanges(pMesh);
     }
 }
 

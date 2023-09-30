@@ -1,0 +1,288 @@
+{
+	version: 460;
+
+	enable_extensions: [
+		"GL_ARB_separate_shader_objects",
+		"GL_ARB_shading_language_420pack"
+	];
+
+	definitions: [];
+	require_extensions: [];
+	includes: ["compute_common", "shader_util", "fxaa"];
+
+	code: 
+	"""
+		layout(local_size_x = 8, local_size_y = 8) in;
+
+		layout(set = 1, binding = 0, r11f_g11f_b10f) uniform writeonly image2D writeColor;
+		layout(set = 1, binding = 1) uniform sampler2D samplerColor;
+		layout(set = 1, binding = 2) uniform sampler2D samplerDepth;
+		layout(set = 1, binding = 3) uniform sampler2D samplerBlured;
+		layout(set = 1, binding = 4) uniform sampler2D bloomColor;
+		layout(set = 1, binding = 5, r32f) uniform image2D avgLuminosity;
+
+		layout(std140, set = 0, binding = 1) uniform UBOHighPassEffects
+		{
+			// Other
+			vec3 camera_pos;
+			mat4 inv_view_projection;
+
+			// fxaa
+			int enable_fxaa;
+
+			float aa_quality;
+		    float aa_threshold;
+		    float aa_threshold_min;
+			// fxaa
+
+			// tonemap
+			int enable_tonemap;
+			float tm_gamma;
+			float tm_exposure;
+			float tm_white_point;
+			int tm_adaptive;
+			// tonemap
+
+			// bloom
+			int enable_bloom;
+			float b_bloom_strength;
+			// bloom
+
+			// dof
+			int enable_dof;
+			float df_near_plane;
+			float df_far_plane;
+		
+			float df_focus_point;
+			float df_near_field;
+			float df_near_transition;
+			float df_far_field;
+			float df_far_transition;
+			// dof
+
+			// chromatic aberration
+			int enable_chromatic_aberration;
+			float ca_distortion;
+			int ca_iterations;
+			// chromatic aberration
+
+			// fog
+			int enable_fog;
+			vec3 fog_color;
+			float fog_density;
+			float fog_max;
+			// fog
+
+			// film grain
+			int enable_film_grain;
+			float fg_amount;
+		    float fg_time;
+			// film grain
+
+			// vignette
+			int enable_vignette;
+			float v_inner_radius;
+		    float v_outer_radius;
+		    float v_opacity;
+			// vignette
+
+		} ubo;
+
+		vec2 barrelDistortion(vec2 coord, float amt) {
+			vec2 cc = coord - 0.5;
+			float dist = dot(cc, cc);
+			return coord + cc * dist * amt;
+		}
+		
+		float saturate( float t )
+		{
+			return clamp( t, 0.0, 1.0 );
+		}
+		
+		float linterp( float t ) {
+			return saturate( 1.0 - abs( 2.0*t - 1.0 ) );
+		}
+		
+		float remap( float t, float a, float b ) {
+			return saturate( (t - a) / (b - a) );
+		}
+		
+		vec4 spectrum_offset( float t ) {
+			vec4 ret;
+			float lo = step(t,0.5);
+			float hi = 1.0-lo;
+			float w = linterp( remap( t, 1.0/6.0, 5.0/6.0 ) );
+			ret = vec4(lo,1.0,hi, 1.) * vec4(1.0-w, w, 1.0-w, 1.);
+		
+			return pow( ret, vec4(1.0/2.2) );
+		}
+
+		float linearDepth(float depth) 
+		{
+			float z = depth * 2.0f - 1.0f;
+			return (2.0f * ubo.df_near_plane * ubo.df_far_plane) / (ubo.df_far_plane + ubo.df_near_plane - z * (ubo.df_far_plane - ubo.df_near_plane));
+		}
+
+		vec3 convertXYZ2Yxy(vec3 _xyz)
+		{
+			// Reference(s):
+			// - XYZ to xyY
+			//   https://web.archive.org/web/20191027010144/http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
+			float inv = 1.0/dot(_xyz, vec3(1.0, 1.0, 1.0) );
+			return vec3(_xyz.y, _xyz.x*inv, _xyz.y*inv);
+		}
+		
+		vec3 convertXYZ2RGB(vec3 _xyz)
+		{
+			vec3 rgb;
+			rgb.x = dot(vec3( 3.2404542, -1.5371385, -0.4985314), _xyz);
+			rgb.y = dot(vec3(-0.9692660,  1.8760108,  0.0415560), _xyz);
+			rgb.z = dot(vec3( 0.0556434, -0.2040259,  1.0572252), _xyz);
+			return rgb;
+		}
+		
+		vec3 convertRGB2XYZ(vec3 _rgb)
+		{
+			// Reference(s):
+			// - RGB/XYZ Matrices
+			//   https://web.archive.org/web/20191027010220/http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+			vec3 xyz;
+			xyz.x = dot(vec3(0.4124564, 0.3575761, 0.1804375), _rgb);
+			xyz.y = dot(vec3(0.2126729, 0.7151522, 0.0721750), _rgb);
+			xyz.z = dot(vec3(0.0193339, 0.1191920, 0.9503041), _rgb);
+			return xyz;
+		}
+		
+		vec3 convertYxy2XYZ(vec3 _Yxy)
+		{
+			// Reference(s):
+			// - xyY to XYZ
+			//   https://web.archive.org/web/20191027010036/http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
+			vec3 xyz;
+			xyz.x = _Yxy.x*_Yxy.y/_Yxy.z;
+			xyz.y = _Yxy.x;
+			xyz.z = _Yxy.x*(1.0 - _Yxy.y - _Yxy.z)/_Yxy.z;
+			return xyz;
+		}
+		
+		vec3 convertRGB2Yxy(vec3 _rgb)
+		{
+			return convertXYZ2Yxy(convertRGB2XYZ(_rgb) );
+		}
+		
+		vec3 convertYxy2RGB(vec3 _Yxy)
+		{
+			return convertXYZ2RGB(convertYxy2XYZ(_Yxy) );
+		}
+		
+		float reinhard2(float _x, float _whiteSqr)
+		{
+			return (_x * (1.0 + _x/_whiteSqr) ) / (1.0 + _x);
+		}
+		
+		vec3 toGamma(vec3 _rgb, float gamma)
+		{
+			return pow(abs(_rgb), vec3(1.0 / gamma) );
+		}
+		
+		void main()
+		{
+			uvec2 image_size = imageSize(writeColor);
+		
+			uvec2 px = uvec2(0, 0);
+			vec2 uv = vec2(0.0, 0.0);
+			if(swizzle_compute_workgroups_8x8(gl_GlobalInvocationID.xy, gl_LocalInvocationID.xy, image_size, uv, px))
+				return;
+			
+			vec3 fragcolor = texture(samplerColor, uv).rgb;
+			float depth = texture(samplerDepth, uv).r;
+
+			if(ubo.enable_fxaa > 0)
+			{
+				fragcolor = FxaaPixelShader(uv, samplerColor, ubo.aa_quality, ubo.aa_threshold, ubo.aa_threshold_min).rgb;
+			}
+
+			if(ubo.enable_tonemap > 0)
+			{
+				float avgLum = imageLoad(avgLuminosity, ivec2(0, 0)).x;
+		
+				vec3 Yxy = convertRGB2Yxy(fragcolor);
+		
+				float lp = Yxy.x / (9.6 * avgLum + 0.0001);
+		
+				if(ubo.tm_adaptive > 0)
+					Yxy.x = reinhard2(lp, ubo.tm_white_point);
+				else
+					Yxy.x = Yxy.x * pow(2.0, ubo.tm_exposure);
+		
+				fragcolor = convertYxy2RGB(Yxy);
+				fragcolor = toGamma(fragcolor, ubo.tm_gamma);
+			}
+
+			if(ubo.enable_bloom > 0)
+			{
+				fragcolor = mix(fragcolor,  texture(bloomColor, uv).xyz, ubo.b_bloom_strength);
+			}
+
+			if(ubo.enable_dof > 0)
+			{
+				float linear_depth = linearDepth(depth);
+
+				vec3 textureBlured = texture(samplerBlured, uv).rgb;
+
+				float nearEnd = ubo.df_near_field + ubo.df_near_transition;
+				float farStart = ubo.df_far_field - ubo.df_far_transition;
+		
+				float nearVisibility = smoothstep(ubo.df_near_field * ubo.df_focus_point, nearEnd * ubo.df_focus_point, linear_depth);
+				float farVisibility = 1.0f - smoothstep(farStart * ubo.df_focus_point, ubo.df_far_field * ubo.df_focus_point, linear_depth);
+		
+				vec3 color = mix(textureBlured, fragcolor, nearVisibility);
+				fragcolor = mix(textureBlured, color, farVisibility);
+			}
+
+			if(ubo.enable_chromatic_aberration > 0)
+			{
+				const float reci_num_iter_f = 1.0 / float(ubo.ca_iterations);
+		
+				vec4 sumcol = vec4(0.0);
+				vec4 sumw = vec4(0.0);	
+				for ( int i= 0; i < ubo.ca_iterations; ++i )
+				{
+					float t = float(i) * reci_num_iter_f;
+					vec4 w = spectrum_offset( t );
+					sumw += w;
+					sumcol += w * texture( samplerColor, barrelDistortion(uv, 0.6 * ubo.ca_distortion * t ) );
+				}
+
+				fragcolor = (sumcol / sumw).rgb;
+			}
+
+			if(ubo.enable_fog > 0)
+			{
+				vec2 invUV = vec2(uv.x, 1.0 - uv.y);
+				vec3 position = getPositionFromDepth(invUV, depth, ubo.inv_view_projection);
+		
+				float cameraToPixel = length(position - ubo.camera_pos);
+				float distRatio = 4.0 * cameraToPixel / ubo.fog_max;
+				float fogFactor = exp(-distRatio * ubo.fog_density * distRatio * ubo.fog_density);
+		
+				fragcolor += mix(ubo.fog_color, fragcolor, fogFactor);
+			}
+
+			if(ubo.enable_film_grain > 0)
+			{
+				float randomIntensity = fract(10000 * sin((gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * ubo.fg_time) * 3.14));
+				fragcolor += ubo.fg_amount * randomIntensity;
+			}
+
+			if(ubo.enable_vignette > 0)
+			{
+				vec3 color = fragcolor;
+				color *= 1.0f - smoothstep(ubo.v_inner_radius, ubo.v_outer_radius, length(uv - 0.5f));
+				fragcolor = mix(fragcolor, color, ubo.v_opacity);
+			}
+		
+			imageStore(writeColor, ivec2(px), vec4(fragcolor, 1.0));
+		}
+	""";
+}

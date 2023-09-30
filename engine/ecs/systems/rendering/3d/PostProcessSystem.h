@@ -1,14 +1,5 @@
 #pragma once
 
-#include "postprocess/FXAAEffect.h"
-#include "postprocess/DOFEffect.h"
-#include "postprocess/BloomEffect.h"
-#include "postprocess/ChromaticAberrationEffect.h"
-#include "postprocess/VignetteEffect.h"
-#include "postprocess/FilmGrainEffect.h"
-#include "postprocess/FogEffect.h"
-#include "postprocess/TonemapEffect.h"
-
 #include "ecs/systems/rendering/BaseGraphicsSystem.h"
 
 namespace engine
@@ -24,17 +15,21 @@ namespace engine
 			void __create() override;
 			void __update(float fDt) override;
 		private:
-			CFXAAEffect fxaa;
-			CDOFEffect dof;
-			CBloomEffect bloom;
-			CChromaticAberrationEffect chromatic_aberration;
-			CVignetteEffect vignette;
-			CFilmGrainEffect filmgrain;
-			CFogEffect fog;
-			CTonemapEffect tonemap;
+			void update_images();
+			void render();
+		private:
+			std::vector<glm::vec3> vMips;
+			const uint32_t bloomMipLevels{ 5 };
 
 			size_t final_image{ invalid_index };
-			size_t shader_id{ invalid_index };
+			size_t blurred_image{ invalid_index };
+			size_t bloom_image{ invalid_index };
+			size_t avg_lum_image{ invalid_index };
+			size_t shader{ invalid_index };
+			size_t shader_blur{ invalid_index };
+			size_t shader_downsample{ invalid_index };
+			size_t shader_upsample{ invalid_index };
+			size_t shader_avg_brightness{ invalid_index };
 		};
 	}
 }
