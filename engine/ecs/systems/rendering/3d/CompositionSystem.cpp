@@ -115,6 +115,7 @@ void CCompositionSystem::__update(float fDt)
 	pUBO->set("spotLightCount", spot.light_count);
 	pUBO->set("pointLightCount", point.light_count);
 	pUBO->set("ambientOcclusion", settings.bEnableAmbientOcclusion ? 1 : -1);
+	pUBO->set("bloom_threshold", camera->effects.bloom.threshold);
 
 	auto& pUBOLights = graphics->getUniformHandle("UBOLights");
 	pUBOLights->set("directionalLights", directional.lights);

@@ -37,6 +37,7 @@
 		//--------------------In/Out locations--------------------
 		layout (location = 0) in vec2 inUV;
 		layout (location = 0) out vec4 outFragcolor;
+		layout (location = 1) out vec4 outBrightColor;
 
 		//-----------------------Constants------------------------
 		layout (constant_id = 0) const uint MAX_DIRECTIONAL_LIGHTS_COUNT = 3;
@@ -77,6 +78,7 @@
 			int spotLightCount;
 			int pointLightCount;
 			int ambientOcclusion;
+			float bloom_threshold;
 		} ubo;
 		
 		//Lights
@@ -403,8 +405,14 @@
 				//	}
 				//}
 			}
-		
-		  	outFragcolor = vec4(fragcolor, 1.0);
+
+			float brightness = dot(fragcolor, vec3(0.2126, 0.7152, 0.0722));		
+		  	outFragcolor = vec4(fragcolor, brightness);
+
+			if(brightness > ubo.bloom_threshold)
+		        outBrightColor = vec4(fragcolor, 1.0);
+		    else
+		        outBrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 		}
 	""";
 }

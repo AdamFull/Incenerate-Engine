@@ -37,11 +37,14 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 	auto& device = graphics->getDevice();
 	auto& debug_draw = graphics->getDebugDraw();
 
+	bool need_to_push_data{ true };
 	auto view = registry->view<FTransformComponent, FMeshComponent>();
 	for (auto [entity, transform, mesh] : view.each())
 	{
 		if (!graphics->bindVertexBuffer(mesh.vbo_id))
 			continue;
+
+		need_to_push_data = true;
 
 		bool bHasSkin{ mesh.skin > -1 };
 		auto distance = glm::distance(camera->viewPos, transform.rposition);
@@ -73,9 +76,14 @@ void CMeshSystem::draw(const FCameraComponent* camera, EAlphaMode alphaMode)
 						pJoints->set("jointMatrices", skin.jointMatrices);
 					}
 
+					need_to_push_data = true;
+				}
+
+				if (need_to_push_data)
+				{
 					graphics->bindObjectData(transform.model, transform.normal, static_cast<uint32_t>(entity));
-		
 					graphics->flushShader();
+					need_to_push_data = false;
 				}
 		
 				auto& lod = meshlet.levels_of_detail[lod_level];
