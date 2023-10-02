@@ -42,24 +42,33 @@
 	compile: [
 		{ 
 			shader_name: "cascaded";
-			permutations: [
-				{ definitions: [] },
-				{ definitions: ["EDITOR_MODE"] }
-			];
+			permutation_generator: {
+				definitions: [
+					"EDITOR_MODE",
+					"BINDLESS_TEXTURES",
+					"HAS_BASECOLORMAP"
+				];
+			};
 		},
 		{ 
 			shader_name: "directional";
-			permutations: [
-				{ definitions: [] },
-				{ definitions: ["EDITOR_MODE"] }
-			];
+			permutation_generator: {
+				definitions: [
+					"EDITOR_MODE",
+					"BINDLESS_TEXTURES",
+					"HAS_BASECOLORMAP"
+				];
+			};
 		},
 		{ 
 			shader_name: "omni";
-			permutations: [
-				{ definitions: [] },
-				{ definitions: ["EDITOR_MODE"] }
-			];
+			permutation_generator: {
+				definitions: [
+					"EDITOR_MODE",
+					"BINDLESS_TEXTURES",
+					"HAS_BASECOLORMAP"
+				];
+			};
 		}
 	];
 }

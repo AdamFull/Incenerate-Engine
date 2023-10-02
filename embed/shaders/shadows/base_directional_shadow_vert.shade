@@ -16,6 +16,8 @@
 		layout(location = 4) in vec4 inTangent;
 		layout (location = 5) in vec4 inJoint0;
 		layout (location = 6) in vec4 inWeight0;
+
+		layout(location = 0) out vec2 outTexcoord;
 		
 		layout(push_constant) uniform UBOShadowmapModelData
 		{
@@ -48,6 +50,8 @@
 			}
 		
 			localPos = vec4(localPos.xyz / localPos.w, 1.0);
+
+			outTexcoord = inTexCoord;
 		
 			gl_Layer = shadowData.layer;
 			gl_Position = shadowData.viewProjMat * localPos;

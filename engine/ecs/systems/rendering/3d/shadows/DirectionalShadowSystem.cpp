@@ -80,15 +80,18 @@ void CDirectionalShadowSystem::__update(float fDt)
 				pPush->set("hasSkin", static_cast<int32_t>(bHasSkin));
 				pPush->set("model", mtransform.model);
 				
-				auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
-				if (pInstanceUBO)
-					pInstanceUBO->set("instances", mesh.vInstances);
-
-				auto& pJoints = graphics->getUniformHandle("FSkinning");
-				if (pJoints && bHasSkin)
+				if (bHasSkin)
 				{
-					auto& skin = head.skins[mesh.skin];
-					pJoints->set("jointMatrices", skin.jointMatrices);
+					auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
+					if (pInstanceUBO)
+						pInstanceUBO->set("instances", mesh.vInstances);
+
+					auto& pJoints = graphics->getUniformHandle("FSkinning");
+					if (pJoints && bHasSkin)
+					{
+						auto& skin = head.skins[mesh.skin];
+						pJoints->set("jointMatrices", skin.jointMatrices);
+					}
 				}
 
 				graphics->flushShader();

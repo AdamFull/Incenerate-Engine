@@ -19,6 +19,7 @@ void CCascadeShadowSystem::__create()
 	specials.cull_mode = vk::CullModeFlagBits::eFront;
 	specials.front_face = vk::FrontFace::eCounterClockwise;
 	specials.depth_test = true;
+	specials.usages = 64;
 
 	// TODO: do it using constants
 	//specials.defines = { {"INVOCATION_COUNT", std::to_string(CASCADE_SHADOW_MAP_CASCADE_COUNT)} };
@@ -182,15 +183,18 @@ void CCascadeShadowSystem::__update(float fDt)
 		pPush->set("hasSkin", static_cast<int32_t>(bHasSkin));
 		pPush->set("model", mtransform.model);
 
-		auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
-		if (pInstanceUBO)
-			pInstanceUBO->set("instances", mesh.vInstances);
-
-		auto& pJoints = graphics->getUniformHandle("FSkinning");
-		if (pJoints && bHasSkin)
+		if (bHasSkin)
 		{
-			auto& skin = head.skins[mesh.skin];
-			pJoints->set("jointMatrices", skin.jointMatrices);
+			auto& pInstanceUBO = graphics->getUniformHandle("UBOInstancing");
+			if (pInstanceUBO)
+				pInstanceUBO->set("instances", mesh.vInstances);
+
+			auto& pJoints = graphics->getUniformHandle("FSkinning");
+			if (pJoints)
+			{
+				auto& skin = head.skins[mesh.skin];
+				pJoints->set("jointMatrices", skin.jointMatrices);
+			}
 		}
 
 		graphics->flushShader();
