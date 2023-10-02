@@ -15,6 +15,12 @@ namespace engine
 			std::vector<uint32_t>* spirv{ nullptr };
 		};
 
+		struct FShaderObjectCreateInfo
+		{
+			std::string debug_shader_name{};
+			std::vector<FShaderModuleCreateInfo> shader_modules{};
+		};
+
 		class CShaderLoader
 		{
 		public:
@@ -22,8 +28,8 @@ namespace engine
 			~CShaderLoader();
 
 			void create();
-			std::string getShaderCreateInfo(const std::string& shader_name, const FShaderCreateInfo& specials, std::vector<FShaderModuleCreateInfo>& module_ci);
-			std::unique_ptr<CShaderObject> load(const std::vector<FShaderModuleCreateInfo>& module_ci, const FShaderCreateInfo& specials);
+			std::string getShaderObjectCreateInfo(const std::string& shader_name, const FShaderCreateInfo& specials, FShaderObjectCreateInfo& module_ci);
+			std::unique_ptr<CShaderObject> load(const FShaderObjectCreateInfo& module_ci, const FShaderCreateInfo& specials);
 
 		private:
 			CDevice* m_pDevice{ nullptr };

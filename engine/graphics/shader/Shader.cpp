@@ -18,6 +18,11 @@ CShader::~CShader()
     pDevice = nullptr;
 }
 
+void CShader::create(const std::string& name)
+{
+    srShaderName = name;
+}
+
 void CShader::addStage(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stage)
 {
 	CShaderReflect::addStage(spirv, stage);
@@ -131,7 +136,7 @@ void CShader::createShaderModule(const std::vector<uint32_t>& spirv, vk::ShaderS
 
         auto& debugUtils = pDevice->getDebugUtils();
         auto shader_id = (uint64_t)static_cast<VkShaderModule>(shaderModule);
-        debugUtils->setObjectTag(vk::ObjectType::eShaderModule, shader_id, shader_id, spirv.data(), spirv.size());
+        debugUtils->setObjectName(vk::ObjectType::eShaderModule, shader_id, srShaderName.c_str());
 
         vShaderModules.emplace_back(std::move(shaderStageCI));
     }

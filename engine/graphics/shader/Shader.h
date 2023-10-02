@@ -18,6 +18,8 @@ namespace engine
 			CShader(CDevice* device);
 			virtual ~CShader();
 
+			void create(const std::string& name);
+
 			void addStage(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stage) override;
 			void buildReflection() override;
 
@@ -32,6 +34,8 @@ namespace engine
 			void createShaderModule(const std::vector<uint32_t>& spirv, vk::ShaderStageFlagBits stage);
 		private:
 			CDevice* pDevice{ nullptr };
+
+			std::string srShaderName{};
 
 			std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> mDescriptorSetLayouts;
 			std::vector<vk::DescriptorPoolSize> vDescriptorPools;

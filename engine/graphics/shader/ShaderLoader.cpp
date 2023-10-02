@@ -64,6 +64,18 @@ FShaderNameInfo get_shader_name_info(const std::string& shader_name)
 	return name_info;
 }
 
+std::string make_shader_debug_name(const FShaderNameInfo& nameInfo)
+{
+	std::stringstream ss{};
+	ss << nameInfo.library_name << ":" << nameInfo.shader_name << "(";
+
+	size_t size = nameInfo.definitions.size();
+	for (size_t i = 0ull; i < size; ++i)
+		ss << nameInfo.definitions.at(i) << ((i < (size - 1)) ? "," : "");
+	ss << ")";
+	return ss.str();
+}
+
 size_t spirv_hash(const std::vector<uint32_t>& spirv)
 {
 	auto seed = spirv.size();
@@ -136,7 +148,7 @@ void CShaderLoader::create()
 	}
 }
 
-std::string CShaderLoader::getShaderCreateInfo(const std::string& shader_name, const FShaderCreateInfo& specials, std::vector<FShaderModuleCreateInfo>& module_ci)
+std::string CShaderLoader::getShaderObjectCreateInfo(const std::string& shader_name, const FShaderCreateInfo& specials, FShaderObjectCreateInfo& module_ci)
 {
 	auto* graphics = m_pDevice->getAPI();
 
@@ -152,6 +164,8 @@ std::string CShaderLoader::getShaderCreateInfo(const std::string& shader_name, c
 	// Add editor mode support to shader
 	if (bEditorMode)
 		name_info.definitions.emplace_back("EDITOR_MODE");
+
+	module_ci.debug_shader_name = make_shader_debug_name(name_info);
 
 	// Try to find shader library
 	auto found_library = shader_libraries.find(name_info.library_name);
@@ -188,8 +202,8 @@ std::string CShaderLoader::getShaderCreateInfo(const std::string& shader_name, c
 			continue;
 		}
 
-		module_ci.emplace_back();
-		auto& shmodule = module_ci.back();
+		module_ci.shader_modules.emplace_back();
+		auto& shmodule = module_ci.shader_modules.back();
 
 		shmodule.stage = get_stage_flags(module.type);
 		shmodule.spirv = &found_shader_code->second;
@@ -200,14 +214,15 @@ std::string CShaderLoader::getShaderCreateInfo(const std::string& shader_name, c
 	return shader_object_hash(whole_code, specials);
 }
 
-std::unique_ptr<CShaderObject> CShaderLoader::load(const std::vector<FShaderModuleCreateInfo>& module_ci, const FShaderCreateInfo& specials)
+std::unique_ptr<CShaderObject> CShaderLoader::load(const FShaderObjectCreateInfo& module_ci, const FShaderCreateInfo& specials)
 {
 	auto* graphics = m_pDevice->getAPI();
 
 	auto pShaderObject = std::make_unique<CShaderObject>(m_pDevice);
 	auto& pShader = pShaderObject->pShader;
+	pShader->create(module_ci.debug_shader_name);
 
-	for (auto& module : module_ci)
+	for (auto& module : module_ci.shader_modules)
 		pShader->addStage(*module.spirv, module.stage);
 
 	pShader->buildReflection();
